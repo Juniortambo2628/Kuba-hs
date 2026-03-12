@@ -1,0 +1,249 @@
+/* Zogin Template Styles Adapted for Kuba */
+
+.zogin-template {
+    font-family: "DM Sans", sans-serif;
+    color: #111111;
+}
+
+.zogin-template h1,
+.zogin-template h2,
+.zogin-template h3,
+.zogin-template h4,
+.zogin-template h5,
+.zogin-template h6 {
+    margin: 0;
+    color: #111111;
+    font-weight: 400;
+    font-family: "DM Sans", sans-serif;
+}
+
+.zogin-template p {
+    font-size: 16px;
+    font-family: "DM Sans", sans-serif;
+    color: #6E7580;
+    font-weight: 400;
+    line-height: 26px;
+}
+
+.zogin-template .section-title {
+    margin-bottom: 45px;
+    text-align: center;
+}
+
+.zogin-template .section-title h2 {
+    font-size: 44px;
+    color: #263246;
+    margin-top: 34px;
+    margin-bottom: 5px;
+}
+
+.zogin-template .spad {
+    padding-top: 100px;
+    padding-bottom: 100px;
+}
+
+.zogin-template .primary-btn {
+    display: inline-block;
+    font-size: 14px;
+    padding: 16px 36px 14px;
+    color: #ffffff !important;
+    text-transform: uppercase;
+    font-weight: 700;
+    background: #5768AD;
+    border-radius: 2px;
+    letter-spacing: 2px;
+}
+
+.zogin-template .appointment__form p.text-red-700 {
+    color: #b91c1c !important;
+    font-weight: 700;
+}
+
+/* Hero Section */
+.zogin-template .hero {
+    margin-top: -50px;
+}
+
+.zogin-template .hero__items {
+    height: 873px;
+    display: flex;
+    align-items: center;
+    background-size: cover;
+    background-position: top center;
+}
+
+.zogin-template .hero__text span {
+    font-size: 16px;
+    color: #ffffff;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    display: block;
+    margin-bottom: 30px;
+}
+
+.zogin-template .hero__text h2 {
+    font-size: 70px;
+    line-height: 80px;
+    color: #ffffff;
+    margin-bottom: 50px;
+}
+
+/* Services Section */
+.zogin-template .services__item {
+    text-align: center;
+    padding: 40px 15px 60px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 65px rgba(12, 26, 39, 0.05);
+    margin-bottom: 30px;
+    background: #ffffff;
+}
+
+.zogin-template .services__item h5 {
+    font-size: 20px;
+    color: #263246;
+    margin-top: 35px;
+    margin-bottom: 12px;
+}
+
+/* Choose Us Section */
+.zogin-template .chooseus {
+    background: #f5f6fa;
+}
+
+.zogin-template .chooseus__item {
+    margin-bottom: 80px;
+}
+
+.zogin-template .chooseus__item__icon {
+    float: left;
+    margin-right: 30px;
+}
+
+.zogin-template .chooseus__item__text h2 {
+    font-size: 48px;
+    color: #263246;
+    line-height: 45px;
+    margin-bottom: 5px;
+}
+
+/* About Section */
+.zogin-template .home__about__pic {
+    margin-right: -20px;
+    padding-right: 30px;
+}
+
+.zogin-template .home__about__pic__item {
+    height: 620px;
+    width: calc(50% - 20px);
+    float: left;
+    margin-right: 20px;
+    margin-bottom: 20px;
+    background-size: cover;
+}
+
+
+.zogin-template .home__about__pic__item__inner {
+    height: 300px;
+    margin-bottom: 20px;
+    background-size: cover;
+}
+
+/* Appointment Section */
+.zogin-template .appointment__text {
+    background: #5768AD;
+    padding: 60px 100px;
+}
+
+.zogin-template .appointment__form input,
+.zogin-template .appointment__form select,
+.zogin-template .appointment__form textarea {
+    width: 100%;
+    font-size: 16px;
+    /* color: #ffffff; */ /* Overridden to allow TextInput colors */
+    padding-left: 28px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.2);
+    /* border: none; */ /* Overridden to allow TextInput borders */
+    margin-bottom: 20px;
+}
+
+.zogin-template .appointment__form input::placeholder,
+.zogin-template .appointment__form textarea::placeholder {
+    color: #ffffff;
+}
+
+.zogin-template .appointment__form button {
+    font-size: 14px;
+    color: #5768AD;
+    text-transform: uppercase;
+    background: #ffffff;
+    padding: 14px 35px 12px;
+    border-radius: 2px;
+    border: none;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+/* Testimonials */
+.zogin-template .testimonial {
+    background: #f5f6fa;
+    padding-top: 415px;
+    margin-top: -315px;
+}
+
+.zogin-template .testimonial__text {
+    text-align: center;
+    position: relative;
+    padding-top: 70px;
+}
+
+.zogin-template .testimonial__text:before {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    content: '"';
+    color: #5768AD;
+    font-size: 160px;
+    line-height: 119px;
+    margin: 0 auto;
+}
+
+.zogin-template .testimonial__text p {
+    font-size: 24px;
+    color: #263246;
+    line-height: 36px;
+    margin-bottom: 35px;
+}
+
+/* Footer Section */
+.zogin-template .footer {
+    background: #263246;
+    padding-top: 70px;
+}
+
+.zogin-template .footer__about ul li {
+    color: #9B9EA3;
+    line-height: 37px;
+    font-size: 16px;
+    list-style: none;
+}
+
+.zogin-template .footer__widget h5 {
+    font-size: 20px;
+    color: #ffffff;
+    margin-bottom: 25px;
+}
+
+.zogin-template .footer__widget ul li a {
+    font-size: 16px;
+    color: #9B9EA3;
+    line-height: 37px;
+}
+
+.zogin-template .footer__copyright {
+    border-top: 1px solid rgba(225, 225, 225, 0.1);
+    padding: 15px 0;
+    margin-top: 20px;
+}

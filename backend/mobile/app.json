@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "Home Service",
+    "slug": "home-service-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "backgroundColor": "#4f46e5"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.homeservice.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#4f46e5"
+      },
+      "package": "com.homeservice.app"
+    }
+  }
+}
