@@ -1,0 +1,30 @@
+Found 26 services.
+ID: 019cba91-a577-7205-a87a-7d20b8c03f5a | Name: Home cleaning (standard, deep, move-in/out)
+ID: 019cba91-a57f-70ac-b072-24e09050875a | Name: Laundry pickup & delivery
+ID: 019cba91-a586-72da-90c9-2451c6921444 | Name: Plumbing services
+ID: 019cba91-a58d-7158-be85-e08c5d9ef585 | Name: Electrical repairs
+ID: 019cba91-a594-70e7-bc23-5601aac41eba | Name: Appliance repair
+ID: 019cba91-a59b-7198-9561-6b85476bc38a | Name: Handyman services
+ID: 019cba91-a5a2-7087-aa83-0207e7deebac | Name: Pest control
+ID: 019cba91-a5a9-711f-9400-a572bbc4d7f1 | Name: Moving assistance
+ID: 019cba91-a5b7-70ec-bdaa-16b2cb32ba9d | Name: Tire Change & Alignment
+ID: 019cba91-a5bd-7285-8597-3af1472ec0af | Name: Full Interior Detail
+ID: 019cba91-a5c5-70a7-bc59-f57587533429 | Name: Oil & Filter Change
+ID: 019cba91-a5cc-70a9-becb-b97ca17baca8 | Name: Battery Diagnosis & Swap
+ID: 019cba91-a5d2-73e9-add0-f84e32beb827 | Name: Ceramic Coating
+ID: 019cba91-a5e0-72ac-844b-c0bd63f070d7 | Name: Hair & grooming (home service)
+ID: 019cba91-a5e7-731b-9c8c-ebbf88928a00 | Name: Makeup & nail services
+ID: 019cba91-a5ed-7084-9b3a-50f4ec8b6180 | Name: Fitness trainers
+ID: 019cba91-a5f5-702c-af29-361080492a71 | Name: Massage therapy
+ID: 019cba91-a5fd-72df-be78-af1747ab2d6b | Name: Babysitting / nanny services
+ID: 019cba91-a60b-7122-87ab-d3df42e7a6be | Name: Legal consultation
+ID: 019cba91-a612-7268-856e-f2634ddb4072 | Name: Accounting & tax support
+ID: 019cba91-a619-72d4-aeed-e36014716ee2 | Name: CV writing & career coaching
+ID: 019cba91-a620-70c4-bc15-e732e9599949 | Name: IT support
+ID: 019cba91-a627-73b4-b260-ed68901a9c75 | Name: Website design
+ID: 019cba91-a635-739f-9aa5-c234a99306a0 | Name: Office Deep Clean
+ID: 019cba91-a63c-7211-877e-14e2a6707fec | Name: Commercial Kitchen Scrub
+ID: 019cba91-a643-71a2-8273-76d8d3d4f34e | Name: Event Cleanup Team
+
+--- Provider Services for jojwang ---
+PS ID: 019cba66-944f-7034-9919-02a0547ebb03 | Service_ID: 019cb7b5-b97c-7391-9245-af635e6f3e48 | Raw DB Service_ID: 019cb7b5-b97c-7391-9245-af635e6f3e48
