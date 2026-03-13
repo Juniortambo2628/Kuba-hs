@@ -11,10 +11,19 @@ if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php'))
 }
 
 // Register the Composer autoloader...
-require __DIR__.'/../vendor/autoload.php';
+$autoload = __DIR__.'/../vendor/autoload.php';
+if (!file_exists($autoload)) {
+    // Check production path (moved to public_html/api) relative to /home/ycpixrti/kuba_backend
+    $autoload = __DIR__.'/../../kuba_backend/vendor/autoload.php';
+}
+require $autoload;
 
 // Bootstrap Laravel and handle the request...
 /** @var Application $app */
-$app = require_once __DIR__.'/../bootstrap/app.php';
+$bootstrap = __DIR__.'/../bootstrap/app.php';
+if (!file_exists($bootstrap)) {
+    $bootstrap = __DIR__.'/../../kuba_backend/bootstrap/app.php';
+}
+$app = require_once $bootstrap;
 
 $app->handleRequest(Request::capture());
