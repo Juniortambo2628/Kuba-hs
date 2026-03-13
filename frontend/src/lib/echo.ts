@@ -21,9 +21,16 @@ export const getEcho = () => {
     if (typeof window === 'undefined') return null;
     
     if (!echoInstance) {
+        const key = process.env.NEXT_PUBLIC_REVERB_APP_KEY;
+        
+        if (!key) {
+            console.warn('Laravel Echo: NEXT_PUBLIC_REVERB_APP_KEY is not defined. Real-time features (Chat/Notifications) will be disabled.');
+            return null;
+        }
+
         echoInstance = new Echo({
             broadcaster: 'reverb',
-            key: process.env.NEXT_PUBLIC_REVERB_APP_KEY,
+            key: key,
             wsHost: process.env.NEXT_PUBLIC_REVERB_HOST,
             wsPort: Number(process.env.NEXT_PUBLIC_REVERB_PORT ?? 8080),
             wssPort: Number(process.env.NEXT_PUBLIC_REVERB_PORT ?? 8080),
