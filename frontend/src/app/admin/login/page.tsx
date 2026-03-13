@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { Loader2, ArrowLeft, Mail, Lock, ShieldCheck, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 
-export default function AdminLoginPage() {
+function AdminLoginForm() {
   const { login, user, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -143,5 +143,17 @@ export default function AdminLoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AdminLoginPage() {
+  return (
+    <Suspense fallback={
+        <div className="min-h-screen bg-black flex items-center justify-center text-white">
+            <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+        </div>
+    }>
+        <AdminLoginForm />
+    </Suspense>
   );
 }
