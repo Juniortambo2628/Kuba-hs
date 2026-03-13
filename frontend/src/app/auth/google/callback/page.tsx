@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import axiosInstance from "@/lib/axios";
 import { Loader2 } from "lucide-react";
 
-export default function GoogleCallbackPage() {
+function GoogleCallbackContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { checkAuth } = useAuth();
@@ -21,16 +21,10 @@ export default function GoogleCallbackPage() {
             }
 
             try {
-                // Send code to backend to complete the login
-                // Socialite's handleGoogleCallback usually expects to pick the code from its own request
-                // So we can proxy the request to the backend with the same query params
                 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
                 await axiosInstance.get(`/auth/google/callback?code=${code}`);
                 
-                // Refresh auth state in frontend
                 await checkAuth();
-                
-                // Redirect user
                 router.push("/dashboard");
             } catch (err: any) {
                 console.error("Google Auth Error:", err);
@@ -65,5 +59,17 @@ export default function GoogleCallbackPage() {
                 <p className="text-gray-400 font-medium">Finalizing secure connection...</p>
             </div>
         </div>
+    );
+}
+
+export default function GoogleCallbackPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-black flex items-center justify-center text-white">
+                <Loader2 className="h-10 w-10 animate-spin text-indigo-500" />
+            </div>
+        }>
+            <GoogleCallbackContent />
+        </Suspense>
     );
 }
