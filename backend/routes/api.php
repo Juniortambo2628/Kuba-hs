@@ -95,7 +95,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/invoices/{bookingId}/download', [\App\Http\Controllers\Api\InvoiceController::class, 'download']);
 
     // Admin routes
-    Route::prefix('admin')->group(function () {
+    Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/analytics', [\App\Http\Controllers\Admin\AnalyticsController::class, 'index']);
         Route::get('/bookings', [\App\Http\Controllers\Admin\BookingController::class, 'index']);
         Route::get('/payments', [\App\Http\Controllers\Admin\PaymentController::class, 'index']);
