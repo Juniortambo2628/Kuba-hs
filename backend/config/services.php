@@ -34,12 +34,6 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
-    'stripe' => [
-        'key' => env('STRIPE_KEY'),
-        'secret' => env('STRIPE_SECRET'),
-        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
-    ],
-
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
@@ -49,7 +43,7 @@ return [
     'paystack' => [
         'publicKey' => env('PAYSTACK_PUBLIC_KEY'),
         'secretKey' => env('PAYSTACK_SECRET_KEY'),
-        'paymentUrl' => env('PAYSTACK_PAYMENT_URL'),
+        'paymentUrl' => env('PAYSTACK_PAYMENT_URL', 'https://api.paystack.co'),
         'merchantEmail' => env('MERCHANT_EMAIL'),
     ],
 

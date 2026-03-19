@@ -53,6 +53,7 @@ class MarketplaceSeeder extends Seeder
                     ['name' => 'Makeup & nail services', 'description' => 'Expert beauty treatments for special events or daily care.'],
                     ['name' => 'Fitness trainers', 'description' => 'Personalized workout sessions with certified instructors.'],
                     ['name' => 'Massage therapy', 'description' => 'Relaxing and therapeutic massage sessions at your location.'],
+                    ['name' => 'Counseling (virtual & in-home)', 'description' => 'Professional counseling support for your mental well-being.'],
                     ['name' => 'Babysitting / nanny services', 'description' => 'Trusted and experienced childcare providers.'],
                 ]
             ],
@@ -63,9 +64,11 @@ class MarketplaceSeeder extends Seeder
                 'services' => [
                     ['name' => 'Legal consultation', 'description' => 'Professional legal advice and document review.'],
                     ['name' => 'Accounting & tax support', 'description' => 'Financial organization and tax preparation services.'],
+                    ['name' => 'Business registration', 'description' => 'Expert help with business legal setup and licensing.'],
                     ['name' => 'CV writing & career coaching', 'description' => 'Expert help to elevate your professional profile.'],
                     ['name' => 'IT support', 'description' => 'Technical assistance for hardware, software, and networks.'],
                     ['name' => 'Website design', 'description' => 'Creating modern, responsive, and beautiful websites.'],
+                    ['name' => 'Photography & videography', 'description' => 'Professional media coverage for events and branding.'],
                 ]
             ],
             [

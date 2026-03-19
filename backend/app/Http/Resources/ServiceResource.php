@@ -21,6 +21,7 @@ class ServiceResource extends JsonResource
             'icon_url' => $this->icon_url,
             'is_active' => $this->is_active,
             'is_featured' => $this->is_featured,
+            'thumbnail_url' => $this->thumbnail_url,
             'category' => new ServiceCategoryResource($this->whenLoaded('category')),
             'media' => $this->when($this->relationLoaded('media'), function() {
                 return $this->getMedia('images')->map(fn($m) => [

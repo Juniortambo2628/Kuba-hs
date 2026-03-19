@@ -4,7 +4,12 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import axiosInstance from "@/lib/axios";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
-import { ChevronRight, Wrench, Sparkles, Droplet, Zap, Home, Briefcase, Building2 } from "lucide-react";
+import { 
+  Star, MapPin, Clock, ShieldCheck, 
+  CheckCircle2, Users, ArrowRight, MessageSquare, ChevronRight,
+  Wrench, Sparkles, Droplet, Zap, Home, Briefcase, Building2, Grid,
+  HeartPulse, GraduationCap, Gavel, Soup, Truck, Activity
+} from "lucide-react";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -21,12 +26,26 @@ const iconMap: Record<string, React.ReactNode> = {
   wrench: <Wrench className="w-8 h-8 text-blue-500" />,
   sparkles: <Sparkles className="w-8 h-8 text-purple-500" />,
   droplet: <Droplet className="w-8 h-8 text-cyan-500" />,
+  droplets: <Droplet className="w-8 h-8 text-cyan-500" />,
   bolt: <Zap className="w-8 h-8 text-yellow-500" />,
+  zap: <Zap className="w-8 h-8 text-yellow-500" />,
   car: <Wrench className="w-8 h-8 text-rose-500" />,
   home: <Home className="w-8 h-8 text-blue-500" />,
-  heart: <Sparkles className="w-8 h-8 text-pink-500" />,
+  heart: <Activity className="w-8 h-8 text-pink-500" />,
+  heartpulse: <HeartPulse className="w-8 h-8 text-rose-500" />,
   briefcase: <Briefcase className="w-8 h-8 text-indigo-500" />,
   building: <Building2 className="w-8 h-8 text-emerald-500" />,
+  building2: <Building2 className="w-8 h-8 text-emerald-500" />,
+  graduationcap: <GraduationCap className="w-8 h-8 text-blue-600" />,
+  gavel: <Gavel className="w-8 h-8 text-amber-600" />,
+  soup: <Soup className="w-8 h-8 text-orange-500" />,
+  truck: <Truck className="w-8 h-8 text-slate-500" />,
+};
+
+const getCategoryIcon = (iconName: string | null) => {
+  if (!iconName) return <Wrench className="w-8 h-8 text-blue-500" />;
+  const normalized = iconName.toLowerCase();
+  return iconMap[normalized] || <Grid className="w-8 h-8 text-gray-500" />;
 };
 
 const cardVariants = {
@@ -95,9 +114,7 @@ export function Categories() {
           ))
         ) : (
           categories.map((category, i) => {
-            const IconComponent = category.icon && iconMap[category.icon] 
-              ? iconMap[category.icon] 
-              : <Wrench className="w-8 h-8 text-blue-500" />;
+            const IconComponent = getCategoryIcon(category.icon);
 
             return (
               <motion.div

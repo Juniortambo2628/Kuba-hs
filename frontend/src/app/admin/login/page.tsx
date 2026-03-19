@@ -5,8 +5,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, ArrowLeft, Mail, Lock, ShieldCheck, Zap } from "lucide-react";
-import { motion } from "framer-motion";
+import { Label } from "@/components/ui/label";
+import { Loader2, Lock } from "lucide-react";
 import Link from "next/link";
 
 function AdminLoginForm() {
@@ -43,41 +43,31 @@ function AdminLoginForm() {
     }
   };
 
-  const handleGoogleLogin = () => {
-    console.log("Google Login Clicked - Admin");
-  };
-
   return (
-    <div className="min-h-screen bg-black flex font-sans text-white">
+    <div className="min-h-screen bg-background flex">
       {/* Form Column */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 md:p-24 relative">
-        <div className="w-full max-w-md space-y-10">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 md:p-16">
+        <div className="w-full max-w-sm space-y-8">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <img src="/logo.png" alt="KUBA" className="h-10 w-auto brightness-0 invert" />
+          <Link href="/" className="flex items-center gap-2">
+            <img src="/logo.png" alt="KUBA" className="h-8 w-auto object-contain" />
           </Link>
 
-          <div className="space-y-2">
-            <h1 className="text-4xl font-semibold tracking-tight">Admin Sign In</h1>
-            <p className="text-gray-400 text-sm">Please enter your administrative credentials.</p>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">Admin Sign In</h1>
+            <p className="text-sm text-muted-foreground mt-1">Enter your credentials to access the admin panel.</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="px-6 py-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-xs font-medium text-center"
-              >
+              <div className="px-4 py-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm text-center">
                 {error}
-              </motion.div>
+              </div>
             )}
             
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-300" htmlFor="email">
-                  Admin Email
-                </label>
+                <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -85,14 +75,12 @@ function AdminLoginForm() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="h-12 bg-[#1A1A1A] border-gray-800 rounded-xl text-sm focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-gray-600 border-2"
+                  className="h-10"
                 />
               </div>
               
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-300" htmlFor="password">
-                  Password
-                </label>
+                <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
                   type="password"
@@ -100,44 +88,44 @@ function AdminLoginForm() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="h-12 bg-[#1A1A1A] border-gray-800 rounded-xl text-sm focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-gray-600 border-2"
+                  className="h-10"
                 />
               </div>
             </div>
 
             <Button 
                 type="submit" 
-                className="w-full h-12 bg-[#E5E7EB] hover:bg-white text-black font-semibold text-sm rounded-xl transition-all active:scale-[0.98] flex items-center justify-center"
+                className="w-full h-10"
                 disabled={isLoading}
             >
               {isLoading ? (
-                <Loader2 className="h-5 w-5 animate-spin text-gray-500" />
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                "SIGN IN"
+                "Sign In"
               )}
             </Button>
           </form>
 
-          <p className="text-center text-xs text-gray-500">
-            Secure administrative terminal. Unauthorized access is prohibited.
+          <p className="text-center text-xs text-muted-foreground">
+            Secure administrative access. Unauthorized use is prohibited.
           </p>
         </div>
       </div>
 
       {/* Visual Column */}
-      <div className="hidden lg:flex lg:w-1/2 bg-indigo-600 relative overflow-hidden flex-col justify-end p-20">
-        <div className="space-y-6 max-w-lg">
-          <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-white">
+      <div className="hidden lg:flex lg:w-1/2 bg-primary relative overflow-hidden flex-col justify-end p-16">
+        <div className="space-y-6 max-w-md">
+          <div className="w-12 h-12 bg-primary-foreground/20 rounded-xl flex items-center justify-center text-primary-foreground">
             <Lock className="w-6 h-6" />
           </div>
-          <h2 className="text-3xl font-medium leading-tight text-white italic">
-            "Advanced governance tools for the dedicated Kuba administrative infrastructure."
+          <h2 className="text-2xl font-semibold leading-snug text-primary-foreground">
+            Manage your home services platform with powerful admin tools.
           </h2>
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-indigo-400" />
-            <div className="space-y-0.5">
-              <div className="w-24 h-2 bg-white/20 rounded-full" />
-              <div className="w-16 h-1.5 bg-white/10 rounded-full" />
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-primary-foreground/20" />
+            <div className="space-y-1">
+              <div className="w-20 h-1.5 bg-primary-foreground/30 rounded-full" />
+              <div className="w-14 h-1 bg-primary-foreground/15 rounded-full" />
             </div>
           </div>
         </div>
@@ -149,8 +137,8 @@ function AdminLoginForm() {
 export default function AdminLoginPage() {
   return (
     <Suspense fallback={
-        <div className="min-h-screen bg-black flex items-center justify-center text-white">
-            <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+        <div className="min-h-screen bg-background flex items-center justify-center">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
     }>
         <AdminLoginForm />

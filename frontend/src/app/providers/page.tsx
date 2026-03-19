@@ -53,6 +53,31 @@ function ProvidersContent() {
   const [view, setView] = useState<"grid" | "list" | "map">("grid");
   const [filterOpen, setFilterOpen] = useState(true);
 
+  const [minRating, setMinRating] = useState<number | null>(null);
+  const [maxPrice, setMaxPrice] = useState<number>(50000);
+  const [onlyVerified, setOnlyVerified] = useState(false);
+  const [radius, setRadius] = useState(50);
+  const [location, setLocation] = useState<{lat: number, lng: number} | null>(null);
+  const [isLocating, setIsLocating] = useState(false);
+
+  const handleNearMe = () => {
+    setIsLocating(true);
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+          setIsLocating(false);
+        },
+        (err) => {
+          console.error("Geolocation error:", err);
+          setIsLocating(false);
+        }
+      );
+    } else {
+      setIsLocating(false);
+    }
+  };
+
   useEffect(() => {
     const fetchProviders = async () => {
       setIsPageLoading(true);
@@ -61,6 +86,13 @@ function ProvidersContent() {
         if (categoryId) url += `&category_id=${categoryId}`;
         if (serviceId) url += `&service_id=${serviceId}`;
         if (searchQuery) url += `&search=${searchQuery}`;
+        if (minRating) url += `&min_rating=${minRating}`;
+        if (maxPrice < 50000) url += `&max_price=${maxPrice}`;
+        if (onlyVerified) url += `&is_verified=1`;
+        if (location) {
+          url += `&latitude=${location.lat}&longitude=${location.lng}`;
+        }
+        url += `&radius=${radius}`;
 
         const response = await axiosInstance.get(url);
         setProviders(response.data.data);
@@ -71,7 +103,7 @@ function ProvidersContent() {
       }
     };
     fetchProviders();
-  }, [categoryId, serviceId, searchQuery]);
+  }, [categoryId, serviceId, searchQuery, minRating, maxPrice, onlyVerified, radius, location]);
 
   return (
     <>
@@ -94,46 +126,110 @@ function ProvidersContent() {
             {/* Sidebar */}
             <aside className={`lg:w-72 shrink-0 ${filterOpen ? "" : "hidden lg:block"}`}>
               <div className="sticky top-24 space-y-6">
-                <Card className="bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm">
+                <Card className="bg-muted dark:bg-white/5 border-border dark:border-white/10 rounded-2xl overflow-hidden shadow-sm">
                   <CardContent className="p-5 space-y-6">
-                    <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2 text-sm uppercase tracking-wider">
-                      <SlidersHorizontal className="w-4 h-4" /> Filters
-                    </h3>
+                    <div className="flex items-center justify-between">
+                        <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2 text-sm tracking-wider">
+                            <SlidersHorizontal className="w-4 h-4" /> Filters
+                        </h3>
+                        {(minRating || onlyVerified || location) && (
+                            <button 
+                                onClick={() => { setMinRating(null); setOnlyVerified(false); setLocation(null); }}
+                                className="text-[10px] font-bold text-blue-600 uppercase tracking-widest hover:underline"
+                            >
+                                Reset
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Proximity */}
+                    <div>
+                        <Button 
+                            onClick={handleNearMe}
+                            variant="outline"
+                            className={`w-full h-11 rounded-xl border-dashed ${location ? 'border-blue-500 bg-blue-50/50 text-blue-600' : 'border-border'} flex items-center justify-center gap-2 text-xs font-bold transition-all`}
+                            disabled={isLocating}
+                        >
+                            <MapPin className={`w-4 h-4 ${isLocating ? 'animate-bounce' : ''}`} />
+                            {isLocating ? "Locating..." : location ? "Near You (Active)" : "Search Near Me"}
+                        </Button>
+                    </div>
+
+                    {/* Price Range */}
+                    <div>
+                        <div className="flex items-center justify-between mb-3 text-xs font-semibold text-muted-foreground tracking-wider">
+                            <span>Max Price</span>
+                            <span className="text-blue-600 font-bold">KES {maxPrice.toLocaleString()}</span>
+                        </div>
+                        <input 
+                            type="range" 
+                            min="500" 
+                            max="50000" 
+                            step="500"
+                            value={maxPrice}
+                            onChange={(e) => setMaxPrice(Number(e.target.value))}
+                            className="w-full accent-blue-600 h-1.5 bg-gray-200 dark:bg-white/10 rounded-lg appearance-none cursor-pointer"
+                        />
+                    </div>
 
                     {/* Verification Status */}
                     <div>
-                      <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 block">Status</label>
+                      <label className="text-xs font-semibold text-muted-foreground dark:text-muted-foreground tracking-wider mb-3 block">Security</label>
                       <div className="space-y-2">
                         <label className="flex items-center gap-3 cursor-pointer group">
-                          <div className="w-5 h-5 rounded border border-gray-300 dark:border-white/20 flex items-center justify-center group-hover:border-blue-500 transition-colors">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-blue-500 scale-0 group-hover:scale-100 transition-transform" />
+                          <input 
+                            type="checkbox" 
+                            className="hidden" 
+                            checked={onlyVerified}
+                            onChange={(e) => setOnlyVerified(e.target.checked)}
+                          />
+                          <div className={`w-5 h-5 rounded border ${onlyVerified ? 'border-blue-500 bg-blue-500' : 'border-gray-300 dark:border-white/20'} flex items-center justify-center transition-all`}>
+                            <CheckCircle2 className={`w-3.5 h-3.5 text-white ${onlyVerified ? 'scale-100' : 'scale-0'} transition-transform`} />
                           </div>
-                          <span className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white">Verified Pros</span>
-                        </label>
-                        <label className="flex items-center gap-3 cursor-pointer group">
-                          <div className="w-5 h-5 rounded border border-gray-300 dark:border-white/20 flex items-center justify-center group-hover:border-blue-500 transition-colors">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-blue-500 scale-0 group-hover:scale-100 transition-transform" />
-                          </div>
-                          <span className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white">Available Now</span>
+                          <span className={`text-sm ${onlyVerified ? 'text-gray-900 dark:text-white font-bold' : 'text-gray-600 dark:text-muted-foreground'} group-hover:text-gray-900 dark:group-hover:text-white transition-colors`}>Verified Pros</span>
                         </label>
                       </div>
                     </div>
 
                     {/* Rating */}
                     <div>
-                      <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 block">Minimum Rating</label>
+                      <label className="text-xs font-semibold text-muted-foreground dark:text-muted-foreground tracking-wider mb-3 block">Minimum Rating</label>
                       <div className="space-y-2">
-                        {[4.5, 4.0, 3.5].map((rating) => (
-                          <label key={rating} className="flex items-center gap-3 cursor-pointer group">
-                            <div className="w-5 h-5 rounded-full border border-gray-300 dark:border-white/20 flex items-center justify-center group-hover:border-blue-500 transition-colors">
-                              <div className="w-2.5 h-2.5 rounded-full bg-blue-500 scale-0 group-hover:scale-100 transition-transform" />
+                        {[4.5, 4.0, 3.5].map((r) => (
+                          <label key={r} className="flex items-center gap-3 cursor-pointer group">
+                            <input 
+                                type="radio" 
+                                name="rating" 
+                                className="hidden" 
+                                checked={minRating === r}
+                                onChange={() => setMinRating(r)}
+                            />
+                            <div className={`w-5 h-5 rounded-full border ${minRating === r ? 'border-blue-500' : 'border-gray-300 dark:border-white/20'} flex items-center justify-center transition-all`}>
+                              <div className={`w-2.5 h-2.5 rounded-full bg-blue-500 ${minRating === r ? 'scale-100' : 'scale-0'} transition-transform`} />
                             </div>
-                            <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
-                              {rating}+ <Star className="w-3.5 h-3.5 fill-yellow-500 text-yellow-500" />
+                            <span className={`text-sm ${minRating === r ? 'text-gray-900 dark:text-white font-bold' : 'text-gray-600 dark:text-muted-foreground'} flex items-center gap-1.5`}>
+                              {r}+ <Star className={`w-3.5 h-3.5 ${minRating === r ? 'fill-amber-500 text-amber-500' : 'text-gray-300'}`} />
                             </span>
                           </label>
                         ))}
                       </div>
+                    </div>
+
+                    {/* Radius */}
+                    <div className="pt-4 border-t border-border dark:border-white/10">
+                        <div className="flex items-center justify-between mb-3 text-xs font-semibold text-muted-foreground tracking-wider">
+                            <span>Search Radius</span>
+                            <span className="text-blue-600 font-bold">{radius}km</span>
+                        </div>
+                        <input 
+                            type="range" 
+                            min="5" 
+                            max="200" 
+                            step="5"
+                            value={radius}
+                            onChange={(e) => setRadius(Number(e.target.value))}
+                            className="w-full accent-blue-600 h-1.5 bg-gray-200 dark:bg-white/10 rounded-lg appearance-none cursor-pointer"
+                        />
                     </div>
                   </CardContent>
                 </Card>
@@ -144,19 +240,19 @@ function ProvidersContent() {
             <div className="flex-1 min-w-0">
               {/* Toolbar */}
               <div className="flex items-center justify-between mb-6">
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Showing <span className="font-bold text-gray-900 dark:text-white">{providers.length}</span> professionals
+                <p className="text-body-pro text-sm text-muted-foreground">
+                  Showing <span className="font-bold text-foreground">{providers.length}</span> professionals
                 </p>
                 <div className="flex items-center gap-2">
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => setFilterOpen(!filterOpen)}
-                    className="lg:hidden text-gray-500 dark:text-gray-400"
+                    className="lg:hidden text-muted-foreground dark:text-gray-400"
                   >
                     <SlidersHorizontal className="w-5 h-5" />
                   </Button>
-                  <div className="flex bg-gray-100 dark:bg-white/5 rounded-lg p-1 border border-gray-200 dark:border-white/10">
+                  <div className="flex bg-gray-100 dark:bg-white/5 rounded-lg p-1 border border-border dark:border-white/10">
                     <Button
                       variant="ghost"
                       size="icon"
@@ -189,7 +285,7 @@ function ProvidersContent() {
               {isPageLoading ? (
                 <div className={view === "grid" ? "grid grid-cols-1 md:grid-cols-2 gap-8" : "flex flex-col gap-6"}>
                   {Array.from({ length: 4 }).map((_, i) => (
-                    <Card key={i} className="bg-gray-50 dark:bg-zinc-900/50 border-gray-200 dark:border-white/10 rounded-2xl overflow-hidden">
+                    <Card key={i} className="bg-muted dark:bg-zinc-900/50 border-border dark:border-white/10 rounded-2xl overflow-hidden">
                       <div className="h-40 bg-gray-200 dark:bg-zinc-800 animate-pulse" />
                       <CardContent className="p-6 pt-14 space-y-3">
                         <Skeleton className="h-6 w-3/4 bg-gray-200 dark:bg-white/10" />
@@ -200,7 +296,7 @@ function ProvidersContent() {
                 </div>
               ) : providers.length === 0 ? (
                 <motion.div
-                  className="text-center py-20 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl"
+                  className="text-center py-20 bg-muted dark:bg-white/5 border border-border dark:border-white/10 rounded-2xl"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
@@ -208,7 +304,7 @@ function ProvidersContent() {
                     <Search className="w-8 h-8 text-gray-400" />
                   </div>
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">No professionals found</h3>
-                  <p className="text-gray-500 dark:text-gray-400 mb-8">Try adjusting your filters or search terms.</p>
+                  <p className="text-muted-foreground dark:text-muted-foreground mb-8">Try adjusting your filters or search terms.</p>
                   <Button asChild variant="outline" className="border-gray-300 dark:border-white/20 text-gray-700 dark:text-white">
                     <Link href="/providers">Clear Filters</Link>
                   </Button>
@@ -232,7 +328,7 @@ function ProvidersContent() {
                       transition={{ duration: 0.4, delay: index * 0.05 }}
                     >
                       <Link href={`/providers/${provider.id}`}>
-                        <Card className={`bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 hover:border-blue-500/30 dark:hover:border-white/20 transition-all cursor-pointer group rounded-2xl overflow-hidden shadow-sm hover:shadow-xl flex ${view === "grid" ? "flex-col h-full" : "flex-col md:flex-row"}`}>
+                        <Card className={`bg-white dark:bg-white/5 border-border dark:border-white/10 hover:border-blue-500/30 dark:hover:border-white/20 transition-all cursor-pointer group rounded-2xl overflow-hidden shadow-sm hover:shadow-xl flex ${view === "grid" ? "flex-col h-full" : "flex-col md:flex-row"}`}>
                           
                           {/* Banner/Image */}
                           <div className={`${view === "grid" ? "h-36" : "md:w-64 h-48 md:h-auto"} bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/40 dark:to-purple-900/40 relative overflow-hidden shrink-0`}>
@@ -243,9 +339,9 @@ function ProvidersContent() {
                             )}
                             {view === "list" && (
                               <img 
-                                src={provider.logo || "/placeholders/kuba-placeholder.png"} 
+                                src={provider.logo || "/placeholders/service-light.png"} 
                                 alt="" 
-                                className={`w-full h-full object-cover ${provider.logo ? "opacity-50 dark:opacity-30" : "opacity-20"} group-hover:scale-105 transition-transform duration-500`} 
+                                className={`w-full h-full object-cover ${provider.logo ? "opacity-40" : "opacity-10"} group-hover:scale-105 transition-transform duration-500`} 
                               />
                             )}
                           </div>
@@ -254,11 +350,11 @@ function ProvidersContent() {
                             {/* Avatar (only in grid) */}
                             {view === "grid" && (
                               <div className="absolute -top-10 left-6">
-                                <div className="w-20 h-20 rounded-full border-4 border-white dark:border-[#0B0F19] bg-gray-100 dark:bg-zinc-800 overflow-hidden flex items-center justify-center font-bold text-2xl text-gray-400 shadow-lg transition-transform group-hover:scale-105">
+                                <div className="w-20 h-20 rounded-full border-4 border-white dark:border-[#0B0F19] bg-gray-100 dark:bg-zinc-800 overflow-hidden flex items-center justify-center font-bold text-2xl text-muted-foreground shadow-lg transition-transform group-hover:scale-105">
                                   {provider.logo ? (
                                      <img src={provider.logo} alt={provider.business_name} className="w-full h-full object-cover" />
                                  ) : (
-                                     <img src="/placeholders/kuba-placeholder.png" alt={provider.business_name} className="w-full h-full object-cover opacity-50" />
+                                     <img src="/logo-light.png" alt={provider.business_name} className="w-full h-full object-cover opacity-20 p-4" />
                                  )}
                                 </div>
                               </div>
@@ -271,42 +367,62 @@ function ProvidersContent() {
                                     {provider.business_name}
                                   </h3>
                                   <div className="flex items-center gap-4 mt-1.5">
-                                    <span className="flex items-center text-sm text-gray-500 dark:text-gray-400 gap-1.5">
-                                      <MapPin className="w-4 h-4 text-blue-500" /> Local Pro
+                                    <span className="text-label-caps flex items-center gap-1.5">
+                                      <MapPin className="w-4 h-4 text-blue-500" /> {provider.location_name}
                                     </span>
-                                    <span className="flex items-center text-sm text-yellow-600 dark:text-yellow-500 gap-1.5 font-bold">
-                                      <Star className="w-4 h-4 fill-yellow-500" /> 4.9
+                                    <span className="text-label-caps flex items-center gap-1.5 text-amber-500 font-bold">
+                                      <Star className="w-4 h-4 fill-amber-500" /> {provider.rating_avg || 'New'}
                                     </span>
                                   </div>
                                 </div>
                                 {view === "list" && (
-                                  <div className="w-16 h-16 rounded-2xl border-2 border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-white/5 overflow-hidden flex items-center justify-center font-bold text-xl text-gray-400 shrink-0">
+                                  <div className="w-16 h-16 rounded-2xl border-2 border-border dark:border-white/10 bg-muted dark:bg-white/5 overflow-hidden flex items-center justify-center font-bold text-xl text-muted-foreground shrink-0">
                                     {provider.logo ? (
                                       <img src={provider.logo} alt="" className="w-full h-full object-cover" />
                                     ) : (
-                                      <img src="/placeholders/kuba-placeholder.png" alt="" className="w-full h-full object-cover opacity-50" />
+                                      <img src="/logos/Kuba-Header-Footer-Logo-for-Dark-Mode.png" alt="" className="w-full h-full object-cover opacity-20 p-3" />
                                     )}
                                   </div>
                                 )}
                               </div>
-                              <p className="text-gray-500 dark:text-gray-400 text-sm mt-3 line-clamp-2">
+                              <p className="text-muted-foreground dark:text-muted-foreground text-sm mt-3 line-clamp-2">
                                 {provider.bio || "Professional home service provider ready to help with your next project. Highly rated and dependable."}
                               </p>
                               
                               <div className="flex flex-wrap gap-2 mt-4">
                                 {["Fast Response", "Background Checked", "Insured"].map(badge => (
-                                  <span key={badge} className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-md bg-gray-100 dark:bg-white/5 text-gray-400 border border-gray-200 dark:border-white/10">
+                                  <span key={badge} className="text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-md bg-gray-100 dark:bg-white/5 text-muted-foreground border border-border dark:border-white/10">
                                     {badge}
                                   </span>
                                 ))}
                               </div>
                             </div>
                             
-                            <div className="pt-5 mt-6 border-t border-gray-100 dark:border-white/10 flex items-center justify-between">
-                              <div className="flex flex-col">
-                                <span className="text-[10px] text-gray-400 uppercase font-bold tracking-widest leading-none mb-1">Starting from</span>
-                                <span className="text-gray-900 dark:text-white text-lg font-extrabold">$50<span className="text-sm font-normal text-gray-400 ml-0.5">/hr</span></span>
-                              </div>
+                            <div className="pt-5 mt-6 border-t border-border dark:border-white/10 flex items-center justify-between">
+                               <div className="flex flex-col">
+                                 <span className="text-[10px] text-muted-foreground font-bold tracking-widest leading-none mb-1">Starting from</span>
+                                 {provider.provider_services && provider.provider_services.length > 0 ? (
+                                   (() => {
+                                     const minService = provider.provider_services.reduce((min, s) => 
+                                       Number(s.base_price) < Number(min.base_price) ? s : min, 
+                                       provider.provider_services[0]
+                                     );
+                                     return (
+                                       <div className="flex flex-col">
+                                         <span className="text-gray-900 dark:text-white text-lg font-extrabold">
+                                           KES {Number(minService.base_price).toLocaleString()}
+                                           {minService.pricing_type === 'hourly' && <span className="text-sm font-normal text-muted-foreground ml-0.5">/hr</span>}
+                                         </span>
+                                         {minService.pricing_type === 'hourly' && Number(minService.min_hours) > 1 && (
+                                           <span className="text-[9px] text-blue-600 font-bold uppercase tracking-tighter">Min {minService.min_hours} hrs</span>
+                                         )}
+                                       </div>
+                                     );
+                                   })()
+                                 ) : (
+                                   <span className="text-gray-900 dark:text-white text-lg font-extrabold">Custom Quote</span>
+                                 )}
+                               </div>
                               <div className="flex items-center gap-3">
                                 <span className="text-xs font-bold text-blue-600 dark:text-blue-400 group-hover:translate-x-1 transition-transform flex items-center gap-1 opacity-0 group-hover:opacity-100">
                                   View Profile <ArrowRight className="w-3.5 h-3.5" />
@@ -335,7 +451,7 @@ export default function ProvidersPage() {
   return (
     <main className="min-h-screen bg-white dark:bg-[#0B0F19] flex flex-col selection:bg-blue-500/30 transition-colors duration-300">
       <Navbar />
-      <Suspense fallback={<div className="flex-1 pt-32 pb-24 text-center text-gray-500 dark:text-white">Loading providers...</div>}>
+      <Suspense fallback={<div className="flex-1 pt-32 pb-24 text-center text-muted-foreground dark:text-white">Loading providers...</div>}>
         <ProvidersContent />
       </Suspense>
       <Footer />

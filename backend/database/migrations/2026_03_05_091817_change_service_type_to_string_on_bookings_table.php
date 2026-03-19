@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('bookings', function (Blueprint $table) {
-            $table->string('service_type')->change();
+            $table->string('service_type')->default('residential')->change();
         });
     }
 

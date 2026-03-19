@@ -3,8 +3,10 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useCMS } from "@/hooks/useCMS";
 
 export function CTA() {
+  const { getS } = useCMS();
   return (
     <section className="py-24 bg-white dark:bg-[#0B0F19] relative transition-colors duration-300">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -21,16 +23,16 @@ export function CTA() {
           <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-purple-500/20 dark:bg-purple-500/30 rounded-full blur-[100px] z-0" />
           
           <div className="relative z-10 p-8 md:p-16 flex flex-col items-center text-center">
-            <span className="bg-blue-500/10 dark:bg-white/10 text-blue-600 dark:text-white px-4 py-1.5 rounded-full text-sm font-bold tracking-widest uppercase mb-6 border border-blue-500/20 dark:border-white/20 backdrop-blur-sm">
+            <span className="bg-blue-500/10 dark:bg-white/10 text-blue-600 dark:text-white px-4 py-1.5 rounded-full text-sm font-bold tracking-widest mb-6 border border-blue-500/20 dark:border-white/20 backdrop-blur-sm">
                 Get Started Today
             </span>
             
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6 tracking-tight">
-              Ready to find a professional?
+              {getS('cta', 'cta_title', 'Ready to find a professional?')}
             </h2>
             
             <p className="text-lg text-gray-600 dark:text-gray-300 mb-10 max-w-2xl">
-              Join thousands of happy customers who have already found reliable help through KUBA.
+              {getS('cta', 'cta_description', 'Join thousands of happy customers who have already found reliable help through KUBA.')}
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 w-full justify-center max-w-md">

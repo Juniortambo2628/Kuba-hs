@@ -64,6 +64,18 @@ class BookingController extends Controller
         // Combine date and time
         $scheduledDate = $validated['scheduled_date'] . ' ' . $validated['scheduled_time'] . ':00';
 
+        // Calculate Price based on advanced rules
+        $price = 0;
+        if ($providerService->pricing_type === 'hourly') {
+            $effectiveHours = max($validated['quantity'], (int) ($providerService->min_hours ?? 1));
+            $price = ($providerService->base_price * $effectiveHours);
+        } else {
+            $price = ($providerService->base_price * $validated['quantity']);
+        }
+
+        // Add Travel Fee
+        $price += (float) ($providerService->travel_fee ?? 0);
+
         $booking = Booking::create([
             'customer_id' => $user->id,
             'provider_id' => $validated['provider_id'],
@@ -77,7 +89,7 @@ class BookingController extends Controller
             'service_type' => $validated['service_type'],
             'quantity' => $validated['quantity'],
             'quantity_label' => $request->quantity_label,
-            'estimated_price' => $providerService->base_price * $validated['quantity'],
+            'estimated_price' => $price,
         ]);
 
         // Handle Images

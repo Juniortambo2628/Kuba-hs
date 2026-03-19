@@ -33,7 +33,7 @@ function ChangeView({ center, zoom }: { center: [number, number]; zoom: number }
 }
 
 export default function MapView({ 
-  center = [25.2048, 55.2708], // Default to Dubai
+  center = [-1.2921, 36.8219], // Default to Nairobi, Kenya
   zoom = 11,
   providers = [],
   onMarkerClick,
@@ -55,6 +55,7 @@ export default function MapView({
         zoom={zoom} 
         scrollWheelZoom={false}
         className="w-full h-full"
+        maxBounds={[[-5.0, 33.0], [5.5, 42.0]]} // Kenya bounding box
       >
         <ChangeView center={center} zoom={zoom} />
         <TileLayer

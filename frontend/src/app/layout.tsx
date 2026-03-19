@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
+import { Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 
-const geistSans = Geist({
+const inter = Inter({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
@@ -28,8 +30,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="icon" href="/favicon.png" />
+      </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white dark:bg-[#0B0F19] text-gray-900 dark:text-white transition-colors duration-300`}
+        className={`${inter.variable} ${geistMono.variable} antialiased bg-white dark:bg-[#0B0F19] text-gray-900 dark:text-white transition-colors duration-300`}
       >
         <Providers
           attribute="class"
@@ -37,7 +42,12 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary focus:text-white focus:rounded-lg">
+            Skip to content
+          </a>
+          <main id="main-content">
+            {children}
+          </main>
           <CookieConsent />
           <LegalModals />
         </Providers>

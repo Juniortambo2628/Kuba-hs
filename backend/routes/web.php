@@ -93,9 +93,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/analytics', [\App\Http\Controllers\Admin\AnalyticsController::class, 'index'])->name('analytics.index');
         Route::get('/feedback', [\App\Http\Controllers\Admin\FeedbackController::class, 'index'])->name('feedback.index');
 
-        // CMS
-        Route::get('/cms', [\App\Http\Controllers\Admin\CMSController::class, 'index'])->name('cms.index');
-        Route::post('/cms', [\App\Http\Controllers\Admin\CMSController::class, 'update'])->name('cms.update');
+        // Configuration
+        Route::get('/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'index'])->name('settings.index');
+        Route::post('/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'update'])->name('settings.update');
         
         // Blog
         Route::resource('/blog', \App\Http\Controllers\Admin\BlogController::class);

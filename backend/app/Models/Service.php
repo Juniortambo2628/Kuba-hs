@@ -29,6 +29,18 @@ class Service extends Model implements HasMedia
         'is_featured' => 'boolean',
     ];
 
+    protected $appends = ['thumbnail_url'];
+
+    public function getThumbnailUrlAttribute()
+    {
+        $media = $this->getFirstMediaUrl('thumbnail');
+        if ($media) return $media;
+
+        // Fallback to placeholders based on branding
+        // We'll use the ones copied to public/placeholders/
+        return '/placeholders/service-light.png';
+    }
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(ServiceCategory::class, 'category_id');

@@ -47,6 +47,10 @@ class ProviderServiceController extends Controller
             'base_price' => 'required|numeric|min:0',
             'is_available' => 'boolean',
             'pricing_type' => 'nullable|string|in:fixed,hourly,quote',
+            'min_hours' => 'nullable|integer|min:1',
+            'travel_fee' => 'nullable|numeric|min:0',
+            'equipment_included' => 'nullable|boolean',
+            'extra_configs' => 'nullable|array',
         ]);
 
         $providerService = $provider->providerServices()->updateOrCreate(
@@ -55,6 +59,10 @@ class ProviderServiceController extends Controller
                 'service_id' => $validated['service_id'],
                 'base_price' => $validated['base_price'],
                 'pricing_type' => $validated['pricing_type'] ?? 'fixed',
+                'min_hours' => $validated['min_hours'] ?? 1,
+                'travel_fee' => $validated['travel_fee'] ?? 0,
+                'equipment_included' => $validated['equipment_included'] ?? false,
+                'extra_configs' => $validated['extra_configs'] ?? null,
                 'is_available' => $validated['is_available'] ?? true,
             ]
         );
@@ -78,6 +86,10 @@ class ProviderServiceController extends Controller
             'base_price' => 'required|numeric|min:0',
             'is_available' => 'boolean',
             'pricing_type' => 'nullable|string|in:fixed,hourly,quote',
+            'min_hours' => 'nullable|integer|min:1',
+            'travel_fee' => 'nullable|numeric|min:0',
+            'equipment_included' => 'nullable|boolean',
+            'extra_configs' => 'nullable|array',
         ]);
 
         $providerService = $provider->providerServices()->findOrFail($id);

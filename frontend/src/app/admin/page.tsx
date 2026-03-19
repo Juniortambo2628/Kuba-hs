@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import axiosInstance from "@/lib/axios";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Table, 
   TableHeader, 
@@ -15,41 +15,45 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { 
   Users, 
   Calendar, 
   Banknote, 
   Star, 
-  TrendingUp,
   Briefcase,
   Search,
-  Filter,
-  MoreHorizontal,
-  ChevronRight,
-  ShieldCheck,
-  Activity,
   ArrowUpRight,
+  Activity,
+  ChevronRight,
+  Download,
 } from "lucide-react";
+import { MetricCard } from "@/components/dashboard/MetricCard";
 import { VisualAnalytics } from "@/components/dashboard/VisualAnalytics";
 import { useSearchState } from "@/hooks/useSearchState";
 import { useExport } from "@/hooks/useExport";
 import Link from "next/link";
 
-interface Booking {
-  id: number;
-  booking_number: string;
-  status: string;
-  service?: { id: number; name: string };
-  customer?: { id: number; name: string; email: string };
-  provider?: { id: number; business_name: string; user: { id: number; name: string } };
-  scheduled_date: string;
+import { Booking, User, Provider } from "@/types";
+
+interface AdminStats {
+  total_users: number;
+  total_bookings: number;
+  avg_rating: number;
+  platform_revenue: number;
+  growth: {
+    users: number;
+    bookings: number;
+    revenue: number;
+  };
 }
 
 export default function AdminDashboard() {
   const { user, isLoading: authLoading } = useAuth();
   const { search, setSearch, status, setStatus } = useSearchState();
   const router = useRouter();
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<AdminStats | null>(null);
   const [trends, setTrends] = useState<any>({ users: [], bookings: [], revenue: [] });
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -64,7 +68,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (!authLoading) {
       if (user?.role === 'admin') {
-        // Initial fetch handled by the search/filter effect
+        // handled by search/filter effect
       } else if (user) {
         router.push("/dashboard");
       } else {
@@ -93,14 +97,14 @@ export default function AdminDashboard() {
   };
 
   const getStatusBadge = (status: string) => {
-    const styles: any = {
-      pending: "bg-amber-50 text-amber-600 border-amber-100",
-      confirmed: "bg-blue-50 text-blue-600 border-blue-100",
-      completed: "bg-emerald-50 text-emerald-600 border-emerald-100",
-      cancelled: "bg-sky-50 text-sky-600 border-sky-100"
+    const styles: Record<string, string> = {
+      pending: "bg-muted text-foreground border-border",
+      confirmed: "bg-muted text-foreground border-border",
+      completed: "bg-muted text-foreground border-border",
+      cancelled: "bg-muted text-foreground border-border"
     };
     return (
-      <Badge variant="outline" className={`rounded-full px-3 py-1 font-black text-[9px] uppercase tracking-widest border ${styles[status] || "bg-gray-50 text-gray-500"}`}>
+      <Badge variant="outline" className={`rounded-full px-2.5 py-0.5 text-xs font-medium capitalize border ${styles[status] || "bg-muted text-muted-foreground"}`}>
         {status}
       </Badge>
     );
@@ -108,177 +112,175 @@ export default function AdminDashboard() {
 
   if (isLoading) {
     return (
-      <div className="space-y-8 animate-pulse">
-        <Skeleton className="h-12 w-64 rounded-2xl" />
-        <div className="grid gap-6 md:grid-cols-4">
-          {[1,2,3,4].map(i => <Skeleton key={i} className="h-32 w-full rounded-3xl" />)}
+      <div className="space-y-6 animate-pulse max-w-6xl mx-auto">
+        <Skeleton className="h-10 w-48 rounded-lg" />
+        <div className="grid gap-4 md:grid-cols-4">
+          {[1,2,3,4].map(i => <Skeleton key={i} className="h-28 w-full rounded-xl" />)}
         </div>
-        <Skeleton className="h-[500px] w-full rounded-[2.5rem]" />
+        <Skeleton className="h-[400px] w-full rounded-xl" />
       </div>
     );
   }
 
   const metricCards = [
-    { label: "Total Platform Users", value: stats?.total_users, icon: Users, color: "text-[#1E293B]", bg: "bg-gray-50", trend: `${stats?.growth?.users >= 0 ? '+' : ''}${stats?.growth?.users}% MoM` },
-    { label: "Active Bookings", value: stats?.total_bookings, icon: Calendar, color: "text-sky-600", bg: "bg-sky-50", trend: `${stats?.growth?.bookings >= 0 ? '+' : ''}${stats?.growth?.bookings}% MoM` },
-    { label: "Market Rating", value: Number(stats?.avg_rating || 4.8).toFixed(1), icon: Star, color: "text-amber-500", bg: "bg-amber-50", trend: "Top rated" },
-    { label: "Gross Revenue", value: `$${Number(stats?.platform_revenue || 0).toLocaleString()}`, icon: Banknote, color: "text-emerald-600", bg: "bg-emerald-50", trend: `${stats?.growth?.revenue >= 0 ? '+' : ''}${stats?.growth?.revenue}% MoM` },
+    { label: "Total Users", value: stats?.total_users, icon: Users, trend: `${(stats?.growth?.users ?? 0) >= 0 ? '+' : ''}${stats?.growth?.users ?? 0}%` },
+    { label: "Active Bookings", value: stats?.total_bookings, icon: Calendar, trend: `${(stats?.growth?.bookings ?? 0) >= 0 ? '+' : ''}${stats?.growth?.bookings ?? 0}%` },
+    { label: "Avg Rating", value: stats?.avg_rating ? Number(stats?.avg_rating).toFixed(1) : '—', icon: Star, trend: "Top rated" },
+    { label: "Revenue", value: `$${Number(stats?.platform_revenue || 0).toLocaleString()}`, icon: Banknote, trend: `${(stats?.growth?.revenue ?? 0) >= 0 ? '+' : ''}${stats?.growth?.revenue ?? 0}%` },
   ];
 
   return (
-    <div className="max-w-[1400px] mx-auto space-y-10 pb-12">
-      {/* Admin Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-        <div className="space-y-2">
-            <h1 className="text-4xl md:text-5xl font-black text-[#1E293B] tracking-tight">
-                <span className="text-sky-600">Kuba</span> Control Center
-            </h1>
-            <p className="text-gray-400 font-bold text-sm italic flex items-center gap-2">
-                <Activity className="w-4 h-4 text-[#1E293B]" />
-                Platform is operational and performing at peak capacity.
-            </p>
+    <div className="max-w-6xl mx-auto space-y-8 pb-12">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground tracking-tight">Dashboard</h1>
+          <p className="text-sm text-muted-foreground mt-1">Overview of your platform performance.</p>
         </div>
-        <div className="flex items-center gap-3">
-            <button 
-                onClick={async () => {
-                    try {
-                        const response = await axiosInstance.get("/api/admin/reports/generate?type=bookings", {
-                            responseType: 'blob'
-                        });
-                        const url = window.URL.createObjectURL(new Blob([response.data]));
-                        const link = document.createElement('a');
-                        link.href = url;
-                        link.setAttribute('download', 'kuba_bookings_report.csv');
-                        document.body.appendChild(link);
-                        link.click();
-                        link.remove();
-                    } catch (err) {
-                        console.error("Failed to generate report:", err);
-                    }
-                }}
-                className="h-12 border border-gray-100 bg-white text-[#1E293B] hover:bg-gray-50 rounded-xl font-black px-6 transition-all uppercase tracking-widest text-[10px]"
-            >
-                Generate Report
-            </button>
-            <Link 
-                href="/admin/settings"
-                className="h-12 bg-[#1E293B] hover:bg-sky-600 text-white rounded-xl font-black px-8 shadow-lg shadow-gray-200 transition-all uppercase tracking-widest text-[10px] flex items-center justify-center p-0"
-            >
-                System Config
-            </Link>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              try {
+                const response = await axiosInstance.get("/api/admin/reports/generate?type=bookings", { responseType: 'blob' });
+                const url = window.URL.createObjectURL(new Blob([response.data]));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', 'kuba_bookings_report.csv');
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+              } catch (err) { console.error("Failed to generate report:", err); }
+            }}
+          >
+            <Download className="w-4 h-4 mr-1.5" />
+            Export
+          </Button>
+          <Button asChild size="sm">
+            <Link href="/admin/settings">Settings</Link>
+          </Button>
         </div>
       </div>
 
-      {/* Analytics Visualization */}
-      <div className="grid gap-8 md:grid-cols-2">
+      {/* Metric Cards */}
+      {/* Metric Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {metricCards.map((card, i) => (
+          <MetricCard 
+            key={i} 
+            label={card.label} 
+            value={card.value || '—'} 
+            icon={card.icon} 
+            trend={card.trend} 
+          />
+        ))}
+      </div>
+
+      {/* Charts */}
+      <div className="grid gap-6 md:grid-cols-2">
         <VisualAnalytics 
-            data={trends.revenue.map((d: any) => ({ name: d.date, value: d.count }))} 
-            title="Revenue Velocity" 
-            dataKey="value" 
-            categoryKey="name"
-            color="#0ea5e9"
+          data={trends.revenue.map((d: any) => ({ name: d.date, value: d.count }))} 
+          title="Revenue" 
+          dataKey="value" 
+          categoryKey="name"
+          color="#71717a"
         />
         <VisualAnalytics 
-            data={trends.users.map((d: any) => ({ name: d.date, value: d.count }))} 
-            title="User Acquisition" 
-            type="bar"
-            dataKey="value" 
-            categoryKey="name"
-            color="#8b5cf6"
+          data={trends.users.map((d: any) => ({ name: d.date, value: d.count }))} 
+          title="New Users" 
+          type="bar"
+          dataKey="value" 
+          categoryKey="name"
+          color="#a1a1aa"
         />
       </div>
 
-      {/* Activity Monitor */}
-      <Card className="premium-card overflow-hidden border-none shadow-premium">
-        <div className="p-10 border-b border-gray-50 flex flex-col md:flex-row justify-between items-center gap-6 bg-white/50 backdrop-blur-md">
-            <div className="space-y-1">
-                <h2 className="text-sm font-black text-[#1E293B] uppercase tracking-[0.2em] flex items-center gap-2">
-                    <Briefcase className="w-4 h-4 text-sky-600" />
-                    Transaction Monitor
-                </h2>
-                <p className="text-xs font-bold text-gray-400 italic">Tracking latest marketplace movements across Kuba.</p>
+      {/* Bookings Table */}
+      <Card className="border border-border overflow-hidden rounded-dashboard">
+        <CardHeader className="border-b border-border px-6 py-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <CardTitle className="text-base font-semibold text-foreground">Recent Bookings</CardTitle>
+              <p className="text-sm text-muted-foreground mt-0.5">Latest marketplace activity.</p>
             </div>
-            
-            <div className="flex items-center gap-3 w-full md:w-auto">
-                <div className="relative flex-1 md:w-80 group">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-sky-600 transition-colors" />
-                    <input 
-                        type="text" 
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Search by ID or Customer..." 
-                        className="w-full h-12 pl-12 pr-4 bg-[#F8FAFC] border-none rounded-xl text-xs font-bold focus:ring-2 focus:ring-sky-100 transition-all placeholder:text-gray-300 placeholder:italic"
-                    />
-                </div>
-                <select 
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value)}
-                    className="h-12 border border-gray-100 bg-white hover:bg-sky-50 hover:text-sky-600 hover:border-sky-100 px-4 rounded-xl transition-all text-[10px] font-black uppercase tracking-widest appearance-none cursor-pointer"
-                >
-                    <option value="">All Monitor</option>
-                    <option value="pending">Pending</option>
-                    <option value="confirmed">Confirmed</option>
-                    <option value="completed">Completed</option>
-                    <option value="cancelled">Cancelled</option>
-                </select>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <div className="relative flex-1 sm:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input 
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search bookings..." 
+                  className="pl-9 h-9"
+                />
+              </div>
+              <select 
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                className="h-9 border border-input bg-background px-3 rounded-lg text-sm appearance-none cursor-pointer text-foreground"
+              >
+                <option value="">All</option>
+                <option value="pending">Pending</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
             </div>
-        </div>
+          </div>
+        </CardHeader>
         <CardContent className="p-0">
           <Table>
             <TableHeader>
-              <TableRow className="hover:bg-transparent border-gray-50">
-                <TableHead className="pl-10 h-16 uppercase text-[10px] font-black tracking-[0.2em] text-gray-400">Order Ref</TableHead>
-                <TableHead className="h-16 uppercase text-[10px] font-black tracking-[0.2em] text-gray-400">Service Category</TableHead>
-                <TableHead className="h-16 uppercase text-[10px] font-black tracking-[0.2em] text-gray-400">Merchant / Customer</TableHead>
-                <TableHead className="h-16 uppercase text-[10px] font-black tracking-[0.2em] text-gray-400">Scheduled Date</TableHead>
-                <TableHead className="h-16 uppercase text-[10px] font-black tracking-[0.2em] text-gray-400">Status</TableHead>
-                <TableHead className="h-16 pr-10"></TableHead>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="pl-6">Order</TableHead>
+                <TableHead>Service</TableHead>
+                <TableHead>Customer</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="pr-6 text-right">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {bookings.slice(0, 10).map((booking: any) => (
-                <TableRow key={booking.id} className="hover:bg-gray-50/50 transition-colors border-gray-50 group">
-                  <TableCell className="pl-10 py-6">
-                    <span className="text-[10px] font-black text-sky-600 uppercase tracking-widest group-hover:scale-105 transition-transform inline-block">
-                        #{booking.booking_number || 'KR-882'}
-                    </span>
+              {bookings.slice(0, 10).map((booking) => (
+                <TableRow key={booking.id} className="group">
+                  <TableCell className="pl-6 font-medium text-primary text-sm">
+                    <Link href={`/admin/bookings/${booking.id}`}>
+                      #{booking.booking_number}
+                    </Link>
                   </TableCell>
-                  <TableCell className="py-6">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-[#1E293B]">
-                            <Briefcase className="w-4 h-4" />
-                        </div>
-                        <span className="font-black text-[#1E293B] text-sm">{booking.service?.name}</span>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Briefcase className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm text-foreground">{booking.service?.name}</span>
                     </div>
                   </TableCell>
-                  <TableCell className="py-6">
-                    <div className="space-y-0.5">
-                        <p className="text-xs font-black text-[#1E293B]">{booking.customer?.name}</p>
-                        <p className="text-[10px] font-bold text-gray-400 italic">via {booking.provider?.business_name || 'Individual'}</p>
+                  <TableCell>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{booking.customer?.name}</p>
+                      <p className="text-xs text-muted-foreground">via {booking.provider?.business_name || 'Individual'}</p>
                     </div>
                   </TableCell>
-                  <TableCell className="py-6">
-                    <div className="space-y-0.5 text-[#1E293B]">
-                        <p className="text-[11px] font-black">{new Date(booking.scheduled_date).toLocaleDateString()}</p>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Market Confirmed</p>
-                    </div>
+                  <TableCell>
+                    <p className="text-sm text-foreground">{new Date(booking.scheduled_date).toLocaleDateString()}</p>
                   </TableCell>
-                  <TableCell className="py-6">
+                  <TableCell>
                     {getStatusBadge(booking.status)}
                   </TableCell>
-                  <TableCell className="pr-10 py-6 text-right">
-                    <button className="p-2 text-gray-200 hover:text-sky-600 transition-colors group/btn">
-                        <ArrowUpRight className="w-5 h-5 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
-                    </button>
+                  <TableCell className="pr-6 text-right">
+                    <Link href={`/admin/bookings/${booking.id}`}>
+                      <button className="p-1.5 text-muted-foreground hover:text-primary transition-colors rounded-md hover:bg-accent">
+                        <ArrowUpRight className="w-4 h-4" />
+                      </button>
+                    </Link>
                   </TableCell>
                 </TableRow>
               ))}
               {bookings.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-80 text-center">
-                    <div className="flex flex-col items-center justify-center gap-4 text-gray-200">
-                        <Activity className="h-16 w-16 opacity-10" />
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] italic">Waiting for platform activity...</p>
+                  <TableCell colSpan={6} className="h-48 text-center">
+                    <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                      <Activity className="h-8 w-8" />
+                      <p className="text-sm">No bookings found</p>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -286,11 +288,11 @@ export default function AdminDashboard() {
             </TableBody>
           </Table>
           
-          <div className="p-10 border-t border-gray-50 flex justify-center bg-gray-50/10">
-              <button className="flex items-center gap-2 text-[10px] font-black text-[#1E293B] hover:text-sky-600 transition-all uppercase tracking-[0.2em] group">
-                Full Transaction History
-                <ChevronRight className="w-4 h-4 transform group-hover:translate-x-2 transition-transform" />
-              </button>
+          <div className="p-4 border-t border-border flex justify-center">
+            <Link href="/admin/bookings" className="flex items-center gap-1.5 text-sm text-primary hover:underline font-medium group">
+              View all bookings
+              <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+            </Link>
           </div>
         </CardContent>
       </Card>

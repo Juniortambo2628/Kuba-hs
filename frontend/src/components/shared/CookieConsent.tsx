@@ -36,6 +36,8 @@ export function CookieConsent() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
             className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] w-[calc(100%-2rem)] max-w-lg"
+            role="region"
+            aria-label="Cookie consent banner"
           >
             <div className="bg-[#111]/95 backdrop-blur-md border border-white/10 rounded-3xl p-6 shadow-2xl flex flex-col md:flex-row items-center gap-6">
               <div className="flex-1 space-y-2 text-center md:text-left">
@@ -62,7 +64,7 @@ export function CookieConsent() {
                     onClick={() => setIsModalOpen(true)}
                     variant="ghost" 
                     size="sm" 
-                    className="text-gray-400 hover:text-white text-[10px] uppercase tracking-tighter shrink-0"
+                    className="text-gray-400 hover:text-white text-[10px] tracking-tighter shrink-0"
                   >
                     LEARN MORE
                   </Button>
@@ -70,7 +72,7 @@ export function CookieConsent() {
                     onClick={acceptNecessary}
                     variant="outline" 
                     size="sm" 
-                    className="border-white/10 text-gray-400 hover:text-white text-[10px] uppercase tracking-tighter"
+                    className="border-white/10 text-gray-400 hover:text-white text-[10px] tracking-tighter"
                   >
                     ESSENTIAL ONLY
                   </Button>

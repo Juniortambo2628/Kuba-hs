@@ -10,6 +10,7 @@ import { FAQ } from "@/components/landing/FAQ";
 import { CTA } from "@/components/landing/CTA";
 import { TrustCarousel } from "@/components/shared/TrustCarousel";
 import { FeaturedServices } from "@/components/landing/FeaturedServices";
+import { CorporateSolutions } from "@/components/landing/CorporateSolutions";
 import { Footer } from "@/components/layout/Footer";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -41,6 +42,7 @@ export default function Home() {
       <About />
       <Categories />
       <Stats />
+      <CorporateSolutions />
       <FeaturedProviders />
       <Testimonials />
       <FAQ />

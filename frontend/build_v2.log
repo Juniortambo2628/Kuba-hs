@@ -1,0 +1,30 @@
+
+> frontend@0.1.0 build
+> next build --webpack
+
+Γû▓ Next.js 16.1.6 (webpack)
+- Environments: .env.local, .env.production
+
+  Creating an optimized production build ...
+> [PWA] Compile server
+> [PWA] Compile server
+> [PWA] Compile client (static)
+> [PWA] Auto register service worker with: C:\wamp64\www\home-service\frontend\node_modules\next-pwa\register.js
+> [PWA] Service worker: C:\wamp64\www\home-service\frontend\public\sw.js
+> [PWA]   url: /sw.js
+> [PWA]   scope: /
+Γ£ô Compiled successfully in 52s
+  Running TypeScript ...
+Failed to compile.
+
+./src/app/dashboard/client/page.tsx:189:116
+Type error: Property 'scheduled_time' does not exist on type 'Booking'. Did you mean 'scheduled_date'?
+
+  187 |                             </h3>
+  188 |                             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-[10px] text-muted-foreground uppercase tracking-wider">
+> 189 |                                 <span className="flex items-center gap-1.5"><Clock className="w-3 h-3" /> {booking.scheduled_time || '09:00 AM'}</span>
+      |                                                                                                                    ^
+  190 |                                 <span className="flex items-center gap-1.5"><MapPin className="w-3 h-3" /> {booking.address?.city || 'On-site'}</span>
+  191 |                             </div>
+  192 |                         </div>
+Next.js build worker exited with code: 1 and signal: null

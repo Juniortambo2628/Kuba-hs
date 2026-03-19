@@ -1,6 +1,6 @@
 <x-mail::message>
 <div style="text-align: center; margin-bottom: 20px;">
-    <img src="{{ url('/logo.png') }}" alt="Kuba Logo" style="height: 60px; width: auto;">
+    <img src="{{ url('/assets/branding/Kuba-Header-footter-Logo-for-Light-Mode.png') }}" alt="Kuba Logo" style="height: 60px; width: auto;">
 </div>
 
 {!! $content !!}

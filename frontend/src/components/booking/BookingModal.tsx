@@ -31,7 +31,8 @@ import {
   Clock,
   ChevronRight, 
   Upload,
-  MapPin
+  MapPin,
+  ShieldCheck
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -44,7 +45,7 @@ import axiosInstance from "@/lib/axios";
 import { useAuth } from "@/contexts/AuthContext";
 
 const FORM_CONFIGS: Record<string, any> = {
-  'Home Essentials': {
+  'Cleaning & Maintenance': {
     typeLabel: "Service Type",
     typeOptions: [
       { id: 'residential', label: 'Residential', icon: <Home className="w-4 h-4" /> },
@@ -54,57 +55,92 @@ const FORM_CONFIGS: Record<string, any> = {
     quantityLabel: "Scope / Quantity",
     quantityHint: "e.g. Offices, Rooms, Units",
     getQuantityBadge: (type: string) => type === 'residential' ? 'Rooms' : type === 'commercial' ? 'Offices' : 'Units',
-    descriptionLabel: "Description of Issue",
-    descriptionPlaceholder: "Please describe the issue in detail so the professional can assess the scope..."
+    descriptionLabel: "Description of Work",
+    descriptionPlaceholder: "Please describe what needs cleaning or maintenance..."
   },
-  'Automotive Care': {
-    typeLabel: "Service Location",
+  'Health & Wellness': {
+    typeLabel: "Consultation Type",
     typeOptions: [
-      { id: 'at_home', label: 'Mobile/Roadside', icon: <Home className="w-4 h-4" /> },
-      { id: 'at_workshop', label: 'At Workshop', icon: <Building2 className="w-4 h-4" /> },
-    ],
-    quantityLabel: "Number of Vehicles",
-    quantityHint: "How many vehicles need service?",
-    getQuantityBadge: () => 'Vehicles',
-    descriptionLabel: "Vehicle Details",
-    descriptionPlaceholder: "Please provide the make, model, and year of the vehicle(s)..."
-  },
-  'Personal & Wellness': {
-    typeLabel: "Appointment Type",
-    typeOptions: [
-      { id: 'at_home', label: 'Home Service', icon: <Home className="w-4 h-4" /> },
-      { id: 'in_studio', label: 'In-Studio', icon: <Building2 className="w-4 h-4" /> },
-    ],
-    quantityLabel: "Number of People",
-    quantityHint: "How many people for the service?",
-    getQuantityBadge: () => 'People',
-    descriptionLabel: "Special Requests / Details",
-    descriptionPlaceholder: "Please share any specific preferences, skin types, or requirements..."
-  },
-  'Professional & Digital': {
-    typeLabel: "Consultation Mode",
-    typeOptions: [
-      { id: 'remote', label: 'Remote/Online', icon: <Home className="w-4 h-4" /> },
+      { id: 'remote', label: 'Remote/Telehealth', icon: <Home className="w-4 h-4" /> },
       { id: 'in_person', label: 'In-Person', icon: <Building2 className="w-4 h-4" /> },
     ],
-    quantityLabel: "Estimated Scope",
-    quantityHint: "Estimated hours or number of projects?",
-    getQuantityBadge: () => 'Units',
-    descriptionLabel: "Project Requirements",
-    descriptionPlaceholder: "Describe your project goals and any specific deliverables needed..."
+    quantityLabel: "Number of People",
+    quantityHint: "How many people for the session?",
+    getQuantityBadge: () => 'People',
+    descriptionLabel: "Health Concerns / Notes",
+    descriptionPlaceholder: "Briefly describe your concerns or specific needs..."
   },
-  'Event & Commercial': {
-    typeLabel: "Event Type",
+  'Education & Training': {
+    typeLabel: "Session Mode",
     typeOptions: [
-      { id: 'private', label: 'Private Event', icon: <Home className="w-4 h-4" /> },
-      { id: 'corporate', label: 'Corporate', icon: <Building2 className="w-4 h-4" /> },
-      { id: 'public', label: 'Public Venue', icon: <Factory className="w-4 h-4" /> },
+      { id: 'online', label: 'Online/Zoom', icon: <Home className="w-4 h-4" /> },
+      { id: 'in_person', label: 'Physical/On-site', icon: <Building2 className="w-4 h-4" /> },
     ],
-    quantityLabel: "Area Size / Scope",
-    quantityHint: "e.g. Sqft, Number of Guests",
-    getQuantityBadge: () => 'Scope',
-    descriptionLabel: "Event Details",
-    descriptionPlaceholder: "Describe the event type, venue size, and specific needs..."
+    quantityLabel: "Number of Students",
+    quantityHint: "Group size or individual?",
+    getQuantityBadge: () => 'Students',
+    descriptionLabel: "Learning Goals",
+    descriptionPlaceholder: "Describe what you want to learn or achieve..."
+  },
+  'Financial & Legal': {
+    typeLabel: "Engagement Type",
+    typeOptions: [
+      { id: 'advisory', label: 'Advisory', icon: <Info className="w-4 h-4" /> },
+      { id: 'compliance', label: 'Compliance/Docs', icon: <ShieldCheck className="w-4 h-4" /> },
+    ],
+    quantityLabel: "Estimated Scope",
+    quantityHint: "e.g. Hours or Document Count",
+    getQuantityBadge: () => 'Units',
+    descriptionLabel: "Requirement Details",
+    descriptionPlaceholder: "Describe the financial or legal assistance needed..."
+  },
+  'Food & Hospitality': {
+    typeLabel: "Service Scale",
+    typeOptions: [
+      { id: 'small_group', label: 'Small Group', icon: <Home className="w-4 h-4" /> },
+      { id: 'large_event', label: 'Large Event', icon: <Building2 className="w-4 h-4" /> },
+    ],
+    quantityLabel: "Number of Guests / Pax",
+    quantityHint: "Estimated count of people",
+    getQuantityBadge: () => 'Pax',
+    descriptionLabel: "Menu / Requests",
+    descriptionPlaceholder: "Detail any dietary requirements or specific menu items..."
+  },
+  'Commercial Logistics': {
+    typeLabel: "Facility Type",
+    typeOptions: [
+      { id: 'office', label: 'Office/Business', icon: <Building2 className="w-4 h-4" /> },
+      { id: 'industrial', label: 'Industrial/Warehouse', icon: <Factory className="w-4 h-4" /> },
+    ],
+    quantityLabel: "Area Size / Units",
+    quantityHint: "e.g. Sqft or Staff Count",
+    getQuantityBadge: () => 'Units',
+    descriptionLabel: "Operational Needs",
+    descriptionPlaceholder: "Describe the tech, facility or staffing support required..."
+  },
+  'Plumbing': {
+    typeLabel: "Service Urgency",
+    typeOptions: [
+      { id: 'standard', label: 'Standard', icon: <Calendar className="w-4 h-4" /> },
+      { id: 'emergency', label: 'Emergency', icon: <AlertCircle className="w-4 h-4" /> },
+    ],
+    quantityLabel: "Points / Fixtures",
+    quantityHint: "How many areas need attention?",
+    getQuantityBadge: () => 'Points',
+    descriptionLabel: "Issue Details",
+    descriptionPlaceholder: "Describe the leak or blockage..."
+  },
+  'Electrical': {
+    typeLabel: "Service Area",
+    typeOptions: [
+      { id: 'residential', label: 'Residential', icon: <Home className="w-4 h-4" /> },
+      { id: 'commercial', label: 'Commercial', icon: <Building2 className="w-4 h-4" /> },
+    ],
+    quantityLabel: "Appliances / Units",
+    quantityHint: "Quantity of items to check",
+    getQuantityBadge: () => 'Units',
+    descriptionLabel: "Technical Details",
+    descriptionPlaceholder: "Describe the power issue or installation needs..."
   }
 };
 
@@ -241,7 +277,7 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
       <motion.div 
         initial={{ opacity: 0 }} 
         animate={{ opacity: 1 }} 
@@ -254,7 +290,7 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="relative w-full max-w-2xl bg-white dark:bg-[#0B0F19] rounded-3xl shadow-2xl overflow-hidden border border-gray-200 dark:border-white/10"
+        className="relative z-50 w-full max-w-2xl bg-white dark:bg-[#0B0F19] rounded-3xl shadow-2xl overflow-hidden border border-gray-200 dark:border-white/10 pointer-events-auto"
       >
         {/* Header */}
         <div className="p-6 border-b border-gray-100 dark:border-white/5 flex items-center justify-between bg-gray-50/50 dark:bg-white/5">
@@ -268,7 +304,25 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
         </div>
 
         <div className="p-8 max-h-[80vh] overflow-y-auto">
-          {isSuccess ? (
+          {!user ? (
+            <div className="text-center py-12">
+              <div className="w-20 h-20 bg-amber-100 dark:bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <ShieldCheck className="w-10 h-10 text-amber-600 dark:text-amber-400" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Authentication Required</h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-sm mx-auto">
+                Please sign in to your Kuba account to send messages or book services with {provider.business_name}.
+              </p>
+              <div className="flex flex-col gap-3 relative z-[60]">
+                <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-8 h-12 font-bold uppercase tracking-widest text-[10px] cursor-pointer shadow-lg shadow-blue-500/20">
+                  <Link href={`/login?redirect=/providers/${provider.id}`}>Sign In to Continue</Link>
+                </Button>
+                <Link href="/register/client" className="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors uppercase tracking-tight py-2 text-center pointer-events-auto">
+                  New to Kuba? Create an account
+                </Link>
+              </div>
+            </div>
+          ) : isSuccess ? (
             <div className="text-center py-12">
               <div className="w-20 h-20 bg-green-100 dark:bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
                 <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400" />
@@ -277,9 +331,14 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
               <p className="text-gray-500 dark:text-gray-400 mb-8">
                 Your request has been sent to {provider.business_name}. You'll receive a notification once they confirm.
               </p>
-              <Button onClick={onClose} className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-8 h-12 font-bold">
-                Awesome, thanks!
-              </Button>
+              <div className="flex gap-4">
+                <Button asChild variant="outline" className="flex-1 rounded-xl h-12 font-bold border-gray-200 dark:border-white/10 uppercase tracking-tight text-xs">
+                    <Link href="/dashboard/client/bookings">View My Bookings</Link>
+                </Button>
+                <Button onClick={onClose} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-12 font-bold uppercase tracking-tight text-xs">
+                    Awesome!
+                </Button>
+              </div>
             </div>
           ) : (
             <Form {...form}>

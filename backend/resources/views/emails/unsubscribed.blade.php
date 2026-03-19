@@ -12,7 +12,7 @@
 </head>
 <body>
     <div class="card">
-        <img src="/logo.png" alt="South Ring" class="logo">
+        <img src="/assets/branding/Kuba-Header-footter-Logo-for-Light-Mode.png" alt="Kuba" class="logo">
         <h1>Unsubscribed Successfully</h1>
         <p>The email <strong>{{ $email }}</strong> has been removed from our mailing list. You will no longer receive system notifications.</p>
         <p>If this was a mistake, please contact support.</p>

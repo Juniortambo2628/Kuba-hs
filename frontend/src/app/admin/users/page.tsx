@@ -3,26 +3,23 @@
 import { useEffect, useState } from "react";
 import { User } from "@/types";
 import axiosInstance from "@/lib/axios";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
-  Users, 
   Search, 
-  Filter, 
   MoreHorizontal, 
-  ShieldCheck, 
   UserPlus,
   Mail,
-  UserCheck,
-  UserX,
-  ChevronRight,
-  Download
+  Download,
+  Trash2
 } from "lucide-react";
 import { useSearchState } from "@/hooks/useSearchState";
 import { useExport } from "@/hooks/useExport";
+import { DataToolbar } from "@/components/shared/DataToolbar";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -34,14 +31,13 @@ import {
 import { UserDialog } from "@/components/admin/UserDialog";
 import { toast } from "sonner";
 
-// interface User removed
-
 export default function AdminUsers() {
   const { search, setSearch } = useSearchState();
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [viewMode, setViewMode] = useState<'grid'|'list'>('grid');
   const { exportToCSV } = useExport();
 
   useEffect(() => {
@@ -85,6 +81,17 @@ export default function AdminUsers() {
     }
   };
 
+  const deleteUser = async (id: string) => {
+    if (!confirm("Are you sure you want to permanently delete this user? This action cannot be undone.")) return;
+    try {
+        await axiosInstance.delete(`/api/admin/users/${id}`);
+        toast.success("User deleted successfully");
+        fetchUsers(search);
+    } catch (err: any) {
+        toast.error(err.response?.data?.message || "Failed to delete user");
+    }
+  };
+
   const openCreateDialog = () => {
     setSelectedUser(null);
     setIsDialogOpen(true);
@@ -95,148 +102,160 @@ export default function AdminUsers() {
     setIsDialogOpen(true);
   };
 
-  /* 
-     Initial loading state handled by skeleton. 
-     We remove the early return to show the full layout with skeletons.
-  */
-
   return (
-    <div className="max-w-[1400px] mx-auto space-y-10 pb-12">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-        <div className="space-y-2">
-            <h1 className="text-4xl md:text-5xl font-black text-[#1E293B] tracking-tight uppercase">
-                User <span className="text-sky-600">Base</span>
-            </h1>
-            <p className="text-gray-400 font-bold text-sm italic flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                Managing marketplace participants: Clients, Merchants, and Staff.
-            </p>
+    <div className="max-w-6xl mx-auto space-y-8 pb-12">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground tracking-tight">Users</h1>
+          <p className="text-sm text-muted-foreground mt-1">Manage platform participants: clients, providers, and staff.</p>
         </div>
-        <button 
-            onClick={openCreateDialog}
-            className="h-14 bg-[#1E293B] hover:bg-sky-600 text-white rounded-2xl font-black px-10 shadow-xl shadow-gray-100 transition-all uppercase tracking-widest text-[11px] flex items-center gap-2"
-        >
-            <UserPlus className="w-4 h-4" />
-            Provision New Account
-        </button>
-        <Button 
-            onClick={() => exportToCSV(users, 'platform_users')}
-            variant="outline" 
-            className="h-14 border-gray-100 bg-white text-gray-500 hover:text-sky-600 rounded-2xl font-black text-[10px] uppercase tracking-widest gap-2 px-6"
-        >
-            <Download className="w-4 h-4" /> Export Directory
-        </Button>
       </div>
+      <DataToolbar 
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search by name or email..."
+        viewMode={viewMode}
+        onViewChange={setViewMode}
+        bulkActions={[
+          {
+            label: 'Export All',
+            icon: <Download className="w-4 h-4" />,
+            onClick: () => exportToCSV(users, 'platform_users')
+          }
+        ]}
+      />
 
-      <Card className="premium-card overflow-hidden border-none shadow-premium">
-        <div className="p-10 border-b border-gray-50 flex flex-col md:flex-row justify-between items-center gap-6 bg-white/50 backdrop-blur-md">
-            <div className="space-y-1">
-                <h2 className="text-sm font-black text-[#1E293B] uppercase tracking-[0.2em]">Platform Directory</h2>
-                <p className="text-xs font-bold text-gray-400 italic">Manage account statuses and membership roles across Kuba.</p>
-            </div>
-            
-            <div className="flex items-center gap-3 w-full md:w-auto">
-                <div className="relative flex-1 md:w-80 group">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-sky-600 transition-colors" />
-                    <input 
-                        type="text" 
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Search by Name or Email..." 
-                        className="w-full h-12 pl-12 pr-4 bg-[#F8FAFC] border-none rounded-xl text-xs font-bold focus:ring-2 focus:ring-sky-100 transition-all"
-                    />
-                </div>
-                <button className="h-12 border border-gray-100 bg-white hover:bg-gray-50 p-3 rounded-xl transition-all">
-                    <Filter className="w-5 h-5" />
-                </button>
-            </div>
-        </div>
-
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent border-gray-50">
-                <TableHead className="pl-10 h-16 uppercase text-[10px] font-black tracking-[0.2em] text-gray-400">Account Identity</TableHead>
-                <TableHead className="h-16 uppercase text-[10px] font-black tracking-[0.2em] text-gray-400">System Role</TableHead>
-                <TableHead className="h-16 uppercase text-[10px] font-black tracking-[0.2em] text-gray-400">Status</TableHead>
-                <TableHead className="h-16 uppercase text-[10px] font-black tracking-[0.2em] text-gray-400">Join Date</TableHead>
-                <TableHead className="h-16 pr-10 text-right uppercase text-[10px] font-black tracking-[0.2em] text-gray-400">Access Control</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i} className="hover:bg-transparent border-gray-50">
-                    <TableCell className="pl-10 py-6">
-                        <div className="flex items-center gap-4">
-                            <Skeleton className="w-10 h-10 rounded-xl" />
-                            <div className="space-y-2">
-                                <Skeleton className="h-4 w-32" />
-                                <Skeleton className="h-3 w-48" />
-                            </div>
-                        </div>
-                    </TableCell>
-                    <TableCell className="py-6"><Skeleton className="h-6 w-16 rounded-full" /></TableCell>
-                    <TableCell className="py-6"><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
-                    <TableCell className="py-6"><Skeleton className="h-4 w-24" /></TableCell>
-                    <TableCell className="pr-10 py-6 text-right"><Skeleton className="h-8 w-8 rounded-full ml-auto" /></TableCell>
-                  </TableRow>
-                ))
-              ) : users.map((u) => (
-                <TableRow key={u.id} className="hover:bg-gray-50/50 transition-colors border-gray-50 group">
-                  <TableCell className="pl-10 py-6">
-                    <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-[#1E293B] font-black text-xs uppercase group-hover:bg-sky-50 group-hover:text-sky-600 transition-all overflow-hidden">
-                        {u.avatar_url ? (
-                            <img src={u.avatar_url} alt={u.name} className="w-full h-full object-cover" />
-                        ) : (
-                            u.name[0]
-                        )}
-                    </div>
-                        <div className="space-y-1">
-                            <p className="font-black text-[#1E293B] text-sm group-hover:text-sky-600 transition-colors">{u.name}</p>
-                            <p className="text-[10px] font-bold text-gray-400 italic flex items-center gap-1.5"><Mail className="w-3 h-3" /> {u.email}</p>
-                        </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="py-6">
-                    <Badge variant="outline" className={`rounded-full px-3 py-1 font-black text-[9px] uppercase tracking-widest border ${u.role === 'admin' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' : 'bg-gray-50 text-gray-500'}`}>
-                        {u.role}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="py-6">
-                    <Badge variant="outline" className={`rounded-full px-3 py-1 font-black text-[8px] uppercase tracking-widest border ${u.is_active ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-sky-50 text-sky-600 border-sky-100"}`}>
-                        {u.is_active ? "Authorized" : "Suspended"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="py-6 font-black text-[#1E293B] text-xs">
-                    {new Date(u.created_at).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell className="pr-10 py-6 text-right space-x-3">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <button className="p-2 text-gray-200 hover:text-sky-600 transition-colors">
-                                <MoreHorizontal className="w-5 h-5" />
-                            </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48 p-2 rounded-2xl border-none shadow-premium">
-                            <DropdownMenuLabel className="text-[10px] uppercase font-black text-gray-400 p-2">Audit Actions</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => openEditDialog(u)} className="rounded-xl text-[10px] font-black uppercase tracking-widest p-3">
-                                Edit Credentials
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => toggleStatus(u.id)} className="rounded-xl text-[10px] font-black uppercase tracking-widest p-3">
-                                {u.is_active ? "Suspend Access" : "Revive Access"}
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
+      {/* Content area: Grid or List */}
+      {viewMode === 'list' ? (
+        <Card className="border border-border overflow-hidden bg-card">
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow className="hover:bg-transparent border-border">
+                  <TableHead className="pl-6 uppercase text-[10px] font-semibold text-muted-foreground tracking-wider h-12">User</TableHead>
+                  <TableHead className="uppercase text-[10px] font-semibold text-muted-foreground tracking-wider h-12">Role</TableHead>
+                  <TableHead className="uppercase text-[10px] font-semibold text-muted-foreground tracking-wider h-12">Status</TableHead>
+                  <TableHead className="uppercase text-[10px] font-semibold text-muted-foreground tracking-wider h-12">Joined</TableHead>
+                  <TableHead className="pr-6 text-right uppercase text-[10px] font-semibold text-muted-foreground tracking-wider h-12">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i} className="border-border">
+                      <TableCell className="pl-6"><div className="flex items-center gap-3"><Skeleton className="w-9 h-9 rounded-lg" /><div className="space-y-1.5"><Skeleton className="h-4 w-28" /><Skeleton className="h-3 w-40" /></div></div></TableCell>
+                      <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
+                      <TableCell><Skeleton className="h-5 w-18 rounded-full" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                      <TableCell className="pr-6 text-right"><Skeleton className="h-8 w-8 rounded-lg ml-auto" /></TableCell>
+                    </TableRow>
+                  ))
+                ) : users.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="h-48 text-center text-muted-foreground text-sm">No users found</TableCell>
+                  </TableRow>
+                ) : users.map((u) => (
+                  <TableRow key={u.id} className="group border-border hover:bg-muted/50 transition-colors">
+                    <TableCell className="pl-6">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center text-primary font-semibold text-xs uppercase overflow-hidden border border-border">
+                          {u.avatar_url ? <img src={u.avatar_url} alt={u.name} className="w-full h-full object-cover" /> : u.name[0]}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{u.name}</p>
+                          <p className="text-xs text-muted-foreground flex items-center gap-1"><Mail className="w-3 h-3" /> {u.email}</p>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold tracking-wide uppercase border ${u.role === 'admin' ? 'bg-muted text-foreground border-border' : 'bg-muted text-muted-foreground'}`}>
+                        {u.role}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold tracking-wide uppercase border bg-muted text-foreground border-border`}>
+                        {u.is_active ? "Active" : "Suspended"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-sm font-medium text-muted-foreground">
+                      {new Date(u.created_at).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className="pr-6 text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button className="p-1.5 text-muted-foreground hover:text-primary transition-colors rounded-md hover:bg-accent">
+                            <MoreHorizontal className="w-4 h-4" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-36 rounded-xl">
+                          <DropdownMenuLabel className="text-[10px] uppercase font-semibold text-muted-foreground">Actions</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => openEditDialog(u)} className="cursor-pointer text-xs font-medium">Edit User</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => toggleStatus(u.id)} className={`cursor-pointer text-xs font-medium ${u.is_active ? 'text-amber-500 focus:text-amber-600 focus:bg-amber-50' : 'text-emerald-500 focus:text-emerald-600 focus:bg-emerald-50'}`}>
+                            {u.is_active ? "Suspend" : "Activate"}
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => deleteUser(u.id)} className="cursor-pointer text-xs font-medium text-red-500 focus:text-red-600 focus:bg-red-50 gap-2">
+                             <Trash2 className="w-3.5 h-3.5" /> Permanently Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {isLoading ? (
+            Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-44 rounded-xl" />)
+          ) : users.length === 0 ? (
+            <div className="col-span-full h-48 flex items-center justify-center text-muted-foreground text-sm border border-dashed border-border rounded-xl">No users found</div>
+          ) : users.map((u) => (
+            <Card key={u.id} className="border border-border bg-card hover:shadow-md transition-all group overflow-hidden">
+              <CardContent className="p-5">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center text-primary font-bold text-lg uppercase overflow-hidden border border-border shadow-sm group-hover:border-primary/20 transition-colors">
+                    {u.avatar_url ? <img src={u.avatar_url} alt={u.name} className="w-full h-full object-cover" /> : u.name[0]}
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="p-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-accent -mr-2">
+                        <MoreHorizontal className="w-4 h-4" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-36 rounded-xl">
+                      <DropdownMenuItem onClick={() => openEditDialog(u)} className="cursor-pointer text-xs font-medium">Edit User</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => toggleStatus(u.id)} className={`cursor-pointer text-xs font-medium ${u.is_active ? 'text-amber-500 focus:text-amber-600 focus:bg-amber-50' : 'text-emerald-500 focus:text-emerald-600 focus:bg-emerald-50'}`}>
+                        {u.is_active ? "Suspend User" : "Activate User"}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => deleteUser(u.id)} className="cursor-pointer text-xs font-medium text-red-500 focus:text-red-600 focus:bg-red-50 gap-2">
+                         <Trash2 className="w-3.5 h-3.5" /> Purge Account
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+                <div className="space-y-1 mb-4">
+                  <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors truncate">{u.name}</h3>
+                  <p className="text-xs text-muted-foreground flex items-center gap-1.5 truncate"><Mail className="w-3 h-3 flex-shrink-0" /> {u.email}</p>
+                </div>
+                <div className="flex items-center justify-between pt-4 border-t border-border">
+                  <Badge variant="outline" className={`rounded-full px-2 py-0.5 text-[9px] font-semibold tracking-wide uppercase border ${u.role === 'admin' ? 'bg-muted text-foreground border-border' : 'bg-muted text-muted-foreground'}`}>
+                    {u.role}
+                  </Badge>
+                  <Badge variant="outline" className={`rounded-full px-2 py-0.5 text-[9px] font-semibold tracking-wide uppercase border bg-muted text-foreground border-border`}>
+                    {u.is_active ? "Active" : "Suspended"}
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       <UserDialog 
         isOpen={isDialogOpen}

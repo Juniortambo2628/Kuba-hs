@@ -128,7 +128,7 @@ export function ChatUI({ bookingId, onClose }: ChatUIProps) {
         return (
             <div className="flex flex-col h-[600px] items-center justify-center space-y-4 bg-white dark:bg-zinc-950 rounded-3xl border border-gray-100 dark:border-white/5 shadow-2xl">
                 <Loader2 className="w-8 h-8 animate-spin text-sky-600" />
-                <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Opening Secure Channel...</p>
+                <p className="text-sm font-bold text-gray-400 tracking-widest">Opening Secure Channel...</p>
             </div>
         );
     }
@@ -147,10 +147,10 @@ export function ChatUI({ bookingId, onClose }: ChatUIProps) {
                         <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white dark:border-zinc-900 rounded-full shadow-sm"></div>
                     </div>
                     <div>
-                        <h3 className="text-sm font-black text-[#1E293B] dark:text-white uppercase tracking-tight">
+                        <h3 className="text-sm font-black text-[#1E293B] dark:text-white tracking-tight">
                             {conversation?.booking?.provider?.business_name || "Support Chat"}
                         </h3>
-                        <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest flex items-center gap-1.5">
+                        <p className="text-[10px] font-bold text-emerald-500 tracking-widest flex items-center gap-1.5">
                             <div className="w-1 h-1 rounded-full bg-emerald-500"></div> Online
                         </p>
                     </div>
@@ -169,11 +169,11 @@ export function ChatUI({ bookingId, onClose }: ChatUIProps) {
                         <div className="p-6 bg-gray-50 dark:bg-white/5 rounded-full text-gray-300">
                             <Smile className="w-10 h-10" />
                         </div>
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em]">Start a premium conversation</p>
+                        <p className="text-xs font-bold text-gray-400 tracking-[0.2em]">Start a premium conversation</p>
                     </div>
                 ) : (
                     messages.map((msg, i) => {
-                        const isMe = msg.sender_id === user?.id;
+                        const isMe = Number(msg.sender_id) === Number(user?.id);
                         return (
                             <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"} items-end gap-3`}>
                                 {!isMe && (
@@ -191,7 +191,7 @@ export function ChatUI({ bookingId, onClose }: ChatUIProps) {
                                     }`}>
                                         {msg.body}
                                     </div>
-                                    <div className={`flex items-center gap-2 text-[9px] font-black uppercase tracking-widest ${isMe ? "justify-end text-sky-400" : "text-gray-400"}`}>
+                                    <div className={`flex items-center gap-2 text-[9px] font-black tracking-widest ${isMe ? "justify-end text-sky-400" : "text-gray-400"}`}>
                                         <span>{format(new Date(msg.created_at), 'p')}</span>
                                         {isMe && (
                                             msg.read_at ? <CheckCheck className="w-3 h-3 text-sky-400" /> : <Check className="w-3 h-3" />

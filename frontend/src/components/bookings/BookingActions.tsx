@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, MessageSquare, CreditCard, DownloadCloud } from "lucide-react";
-import { usePaystackPayment } from "react-paystack";
 import axiosInstance from "@/lib/axios";
 import { toast } from "sonner";
+import { CheckoutDialog } from "@/components/payment/CheckoutDialog";
+import { WriteReviewDialog } from "@/components/reviews/WriteReviewDialog";
+import { Star } from "lucide-react";
 
 interface BookingActionsProps {
     booking: any;
@@ -16,58 +18,15 @@ interface BookingActionsProps {
 }
 
 export default function BookingActions({ booking, userEmail, onRefresh, onMessage, isStartingChat }: BookingActionsProps) {
-    const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+    const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+    const [isReviewOpen, setIsReviewOpen] = useState(false);
 
-    // Paystack configuration
-    const paystackConfig = {
-        publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "pk_test_dummy",
-        reference: "", // Will be set during handlePayment
-        email: userEmail || "",
-        amount: 0, // Will be set during handlePayment
+    const handlePayment = () => {
+        setIsCheckoutOpen(true);
     };
 
-    const initializePayment = usePaystackPayment(paystackConfig);
-
-    const handlePayment = async () => {
-        setIsProcessingPayment(true);
-        try {
-            const initRes = await axiosInstance.post("/api/payments/paystack/initialize", {
-                booking_id: booking.id
-            });
-            
-            const { reference, amount } = initRes.data;
-
-            initializePayment({
-                config: {
-                    ...paystackConfig,
-                    reference: reference,
-                    email: userEmail || "",
-                    amount: Math.round(amount * 100),
-                },
-                onSuccess: async (referenceData: any) => {
-                    try {
-                        await axiosInstance.post("/api/payments/paystack/verify", {
-                            reference: referenceData.reference
-                        });
-                        toast.success("Payment successful!");
-                        onRefresh();
-                    } catch (verifyErr: any) {
-                        toast.error(verifyErr.response?.data?.message || "Payment verification failed.");
-                    } finally {
-                        setIsProcessingPayment(false);
-                    }
-                },
-                onClose: () => {
-                    toast.info("Payment cancelled");
-                    setIsProcessingPayment(false);
-                }
-            });
-            
-        } catch (err: any) {
-            console.error("Payment init error:", err);
-            toast.error(err.response?.data?.message || "Failed to initialize payment");
-            setIsProcessingPayment(false);
-        }
+    const handleReview = () => {
+        setIsReviewOpen(true);
     };
 
     const handleDownloadInvoice = async () => {
@@ -98,20 +57,19 @@ export default function BookingActions({ booking, userEmail, onRefresh, onMessag
             <Button 
                variant="ghost" 
                onClick={() => onMessage(booking.id)}
-               disabled={isStartingChat || isProcessingPayment}
+               disabled={isStartingChat || isCheckoutOpen}
                className="text-sky-600 hover:text-sky-700 hover:bg-sky-50 h-8 rounded-lg px-3 flex items-center gap-1.5 transition-colors"
             >
                {isStartingChat ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageSquare className="w-4 h-4" />}
-               <span className="text-[10px] font-bold uppercase tracking-widest hidden md:inline">Message</span>
+               <span className="text-[10px] font-bold tracking-widest hidden md:inline">Message</span>
             </Button>
 
             {booking.status === 'confirmed' && booking.payment_status !== 'paid' && (
                 <Button 
                    onClick={handlePayment}
-                   disabled={isProcessingPayment}
-                   className="bg-emerald-600 hover:bg-emerald-700 text-white h-8 rounded-lg px-4 flex items-center gap-1.5 shadow-md shadow-emerald-500/20 transition-all font-black uppercase text-[10px] tracking-widest"
+                   className="bg-emerald-600 hover:bg-emerald-700 text-white h-8 rounded-lg px-4 flex items-center gap-1.5 shadow-md shadow-emerald-500/20 transition-all font-black text-[10px] tracking-widest"
                 >
-                   {isProcessingPayment ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
+                   <CreditCard className="w-4 h-4" />
                    Pay Now
                 </Button>
             )}
@@ -123,9 +81,34 @@ export default function BookingActions({ booking, userEmail, onRefresh, onMessag
                    className="text-gray-500 hover:text-[#1E293B] hover:bg-gray-100 h-8 rounded-lg px-3 flex items-center gap-1.5 transition-colors ml-1"
                 >
                    <DownloadCloud className="w-4 h-4" />
-                   <span className="text-[10px] font-bold uppercase tracking-widest hidden md:inline">Invoice</span>
+                   <span className="text-[10px] font-bold tracking-widest hidden md:inline">Invoice</span>
                 </Button>
             )}
+
+            {booking.status === 'completed' && !booking.review && (
+                <Button 
+                   onClick={handleReview}
+                   className="bg-primary hover:bg-primary/90 text-white h-8 rounded-lg px-4 flex items-center gap-1.5 shadow-md shadow-primary/20 transition-all font-black text-[10px] tracking-widest"
+                >
+                   <Star className="w-4 h-4 fill-white" />
+                   Rate Service
+                </Button>
+            )}
+
+            <CheckoutDialog 
+                isOpen={isCheckoutOpen}
+                onClose={() => setIsCheckoutOpen(false)}
+                booking={booking}
+                userEmail={userEmail}
+                onSuccess={onRefresh}
+            />
+
+            <WriteReviewDialog 
+                isOpen={isReviewOpen}
+                onClose={() => setIsReviewOpen(false)}
+                booking={booking}
+                onSuccess={onRefresh}
+            />
         </div>
     );
 }

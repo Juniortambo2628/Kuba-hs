@@ -25,6 +25,8 @@ class ProviderProfileController extends Controller
             'longitude' => 'nullable|numeric',
             'experience_years' => 'nullable|integer|min:0',
             'service_radius' => 'nullable|integer|min:0',
+            'specialized_skills' => 'nullable|array',
+            'specialized_skills.*' => 'string|max:50',
         ]);
 
         $provider->update($validated);

@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Star, MapPin, Shield, ChevronRight } from "lucide-react";
+import { designSystem } from "@/lib/design-system";
 import {
   Carousel,
   CarouselContent,
@@ -16,19 +17,14 @@ import {
 } from "@/components/ui/carousel";
 import Link from "next/link";
 
-interface Provider {
-  id: number;
-  user_id: number;
-  business_name: string;
-  bio: string;
-  logo: string | null;
-  is_verified: boolean;
-  user: {
-    name: string;
-    profile_photo_path: string | null;
-  };
-  provider_services: any[];
-}
+import { Provider } from "@/types";
+
+const getAvatarUrl = (path: string | null | undefined) => {
+  if (!path) return null;
+  if (path.startsWith('http')) return path;
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, '') || 'http://localhost:8000';
+  return `${baseUrl}/storage/${path.replace('storage/', '')}`;
+};
 
 export function FeaturedProviders() {
   const [providers, setProviders] = useState<Provider[]>([]);
@@ -60,13 +56,13 @@ export function FeaturedProviders() {
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.6 }}
         >
-          <Badge variant="outline" className="text-blue-600 dark:text-blue-400 border-blue-500/30 bg-blue-500/10 mb-4 px-4 py-1.5 rounded-full">
+          <Badge variant="outline" className={designSystem.typography.section.badge}>
             Top Rated Pros
           </Badge>
-          <h2 className="text-3xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6 tracking-tight">
+          <h2 className={designSystem.typography.section.title}>
             Featured Professionals
           </h2>
-          <p className="text-gray-500 dark:text-gray-400 text-lg max-w-2xl mx-auto">
+          <p className={designSystem.typography.section.subtitle}>
             Book trusted, verified and highly-rated professionals for your home service needs.
           </p>
         </motion.div>
@@ -106,8 +102,8 @@ export function FeaturedProviders() {
                         <CardContent className="p-6 relative flex-1 flex flex-col pb-8">
                           <div className="absolute -top-10 left-6">
                               <div className="w-20 h-20 rounded-full border-4 border-white dark:border-[#0B0F19] bg-gray-100 dark:bg-zinc-800 overflow-hidden flex items-center justify-center font-bold text-2xl text-gray-400 shadow-lg">
-                                 {provider.logo ? (
-                                     <img src={provider.logo} alt={provider.business_name} className="w-full h-full object-cover" />
+                                 {provider.logo || provider.user?.avatar_url ? (
+                                     <img src={getAvatarUrl(provider.logo || provider.user?.avatar_url) || ""} alt={provider.business_name} className="w-full h-full object-cover" />
                                  ) : (
                                      <img src="/placeholders/kuba-placeholder.png" alt={provider.business_name} className="w-full h-full object-cover opacity-50" />
                                  )}
@@ -117,17 +113,17 @@ export function FeaturedProviders() {
                               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                                   {provider.business_name}
                               </h3>
-                              <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 gap-3">
-                                  <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> Local</span>
-                                  <span className="flex items-center gap-1 text-yellow-500"><Star className="w-3 h-3 fill-yellow-500" /> 4.9</span>
+                               <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 gap-3">
+                                  <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {provider.location_name || "Local"}</span>
+                                  <span className="flex items-center gap-1 text-yellow-500"><Star className="w-3 h-3 fill-yellow-500" /> {provider.rating || 4.9}</span>
                               </div>
                           </div>
                           <p className="text-gray-500 dark:text-gray-400 text-sm line-clamp-2 mb-6 flex-1">
                               {provider.bio || "Professional home service provider ready to help."}
                           </p>
                           <div className="pt-4 border-t border-gray-200 dark:border-white/10 flex items-center justify-between mt-auto">
-                              <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                  Starting from <span className="text-gray-900 dark:text-white text-base font-bold ml-1">$50/hr</span>
+                              <span className="text-xs font-medium text-gray-500 dark:text-gray-400 tracking-wider">
+                                  Starting from <span className="text-gray-900 dark:text-white text-base font-bold ml-1">KES 5,000/hr</span>
                               </span>
                               <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center group-hover:bg-blue-600 transition-colors">
                                   <ChevronRight className="w-4 h-4 text-gray-500 dark:text-white group-hover:text-white" />

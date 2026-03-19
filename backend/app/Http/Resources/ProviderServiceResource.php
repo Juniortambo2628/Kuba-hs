@@ -23,6 +23,7 @@ class ProviderServiceResource extends JsonResource
             'name' => $this->service?->name,
             'description' => $this->service?->description,
             'category' => $this->service?->category?->name,
+            'service_thumbnail_url' => $this->service?->thumbnail_url,
             'image_urls' => $this->image_urls,
             'provider' => new ProviderResource($this->whenLoaded('provider')),
             'service' => new ServiceResource($this->whenLoaded('service')),

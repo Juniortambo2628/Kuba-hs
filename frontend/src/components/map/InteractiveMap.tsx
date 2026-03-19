@@ -52,7 +52,7 @@ function MapUpdater({ providers, center }: { providers: Provider[], center: [num
   return null;
 }
 
-export default function InteractiveMap({ providers, center = [51.505, -0.09], zoom = 10 }: InteractiveMapProps) {
+export default function InteractiveMap({ providers, center = [-1.2921, 36.8219], zoom = 10 }: InteractiveMapProps) {
   return (
     <div className="w-full h-full min-h-[400px] md:min-h-full rounded-2xl overflow-hidden shadow-sm border border-gray-200 dark:border-white/10 relative z-0">
       <MapContainer 
@@ -61,6 +61,7 @@ export default function InteractiveMap({ providers, center = [51.505, -0.09], zo
         scrollWheelZoom={false} 
         style={{ height: "100%", width: "100%" }}
         className="z-0"
+        maxBounds={[[-5.0, 33.0], [5.5, 42.0]]} // Kenya bounding box
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

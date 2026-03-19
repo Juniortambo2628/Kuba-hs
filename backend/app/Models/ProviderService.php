@@ -16,6 +16,10 @@ class ProviderService extends Model implements \Spatie\MediaLibrary\HasMedia
         'service_id',
         'base_price',
         'pricing_type',
+        'min_hours',
+        'travel_fee',
+        'equipment_included',
+        'extra_configs',
         'is_available',
     ];
 
@@ -24,6 +28,10 @@ class ProviderService extends Model implements \Spatie\MediaLibrary\HasMedia
     protected $casts = [
         'is_available' => 'boolean',
         'base_price' => 'decimal:2',
+        'travel_fee' => 'decimal:2',
+        'min_hours' => 'integer',
+        'equipment_included' => 'boolean',
+        'extra_configs' => 'array',
     ];
 
     public function getImageUrlsAttribute(): array

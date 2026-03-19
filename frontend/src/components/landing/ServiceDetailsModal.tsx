@@ -20,19 +20,18 @@ import axiosInstance from "@/lib/axios";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BookingModal } from "@/components/booking/BookingModal";
 
-interface Provider {
-  id: string;
-  business_name: string;
-  bio: string;
-  rating: number;
-  review_count: number;
-  is_verified: boolean;
-  logo: string;
-  user?: {
-     name: string;
-     profile_photo_path: string | null;
-  };
-}
+import { Provider, User } from "@/types";
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, '') || 'http://localhost:8000';
+
+const getAvatarUrl = (path: string | null | undefined) => {
+  if (!path) return null;
+  if (path.startsWith('http')) return path;
+  if (path.startsWith('/')) return `${BACKEND_URL}${path}`;
+  return `${BACKEND_URL}/storage/${path.replace('storage/', '')}`;
+};
+
+const SERVICE_FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?q=80&w=800&auto=format&fit=crop';
 
 interface ServiceDetail {
   id: string;
@@ -111,14 +110,18 @@ export function ServiceDetailsModal({ isOpen, onClose, serviceId }: ServiceDetai
             {/* Left Side - Image & Hero */}
             <div className="lg:w-2/5 relative h-64 lg:h-auto">
               <img 
-                src={service.image_urls?.[0]?.url || 'https://images.unsplash.com/photo-1581578731522-74548b360k44?q=80&w=1000&auto=format&fit=crop'} 
+                src={
+                  getAvatarUrl(service.image_urls?.[0]?.url)
+                  || SERVICE_FALLBACK_IMAGE
+                } 
                 className="w-full h-full object-cover"
                 alt={service.name}
+                onError={(e) => { (e.target as HTMLImageElement).src = SERVICE_FALLBACK_IMAGE; }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
               <div className="absolute bottom-6 left-6 right-6">
                 <Badge className="mb-3 bg-sky-500 text-white border-0">{service.category}</Badge>
-                <h2 className="text-2xl font-black text-white leading-tight">{service.name}</h2>
+                <h2 className="text-2xl font-bold text-white leading-tight">{service.name}</h2>
               </div>
             </div>
 
@@ -128,7 +131,7 @@ export function ServiceDetailsModal({ isOpen, onClose, serviceId }: ServiceDetai
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-12 w-12 border-2 border-sky-500/20">
-                      <AvatarImage src={service.provider.logo} />
+                      <AvatarImage src={getAvatarUrl(service.provider.logo || service.provider.user?.avatar_url) || ""} />
                       <AvatarFallback className="bg-sky-500/10 text-sky-500">{service.provider.business_name[0]}</AvatarFallback>
                     </Avatar>
                     <div>
@@ -146,8 +149,8 @@ export function ServiceDetailsModal({ isOpen, onClose, serviceId }: ServiceDetai
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-black text-gray-900 dark:text-white">${service.base_price}</p>
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{service.pricing_type}</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">KES {service.base_price.toLocaleString()}</p>
+                    <p className="text-[10px] font-semibold text-gray-400 tracking-widest">{service.pricing_type}</p>
                   </div>
                 </div>
               </DialogHeader>
@@ -166,12 +169,12 @@ export function ServiceDetailsModal({ isOpen, onClose, serviceId }: ServiceDetai
                   <div className="grid grid-cols-2 gap-4">
                     <div className="p-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
                       <Clock className="w-5 h-5 text-sky-500 mb-2" />
-                      <p className="text-xs font-bold text-gray-400 uppercase">Estimated Time</p>
+                      <p className="text-xs font-bold text-gray-400">Estimated Time</p>
                       <p className="font-bold dark:text-white">2 - 4 Hours</p>
                     </div>
                     <div className="p-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
                       <CheckCircle2 className="w-5 h-5 text-sky-500 mb-2" />
-                      <p className="text-xs font-bold text-gray-400 uppercase">Satisfaction</p>
+                      <p className="text-xs font-bold text-gray-400">Satisfaction</p>
                       <p className="font-bold dark:text-white">100% Guaranteed</p>
                     </div>
                   </div>
@@ -197,7 +200,7 @@ export function ServiceDetailsModal({ isOpen, onClose, serviceId }: ServiceDetai
                         <div key={p.id} className="flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 hover:border-sky-500/50 transition-all group cursor-pointer">
                           <div className="flex items-center gap-3">
                             <Avatar className="h-10 w-10">
-                              <AvatarImage src={p.provider?.logo} />
+                              <AvatarImage src={getAvatarUrl(p.provider?.logo || p.provider?.user?.avatar_url) || ""} />
                               <AvatarFallback>{p.provider?.business_name?.[0]}</AvatarFallback>
                             </Avatar>
                             <div>
@@ -207,7 +210,7 @@ export function ServiceDetailsModal({ isOpen, onClose, serviceId }: ServiceDetai
                                    <Star className="w-3 h-3 fill-current" /> {p.provider?.rating || 4.8}
                                 </span>
                                 <span>•</span>
-                                <span>From ${p.base_price}</span>
+                                <span>From KES {p.base_price.toLocaleString()}</span>
                               </div>
                             </div>
                           </div>
@@ -230,9 +233,9 @@ export function ServiceDetailsModal({ isOpen, onClose, serviceId }: ServiceDetai
                 </Button>
                 <Button 
                    onClick={() => setIsBookingModalOpen(true)}
-                   className="flex-[2] h-14 rounded-2xl bg-sky-600 hover:bg-sky-500 text-white font-black text-lg shadow-xl shadow-sky-500/20 overflow-hidden group relative"
+                   className="flex-[2] h-14 rounded-2xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-lg shadow-xl shadow-sky-500/20 overflow-hidden group relative"
                 >
-                   <span className="relative z-10">BOOK NOW</span>
+                   <span className="relative z-10">Book Now</span>
                    <div className="absolute inset-0 bg-gradient-to-r from-sky-400 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </Button>
               </div>
