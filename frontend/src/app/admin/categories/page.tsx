@@ -104,7 +104,7 @@ export default function AdminCategories() {
         finally { setIsSubmitting(false); }
     };
 
-    const handleDeleteService = async (id: number) => {
+    const handleDeleteService = async (id: string | number) => {
         if (!confirm("Delete this service?")) return;
         try { await axiosInstance.delete(`/api/admin/services/${id}`); toast.success("Service deleted"); fetchCategories(); }
         catch (err: any) { toast.error(err.response?.data?.message || "Delete failed"); }
