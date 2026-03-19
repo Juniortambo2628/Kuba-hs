@@ -28,7 +28,8 @@ import {
   Mail,
   Zap,
   Star,
-  ReceiptText
+  ReceiptText,
+  ShieldCheck
 } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
