@@ -1,0 +1,27 @@
+
+> chisfis-nextjs@0.2.2 build
+> next build
+
+ ΓÜá `experimental.typedRoutes` has been moved to `typedRoutes`. Please update your next.config.js file accordingly.
+   Γû▓ Next.js 15.5.12
+   - Environments: .env.local
+   - Experiments (use with caution):
+     Γ¿» typedRoutes
+
+   Creating an optimized production build ...
+ Γ£ô Compiled successfully in 103s
+   Linting and checking validity of types ...
+Failed to compile.
+
+./src/app/(public)/providers/page.tsx:37:25
+Type error: Type '{ authors: AuthorType[]; heading: string; subHeading: string; }' is not assignable to type 'IntrinsicAttributes & SectionGridAuthorBoxProps'.
+  Property 'heading' does not exist on type 'IntrinsicAttributes & SectionGridAuthorBoxProps'.
+
+  35 |                     <SectionGridAuthorBox 
+  36 |                         authors={providers}
+> 37 |                         heading="Our Service Professionals"
+     |                         ^
+  38 |                         subHeading="Meet the experts dedicated to quality and reliability"
+  39 |                     />
+  40 |                 </main>
+Next.js build worker exited with code: 1 and signal: null

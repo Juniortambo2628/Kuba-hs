@@ -15,3 +15,7 @@ Broadcast::channel('conversation.{conversationId}', function ($user, string $con
 Broadcast::channel('user.{id}', function ($user, $id) {
     return (string) $user->id === (string) $id;
 });
+
+Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
+    return (string) $user->id === (string) $id;
+});

@@ -56,7 +56,7 @@ function GoogleCallbackContent() {
         <div className="min-h-screen bg-black flex items-center justify-center text-white">
             <div className="text-center space-y-4">
                 <Loader2 className="w-10 h-10 animate-spin text-indigo-500 mx-auto" />
-                <p className="text-gray-400 font-medium">Finalizing secure connection...</p>
+                <p className="text-muted-foreground font-medium">Finalizing secure connection...</p>
             </div>
         </div>
     );

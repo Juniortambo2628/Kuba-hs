@@ -4,17 +4,26 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\SiteSetting;
+use App\Http\Resources\SiteSettingResource;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SettingsController extends Controller
 {
     public function index()
     {
+        $settings = SiteSetting::orderBy('group')->get()->groupBy('group');
+
+        $formattedSettings = [];
+        foreach ($settings as $group => $items) {
+            $formattedSettings[$group] = SiteSettingResource::collection($items);
+        }
+
         return response()->json([
-            'settings' => SiteSetting::all()->pluck('value', 'key'),
+            'settings' => $formattedSettings,
             'metadata' => [
                 'environment' => config('app.env'),
-                'version' => '1.2.0-stable',
+                'version' => '1.2.5-stable',
                 'maintenance_mode' => app()->isDownForMaintenance(),
             ]
         ]);
@@ -24,12 +33,35 @@ class SettingsController extends Controller
     {
         $validated = $request->validate([
             'settings' => 'required|array',
+            'settings.*.id' => 'required|exists:site_settings,id',
+            'settings.*.value' => 'nullable|string|max:10000',
+            'settings.*.file' => 'nullable|file|mimes:jpg,jpeg,png,svg,webp|max:10240',
         ]);
 
-        foreach ($validated['settings'] as $key => $value) {
-            SiteSetting::updateOrCreate(['key' => $key], ['value' => $value]);
-        }
+        try {
+            DB::transaction(function () use ($validated) {
+                foreach ($validated['settings'] as $item) {
+                    $setting = SiteSetting::find($item['id']);
+                    
+                    if ($setting->type === 'image' && isset($item['file'])) {
+                        $setting->clearMediaCollection('site_settings');
+                        $setting->addMedia($item['file'])->toMediaCollection('site_settings');
+                        $setting->update(['value' => $item['value'] ?? $setting->value]);
+                    } else {
+                        $setting->update(['value' => $item['value'] ?? '']);
+                    }
+                }
+            });
 
-        return response()->json(['message' => 'System configurations updated successfully']);
+            return response()->json([
+                'success' => true,
+                'message' => 'Platform configurations synchronized successfully!',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Update failed: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }

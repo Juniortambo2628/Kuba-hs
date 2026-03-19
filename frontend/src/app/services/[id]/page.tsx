@@ -72,7 +72,7 @@ export default function CategoryDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-[#F8FAFC]">
+            <div className="min-h-screen bg-muted/50">
                 <Navbar />
                 <div className="h-64 bg-gray-200 animate-pulse" />
                 <div className="max-w-7xl mx-auto px-4 py-12 space-y-8">
@@ -89,7 +89,7 @@ export default function CategoryDetailPage() {
     if (!category) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center p-4">
-                <h1 className="text-2xl font-black text-gray-900 mb-4 uppercase tracking-tighter">Category Not Found</h1>
+                <h1 className="text-2xl font-semibold text-gray-900 mb-4 tracking-tighter">Category Not Found</h1>
                 <Link href="/services">
                     <Button variant="outline" className="rounded-xl px-8 font-bold">Back to Services</Button>
                 </Link>
@@ -118,7 +118,7 @@ export default function CategoryDetailPage() {
                     <motion.h1 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase"
+                        className="text-5xl md:text-7xl font-semibold text-white tracking-tighter"
                     >
                         {category.name}
                     </motion.h1>
@@ -138,11 +138,11 @@ export default function CategoryDetailPage() {
                     {/* Services Column */}
                     <div className="lg:col-span-2 space-y-8">
                         <div className="flex items-center justify-between">
-                            <h2 className="text-3xl font-black text-[#1E293B] dark:text-white uppercase tracking-tighter leading-none">
-                                Available <span className="text-sky-600">Services</span>
+                            <h2 className="text-3xl font-semibold text-foreground dark:text-white tracking-tighter leading-none">
+                                Browse <span className="text-sky-600">{category.name}</span> Services
                             </h2>
-                            <span className="bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 font-black text-[10px] px-3 py-1 rounded-full uppercase tracking-widest border border-sky-100 dark:border-sky-500/20">
-                                {category.services?.length || 0} Specializations
+                            <span className="bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 font-semibold text-[10px] px-3 py-1 rounded-full tracking-widest border border-sky-100 dark:border-sky-500/20">
+                                {category.services?.length || 0} Specializations Available
                             </span>
                         </div>
 
@@ -162,14 +162,14 @@ export default function CategoryDetailPage() {
                                                     <div className="w-12 h-12 rounded-2xl bg-white dark:bg-white/5 shadow-sm flex items-center justify-center group-hover:scale-110 group-hover:bg-sky-600 transition-all duration-500">
                                                         <Plus className="w-5 h-5 text-sky-600 group-hover:text-white transition-colors" />
                                                     </div>
-                                                    <h3 className="text-xl font-black text-[#1E293B] dark:text-white group-hover:text-sky-600 transition-colors uppercase leading-tight">
+                                                    <h3 className="text-xl font-semibold text-foreground dark:text-white group-hover:text-sky-600 transition-colors leading-tight">
                                                         {service.name}
                                                     </h3>
                                                     <p className="text-gray-500 dark:text-gray-400 text-sm font-medium leading-relaxed">
                                                         {service.description}
                                                     </p>
                                                 </div>
-                                                <div className="pt-4 flex items-center text-xs font-black text-sky-600 dark:text-sky-400 uppercase tracking-widest group-hover:translate-x-2 transition-transform duration-500">
+                                                <div className="pt-4 flex items-center text-xs font-semibold text-sky-600 dark:text-sky-400 tracking-widest group-hover:translate-x-2 transition-transform duration-500">
                                                     Find active providers <ArrowRight className="ml-2 w-4 h-4" />
                                                 </div>
                                             </CardContent>
@@ -182,11 +182,11 @@ export default function CategoryDetailPage() {
 
                     {/* Sidebar / CTA Column */}
                     <div className="space-y-8">
-                        <Card className="bg-[#1E293B] border-none rounded-[2.5rem] p-10 text-white relative overflow-hidden group">
+                        <Card className="bg-primary border-none rounded-[2.5rem] p-10 text-white relative overflow-hidden group">
                             <div className="absolute -top-20 -right-20 w-64 h-64 bg-sky-600/30 rounded-full blur-[100px] group-hover:bg-sky-600/50 transition-all duration-1000"></div>
                             <div className="relative z-10 space-y-6">
                                 <ShieldCheck className="w-12 h-12 text-sky-400" />
-                                <h3 className="text-2xl font-black uppercase tracking-tighter italic">Why trust <span className="text-sky-400">KUBA</span>?</h3>
+                                <h3 className="text-2xl font-semibold tracking-tighter italic">Why trust <span className="text-sky-400">KUBA</span>?</h3>
                                 <div className="space-y-4">
                                     {[
                                         "Vetted & Verified Professionals",
@@ -200,36 +200,36 @@ export default function CategoryDetailPage() {
                                         </div>
                                     ))}
                                 </div>
-                                <Button className="w-full h-14 bg-white text-[#1E293B] hover:bg-sky-50 hover:scale-[1.02] transition-all rounded-2xl font-black uppercase tracking-widest text-[11px] mt-4">
+                                <Button className="w-full h-14 bg-white text-foreground hover:bg-sky-50 hover:scale-[1.02] transition-all rounded-2xl font-semibold tracking-widest text-[11px] mt-4">
                                     Become a Provider
                                 </Button>
                             </div>
                         </Card>
 
-                        <div className="bg-gray-50 dark:bg-white/5 rounded-[2.5rem] p-8 border border-gray-100 dark:border-white/10 space-y-6">
-                            <h4 className="text-sm font-black text-[#1E293B] dark:text-white uppercase tracking-widest flex items-center gap-2">
+                        <div className="bg-gray-50 dark:bg-white/5 rounded-[2.5rem] p-8 border border-border dark:border-white/10 space-y-6">
+                            <h4 className="text-sm font-semibold text-foreground dark:text-white tracking-widest flex items-center gap-2">
                                 <User className="w-4 h-4 text-sky-600" /> Popular in this category
                             </h4>
                             <div className="space-y-3">
-                                <div className="flex items-center justify-between p-4 bg-white dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5">
+                                <div className="flex items-center justify-between p-4 bg-white dark:bg-white/5 rounded-2xl border border-border dark:border-white/5">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse"></div>
                                         <div>
-                                            <p className="text-sm font-bold text-[#1E293B] dark:text-white">Alex Johnson</p>
+                                            <p className="text-sm font-bold text-foreground dark:text-white">Alex Johnson</p>
                                             <div className="flex text-amber-500"><Star className="w-3 h-3 fill-current" /><Star className="w-3 h-3 fill-current" /><Star className="w-3 h-3 fill-current" /><Star className="w-3 h-3 fill-current" /><Star className="w-3 h-3 fill-current" /></div>
                                         </div>
                                     </div>
-                                    <span className="text-[10px] font-black text-emerald-500 bg-emerald-50 px-2 py-1 rounded-lg">VERIFIED</span>
+                                    <span className="text-[10px] font-semibold text-emerald-500 bg-emerald-50 px-2 py-1 rounded-lg">VERIFIED</span>
                                 </div>
-                                <div className="flex items-center justify-between p-4 bg-white dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5">
+                                <div className="flex items-center justify-between p-4 bg-white dark:bg-white/5 rounded-2xl border border-border dark:border-white/5">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse"></div>
                                         <div>
-                                            <p className="text-sm font-bold text-[#1E293B] dark:text-white">Sarah Miller</p>
+                                            <p className="text-sm font-bold text-foreground dark:text-white">Sarah Miller</p>
                                             <div className="flex text-amber-500"><Star className="w-3 h-3 fill-current" /><Star className="w-3 h-3 fill-current" /><Star className="w-3 h-3 fill-current" /><Star className="w-3 h-3 fill-current" /><Star className="w-3 h-3 fill-current" /></div>
                                         </div>
                                     </div>
-                                    <span className="text-[10px] font-black text-emerald-500 bg-emerald-50 px-2 py-1 rounded-lg">VERIFIED</span>
+                                    <span className="text-[10px] font-semibold text-emerald-500 bg-emerald-50 px-2 py-1 rounded-lg">VERIFIED</span>
                                 </div>
                             </div>
                         </div>

@@ -25,8 +25,10 @@ class Provider extends Model implements \Spatie\MediaLibrary\HasMedia
         'rating_avg',
         'review_count',
         'is_verified',
+        'application_status',
         'verification_documents',
         'availability_status',
+        'specialized_skills',
     ];
 
     protected $casts = [
@@ -34,6 +36,7 @@ class Provider extends Model implements \Spatie\MediaLibrary\HasMedia
         'verification_documents' => 'json',
         'latitude' => 'decimal:8',
         'longitude' => 'decimal:8',
+        'specialized_skills' => 'json',
     ];
 
     public function user(): BelongsTo

@@ -30,6 +30,8 @@ class ProviderResource extends JsonResource
             'user' => new UserResource($this->whenLoaded('user')),
             'services' => ProviderServiceResource::collection($this->whenLoaded('providerServices')),
             'reviews' => ReviewResource::collection($this->whenLoaded('reviews')),
+            'availability' => $this->whenLoaded('availability'),
+            'exceptions' => $this->whenLoaded('scheduleExceptions'),
         ];
     }
 }

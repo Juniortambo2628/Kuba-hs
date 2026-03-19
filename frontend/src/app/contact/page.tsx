@@ -15,8 +15,10 @@ import {
 } from "lucide-react";
 import axiosInstance from "@/lib/axios";
 import { toast } from "sonner";
+import { useCMS } from "@/hooks/useCMS";
 
 export default function ContactPage() {
+  const { getS } = useCMS();
   const [formData, setFormData] = useState({ name: "", email: "", subject: "", message: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -42,22 +44,22 @@ export default function ContactPage() {
     {
       icon: <Phone className="w-5 h-5" />,
       title: "Call Us",
-      details: "+1 (555) 123-4567",
-      sub: "Mon-Fri from 8am to 6pm",
+      details: getS('contact', 'contact_phone', '+254 700 000 000'),
+      sub: getS('contact', 'contact_phone_hours', 'Mon-Fri from 8am to 6pm'),
       color: "blue"
     },
     {
       icon: <Mail className="w-5 h-5" />,
       title: "Email Us",
-      details: "support@kuba.com",
+      details: getS('contact', 'contact_email', 'info@kuba.co.ke'),
       sub: "Online support 24/7",
       color: "purple"
     },
     {
       icon: <MapPin className="w-5 h-5" />,
       title: "Visit Us",
-      details: "123 Service Lane",
-      sub: "Tech City, TC 94105",
+      details: getS('contact', 'contact_address', 'Nairobi, Kenya'),
+      sub: getS('contact', 'contact_address_sub', 'Business District'),
       color: "cyan"
     }
   ];
@@ -88,7 +90,7 @@ export default function ContactPage() {
             >
               <div className="mb-8">
                 <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Send us a Message</h2>
-                <p className="text-gray-500 dark:text-gray-400">Fill out the form below and our team will get back to you within 24 hours.</p>
+                <p className="text-muted-foreground dark:text-gray-400">Fill out the form below and our team will get back to you within 24 hours.</p>
               </div>
 
               {isSubmitted ? (
@@ -103,7 +105,7 @@ export default function ContactPage() {
                   </CardContent>
                 </Card>
               ) : (
-                <Card className="bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10 rounded-3xl overflow-hidden shadow-xl">
+                <Card className="bg-muted dark:bg-white/5 border-border dark:border-white/10 rounded-3xl overflow-hidden shadow-xl">
                   <CardContent className="p-8">
                     <form className="space-y-6" onSubmit={handleSubmit}>
                       <div className="grid md:grid-cols-2 gap-6">
@@ -114,7 +116,7 @@ export default function ContactPage() {
                             value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                             required
-                            className="bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 rounded-xl h-12 focus-visible:ring-blue-500"
+                            className="bg-white dark:bg-white/5 border-border dark:border-white/10 rounded-xl h-12 focus-visible:ring-blue-500"
                           />
                         </div>
                         <div className="space-y-2">
@@ -125,7 +127,7 @@ export default function ContactPage() {
                             value={formData.email}
                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                             required
-                            className="bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 rounded-xl h-12 focus-visible:ring-blue-500"
+                            className="bg-white dark:bg-white/5 border-border dark:border-white/10 rounded-xl h-12 focus-visible:ring-blue-500"
                           />
                         </div>
                       </div>
@@ -137,7 +139,7 @@ export default function ContactPage() {
                           value={formData.subject}
                           onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                           required
-                          className="bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 rounded-xl h-12 focus-visible:ring-blue-500"
+                          className="bg-white dark:bg-white/5 border-border dark:border-white/10 rounded-xl h-12 focus-visible:ring-blue-500"
                         />
                       </div>
 
@@ -148,7 +150,7 @@ export default function ContactPage() {
                           value={formData.message}
                           onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                           required
-                          className="bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 rounded-2xl min-h-[150px] focus-visible:ring-blue-500 pt-4"
+                          className="bg-white dark:bg-white/5 border-border dark:border-white/10 rounded-2xl min-h-[150px] focus-visible:ring-blue-500 pt-4"
                         />
                       </div>
 
@@ -189,7 +191,7 @@ export default function ContactPage() {
                         <div>
                           <h4 className="font-bold text-gray-900 dark:text-white text-lg">{item.title}</h4>
                           <p className="text-blue-600 dark:text-blue-400 font-semibold mb-1">{item.details}</p>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">{item.sub}</p>
+                          <p className="text-sm text-muted-foreground dark:text-gray-400">{item.sub}</p>
                         </div>
                       </CardContent>
                     </Card>

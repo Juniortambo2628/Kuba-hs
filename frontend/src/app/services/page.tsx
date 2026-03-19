@@ -103,13 +103,13 @@ export default function ServicesPage() {
               <div className="sticky top-24 space-y-6">
                 <Card className="bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10 rounded-2xl overflow-hidden">
                   <CardContent className="p-5 space-y-5">
-                    <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2 text-sm uppercase tracking-wider">
+                    <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2 text-sm tracking-wider">
                       <SlidersHorizontal className="w-4 h-4" /> Filters & Sort
                     </h3>
 
                     {/* Sort */}
                     <div>
-                      <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 block">Sort By</label>
+                      <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 tracking-wider mb-2 block">Sort By</label>
                       <select
                         value={sortBy}
                         onChange={(e) => setSortBy(e.target.value as SortOption)}
@@ -123,7 +123,7 @@ export default function ServicesPage() {
 
                     {/* Quick links to categories */}
                     <div>
-                      <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 block">Categories</label>
+                      <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 tracking-wider mb-3 block">Categories</label>
                       <div className="space-y-1 max-h-64 overflow-y-auto pr-1">
                         {categories.map((cat) => (
                           <a
@@ -165,7 +165,7 @@ export default function ServicesPage() {
                     className="hidden sm:flex items-center gap-2 text-sky-600 bg-sky-50 dark:bg-sky-500/10 rounded-xl px-4"
                   >
                     <MapIcon className="w-4 h-4" />
-                    <span className="font-black text-[10px] uppercase tracking-widest">{view === "map" ? "Close Map" : "Map View"}</span>
+                    <span className="font-semibold text-[10px] tracking-widest">{view === "map" ? "Close Map" : "Map View"}</span>
                   </Button>
                   <div className="flex bg-gray-100 dark:bg-white/5 rounded-lg p-1 border border-gray-200 dark:border-white/10">
                     <Button

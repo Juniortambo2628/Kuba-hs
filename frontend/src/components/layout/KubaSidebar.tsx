@@ -10,65 +10,66 @@ import {
   SidebarMenuItem,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
 } from "@/components/ui/sidebar";
 import { 
   LayoutDashboard, 
   CalendarCheck, 
-  Gift, 
   Settings, 
-  Users, 
-  CreditCard, 
-  BarChart, 
-  MessageSquare, 
-  FileText,
   LogOut,
-  Calendar,
   Briefcase,
-  Star,
   User,
-  Home, 
   Plus,
   ShieldCheck,
   Clock,
   ClipboardList,
+  MessageSquare,
+  Star,
+  Calendar,
   PenTool,
-  Mail
+  Mail,
+  TrendingUp,
+  DollarSign,
+  FileText,
+  Monitor
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCMS } from "@/hooks/useCMS";
 
 const clientItems = [
-  { title: "OVERVIEW", url: "/dashboard/client", icon: LayoutDashboard },
-  { title: "MY BOOKINGS", icon: Calendar, url: "/dashboard/client/bookings" },
-  { title: "MY SERVICES", icon: Briefcase, url: "/dashboard/client/services" },
-  { title: "MESSAGES", icon: MessageSquare, url: "/dashboard/client/messages" },
-  { title: "LOYALTY PROGRAM", icon: Star, url: "/dashboard/client/loyalty" },
-  { title: "PROFILE SETTINGS", icon: User, url: "/dashboard/client/profile" },
+  { title: "Overview", url: "/dashboard/client", icon: LayoutDashboard },
+  { title: "Bookings", icon: Calendar, url: "/dashboard/client/bookings" },
+  { title: "Services", icon: Briefcase, url: "/dashboard/client/services" },
+  { title: "Messages", icon: MessageSquare, url: "/dashboard/client/messages" },
+  { title: "Loyalty", icon: Star, url: "/dashboard/client/loyalty" },
+  { title: "Profile", icon: User, url: "/dashboard/client/profile" },
 ];
 
 const adminItems = [
-    { title: "OVERVIEW", url: "/admin", icon: LayoutDashboard },
-    { title: "BOOKINGS", url: "/admin/bookings", icon: CalendarCheck },
-    { title: "USERS", url: "/admin/users", icon: ShieldCheck },
-    { title: "CATEGORIES", url: "/admin/categories", icon: LayoutDashboard },
-    { title: "INVESTORS", url: "/admin/investors", icon: Briefcase },
-    { title: "EMAIL TEMPLATES", url: "/admin/email-templates", icon: Mail },
-    { title: "CMS", url: "/admin/cms", icon: PenTool },
-    { title: "SETTINGS", url: "/admin/settings", icon: Settings },
+  { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
+  { title: "Analytics", url: "/admin/analytics", icon: TrendingUp },
+  { title: "Bookings", url: "/admin/bookings", icon: CalendarCheck },
+  { title: "Users", url: "/admin/users", icon: ShieldCheck },
+  { title: "Categories", url: "/admin/categories", icon: LayoutDashboard },
+  { title: "Payments", url: "/admin/payments", icon: DollarSign },
+  { title: "Loyalty", url: "/admin/loyalty", icon: Star },
+  { title: "Blog", url: "/admin/blog", icon: FileText },
+  { title: "Investors", url: "/admin/investors", icon: Briefcase },
+  { title: "Feedback", url: "/admin/feedback", icon: MessageSquare },
+  { title: "Reports", url: "/admin/reports", icon: ClipboardList },
+  { title: "Email", url: "/admin/email-templates", icon: Mail },
+  { title: "Platform CMS", url: "/admin/settings", icon: Settings },
 ];
 
 const providerItems = [
-    { title: "OVERVIEW", url: "/dashboard/provider", icon: LayoutDashboard },
-    { title: "MY SERVICES", url: "/dashboard/provider/services", icon: Briefcase },
-    { title: "AVAILABILITY", url: "/dashboard/provider/availability", icon: Clock },
-    { title: "WORK ORDERS", url: "/dashboard/provider/bookings", icon: ClipboardList },
-    { title: "MESSAGES", url: "/dashboard/provider/messages", icon: MessageSquare },
-    { title: "REVIEWS", url: "/dashboard/provider/reviews", icon: Star },
-    { title: "PROFILE", url: "/dashboard/provider/profile", icon: User },
+  { title: "Dashboard", url: "/dashboard/provider", icon: LayoutDashboard },
+  { title: "Services", url: "/dashboard/provider/services", icon: Briefcase },
+  { title: "Activity", url: "/dashboard/provider/availability", icon: Clock },
+  { title: "Orders", url: "/dashboard/provider/bookings", icon: ClipboardList },
+  { title: "Messages", url: "/dashboard/provider/messages", icon: MessageSquare },
+  { title: "Reviews", url: "/dashboard/provider/reviews", icon: Star },
+  { title: "Profile", url: "/dashboard/provider/profile", icon: User },
 ];
 
 export function KubaSidebar() {
@@ -83,34 +84,23 @@ export function KubaSidebar() {
         : clientItems;
 
   return (
-    <Sidebar className="border-r border-gray-100 bg-white shadow-sm">
-      <SidebarHeader className="p-6">
-        <div className="flex flex-col items-center gap-4">
-          <Link href="/" className="flex items-center gap-3">
-             <img src={getImg('branding', 'site_logo', '/logo.png')} alt="KUBA" className="h-16 w-auto object-contain" />
-          </Link>
-          
-          <Button 
-            className="w-full h-12 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl shadow-lg shadow-sky-200 flex items-center justify-center gap-2 mt-4"
-            asChild
-          >
-            <Link href="/services">
-                <div className="w-6 h-6 rounded-full border-2 border-white flex items-center justify-center">
-                    <Plus className="w-4 h-4" />
-                </div>
-                <span>BOOK APPOINTMENT</span>
-            </Link>
-          </Button>
-        </div>
+    <Sidebar className="border-r border-sidebar-border bg-sidebar">
+      {/* Logo */}
+      <SidebarHeader className="px-6 py-8">
+        <Link href="/" className="flex items-center gap-2.5 group transition-transform hover:scale-105 duration-300">
+            <img 
+              src="/logos/Kuba-Header-Footer-Logo-for-Dark-Mode.png" 
+              alt="KUBA" 
+              className="h-8 w-auto object-contain" 
+            />
+        </Link>
       </SidebarHeader>
 
-      <SidebarContent className="px-3">
+      {/* Navigation */}
+      <SidebarContent className="px-3 flex-1">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] font-black text-gray-400 tracking-[0.2em] px-4 mb-4">
-            MAIN MENU
-          </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="gap-2">
+            <SidebarMenu className="space-y-0.5">
               {items.map((item) => {
                 const isActive = pathname === item.url;
                 return (
@@ -118,16 +108,16 @@ export function KubaSidebar() {
                     <SidebarMenuButton 
                       asChild 
                       className={`
-                        h-12 px-4 rounded-xl transition-all duration-200
+                        h-11 px-4 rounded-xl transition-all duration-200 border border-transparent
                         ${isActive 
-                          ? "bg-gray-100/50 text-sky-600" 
-                          : "text-gray-400 hover:bg-gray-50/80 hover:text-[#1E293B]"
+                          ? "bg-foreground text-background font-bold shadow-sm shadow-foreground/10 border-foreground/5" 
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground hover:border-border"
                         }
                       `}
                     >
-                      <Link href={item.url} className="flex items-center gap-3">
-                        <item.icon className={`h-5 w-5 ${isActive ? "text-sky-600" : ""}`} />
-                        <span className="text-[11px] font-black tracking-wider uppercase">{item.title}</span>
+                      <Link href={item.url} className="flex items-center gap-3.5">
+                        <item.icon className={`h-[18px] w-[18px] shrink-0 ${isActive ? 'scale-110' : ''} transition-transform`} />
+                        <span className="text-[13px] font-bold tracking-tight">{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -138,8 +128,15 @@ export function KubaSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-4 border-t border-gray-50 flex flex-col gap-4">
-        {/* Profile and Logout moved to Navbar profile dropdown */}
+      {/* Footer */}
+      <SidebarFooter className="px-4 pb-6 pt-4 border-t border-sidebar-border">
+        <button 
+          onClick={() => logout()}
+          className="flex items-center gap-3.5 w-full px-4 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition-all text-[11px] font-bold tracking-widest group"
+        >
+          <LogOut className="w-[18px] h-[18px] group-hover:-translate-x-1 transition-transform" />
+          <span>Terminate Session</span>
+        </button>
       </SidebarFooter>
     </Sidebar>
   );

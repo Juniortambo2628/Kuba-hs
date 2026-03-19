@@ -19,6 +19,25 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { ServiceDetailsModal } from "./ServiceDetailsModal";
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, '') || 'http://localhost:8000';
+
+const getAvatarUrl = (path: string | null | undefined) => {
+  if (!path) return null;
+  if (path.startsWith('http')) return path;
+  // If it starts with / (e.g. /placeholders/...) use it directly with backend base
+  if (path.startsWith('/')) return `${BACKEND_URL}${path}`;
+  // Otherwise assume it's a storage-relative path
+  return `${BACKEND_URL}/storage/${path.replace('storage/', '')}`;
+};
+
+const SERVICE_FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?q=80&w=800&auto=format&fit=crop';
+
+const getServiceImage = (service: Service) => {
+  return getAvatarUrl(service.image_urls?.[0]?.url)
+    || getAvatarUrl(service.service_thumbnail_url)
+    || SERVICE_FALLBACK_IMAGE;
+};
+
 interface Service {
   id: string;
   name: string;
@@ -27,6 +46,7 @@ interface Service {
   pricing_type: string;
   category: string;
   image_urls: { url: string }[];
+  service_thumbnail_url?: string;
   provider: {
     id: string;
     business_name: string;
@@ -34,6 +54,9 @@ interface Service {
     review_count: number;
     is_verified: boolean;
     logo: string;
+    user?: {
+      avatar_url?: string;
+    };
   };
 }
 
@@ -74,13 +97,13 @@ export function FeaturedServices() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <Badge className="mb-4 bg-sky-500/10 text-sky-500 border-sky-500/20 px-4 py-1 rounded-full text-xs font-bold tracking-wider uppercase">
+            <Badge className="mb-4 bg-sky-500/10 text-sky-500 border-sky-500/20 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wider">
               Latest Services
             </Badge>
-            <h2 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight uppercase">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white tracking-tight">
               Recently <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-500 to-indigo-500">Posted</span>
             </h2>
-            <p className="mt-4 text-gray-500 dark:text-gray-400 text-lg max-w-xl">
+            <p className="mt-4 text-gray-500 dark:text-gray-400 text-lg max-w-xl font-medium leading-relaxed">
               Discover recently added services from top-rated professionals.
             </p>
           </motion.div>
@@ -133,9 +156,10 @@ export function FeaturedServices() {
                       {/* Image Header */}
                       <div className="relative h-56 overflow-hidden">
                         <img 
-                          src={service.image_urls?.[0]?.url || 'https://images.unsplash.com/photo-1581578731522-74548b360k44?q=80&w=1000&auto=format&fit=crop'} 
+                          src={getServiceImage(service)} 
                           alt={service.name}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                          onError={(e) => { (e.target as HTMLImageElement).src = SERVICE_FALLBACK_IMAGE; }}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                         <div className="absolute top-4 right-4">
@@ -144,19 +168,19 @@ export function FeaturedServices() {
                         <div className="absolute bottom-4 left-4 flex items-center gap-2">
                            <div className="flex items-center gap-1 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
                               <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-                              <span className="text-[10px] font-black text-white uppercase tracking-wider">{service.provider.rating || 4.9}</span>
+                              <span className="text-[10px] font-bold text-white tracking-wider">{service.provider.rating || 4.9}</span>
                            </div>
                         </div>
                       </div>
 
                       {/* Content */}
                       <CardContent className="p-8">
-                        <div className="flex items-center gap-2 mb-3">
+                         <div className="flex items-center gap-2 mb-3">
                            <Avatar className="h-6 w-6 border border-sky-500/20">
-                              <AvatarImage src={service.provider.logo} />
+                              <AvatarImage src={getAvatarUrl(service.provider.logo || service.provider.user?.avatar_url) || ""} />
                               <AvatarFallback>{service.provider.business_name[0]}</AvatarFallback>
                            </Avatar>
-                           <span className="text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest">{service.provider.business_name}</span>
+                           <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 tracking-widest">{service.provider.business_name}</span>
                         </div>
                         <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-sky-500 transition-colors line-clamp-1">
                           {service.name}
@@ -168,11 +192,11 @@ export function FeaturedServices() {
                         <div className="flex items-center justify-between pt-6 border-t border-gray-100 dark:border-white/10">
                            <div className="flex items-center gap-2 text-gray-400">
                               <MapPin className="w-4 h-4 text-sky-500" />
-                              <span className="text-xs font-bold uppercase tracking-widest">Available Now</span>
+                              <span className="text-xs font-bold tracking-widest">Available Now</span>
                            </div>
-                           <div className="text-lg font-black text-gray-900 dark:text-white">
+                           <div className="text-lg font-bold text-gray-900 dark:text-white">
                               <span className="text-xs font-medium text-gray-400 mr-1">from</span>
-                              ${service.base_price}
+                              KES {service.base_price}
                            </div>
                         </div>
                       </CardContent>

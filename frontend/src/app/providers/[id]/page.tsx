@@ -23,14 +23,20 @@ interface ProviderProfile {
   logo: string | null;
   bio: string | null;
   is_verified: boolean;
+  specialized_skills: string[] | null;
   services: Array<{
     id: string;
     service_id: string;
     base_price: number;
     pricing_type: string;
+    min_hours: number;
+    travel_fee: number;
+    equipment_included: boolean;
     name: string;
     description: string | null;
     category: string | null;
+    service_thumbnail_url?: string;
+    image_urls?: Array<{ id: string; url: string }>;
   }>;
 }
 
@@ -151,11 +157,21 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
                         </div>
                     </div>
                     
-                    <div className="mt-6 md:mt-0 flex gap-4">
+                    <div className="mt-6 md:mt-0 flex flex-col sm:flex-row gap-3">
+                        <Button 
+                          size="lg" 
+                          variant="outline"
+                          asChild
+                          className="border-gray-200 dark:border-white/10 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 font-bold px-8 h-12 rounded-xl"
+                        >
+                            <Link href={`/dashboard/chat?provider=${provider.id}`}>
+                                <Clock className="w-4 h-4 mr-2" /> Message Provider
+                            </Link>
+                        </Button>
                         <Button 
                           size="lg" 
                           onClick={() => handleBooking()}
-                          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold flex-1 md:flex-none"
+                          className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 h-12 rounded-xl shadow-lg shadow-blue-500/20"
                         >
                             <CalendarCheck className="w-4 h-4 mr-2" /> Request Booking
                         </Button>
@@ -174,9 +190,22 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
                           transition={{ duration: 0.5, delay: 0.1 }}
                         >
                             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">About the Professional</h2>
-                            <div className="prose dark:prose-invert prose-blue max-w-none text-gray-600 dark:text-gray-300 leading-relaxed">
+                            <div className="prose dark:prose-invert prose-blue max-w-none text-gray-600 dark:text-gray-300 leading-relaxed mb-8">
                                 <p>{provider.bio || "This professional has not provided a bio yet. They are verified and ready to handle your home service needs."}</p>
                             </div>
+
+                            {provider.specialized_skills && provider.specialized_skills.length > 0 && (
+                                <div className="space-y-4">
+                                    <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-widest">Specialized Skills</h3>
+                                    <div className="flex flex-wrap gap-2">
+                                        {provider.specialized_skills.map((skill, index) => (
+                                            <Badge key={index} variant="secondary" className="bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-100 dark:border-blue-500/20 px-3 py-1 rounded-lg text-xs font-bold">
+                                                {skill}
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </motion.section>
 
                         <motion.section
@@ -189,19 +218,75 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
                                 {provider.services?.map((ps) => (
                                     <Card 
                                       key={ps.id} 
-                                      onClick={() => handleBooking(ps)}
-                                      className="bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10 hover:border-blue-500/30 dark:hover:border-white/20 transition-all group rounded-xl cursor-pointer"
+                                      className="bg-gray-50 dark:bg-zinc-900/50 border-gray-200 dark:border-white/10 hover:border-blue-500/30 dark:hover:border-white/20 transition-all group rounded-2xl overflow-hidden cursor-default"
                                     >
-                                        <CardContent className="p-5 flex items-start gap-4">
-                                            <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center mt-1 group-hover:bg-blue-200 dark:group-hover:bg-blue-500/20 transition-colors">
-                                                <CheckCircle2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                                        <CardContent className="p-0">
+                                            <div className="aspect-video w-full bg-muted overflow-hidden relative group/img">
+                                                <img 
+                                                  src={ps.service_thumbnail_url || "/placeholders/service-light.png"} 
+                                                  alt={ps.name} 
+                                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                                                />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent p-4" />
                                             </div>
-                                            <div className="flex-1">
-                                                <h4 className="font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{ps.name}</h4>
-                                                <div className="flex items-center justify-between text-sm">
-                                                    <span className="text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest text-[10px]"><Clock className="w-3 h-3 inline mr-1" />{ps.pricing_type}</span>
-                                                    <span className="font-bold text-gray-900 dark:text-white">${ps.base_price}</span>
+                                            <div className="p-5">
+                                                <div className="flex flex-col mb-4">
+                                                    <div className="flex items-center justify-between mb-4">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center shrink-0">
+                                                                <CheckCircle2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                                                            </div>
+                                                            <div>
+                                                                <h4 className="font-semibold text-gray-900 dark:text-white mb-1">{ps.name}</h4>
+                                                                <p className="text-xs text-muted-foreground line-clamp-2">{ps.description}</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <p className="text-lg font-bold text-blue-600 dark:text-blue-400">KES {Number(ps.base_price).toLocaleString()}{ps.pricing_type === 'hourly' && <span className="text-xs font-normal text-muted-foreground ml-1">/hr</span>}</p>
+                                                            {ps.pricing_type === 'hourly' && ps.min_hours > 1 && (
+                                                                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-tighter">Min {ps.min_hours} hrs</p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div className="flex flex-wrap gap-4 pt-2 border-t border-border/50">
+                                                        {Number(ps.travel_fee) > 0 && (
+                                                            <span className="text-[10px] font-semibold text-gray-500 flex items-center gap-1.5">
+                                                                <MapPin className="w-3 h-3" /> + KES {ps.travel_fee} Travel Fee
+                                                            </span>
+                                                        )}
+                                                        {ps.equipment_included && (
+                                                            <span className="text-[10px] font-semibold text-emerald-600 flex items-center gap-1.5">
+                                                                <Shield className="w-3 h-3" /> Equipment Included
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </div>
+                                                
+                                                {/* Gallery Section */}
+                                                <div className="space-y-3">
+                                                    <h5 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Service Gallery</h5>
+                                                    {ps.image_urls && ps.image_urls.length > 0 ? (
+                                                        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                                                            {ps.image_urls.map((img) => (
+                                                                <div key={img.id} className="w-16 h-16 rounded-lg overflow-hidden shrink-0 border border-border">
+                                                                    <img src={img.url} className="w-full h-full object-cover" alt="" />
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="py-4 border border-dashed border-border rounded-xl text-center">
+                                                            <p className="text-[10px] text-muted-foreground uppercase tracking-tight">No images in this gallery</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                <Button 
+                                                  className="w-full mt-6 rounded-xl font-bold uppercase tracking-tight h-10"
+                                                  onClick={() => handleBooking(ps)}
+                                                >
+                                                    Book This Service
+                                                </Button>
                                             </div>
                                         </CardContent>
                                     </Card>

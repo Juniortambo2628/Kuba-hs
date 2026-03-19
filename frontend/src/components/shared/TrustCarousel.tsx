@@ -33,7 +33,7 @@ export function TrustCarousel() {
   return (
     <section className="py-12 bg-gray-50 dark:bg-zinc-900/30 border-y border-gray-100 dark:border-white/5 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 mb-8">
-        <p className="text-center text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em]">
+        <p className="text-center text-sm font-bold text-gray-400 dark:text-gray-500 tracking-wider">
           Trusted by Industry Leaders
         </p>
       </div>

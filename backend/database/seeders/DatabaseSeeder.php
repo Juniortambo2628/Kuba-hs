@@ -16,32 +16,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::updateOrCreate(
-            ['email' => 'admin@kuba.com'],
-            [
-                'first_name' => 'Kuba',
-                'last_name' => 'Admin',
-                'password' => Hash::make('password'),
-                'role' => 'admin',
-            ]
-        );
-
-        User::updateOrCreate(
-            ['email' => 'test@example.com'],
-            [
-                'first_name' => 'Test',
-                'last_name' => 'User',
-                'password' => Hash::make('password'),
-                'role' => 'admin',
-            ]
-        );
-
         $this->call([
-            MarketplaceSeeder::class,
+            ProductionDataSeeder::class,
             LoyaltyTierSeeder::class,
-            DashboardTestingSeeder::class,
+            EmailTemplateSeeder::class,
         ]);
     }
 }

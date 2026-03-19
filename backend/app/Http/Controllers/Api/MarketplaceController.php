@@ -20,11 +20,28 @@ class MarketplaceController extends Controller
     /**
      * Get all service categories with their sub-services.
      */
+    /**
+     * Get all service categories with their sub-services.
+     */
     public function categories()
     {
         return ServiceCategoryResource::collection(
             ServiceCategory::with('services')->orderBy('name')->get()
         );
+    }
+
+    /**
+     * Get all service providers.
+     */
+    public function providers()
+    {
+        $providers = Provider::with(['user', 'providerServices.service'])
+            ->withCount('reviews')
+            ->withAvg('reviews', 'rating')
+            ->latest()
+            ->paginate(12);
+
+        return ProviderResource::collection($providers);
     }
 
     /**
@@ -42,6 +59,22 @@ class MarketplaceController extends Controller
             ->get();
 
         return ProviderServiceResource::collection($services);
+    }
+
+    /**
+     * Get top rated providers.
+     */
+    public function topProviders()
+    {
+        $providers = Provider::with(['user', 'providerServices.service'])
+            ->withCount('reviews')
+            ->withAvg('reviews', 'rating')
+            ->orderBy('reviews_avg_rating', 'desc')
+            ->orderBy('reviews_count', 'desc')
+            ->take(10)
+            ->get();
+
+        return ProviderResource::collection($providers);
     }
 
     /**
@@ -83,7 +116,17 @@ class MarketplaceController extends Controller
     public function show(Provider $provider)
     {
         return new ProviderResource(
-            $provider->load(['user', 'providerServices.service', 'reviews.customer'])
+            $provider->load(['user', 'providerServices.service', 'reviews.customer', 'availability', 'scheduleExceptions'])
+        );
+    }
+
+    /**
+     * Get a specific provider service by ID.
+     */
+    public function showService(ProviderService $providerService)
+    {
+        return new ProviderServiceResource(
+            $providerService->load(['service.category', 'provider.user', 'provider.availability', 'media', 'service.media', 'provider.reviews.customer', 'provider.scheduleExceptions'])
         );
     }
 
@@ -95,17 +138,31 @@ class MarketplaceController extends Controller
         $searchTerm = $request->input('search');
         $categoryId = $request->input('category_id');
         $serviceId = $request->input('service_id');
+        $minRating = $request->input('min_rating');
+        $isVerified = $request->boolean('is_verified');
+        $lat = $request->input('latitude');
+        $lng = $request->input('longitude');
+        $radius = $request->input('radius', 50); // Default 50km
 
-        // Start with eloquent query for filters
-        $query = Provider::query();
+        $query = Provider::select('providers.*')
+            ->with(['user', 'providerServices.service'])
+            ->withCount('reviews')
+            ->withAvg('reviews', 'rating');
 
-        if ($searchTerm) {
-            // If searching by term, find IDs via Scout first
-            $scoutIds = Provider::search($searchTerm)->keys();
-            $query->whereIn('id', $scoutIds);
+        $locationFilter = $request->input('location');
+
+        if ($locationFilter) {
+            $query->where('location_name', 'like', "%{$locationFilter}%");
         }
 
-        // Apply filters
+        if ($searchTerm) {
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('business_name', 'like', "%{$searchTerm}%")
+                  ->orWhere('bio', 'like', "%{$searchTerm}%")
+                  ->orWhere('location_name', 'like', "%{$searchTerm}%");
+            });
+        }
+
         if ($categoryId) {
             $query->whereHas('providerServices.service', function($q) use ($categoryId) {
                 $q->where('category_id', $categoryId);
@@ -118,9 +175,28 @@ class MarketplaceController extends Controller
             });
         }
 
-        $providers = $query->with(['user', 'providerServices.service'])
-            ->latest()
-            ->paginate(12);
+        if ($minRating) {
+            $query->whereHas('reviews', function($q) use ($minRating) {
+                $q->select(\Illuminate\Support\Facades\DB::raw('avg(rating)'))
+                  ->havingRaw('avg(rating) >= ?', [$minRating]);
+            });
+        }
+
+        if ($isVerified) {
+            $query->where('is_verified', true);
+        }
+
+        // Geospatial Radius Search (Haversine Formula)
+        if ($lat && $lng) {
+            $haversine = "(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude))))";
+            $query->selectRaw("$haversine AS distance", [$lat, $lng, $lat])
+                  ->whereRaw("$haversine <= ?", [$lat, $lng, $lat, $radius])
+                  ->orderBy('distance');
+        } else {
+            $query->latest();
+        }
+
+        $providers = $query->paginate(12);
 
         return ProviderResource::collection($providers);
     }

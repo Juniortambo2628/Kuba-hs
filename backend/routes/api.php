@@ -3,10 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Broadcast;
 use App\Http\Controllers\Api\MarketplaceController;
-use App\Http\Controllers\PaymentController;
 use Illuminate\Http\Request;
-
-Route::post('/stripe/webhook', [PaymentController::class, 'handleWebhook']);
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -16,16 +13,25 @@ Route::get('/user', function (Request $request) {
 
 Route::get('/categories', [MarketplaceController::class, 'categories']);
 Route::get('/featured-services', [MarketplaceController::class, 'featured']);
+Route::get('/featured-services/{providerService}', [MarketplaceController::class, 'showService']);
+Route::get('/top-providers', [MarketplaceController::class, 'topProviders']);
 Route::get('/featured-services/{providerService}/similar', [MarketplaceController::class, 'similarProviders']);
 Route::get('/categories/{category}', [MarketplaceController::class, 'showCategory']);
 Route::get('/search', [MarketplaceController::class, 'search']);
 Route::get('/trust-partners', [MarketplaceController::class, 'trustPartners']);
+Route::get('/providers', [MarketplaceController::class, 'providers']);
 Route::get('/providers/{provider}', [MarketplaceController::class, 'show']);
-Route::get('/settings', [\App\Http\Controllers\Admin\CMSController::class, 'index']);
+Route::get('/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'index']);
 Route::post('/contact', [\App\Http\Controllers\Api\ContactController::class, 'store']);
 Route::post('/investors/inquire', [\App\Http\Controllers\Api\InvestorInquiryController::class, 'store']);
+Route::post('/auth/register-provider', [\App\Http\Controllers\Api\ProviderApplicationController::class, 'register']);
+Route::post('/quotes', [\App\Http\Controllers\Api\QuoteController::class, 'store']);
 Route::get('/unsubscribe', [\App\Http\Controllers\Api\UnsubscribeController::class, 'unsubscribe'])->name('api.unsubscribe');
+Route::post('/auth/complete-profile', [\App\Http\Controllers\Auth\ProfileCompletionController::class, 'store']);
 
+// Public Blog Routes
+Route::get('/blog', [\App\Http\Controllers\Api\BlogController::class, 'index']);
+Route::get('/blog/{slug}', [\App\Http\Controllers\Api\BlogController::class, 'show']);
 // Authenticated dashboard routes
 Route::middleware('auth:sanctum')->group(function () {
     // Client/Provider Dashboard
@@ -77,6 +83,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Profile Update
         Route::post('/profile', [\App\Http\Controllers\Api\ProviderProfileController::class, 'update']);
+
+        // Reviews
+        Route::get('/reviews', [\App\Http\Controllers\Provider\ReviewController::class, 'index']);
     });
 
     Route::get('/client/dashboard', [\App\Http\Controllers\Client\DashboardController::class, 'index']);
@@ -88,8 +97,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/client/profile', [\App\Http\Controllers\Client\ProfileController::class, 'update']);
 
     // Payments (Paystack)
-    Route::post('/payments/paystack/initialize', [\App\Http\Controllers\Api\PaystackController::class, 'initialize']);
     Route::post('/payments/paystack/verify', [\App\Http\Controllers\Api\PaystackController::class, 'verify']);
+    Route::get('/payments/provider/transactions', [\App\Http\Controllers\Api\PaystackController::class, 'providerTransactions']);
+
+    // Reviews
+    Route::post('/reviews', [\App\Http\Controllers\Api\ReviewController::class, 'store']);
+    Route::get('/providers/{provider}/reviews', [\App\Http\Controllers\Api\ReviewController::class, 'providerReviews']);
 
     // Invoices
     Route::get('/invoices/{bookingId}/download', [\App\Http\Controllers\Api\InvoiceController::class, 'download']);
@@ -99,10 +112,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/analytics', [\App\Http\Controllers\Admin\AnalyticsController::class, 'index']);
         Route::get('/bookings', [\App\Http\Controllers\Admin\BookingController::class, 'index']);
         Route::get('/payments', [\App\Http\Controllers\Admin\PaymentController::class, 'index']);
+        Route::get('/finance', [\App\Http\Controllers\Admin\FinanceController::class, 'index']);
+        Route::get('/finance/transactions', [\App\Http\Controllers\Admin\FinanceController::class, 'transactions']);
         
-        // CMS & Feedback
-        Route::get('/cms', [\App\Http\Controllers\Admin\CMSController::class, 'index']);
-        Route::post('/cms', [\App\Http\Controllers\Admin\CMSController::class, 'update']);
+        // Configuration & Content
+        Route::get('/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'index']);
+        Route::post('/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'update']);
         Route::get('/feedback', [\App\Http\Controllers\Admin\FeedbackController::class, 'index']);
 
         Route::apiResource('users', \App\Http\Controllers\Admin\UserController::class);
@@ -121,10 +136,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('services', \App\Http\Controllers\Admin\ServiceController::class)->except(['index', 'show']);
         Route::apiResource('blog', \App\Http\Controllers\Admin\BlogController::class);
 
-        // Reports & Settings
+        // CMS Features
+        Route::apiResource('faqs', \App\Http\Controllers\Admin\FAQController::class);
+        Route::post('faqs/reorder', [\App\Http\Controllers\Admin\FAQController::class, 'reorder']);
+        Route::apiResource('testimonials', \App\Http\Controllers\Admin\TestimonialController::class);
+        Route::post('testimonials/reorder', [\App\Http\Controllers\Admin\TestimonialController::class, 'reorder']);
+
+        // Reports
         Route::get('/reports/generate', [\App\Http\Controllers\Admin\ReportController::class, 'generate']);
-        Route::get('/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'index']);
-        Route::post('/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'update']);
 
         // Investor Inquiries
         Route::get('/investors', [\App\Http\Controllers\Admin\InvestorInquiryController::class, 'index']);

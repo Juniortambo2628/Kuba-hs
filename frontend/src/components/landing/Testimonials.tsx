@@ -11,38 +11,42 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 
+import { useCMS } from "@/hooks/useCMS";
+
 export function Testimonials() {
+  const { getS, getImg } = useCMS();
+
   const testimonials = [
     {
       id: 1,
-      name: 'Sarah Jenkins',
-      role: 'Homeowner',
-      content: '"I found an amazing electrician through KUBA within minutes. The service was professional, and the price was transparent. Highly recommended for anyone looking for reliable help!"',
-      avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=200&auto=format&fit=crop',
+      name: getS('testimonials', 'test_1_name', 'Sarah Jenkins'),
+      role: getS('testimonials', 'test_1_role', 'Homeowner'),
+      content: getS('testimonials', 'test_1_content', '"I found an amazing electrician through KUBA within minutes. The service was professional, and the price was transparent. Highly recommended for anyone looking for reliable help!"'),
+      avatar: getImg('testimonials', 'test_1_avatar', 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=200&auto=format&fit=crop'),
       rating: 5
     },
     {
       id: 2,
-      name: 'Michael Chen',
-      role: 'Property Manager',
-      content: '"Managing multiple properties is tough, but KUBA makes finding verified professionals incredibly easy. The background checks give me peace of mind every time I book."',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=200&auto=format&fit=crop',
+      name: getS('testimonials', 'test_2_name', 'Michael Chen'),
+      role: getS('testimonials', 'test_2_role', 'Property Manager'),
+      content: getS('testimonials', 'test_2_content', '"Managing multiple properties is tough, but KUBA makes finding verified professionals incredibly easy. The background checks give me peace of mind every time I book."'),
+      avatar: getImg('testimonials', 'test_2_avatar', 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=200&auto=format&fit=crop'),
       rating: 5
     },
     {
       id: 3,
-      name: 'Emily Davis',
-      role: 'Homeowner',
-      content: '"The booking process is seamless. I love being able to see upfront pricing and read real reviews before making a decision. KUBA is my go-to for all home repairs."',
-      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=200&auto=format&fit=crop',
+      name: getS('testimonials', 'test_3_name', 'Emily Davis'),
+      role: getS('testimonials', 'test_3_role', 'Homeowner'),
+      content: getS('testimonials', 'test_3_content', '"The booking process is seamless. I love being able to see upfront pricing and read real reviews before making a decision. KUBA is my go-to for all home repairs."'),
+      avatar: getImg('testimonials', 'test_3_avatar', 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=200&auto=format&fit=crop'),
       rating: 5
     },
     {
       id: 4,
-      name: 'David Rodriguez',
-      role: 'Small Business Owner',
-      content: '"As a landlord with several rentals, I rely on KUBA to quickly find plumbers and electricians. The quality of service has been consistently excellent."',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop',
+      name: getS('testimonials', 'test_4_name', 'David Rodriguez'),
+      role: getS('testimonials', 'test_4_role', 'Small Business Owner'),
+      content: getS('testimonials', 'test_4_content', '"As a landlord with several rentals, I rely on KUBA to quickly find plumbers and electricians. The quality of service has been consistently excellent."'),
+      avatar: getImg('testimonials', 'test_4_avatar', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop'),
       rating: 5
     },
   ];

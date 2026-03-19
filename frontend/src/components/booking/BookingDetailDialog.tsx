@@ -25,6 +25,7 @@ import { format } from "date-fns";
 
 import { useState } from "react";
 import { ChatUI } from "@/components/chat/ChatUI";
+import { ServiceProgress } from "./ServiceProgress";
 
 interface BookingDetailDialogProps {
   isOpen: boolean;
@@ -71,14 +72,19 @@ export function BookingDetailDialog({ isOpen, onClose, booking, onUpdateStatus }
                     <div className="absolute top-0 right-0 p-8 opacity-10">
                         <FileText className="w-24 h-24" />
                     </div>
-                    <div className="relative z-10 space-y-2">
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-sky-500">Booking Reference</p>
+                    <div className="relative z-10 space-y-4">
                         <div className="flex items-center justify-between">
-                            <h2 className="text-3xl font-black italic tracking-tighter">#{booking.booking_number}</h2>
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-sky-500">Booking Reference</p>
+                                <h2 className="text-3xl font-black italic tracking-tighter">#{booking.booking_number}</h2>
+                            </div>
                             <Badge variant="outline" className={`rounded-full px-4 py-1 font-black text-[9px] uppercase tracking-widest border ${getStatusColor(booking.status)}`}>
                                 {booking.status}
                             </Badge>
                         </div>
+                        
+                        {/* Service Tracking Progress */}
+                        <ServiceProgress status={booking.status} />
                     </div>
                 </div>
 
@@ -119,7 +125,7 @@ export function BookingDetailDialog({ isOpen, onClose, booking, onUpdateStatus }
                         <div className="flex justify-between items-center">
                             <p className="font-black text-[#1E293B]">{booking.service?.name}</p>
                             <p className="font-black text-lg text-sky-600 italic tracking-tighter">
-                                ${booking.final_price || booking.estimated_price || '0.00'}
+                                KES {booking.final_price || booking.estimated_price || '0.00'}
                             </p>
                         </div>
                     </div>

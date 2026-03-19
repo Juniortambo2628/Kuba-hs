@@ -48,7 +48,8 @@ class PaystackController extends Controller
         }
 
         $amount = $booking->final_price ?? $booking->estimated_price;
-        $platformFee = round($amount * self::PLATFORM_FEE_PERCENT, 2);
+        $feePercent = (float) $this->getSetting('platform_fee_percent', 'services.platform.feePercent') ?: self::PLATFORM_FEE_PERCENT;
+        $platformFee = round($amount * $feePercent, 2);
         $total = round($amount + $platformFee, 2);
         // Paystack amount is in kobo (multiply by 100)
         $amountInKobo = (int) round($total * 100);
@@ -67,6 +68,7 @@ class PaystackController extends Controller
                         'booking_id' => $booking->id,
                         'customer_id' => $user->id,
                         'provider_id' => $booking->provider_id,
+                        'platform_fee' => $platformFee,
                     ],
                 ]);
 
@@ -125,7 +127,7 @@ class PaystackController extends Controller
             }
 
             $amount = $booking->final_price ?? $booking->estimated_price;
-            $platformFee = round($amount * self::PLATFORM_FEE_PERCENT, 2);
+            $platformFee = isset($metadata['platform_fee']) ? (float) $metadata['platform_fee'] : round($amount * self::PLATFORM_FEE_PERCENT, 2);
             $providerAmount = round($amount - $platformFee, 2);
 
             // Record Payment
@@ -163,5 +165,28 @@ class PaystackController extends Controller
             Log::error('Paystack Verify Exception: ' . $e->getMessage());
             return response()->json(['message' => 'An error occurred verifying payment'], 500);
         }
+    }
+
+    /**
+     * Get transaction history for the authenticated provider.
+     */
+    public function providerTransactions(Request $request)
+    {
+        $user = $request->user();
+        if ($user->role !== 'provider') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $provider = $user->provider;
+        if (!$provider) {
+            return response()->json(['message' => 'Provider profile not found'], 404);
+        }
+
+        $payments = Payment::with('booking.service')
+            ->where('provider_id', $provider->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
+        return response()->json($payments);
     }
 }
