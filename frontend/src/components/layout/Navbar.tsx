@@ -43,7 +43,7 @@ export function Navbar() {
 
   useEffect(() => {
     setMounted(true);
-    const navString = getS('navigation_menu');
+    const navString = getS('general', 'navigation_menu', '');
     if (navString) {
       try {
         setNavItems(JSON.parse(navString));
