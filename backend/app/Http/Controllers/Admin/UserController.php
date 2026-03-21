@@ -16,9 +16,13 @@ class UserController extends Controller
     {
         $query = User::query();
 
+        if ($request->filled('id')) {
+            $query->where('id', $request->id);
+        }
+
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function(\Illuminate\Database\Eloquent\Builder $q) use ($search) {
                 $q->where('first_name', 'like', "%{$search}%")
                   ->orWhere('last_name', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%");
@@ -38,10 +42,7 @@ class UserController extends Controller
         );
     }
 
-    public function create()
-    {
-        return Inertia::render('Admin/Users/Form');
-    }
+
 
     public function store(Request $request)
     {
@@ -70,12 +71,7 @@ class UserController extends Controller
         return new UserResource($user);
     }
 
-    public function edit(User $user)
-    {
-        return Inertia::render('Admin/Users/Form', [
-            'user' => new UserResource($user)
-        ]);
-    }
+
 
     public function update(Request $request, User $user)
     {

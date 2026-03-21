@@ -22,6 +22,7 @@ class BookingResource extends JsonResource
             'status' => $this->status,
             'estimated_price' => (float) $this->estimated_price,
             'final_price' => (float) $this->final_price,
+            'total_price' => (float) $this->total_price,
             'payment_status' => $this->payment_status,
             'service_type' => $this->service_type,
             'quantity' => (int) $this->quantity,

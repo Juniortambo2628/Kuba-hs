@@ -20,6 +20,7 @@ class ServiceCategory extends Model implements HasMedia
         'parent_category_id',
         'description',
         'icon_url',
+        'image_url',
         'sort_order',
     ];
 
@@ -35,6 +36,9 @@ class ServiceCategory extends Model implements HasMedia
         return $this->belongsTo(ServiceCategory::class, 'parent_category_id');
     }
 
+    /**
+     * @return HasMany
+     */
     public function children(): HasMany
     {
         return $this->hasMany(ServiceCategory::class, 'parent_category_id')->orderBy('sort_order');

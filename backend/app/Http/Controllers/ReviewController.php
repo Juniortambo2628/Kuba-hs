@@ -5,11 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\Review;
 use App\Models\Provider;
-use App\Notifications\NewReviewReceived;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use App\Http\Requests\StoreReviewRequest;
+use App\Services\ReviewService;
 
 class ReviewController extends Controller
 {
@@ -41,13 +39,9 @@ class ReviewController extends Controller
     /**
      * Store a newly created review in storage.
      */
-    public function store(Request $request)
+    public function store(StoreReviewRequest $request)
     {
-        $validated = $request->validate([
-            'booking_id' => 'required|exists:bookings,id',
-            'rating' => 'required|integer|min:1|max:5',
-            'comment' => 'nullable|string|max:1000',
-        ]);
+        $validated = $request->validated();
 
         $booking = Booking::findOrFail($validated['booking_id']);
         $user = Auth::user();
@@ -67,35 +61,7 @@ class ReviewController extends Controller
             abort(422, 'You have already reviewed this booking.');
         }
 
-        DB::transaction(function () use ($validated, $booking, $user) {
-            $review = Review::create([
-                'booking_id' => $booking->id,
-                'customer_id' => $user->id,
-                'provider_id' => $booking->provider_id,
-                'rating' => $validated['rating'],
-                'comment' => $validated['comment'],
-            ]);
-
-            // Update Provider stats
-            $provider = Provider::find($booking->provider_id);
-            $stats = Review::where('provider_id', $provider->id)
-                ->selectRaw('count(*) as count, avg(rating) as avg')
-                ->first();
-
-            $provider->update([
-                'rating_avg' => $stats->avg,
-                'review_count' => $stats->count,
-            ]);
-
-            // Award loyalty points for leaving a review
-            app(\App\Services\LoyaltyService::class)->awardPointsForReview($booking);
-        });
-
-        // Notify provider of new review (after transaction)
-        $review = Review::where('booking_id', $booking->id)->first();
-        if ($review) {
-            $booking->provider->user->notify(new NewReviewReceived($review));
-        }
+        app(ReviewService::class)->createReview($booking, $user, $validated);
 
         return back()->with('success', 'Thank you for your review!');
     }

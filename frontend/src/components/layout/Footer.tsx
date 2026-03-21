@@ -20,19 +20,19 @@ export function Footer() {
                   <img src="/assets/Kuba-Header-Footer-Logo-for-Dark-Mode.png" alt="Kuba" className="h-8 w-auto hidden dark:block" />
                 </Link>
                 <p className="text-gray-500 dark:text-gray-400 text-sm mb-6 leading-relaxed">
-                {getS('general', 'footer_description', 'Connect with trusted home service professionals in your area. Quick, reliable, and secure.')}
+                {getS('identity', 'footer_description', 'Connect with trusted home service professionals in your area. Quick, reliable, and secure.')}
                 </p>
                 <div className="flex gap-4">
-                <a href={getS('social', 'social_facebook', '#')} className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-blue-600 transition-colors">
+                <a href={getS('social_links', 'social_facebook', '#')} className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-blue-600 transition-colors">
                     <Facebook className="w-4 h-4" />
                 </a>
-                <a href={getS('social', 'social_twitter', '#')} className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-blue-400 transition-colors">
+                <a href={getS('social_links', 'social_twitter', '#')} className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-blue-400 transition-colors">
                     <Twitter className="w-4 h-4" />
                 </a>
-                <a href={getS('social', 'social_instagram', '#')} className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-pink-600 transition-colors">
+                <a href={getS('social_links', 'social_instagram', '#')} className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-pink-600 transition-colors">
                     <Instagram className="w-4 h-4" />
                 </a>
-                <a href={getS('social', 'social_linkedin', '#')} className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-blue-700 transition-colors">
+                <a href={getS('social_links', 'social_linkedin', '#')} className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-blue-700 transition-colors">
                     <Linkedin className="w-4 h-4" />
                 </a>
                 </div>

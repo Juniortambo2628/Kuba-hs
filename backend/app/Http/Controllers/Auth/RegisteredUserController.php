@@ -36,6 +36,7 @@ class RegisteredUserController extends Controller
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => $request->filled('google_id') ? 'nullable' : ['required', 'confirmed', Rules\Password::defaults()],
             'role' => 'required|string|in:customer,provider',
+            'phone' => 'nullable|string|max:20',
             'google_id' => 'nullable|string',
         ]);
 
@@ -45,6 +46,7 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password ?? \Illuminate\Support\Str::random(24)),
             'role' => $request->role,
+            'phone' => $request->phone,
             'google_id' => $request->google_id,
         ]);
 

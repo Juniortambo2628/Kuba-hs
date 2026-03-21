@@ -15,6 +15,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
+import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import axiosInstance from "@/lib/axios";
 
 const REPORT_TYPES = [
   {
@@ -49,30 +51,35 @@ export default function AdminReportsPage() {
   const handleDownload = async (type: string) => {
     setDownloading(type);
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      const downloadUrl = `${baseUrl}/api/admin/reports/generate?type=${type}`;
+      const response = await axiosInstance.get(`/api/admin/reports/generate`, {
+        params: { type },
+        responseType: 'blob'
+      });
       
-      // We use window.open for CSV downloads as they trigger browser download behavior
-      window.open(downloadUrl, '_blank');
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `kuba_${type}_report_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
       
-      toast.success(`${type.charAt(0).toUpperCase() + type.slice(1)} report requested.`);
+      toast.success(`${type.charAt(0).toUpperCase() + type.slice(1)} report downloaded.`);
     } catch (error) {
       console.error("Export failed", error);
       toast.error("Failed to generate report.");
     } finally {
-      setTimeout(() => setDownloading(null), 2000);
+      setDownloading(null);
     }
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-10 pb-12">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground tracking-tight uppercase">Intelligence & Reports</h1>
-          <p className="text-sm text-muted-foreground mt-1">Export system datasets for auditing and business analysis.</p>
-        </div>
-      </div>
+    <div className="max-w-[1400px] mx-auto space-y-10 pb-12">
+      {/* Standard Dashboard Header */}
+      <DashboardPageHeader 
+        title="Intelligence & Data Analytics" 
+        subtitle="Export high-fidelity system datasets for executive auditing and business growth analysis."
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {REPORT_TYPES.map((report) => (
@@ -82,7 +89,7 @@ export default function AdminReportsPage() {
                 <report.icon className="w-6 h-6" />
               </div>
               <CardTitle className="text-lg font-bold text-foreground mb-1">{report.name}</CardTitle>
-              <CardDescription className="text-xs leading-relaxed font-medium">
+              <CardDescription className="text-xs leading-relaxed font-bold text-muted-foreground/80">
                 {report.description}
               </CardDescription>
             </CardHeader>
@@ -90,14 +97,14 @@ export default function AdminReportsPage() {
               <Button 
                 onClick={() => handleDownload(report.id)}
                 disabled={downloading === report.id}
-                className="w-full h-11 bg-foreground text-background hover:bg-muted hover:text-foreground rounded-xl font-bold text-[10px] tracking-widest uppercase transition-all gap-2"
+                className="w-full h-12 bg-primary hover:bg-black text-white rounded-xl font-bold text-xs transition-all gap-2 shadow-lg shadow-primary/10"
               >
                 {downloading === report.id ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
                   <Download className="w-4 h-4" />
                 )}
-                <span>Generate CSV</span>
+                <span>Initialize CSV Export</span>
               </Button>
             </CardContent>
             
@@ -110,20 +117,20 @@ export default function AdminReportsPage() {
       </div>
 
       {/* Audit Log / History placeholder */}
-      <Card className="border border-dashed border-border bg-muted/30">
-        <CardContent className="p-10 flex flex-col items-center text-center space-y-4">
-          <div className="w-16 h-16 rounded-full bg-background flex items-center justify-center text-muted-foreground border border-border">
-            <AlertCircle className="w-8 h-8 opacity-20" />
+      <Card className="border border-dashed border-border/60 bg-muted/20 rounded-[2.5rem]">
+        <CardContent className="p-12 flex flex-col items-center text-center space-y-5">
+          <div className="w-20 h-20 rounded-[2rem] bg-white flex items-center justify-center text-muted-foreground/40 border border-border shadow-inner">
+            <AlertCircle className="w-10 h-10 opacity-30" />
           </div>
-          <div className="max-w-xs space-y-2">
-            <h3 className="text-sm font-semibold text-foreground uppercase tracking-tight">Export Security</h3>
-            <p className="text-[10px] font-bold text-muted-foreground uppercase leading-relaxed">
-              All data exports are logged for security auditing. Ensure you handle downloaded datasets according to platform data privacy policies.
+          <div className="max-w-md space-y-2">
+            <h3 className="text-lg font-bold text-foreground tracking-tight">Export Governance & Security</h3>
+            <p className="text-[11px] font-bold text-muted-foreground leading-relaxed">
+              All high-fidelity data exports are strictly logged for enterprise security auditing. Handle downloaded datasets in accordance with institutional data privacy protocols and platform governance.
             </p>
           </div>
-          <div className="flex items-center gap-2 text-[9px] font-bold text-emerald-500 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-wider">
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            System Audited
+          <div className="flex items-center gap-2 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-4 py-1.5 rounded-xl border border-emerald-100 shadow-sm">
+            <CheckCircle2 className="w-4 h-4" />
+            Governance System Audited
           </div>
         </CardContent>
       </Card>

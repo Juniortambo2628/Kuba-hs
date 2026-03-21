@@ -188,7 +188,7 @@ export default function AdminBookingDetail({ params }: { params: Promise<{ id: s
                           </p>
                           <p className="text-sm font-bold text-foreground">
                             {format(new Date(booking.scheduled_date), 'PPP')}<br/>
-                            <span className="text-muted-foreground opacity-60">{booking.scheduled_time || '09:00 AM'}</span>
+                            <span className="text-muted-foreground opacity-60">{booking.scheduled_time || 'TBD'}</span>
                           </p>
                         </div>
                         <div className="space-y-1.5">
@@ -205,7 +205,7 @@ export default function AdminBookingDetail({ params }: { params: Promise<{ id: s
                              <ReceiptText className="w-3.5 h-3.5" /> Financial
                           </p>
                           <p className="text-3xl font-bold text-primary italic tracking-tight underline decoration-sky-100 decoration-4 underline-offset-4">
-                            ${booking.final_price || booking.estimated_price || '0.00'}
+                            KES {Number(booking.final_price || booking.estimated_price || 0).toLocaleString()}
                           </p>
                         </div>
                       </div>
@@ -291,7 +291,7 @@ export default function AdminBookingDetail({ params }: { params: Promise<{ id: s
                     </div>
                     <div className="flex items-center gap-3 text-xs font-semibold text-foreground">
                        <Phone className="w-4 h-4 text-muted-foreground" />
-                       {booking.customer?.phone || "+27 NOT PROVIDED"}
+                       {booking.customer?.phone || "+254 NOT PROVIDED"}
                     </div>
                  </div>
               </CardContent>
@@ -314,8 +314,8 @@ export default function AdminBookingDetail({ params }: { params: Promise<{ id: s
                            <ExternalLink className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-all" />
                         </Link>
                         <div className="flex items-center gap-1 mt-1">
-                           {[1,2,3,4,5].map(i => <Star key={i} className="w-2.5 h-2.5 text-amber-400 fill-current" />)}
-                           <span className="text-[9px] font-bold text-muted-foreground ml-1 uppercase">(4.9/5 RANK)</span>
+                           {[1,2,3,4,5].map(i => <Star key={i} className={`w-2.5 h-2.5 ${i <= Math.round(booking.provider?.rating || 0) ? 'text-amber-400 fill-current' : 'text-muted-foreground/30'}`} />)}
+                           <span className="text-[9px] font-bold text-muted-foreground ml-1 uppercase">({booking.provider?.rating?.toFixed(1) || 'N/A'} RANK)</span>
                         </div>
                     </div>
                  </div>
@@ -329,7 +329,7 @@ export default function AdminBookingDetail({ params }: { params: Promise<{ id: s
                        Elite Fulfillment Track
                     </div>
                  </div>
-                 <Button variant="outline" className="w-full h-11 border-border rounded-xl font-bold uppercase text-[9px] tracking-widest hover:bg-muted transition-all">
+                 <Button onClick={() => window.location.href = `/admin/users?id=${booking.provider?.user?.id}`} variant="outline" className="w-full h-11 border-border rounded-xl font-bold uppercase text-[9px] tracking-widest hover:bg-muted transition-all">
                     Merchant Diagnostics
                  </Button>
               </CardContent>

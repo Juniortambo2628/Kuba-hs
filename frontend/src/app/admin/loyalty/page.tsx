@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
+import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
 
 interface Tier {
  id: number;
@@ -106,59 +107,59 @@ export default function AdminLoyalty() {
  }
 
  return (
-  <div className="max-w-[1400px] mx-auto space-y-10 pb-12">
-   {/* Loyalty Header */}
-   <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-    <div className="space-y-2 text-glow-red">
-      <h1 className="text-4xl md:text-5xl font-semibold text-foreground tracking-tight uppercase">
-        Loyalty <span className="text-primary">Architect</span>
-      </h1>
-      <p className="text-muted-foreground font-bold text-sm flex items-center gap-2">
-        <ShieldCheck className="w-4 h-4 text-muted-foreground" />
-        Configuring platform reward tiers and tracking point velocity.
-      </p>
-    </div>
-    <Button onClick={() => handleOpenSheet()} className="h-14 bg-primary hover:bg-black text-white rounded-2xl font-semibold px-10 shadow-xl shadow-gray-100 transition-all uppercase tracking-normal text-[11px] flex items-center gap-2">
-      <Plus className="w-4 h-4" />
-      Define New Tier
-    </Button>
-   </div>
+    <div className="max-w-[1400px] mx-auto space-y-10 pb-12">
+        {/* Standard Dashboard Header */}
+        <DashboardPageHeader 
+            title="Loyalty Architecture" 
+            subtitle="Configure platform reward tiers, benefit structures, and track point velocity."
+        >
+            <Button 
+                onClick={() => handleOpenSheet()} 
+                className="h-12 bg-primary hover:bg-black text-white rounded-2xl font-bold px-8 shadow-md transition-all flex items-center gap-2 group"
+            >
+                <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
+                Define Reward Tier
+            </Button>
+        </DashboardPageHeader>
 
    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
     {/* Tiers Management */}
-    <div className="lg:col-span-2 space-y-8">
-     <div className="flex items-center gap-3 px-2">
-      <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-amber-600">
-        <Trophy className="w-6 h-6" />
-      </div>
-      <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">Platform Reward Tiers</h2>
-     </div>
+            <div className="lg:col-span-2 space-y-10">
+                <div className="flex items-center gap-3 px-2">
+                    <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-600 border border-amber-500/20">
+                        <Trophy className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <h2 className="text-lg font-bold text-foreground tracking-tight">System Reward Tiers</h2>
+                        <p className="text-xs font-bold text-muted-foreground">Manage user progression and elite benefits.</p>
+                    </div>
+                </div>
 
      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
       {tiers.map((tier) => (
        <Card key={tier.id} className="border border-border group border-none overflow-hidden hover:bg-muted/5 transition-all duration-700">
         <CardContent className="p-10 space-y-8">
-         <div className="flex justify-between items-start">
-          <div className="space-y-1">
-            <h3 className="text-2xl font-semibold text-foreground group-hover:text-primary transition-colors uppercase tracking-tight">{tier.name}</h3>
-            <Badge variant="outline" className={`rounded-full px-3 py-0.5 font-semibold text-[8px] uppercase tracking-normal border ${tier.is_active ? "bg-muted text-foreground border-border" : "bg-muted text-muted-foreground"}`}>
-              {tier.is_active ? "Active Status" : "Offline"}
-            </Badge>
-          </div>
-          <div className="p-4 bg-muted/50 rounded-2xl text-foreground group-hover:rotate-12 transition-transform shadow-sm">
-            <Gift className="w-6 h-6" />
-          </div>
-         </div>
+                                    <div className="flex justify-between items-start">
+                                        <div className="space-y-1.5">
+                                            <h3 className="text-2xl font-bold text-foreground group-hover:text-primary transition-colors tracking-tight">{tier.name}</h3>
+                                            <Badge variant="outline" className={`rounded-full px-3 py-1 font-bold text-[9px] border-none shadow-sm ${tier.is_active ? "bg-emerald-500/10 text-emerald-600" : "bg-muted text-muted-foreground"}`}>
+                                                {tier.is_active ? "Live Status" : "Offline"}
+                                            </Badge>
+                                        </div>
+                                        <div className="p-4 bg-muted/50 rounded-2xl text-foreground group-hover:scale-110 group-hover:rotate-12 transition-all shadow-sm border border-border/40">
+                                            <Gift className="w-6 h-6" />
+                                        </div>
+                                    </div>
 
-         <div className="space-y-2">
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-normal">Entry Requirement</p>
-          <p className="text-3xl font-semibold text-foreground tracking-tighter">
-            {tier.min_points.toLocaleString()} <span className="text-xs text-muted-foreground font-bold uppercase tracking-normal ml-1">Kuba Points</span>
-          </p>
-         </div>
+                                    <div className="space-y-2">
+                                        <p className="text-[10px] font-bold text-muted-foreground">Entry Requirement</p>
+                                        <p className="text-3xl font-bold text-foreground tracking-tighter">
+                                            {tier.min_points.toLocaleString()} <span className="text-xs text-muted-foreground font-bold ml-1">Kuba Points</span>
+                                        </p>
+                                    </div>
 
-         <div className="space-y-3 pt-4 border-t border-border">
-          <p className="text-[9px] font-semibold text-primary uppercase tracking-normal mb-4">Elite Benefits</p>
+                                    <div className="space-y-3 pt-6 border-t border-border/50">
+                                        <p className="text-[11px] font-bold text-primary mb-4">Core Benefits Portfolio</p>
           {tier.benefits?.map((benefit, i) => (
            <div key={i} className="flex items-center gap-3 group/item">
             <div className="w-1.5 h-1.5 bg-primary rounded-full group-hover/item:scale-150 transition-transform" />
@@ -167,29 +168,34 @@ export default function AdminLoyalty() {
           ))}
          </div>
 
-         <Button onClick={() => handleOpenSheet(tier)} variant="outline" className="w-full h-12 border-border text-foreground hover:text-primary hover:bg-white hover:border-sky-100 rounded-xl font-semibold text-[10px] tracking-normal uppercase transition-all">
-          Modify Tier Attributes
-         </Button>
+                                    <Button 
+                                        onClick={() => handleOpenSheet(tier)} 
+                                        variant="outline" 
+                                        className="w-full h-12 border-border/60 text-foreground hover:text-white hover:bg-black hover:border-black rounded-xl font-bold text-xs transition-all shadow-sm"
+                                    >
+                                        Modify Tier Architecture
+                                    </Button>
         </CardContent>
        </Card>
       ))}
-      {tiers.length === 0 && (
-        <Card className="border border-border p-20 flex flex-col items-center justify-center col-span-2 text-muted-foreground border-none">
-          <Trophy className="w-16 h-16 mb-4 opacity-10" />
-          <p className="text-[10px] font-semibold uppercase tracking-wide ">No rewards defined in the registry</p>
-        </Card>
-      )}
+                    <Card className="border border-dashed border-border p-20 flex flex-col items-center justify-center col-span-2 text-muted-foreground bg-muted/10 rounded-[2.5rem]">
+                        <Trophy className="w-16 h-16 mb-4 opacity-10" />
+                        <p className="text-xs font-bold text-muted-foreground">No reward architectures in the registry</p>
+                    </Card>
      </div>
     </div>
 
     {/* Global Activity Ledger */}
-    <div className="space-y-8">
-     <div className="flex items-center gap-3 px-2">
-      <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
-        <TrendingUp className="w-6 h-6" />
-      </div>
-      <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">Live Point Velocity</h2>
-     </div>
+                <div className="space-y-8">
+                    <div className="flex items-center gap-3 px-2">
+                        <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+                            <TrendingUp className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <h2 className="text-lg font-bold text-foreground tracking-tight">Point Velocity</h2>
+                            <p className="text-xs font-bold text-muted-foreground">Live movement audit.</p>
+                        </div>
+                    </div>
 
      <Card className="border border-border border-none overflow-hidden shadow-sm">
       <Table>
@@ -203,14 +209,14 @@ export default function AdminLoyalty() {
            </div>
           </TableCell>
           <TableCell className="pr-8 py-6 text-right">
-           <div className="space-y-1">
-            <p className={`text-sm font-semibold tabular-nums ${t.transaction_type === 'earn' ? 'text-foreground' : 'text-primary'}`}>
-              {t.transaction_type === 'earn' ? '+' : '-'}{t.points}
-            </p>
-            <p className="text-[9px] font-bold text-muted-foreground uppercase ">
-              {new Date(t.created_at).toLocaleDateString('default', { day: '2-digit', month: 'short' })}
-            </p>
-           </div>
+                                            <div className="space-y-1">
+                                                <p className={`text-sm font-bold tabular-nums ${t.transaction_type === 'earn' ? 'text-foreground' : 'text-primary'}`}>
+                                                    {t.transaction_type === 'earn' ? '+' : '-'}{t.points}
+                                                </p>
+                                                <p className="text-[10px] font-bold text-muted-foreground">
+                                                    {new Date(t.created_at).toLocaleDateString('default', { day: '2-digit', month: 'short' })}
+                                                </p>
+                                            </div>
           </TableCell>
          </TableRow>
         ))}
@@ -224,27 +230,29 @@ export default function AdminLoyalty() {
         )}
        </TableBody>
       </Table>
-      <div className="p-8 border-t border-border bg-muted/10 flex justify-center">
-        <button 
-         onClick={() => setIsLedgerOpen(true)}
-         className="text-[10px] font-semibold text-foreground hover:text-primary transition-all uppercase tracking-normal flex items-center gap-2 group"
-        >
-          Full Ledger View
-          <ChevronRight className="w-4 h-4 transform group-hover:translate-x-2 transition-transform" />
-        </button>
-      </div>
+                    <div className="p-8 border-t border-border bg-muted/10 flex justify-center">
+                        <button 
+                            onClick={() => setIsLedgerOpen(true)}
+                            className="text-xs font-bold text-foreground hover:text-primary transition-all flex items-center gap-2 group"
+                        >
+                            Full Ledger Audit
+                            <ChevronRight className="w-5 h-5 group-hover:translate-x-1.5 transition-transform" />
+                        </button>
+                    </div>
      </Card>
     </div>
    </div>
 
-   <Sheet open={isLedgerOpen} onOpenChange={setIsLedgerOpen}>
-    <SheetContent className="w-[400px] sm:w-[540px] bg-muted/50">
-     <SheetHeader>
-      <SheetTitle className="text-2xl font-semibold uppercase text-foreground tracking-tight">Full Transaction Ledger</SheetTitle>
-      <SheetDescription className="font-bold text-muted-foreground text-xs">
-       Complete history of all loyalty point movements across the platform.
-      </SheetDescription>
-     </SheetHeader>
+            <Sheet open={isLedgerOpen} onOpenChange={setIsLedgerOpen}>
+                <SheetContent side="right" className="w-full sm:max-w-xl bg-white dark:bg-zinc-950 border-l border-border/40 p-0">
+                    <div className="p-8 border-b border-border/10">
+                        <SheetHeader className="text-left">
+                            <SheetTitle className="text-2xl font-bold text-foreground tracking-tight">Financial Ledger</SheetTitle>
+                            <SheetDescription className="font-bold text-muted-foreground text-xs mt-1">
+                                Complete history of platform reward movements.
+                            </SheetDescription>
+                        </SheetHeader>
+                    </div>
      <div className="py-8 space-y-6">
       <Card className="border border-border border-none overflow-hidden shadow-sm">
        <Table>
@@ -296,74 +304,80 @@ export default function AdminLoyalty() {
     </SheetContent>
    </Sheet>
 
-   <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-    <SheetContent className="w-[400px] sm:w-[540px] bg-muted/50">
-     <SheetHeader>
-      <SheetTitle className="text-2xl font-semibold uppercase text-foreground tracking-tight">
-        {currentTier.id ? 'Modify Tier' : 'Define New Tier'}
-      </SheetTitle>
-      <SheetDescription className="font-bold text-muted-foreground text-xs">
-        Configure the reward tier attributes and threshold.
-      </SheetDescription>
-     </SheetHeader>
-     <div className="py-8 space-y-6">
-      <div className="space-y-3">
-        <Label className="text-[10px] font-semibold uppercase tracking-normal text-muted-foreground">Tier Designation</Label>
-        <Input 
-          value={currentTier.name || ''} 
-          onChange={e => setCurrentTier(prev => ({...prev, name: e.target.value}))}
-          className="h-14 rounded-xl border-none shadow-sm focus-visible:ring-sky-100 font-semibold text-foreground" 
-          placeholder="e.g. Elite Partner"
-        />
-      </div>
-      <div className="space-y-3">
-        <Label className="text-[10px] font-semibold uppercase tracking-normal text-muted-foreground">Entry Threshold (Points)</Label>
-        <Input 
-          type="number"
-          value={currentTier.min_points || 0} 
-          onChange={e => setCurrentTier(prev => ({...prev, min_points: parseInt(e.target.value)}))}
-          className="h-14 rounded-xl border-none shadow-sm focus-visible:ring-sky-100 font-semibold text-foreground" 
-        />
-      </div>
-      <div className="space-y-3">
-        <Label className="text-[10px] font-semibold uppercase tracking-normal text-muted-foreground">Core Benefits</Label>
-        {(currentTier.benefits || ['']).map((benefit, idx) => (
-          <Input 
-            key={idx}
-            value={benefit} 
-            onChange={e => {
-              const newBenefits = [...(currentTier.benefits || [])];
-              newBenefits[idx] = e.target.value;
-              setCurrentTier(prev => ({...prev, benefits: newBenefits}));
-            }}
-            className="h-14 rounded-xl border-none shadow-sm focus-visible:ring-sky-100 font-bold text-sm mb-2" 
-            placeholder="e.g. 15% off all services"
-          />
-        ))}
-        <button 
-          onClick={() => setCurrentTier(prev => ({...prev, benefits: [...(prev.benefits || []), '']}))}
-          className="text-[10px] font-semibold uppercase tracking-normal text-primary hover:text-foreground transition-colors mt-2 flex items-center gap-1"
-        >
-          <Plus className="w-3 h-3" /> Add Benefit
-        </button>
-      </div>
-      <div className="flex items-center justify-between p-4 bg-white rounded-xl shadow-sm">
-        <div className="space-y-0.5">
-          <Label className="text-[11px] font-semibold uppercase tracking-normal text-foreground">Active Status</Label>
-          <p className="text-[9px] font-bold text-muted-foreground ">Toggle visibility across the platform.</p>
-        </div>
-        <Switch 
-          checked={currentTier.is_active || false} 
-          onCheckedChange={c => setCurrentTier(prev => ({...prev, is_active: c}))}
-        />
-      </div>
+            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+                <SheetContent side="right" className="w-full sm:max-w-xl bg-white dark:bg-zinc-950 border-l border-border/40 p-0">
+                    <div className="p-8 border-b border-border/10">
+                        <SheetHeader className="text-left">
+                            <SheetTitle className="text-2xl font-bold text-foreground tracking-tight">
+                                {currentTier.id ? 'Modify Architecture' : 'Define New Strategy'}
+                            </SheetTitle>
+                            <SheetDescription className="font-bold text-muted-foreground text-xs mt-1">
+                                Configure progression thresholds and incentive structures.
+                            </SheetDescription>
+                        </SheetHeader>
+                    </div>
+                        <div className="p-8 space-y-8">
+                            <div className="space-y-3">
+                                <Label className="text-xs font-bold text-muted-foreground">Tier Designation</Label>
+                                <Input 
+                                    value={currentTier.name || ''} 
+                                    onChange={e => setCurrentTier(prev => ({...prev, name: e.target.value}))}
+                                    className="h-14 rounded-2xl bg-muted border-none font-bold text-foreground" 
+                                    placeholder="e.g. Platinum Partner"
+                                />
+                            </div>
+                            <div className="space-y-3">
+                                <Label className="text-xs font-bold text-muted-foreground">Entry Threshold (Kuba Points)</Label>
+                                <Input 
+                                    type="number"
+                                    value={currentTier.min_points || 0} 
+                                    onChange={e => setCurrentTier(prev => ({...prev, min_points: parseInt(e.target.value)}))}
+                                    className="h-14 rounded-2xl bg-muted border-none font-bold text-foreground" 
+                                />
+                            </div>
+                            <div className="space-y-3">
+                                <Label className="text-xs font-bold text-muted-foreground">Core Incentive Portfolio</Label>
+                                {(currentTier.benefits || ['']).map((benefit, idx) => (
+                                    <Input 
+                                        key={idx}
+                                        value={benefit} 
+                                        onChange={e => {
+                                            const newBenefits = [...(currentTier.benefits || [])];
+                                            newBenefits[idx] = e.target.value;
+                                            setCurrentTier(prev => ({...prev, benefits: newBenefits}));
+                                        }}
+                                        className="h-14 rounded-2xl bg-muted border-none font-bold text-sm mb-3" 
+                                        placeholder="e.g. Priority dispatch & premium support"
+                                    />
+                                ))}
+                                <button 
+                                    onClick={() => setCurrentTier(prev => ({...prev, benefits: [...(prev.benefits || []), '']}))}
+                                    className="text-xs font-bold text-primary hover:text-black transition-colors mt-2 flex items-center gap-1.5"
+                                >
+                                    <Plus className="w-4 h-4" /> Add Incentive Variable
+                                </button>
+                            </div>
+                            <div className="flex items-center justify-between p-6 bg-muted/30 rounded-2xl border border-dashed border-border">
+                                <div className="space-y-1">
+                                    <Label className="text-sm font-bold text-foreground">Operational Status</Label>
+                                    <p className="text-[10px] font-bold text-muted-foreground">Toggle visibility across the platform.</p>
+                                </div>
+                                <Switch 
+                                    checked={currentTier.is_active || false} 
+                                    onCheckedChange={c => setCurrentTier(prev => ({...prev, is_active: c}))}
+                                />
+                            </div>
 
-      <Button onClick={handleSaveTier} disabled={isSaving} className="w-full h-14 bg-primary hover:bg-primary text-white rounded-xl font-semibold uppercase tracking-normal text-[11px] transition-all">
-        {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Tier Configuration'}
-      </Button>
-     </div>
-    </SheetContent>
-   </Sheet>
-  </div>
- );
+                            <Button 
+                                onClick={handleSaveTier} 
+                                disabled={isSaving} 
+                                className="w-full h-14 bg-primary hover:bg-black text-white rounded-2xl font-bold text-sm transition-all shadow-lg shadow-primary/20"
+                            >
+                                {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Save reward structure'}
+                            </Button>
+                        </div>
+                    </SheetContent>
+                </Sheet>
+            </div>
+    );
 }

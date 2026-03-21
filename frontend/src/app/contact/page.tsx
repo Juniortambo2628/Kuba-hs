@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { PageHero } from "@/components/shared/PageHero";
+import { HighImpactHero } from "@/components/shared/HighImpactHero";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,7 @@ import { toast } from "sonner";
 import { useCMS } from "@/hooks/useCMS";
 
 export default function ContactPage() {
-  const { getS } = useCMS();
+  const { getS, getImg } = useCMS();
   const [formData, setFormData] = useState({ name: "", email: "", subject: "", message: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -68,13 +68,12 @@ export default function ContactPage() {
     <main className="min-h-screen bg-white dark:bg-[#0B0F19] flex flex-col selection:bg-blue-500/30 transition-colors duration-300">
       <Navbar />
 
-      <PageHero
-        title="Get in Touch"
-        subtitle="Have questions? We're here to help you find the best services for your home."
-        breadcrumbs={[{ label: "Contact" }]}
-        bgImage="https://images.unsplash.com/photo-1534536281715-e28d76689b4d?q=80&w=2070&auto=format&fit=crop"
-        gradientFrom="from-purple-600"
-        gradientTo="to-blue-600"
+      <HighImpactHero
+        title={getS('hero_media', 'contact_hero_title', "Get in Touch")}
+        subtitle={getS('hero_media', 'contact_hero_subtitle', "Have questions? We're here to help you find the best services for your home.")}
+        badge={getS('hero_media', 'contact_hero_badge', "Get in Touch")}
+        cmsKey="contact_hero_image"
+        cmsGroup="hero_media"
       />
 
       <section className="py-20 flex-1">

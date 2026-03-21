@@ -11,65 +11,49 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 
-import { useCMS } from "@/hooks/useCMS";
+import { useEffect, useState } from "react";
+import axiosInstance from "@/lib/axios";
+import { Skeleton } from "@/components/ui/skeleton";
+import { getMediaUrl } from "@/lib/utils";
+import { LandingSectionHeader } from "@/components/shared/LandingSectionHeader";
+
+interface TestimonialItem {
+  id: number;
+  client_name: string;
+  client_role: string | null;
+  content: string;
+  rating: number;
+  image_url: string | null;
+}
+
 
 export function Testimonials() {
-  const { getS, getImg } = useCMS();
+  const [testimonials, setTestimonials] = useState<TestimonialItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const testimonials = [
-    {
-      id: 1,
-      name: getS('testimonials', 'test_1_name', 'Sarah Jenkins'),
-      role: getS('testimonials', 'test_1_role', 'Homeowner'),
-      content: getS('testimonials', 'test_1_content', '"I found an amazing electrician through KUBA within minutes. The service was professional, and the price was transparent. Highly recommended for anyone looking for reliable help!"'),
-      avatar: getImg('testimonials', 'test_1_avatar', 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=200&auto=format&fit=crop'),
-      rating: 5
-    },
-    {
-      id: 2,
-      name: getS('testimonials', 'test_2_name', 'Michael Chen'),
-      role: getS('testimonials', 'test_2_role', 'Property Manager'),
-      content: getS('testimonials', 'test_2_content', '"Managing multiple properties is tough, but KUBA makes finding verified professionals incredibly easy. The background checks give me peace of mind every time I book."'),
-      avatar: getImg('testimonials', 'test_2_avatar', 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=200&auto=format&fit=crop'),
-      rating: 5
-    },
-    {
-      id: 3,
-      name: getS('testimonials', 'test_3_name', 'Emily Davis'),
-      role: getS('testimonials', 'test_3_role', 'Homeowner'),
-      content: getS('testimonials', 'test_3_content', '"The booking process is seamless. I love being able to see upfront pricing and read real reviews before making a decision. KUBA is my go-to for all home repairs."'),
-      avatar: getImg('testimonials', 'test_3_avatar', 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=200&auto=format&fit=crop'),
-      rating: 5
-    },
-    {
-      id: 4,
-      name: getS('testimonials', 'test_4_name', 'David Rodriguez'),
-      role: getS('testimonials', 'test_4_role', 'Small Business Owner'),
-      content: getS('testimonials', 'test_4_content', '"As a landlord with several rentals, I rely on KUBA to quickly find plumbers and electricians. The quality of service has been consistently excellent."'),
-      avatar: getImg('testimonials', 'test_4_avatar', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop'),
-      rating: 5
-    },
-  ];
+  useEffect(() => {
+    const fetchTestimonials = async () => {
+      try {
+        const response = await axiosInstance.get('/api/testimonials');
+        setTestimonials(response.data.data ?? response.data);
+      } catch (error) {
+        console.error("Failed to fetch testimonials:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchTestimonials();
+  }, []);
 
   return (
-    <section className="py-24 bg-white dark:bg-[#0B0F19] relative overflow-hidden transition-colors duration-300">
+    <section className="py-24 bg-background relative overflow-hidden transition-colors duration-300">
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-500/5 dark:bg-purple-500/10 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <motion.div
-          className="text-center mb-16"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.6 }}
-        >
-          <h2 className="text-3xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6 tracking-tight">
-            Loved by our customers
-          </h2>
-          <p className="text-gray-500 dark:text-gray-400 text-lg max-w-2xl mx-auto">
-            Don't just take our word for it. Here's what people are saying about their experience with KUBA professionals.
-          </p>
-        </motion.div>
+        <LandingSectionHeader 
+          title="Loved by our customers"
+          subtitle="Don't just take our word for it. Here's what people are saying about their experience with KUBA professionals."
+        />
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -81,31 +65,34 @@ export function Testimonials() {
             <CarouselContent className="-ml-4">
               {testimonials.map((testimonial) => (
                 <CarouselItem key={testimonial.id} className="pl-4 md:basis-1/2">
-                  <Card className="bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10 backdrop-blur-sm relative group hover:border-blue-500/20 dark:hover:border-white/20 transition-all duration-300 h-full">
-                    <CardContent className="p-8 pt-10 flex flex-col h-full">
-                      <Quote className="absolute top-6 right-8 w-12 h-12 text-gray-200 dark:text-white/5 group-hover:text-blue-500/10 transition-colors duration-300" />
+                  <Card className="bg-card border border-gray-200 dark:border-white/10 shadow-xl relative group hover:border-primary/40 dark:hover:border-primary/30 transition-all duration-500 h-full rounded-[2.5rem] overflow-hidden">
+                    {/* Glow effect */}
+                    <div className="absolute inset-x-0 -top-px h-px w-full bg-gradient-to-r from-transparent via-blue-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    
+                    <CardContent className="p-10 pt-12 flex flex-col h-full bg-gradient-to-br from-gray-50/50 to-white dark:from-white/[0.02] dark:to-transparent">
+                      <Quote className="absolute top-8 right-10 w-16 h-16 text-gray-100 dark:text-white/5 group-hover:text-blue-500/10 transition-colors duration-500 -rotate-12 group-hover:rotate-0" />
                       
-                      <div className="flex gap-1 mb-6">
+                      <div className="flex gap-1.5 mb-8">
                         {Array.from({ length: testimonial.rating }).map((_, i) => (
-                          <Star key={i} className="w-4 h-4 fill-yellow-500 text-yellow-500" />
+                          <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                         ))}
                       </div>
                       
-                      <p className="text-gray-600 dark:text-gray-300 mb-8 leading-relaxed italic relative z-10 flex-1">
+                      <p className="text-gray-700 dark:text-gray-300 text-lg mb-10 leading-relaxed font-medium relative z-10 flex-1">
                         {testimonial.content}
                       </p>
                       
-                      <div className="flex items-center gap-4 mt-auto">
-                        <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200 dark:border-white/10 shrink-0">
+                      <div className="flex items-center gap-5 mt-auto pt-6 border-t border-gray-100 dark:border-white/5">
+                        <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-lg border-2 border-white dark:border-white/10 shrink-0 group-hover:scale-110 transition-transform duration-500">
                           <img 
-                              src={testimonial.avatar} 
-                              alt={testimonial.name} 
+                              src={getMediaUrl(testimonial.image_url, 'testimonial')} 
+                              alt={testimonial.client_name} 
                               className="w-full h-full object-cover"
                           />
                         </div>
                         <div>
-                          <h4 className="text-gray-900 dark:text-white font-bold">{testimonial.name}</h4>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">{testimonial.role}</p>
+                          <h4 className="text-gray-900 dark:text-white font-black tracking-tight text-lg">{testimonial.client_name}</h4>
+                          {testimonial.client_role && <p className="text-xs font-bold text-blue-600 dark:text-blue-400 tracking-tight mt-1">{testimonial.client_role}</p>}
                         </div>
                       </div>
                     </CardContent>

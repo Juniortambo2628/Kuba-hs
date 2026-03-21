@@ -14,14 +14,18 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { HighImpactHero } from "@/components/shared/HighImpactHero";
 import { BookingModal } from "@/components/booking/BookingModal";
 import axiosInstance from "@/lib/axios";
+import { getMediaUrl } from "@/lib/utils";
 
 interface ProviderProfile {
   id: string;
   business_name: string;
   logo: string | null;
   bio: string | null;
+  rating: number | null;
+  review_count: number;
   is_verified: boolean;
   specialized_skills: string[] | null;
   services: Array<{
@@ -70,27 +74,27 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
     <main className="min-h-screen bg-white dark:bg-[#0B0F19] flex flex-col selection:bg-blue-500/30 transition-colors duration-300">
       <Navbar />
 
-      {/* Hero Breadcrumb Section */}
-      <section className="relative pt-20 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-indigo-700" />
-        <div className="absolute inset-0 bg-black/30" />
-        <div className="relative z-10 py-12 md:py-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-              <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-3">
-                {isPageLoading ? "Loading..." : provider?.business_name || "Provider Not Found"}
-              </h1>
-              <div className="flex items-center gap-2 text-white/60 font-medium text-sm">
-                <Link href="/" className="hover:text-white transition-colors flex items-center gap-1"><Home className="w-4 h-4" /> Home</Link>
-                <ChevronRight className="w-4 h-4" />
-                <Link href="/providers" className="hover:text-white transition-colors">Providers</Link>
-                <ChevronRight className="w-4 h-4" />
-                <span className="text-white">{provider?.business_name || "Profile"}</span>
-              </div>
-            </motion.div>
-          </div>
+      <HighImpactHero
+        title={provider?.business_name || "Professional Profile"}
+        subtitle={provider?.bio || "Institutional grade professional provider verified for specialized logistical and structural service requirements."}
+        breadcrumbs={[
+            { label: "Providers", href: "/providers" },
+            { label: provider?.business_name || "Profile" }
+        ]}
+        cmsKey="provider_profile_hero"
+      >
+        <div className="flex flex-wrap gap-4 items-center">
+            {provider?.is_verified && (
+                <div className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-4 py-2 rounded-xl text-[10px] font-black tracking-widest capitalize flex items-center gap-2">
+                    <Shield className="w-3.5 h-3.5" /> Institutional Verified
+                </div>
+            )}
+            <div className="flex items-center gap-1.5 text-amber-400 bg-amber-400/10 px-3 py-2 rounded-xl border border-amber-400/20 backdrop-blur-md">
+                <Star className="w-4 h-4 fill-amber-400" />
+                <span className="text-[11px] font-black tracking-widest">{provider?.rating || 'NEW'} RANKING</span>
+            </div>
         </div>
-      </section>
+      </HighImpactHero>
 
       <div className="flex-1 py-12 md:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -124,56 +128,56 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
             </div>
           ) : (
             <>
-                {/* Header */}
+                {/* Institutional Header */}
                 <motion.div
-                  className="flex flex-col md:flex-row md:items-end gap-6 pb-8 border-b border-gray-200 dark:border-white/10"
+                  className="flex flex-col md:flex-row md:items-center gap-10 pb-12 border-b border-border/40"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5 }}
                 >
-                    <div className="w-32 h-32 rounded-full border-4 border-white dark:border-[#0B0F19] bg-gray-100 dark:bg-zinc-800 shadow-xl overflow-hidden flex items-center justify-center font-bold text-4xl text-gray-400">
+                    <div className="w-40 h-40 rounded-[2.5rem] border-8 border-white dark:border-black bg-slate-50 dark:bg-zinc-900 shadow-2xl overflow-hidden flex items-center justify-center group relative shrink-0">
                         {provider.logo ? (
-                            <img src={provider.logo} alt={provider.business_name} className="w-full h-full object-cover" />
+                            <img src={getMediaUrl(provider.logo, 'avatar')} alt={provider.business_name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                         ) : (
-                            <img src="/placeholders/kuba-placeholder.png" alt={provider.business_name} className="w-full h-full object-cover opacity-50" />
+                            <div className="w-full h-full bg-primary/5 flex items-center justify-center font-black text-5xl text-primary/10 italic">
+                                {provider.business_name.charAt(0)}
+                            </div>
                         )}
                     </div>
                     
-                    <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                            <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
+                    <div className="flex-1 space-y-4">
+                        <div className="flex flex-wrap items-center gap-4">
+                            <h2 className="text-4xl font-black tracking-tighter text-foreground italic leading-none">
                                 {provider.business_name}
                             </h2>
-                            {provider.is_verified && (
-                                <Badge className="bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-500/30 border border-green-200 dark:border-green-500/30 flex items-center gap-1">
-                                    <Shield className="w-3 h-3" /> Verified Pro
-                                </Badge>
-                            )}
+                            <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 rounded-lg border border-emerald-100 dark:border-emerald-500/10 text-[10px] font-black tracking-widest capitalize">
+                                <CheckCircle2 className="w-3.5 h-3.5" /> High Reliability
+                            </div>
                         </div>
-                        <div className="flex flex-wrap items-center gap-4 text-gray-500 dark:text-gray-400">
-                            <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4" /> Local Area</span>
-                            <span className="flex items-center gap-1.5 text-yellow-500"><Star className="w-4 h-4 fill-yellow-500" /> 4.9 (120+ reviews)</span>
-                            <span className="flex items-center gap-1.5"><Clock className="w-4 h-4" /> Usually responds in 1 hr</span>
+                        
+                        <div className="flex flex-wrap items-center gap-6 text-muted-foreground font-medium text-sm">
+                            <span className="flex items-center gap-2 bg-slate-50 dark:bg-zinc-900 px-4 py-2 rounded-xl border border-border/40 italic"><MapPin className="w-4 h-4 text-primary" /> Multi-Regional Operative</span>
+                            <span className="flex items-center gap-2 bg-slate-50 dark:bg-zinc-900 px-4 py-2 rounded-xl border border-border/40 italic"><Clock className="w-4 h-4 text-primary" /> &lt; 45m Response Protocol</span>
                         </div>
                     </div>
                     
-                    <div className="mt-6 md:mt-0 flex flex-col sm:flex-row gap-3">
+                    <div className="flex flex-col sm:flex-row gap-4 shrink-0">
                         <Button 
                           size="lg" 
                           variant="outline"
                           asChild
-                          className="border-gray-200 dark:border-white/10 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 font-bold px-8 h-12 rounded-xl"
+                          className="border-border/60 text-foreground hover:bg-muted font-bold px-8 h-14 rounded-2xl transition-all hover:shadow-lg"
                         >
                             <Link href={`/dashboard/chat?provider=${provider.id}`}>
-                                <Clock className="w-4 h-4 mr-2" /> Message Provider
+                                Message Architecture
                             </Link>
                         </Button>
                         <Button 
                           size="lg" 
                           onClick={() => handleBooking()}
-                          className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 h-12 rounded-xl shadow-lg shadow-blue-500/20"
+                          className="bg-primary text-white font-bold px-10 h-14 rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all"
                         >
-                            <CalendarCheck className="w-4 h-4 mr-2" /> Request Booking
+                            <CalendarCheck className="w-4 h-4 mr-2" /> Initiate Booking
                         </Button>
                     </div>
                 </motion.div>
@@ -182,26 +186,30 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-12">
                     
                     {/* Main Content */}
-                    <div className="lg:col-span-2 space-y-12">
+                    <div className="lg:col-span-2 space-y-16">
                         
                         <motion.section
                           initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.5, delay: 0.1 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 0.5 }}
+                          className="bg-slate-50 dark:bg-zinc-900 rounded-[2.5rem] p-10 border border-border/40"
                         >
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">About the Professional</h2>
-                            <div className="prose dark:prose-invert prose-blue max-w-none text-gray-600 dark:text-gray-300 leading-relaxed mb-8">
-                                <p>{provider.bio || "This professional has not provided a bio yet. They are verified and ready to handle your home service needs."}</p>
+                            <h2 className="text-xl font-black tracking-widest text-muted-foreground/60 capitalize mb-8 flex items-center gap-3">
+                                <div className="w-6 h-1 bg-primary rounded-full" /> Operational Profile
+                            </h2>
+                            <div className="prose dark:prose-invert prose-slate max-w-none text-foreground font-medium text-base leading-relaxed italic mb-10">
+                                {provider.bio || "This institutional partner has successfully completed the Kuba verification protocol and is available for specialized regional service deployments."}
                             </div>
 
                             {provider.specialized_skills && provider.specialized_skills.length > 0 && (
-                                <div className="space-y-4">
-                                    <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-widest">Specialized Skills</h3>
-                                    <div className="flex flex-wrap gap-2">
+                                <div className="space-y-6 pt-8 border-t border-border/10">
+                                    <h3 className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Industry Technical Clusters</h3>
+                                    <div className="flex flex-wrap gap-2.5">
                                         {provider.specialized_skills.map((skill, index) => (
-                                            <Badge key={index} variant="secondary" className="bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-100 dark:border-blue-500/20 px-3 py-1 rounded-lg text-xs font-bold">
+                                            <div key={index} className="bg-white dark:bg-black text-foreground border border-border/40 px-4 py-2 rounded-xl text-xs font-bold tracking-tight shadow-sm">
                                                 {skill}
-                                            </Badge>
+                                            </div>
                                         ))}
                                     </div>
                                 </div>
@@ -210,83 +218,64 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
 
                         <motion.section
                           initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.5, delay: 0.2 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 0.5, delay: 0.1 }}
                         >
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Services Offered</h2>
-                            <div className="grid sm:grid-cols-2 gap-4">
+                            <h2 className="text-2xl font-black tracking-tighter text-foreground italic mb-10 flex items-center gap-4">
+                               <div className="w-10 h-1 bg-primary rounded-full" /> Service Architecture <span className="text-muted-foreground font-medium NOT-italic text-sm">Deployment Matrix</span>
+                            </h2>
+                            <div className="grid sm:grid-cols-2 gap-8">
                                 {provider.services?.map((ps) => (
                                     <Card 
                                       key={ps.id} 
-                                      className="bg-gray-50 dark:bg-zinc-900/50 border-gray-200 dark:border-white/10 hover:border-blue-500/30 dark:hover:border-white/20 transition-all group rounded-2xl overflow-hidden cursor-default"
+                                      className="bg-white dark:bg-black border border-border/40 hover:border-primary/40 transition-all duration-500 group rounded-[2.5rem] overflow-hidden cursor-default shadow-sm hover:shadow-2xl hover:shadow-primary/5 h-full flex flex-col"
                                     >
-                                        <CardContent className="p-0">
-                                            <div className="aspect-video w-full bg-muted overflow-hidden relative group/img">
+                                        <CardContent className="p-0 flex flex-col h-full">
+                                            <div className="aspect-[4/3] w-full bg-slate-50 dark:bg-zinc-900 overflow-hidden relative group/img border-b border-border/10">
                                                 <img 
-                                                  src={ps.service_thumbnail_url || "/placeholders/service-light.png"} 
+                                                  src={getMediaUrl(ps.service_thumbnail_url, 'service')} 
                                                   alt={ps.name} 
-                                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                                                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
                                                 />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent p-4" />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-8 flex items-end">
+                                                   <div className="flex items-center gap-3">
+                                                      <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center">
+                                                         <CheckCircle2 className="w-5 h-5 text-white" />
+                                                      </div>
+                                                      <h4 className="font-bold text-white text-lg tracking-tight italic">{ps.name}</h4>
+                                                   </div>
+                                                </div>
                                             </div>
-                                            <div className="p-5">
-                                                <div className="flex flex-col mb-4">
-                                                    <div className="flex items-center justify-between mb-4">
-                                                        <div className="flex items-center gap-4">
-                                                            <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center shrink-0">
-                                                                <CheckCircle2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                                                            </div>
-                                                            <div>
-                                                                <h4 className="font-semibold text-gray-900 dark:text-white mb-1">{ps.name}</h4>
-                                                                <p className="text-xs text-muted-foreground line-clamp-2">{ps.description}</p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="text-right">
-                                                            <p className="text-lg font-bold text-blue-600 dark:text-blue-400">KES {Number(ps.base_price).toLocaleString()}{ps.pricing_type === 'hourly' && <span className="text-xs font-normal text-muted-foreground ml-1">/hr</span>}</p>
-                                                            {ps.pricing_type === 'hourly' && ps.min_hours > 1 && (
-                                                                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-tighter">Min {ps.min_hours} hrs</p>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    <div className="flex flex-wrap gap-4 pt-2 border-t border-border/50">
-                                                        {Number(ps.travel_fee) > 0 && (
-                                                            <span className="text-[10px] font-semibold text-gray-500 flex items-center gap-1.5">
-                                                                <MapPin className="w-3 h-3" /> + KES {ps.travel_fee} Travel Fee
-                                                            </span>
-                                                        )}
-                                                        {ps.equipment_included && (
-                                                            <span className="text-[10px] font-semibold text-emerald-600 flex items-center gap-1.5">
-                                                                <Shield className="w-3 h-3" /> Equipment Included
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </div>
+                                            <div className="p-8 flex-1 flex flex-col">
+                                                <p className="text-muted-foreground text-sm font-medium leading-relaxed italic line-clamp-2 mb-8">{ps.description}</p>
                                                 
-                                                {/* Gallery Section */}
-                                                <div className="space-y-3">
-                                                    <h5 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Service Gallery</h5>
-                                                    {ps.image_urls && ps.image_urls.length > 0 ? (
-                                                        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                                                            {ps.image_urls.map((img) => (
-                                                                <div key={img.id} className="w-16 h-16 rounded-lg overflow-hidden shrink-0 border border-border">
-                                                                    <img src={img.url} className="w-full h-full object-cover" alt="" />
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    ) : (
-                                                        <div className="py-4 border border-dashed border-border rounded-xl text-center">
-                                                            <p className="text-[10px] text-muted-foreground uppercase tracking-tight">No images in this gallery</p>
-                                                        </div>
-                                                    )}
-                                                </div>
+                                                <div className="space-y-6 mt-auto">
+                                                   <div className="flex flex-wrap gap-4 pb-6 border-b border-border/10">
+                                                      <div className="flex flex-col">
+                                                         <span className="text-[9px] font-black text-muted-foreground/60 capitalize tracking-widest mb-1.5">Project Rate</span>
+                                                         <span className="text-foreground text-xl font-black tracking-tighter italic">KES {Number(ps.base_price).toLocaleString()}</span>
+                                                      </div>
+                                                      <div className="h-10 w-px bg-border/20 self-center" />
+                                                      <div className="flex flex-col">
+                                                         <span className="text-[9px] font-black text-muted-foreground/60 tracking-widest mb-1.5">Logistical Fee</span>
+                                                         <span className="text-foreground text-sm font-bold tracking-tight">{Number(ps.travel_fee) > 0 ? `KES ${ps.travel_fee}` : 'WAVED'}</span>
+                                                      </div>
+                                                   </div>
 
-                                                <Button 
-                                                  className="w-full mt-6 rounded-xl font-bold uppercase tracking-tight h-10"
-                                                  onClick={() => handleBooking(ps)}
-                                                >
-                                                    Book This Service
-                                                </Button>
+                                                   <div className="flex items-center justify-between">
+                                                      <div className="flex items-center gap-2">
+                                                         <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                                         <span className="text-[10px] font-black text-emerald-600/80 capitalize tracking-widest">Active Operative</span>
+                                                      </div>
+                                                      <Button 
+                                                        className="rounded-2xl font-bold text-[10px] capitalize tracking-widest h-12 px-8 bg-slate-50 dark:bg-zinc-900 border border-border/40 text-primary hover:bg-primary hover:text-white transition-all shadow-sm"
+                                                        onClick={() => handleBooking(ps)}
+                                                      >
+                                                          Book Domain
+                                                      </Button>
+                                                   </div>
+                                                </div>
                                             </div>
                                         </CardContent>
                                     </Card>
@@ -298,43 +287,52 @@ export default function ProviderProfilePage({ params }: { params: Promise<{ id: 
 
                     {/* Sidebar */}
                     <motion.div
-                      className="space-y-6"
+                      className="space-y-10"
                       initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: 0.3 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.5, delay: 0.2 }}
                     >
-                        <Card className="bg-gray-50 dark:bg-zinc-900 border-gray-200 dark:border-white/10 rounded-2xl sticky top-24">
-                            <CardContent className="p-6">
-                                <h3 className="font-bold text-gray-900 dark:text-white mb-6 text-lg">Business Details</h3>
+                        <Card className="bg-slate-50 dark:bg-zinc-900 border border-border/40 rounded-[2.5rem] sticky top-32 overflow-hidden shadow-2xl shadow-primary/5">
+                            <CardContent className="p-10 space-y-10">
+                                <h3 className="font-black text-foreground italic text-xl tracking-tight flex items-center gap-3">
+                                   <div className="w-1.5 h-6 bg-primary rounded-full" /> Partner Logistics
+                                </h3>
                                 
-                                <ul className="space-y-4">
-                                    <li className="flex gap-3">
-                                        <Shield className="w-5 h-5 text-gray-400 shrink-0" />
+                                <ul className="space-y-8">
+                                    <li className="flex gap-5">
+                                        <div className="w-12 h-12 rounded-2xl bg-white dark:bg-black border border-border/40 flex items-center justify-center shrink-0 shadow-sm">
+                                           <Shield className="w-6 h-6 text-primary" />
+                                        </div>
                                         <div>
-                                            <p className="text-sm font-medium text-gray-900 dark:text-white">Background Checked</p>
-                                            <p className="text-xs text-gray-500">Identity and history verified</p>
+                                            <p className="text-sm font-black tracking-tight text-foreground capitalize">Compliance Checked</p>
+                                            <p className="text-xs font-bold text-muted-foreground/60 mt-1 italic">Institutional grade vetting completed</p>
                                         </div>
                                     </li>
-                                    <li className="flex gap-3">
-                                        <Star className="w-5 h-5 text-gray-400 shrink-0" />
+                                    <li className="flex gap-5">
+                                        <div className="w-12 h-12 rounded-2xl bg-white dark:bg-black border border-border/40 flex items-center justify-center shrink-0 shadow-sm">
+                                           <Star className="w-6 h-6 text-primary" />
+                                        </div>
                                         <div>
-                                            <p className="text-sm font-medium text-gray-900 dark:text-white">Top Rated</p>
-                                            <p className="text-xs text-gray-500">Maintains a 4.5+ average rating</p>
+                                            <p className="text-sm font-black tracking-tight text-foreground uppercase">Platinum Standard</p>
+                                            <p className="text-xs font-bold text-muted-foreground/60 mt-1 italic">Consistently top performing partner</p>
                                         </div>
                                     </li>
-                                    <li className="flex gap-3">
-                                        <Clock className="w-5 h-5 text-gray-400 shrink-0" />
+                                    <li className="flex gap-5">
+                                        <div className="w-12 h-12 rounded-2xl bg-white dark:bg-black border border-border/40 flex items-center justify-center shrink-0 shadow-sm">
+                                           <Clock className="w-6 h-6 text-primary" />
+                                        </div>
                                         <div>
-                                            <p className="text-sm font-medium text-gray-900 dark:text-white">Flexible Hours</p>
-                                            <p className="text-xs text-gray-500">Available evenings and weekends</p>
+                                            <p className="text-sm font-black tracking-tight text-foreground uppercase">Response Protocol</p>
+                                            <p className="text-xs font-bold text-muted-foreground/60 mt-1 italic">Active monitoring for rapid interaction</p>
                                         </div>
                                     </li>
                                 </ul>
 
-                                <div className="mt-8 pt-6 border-t border-gray-200 dark:border-white/10">
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-4">Have questions before booking?</p>
-                                    <Button asChild variant="outline" className="w-full border-gray-300 dark:border-white/20 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10">
-                                        <Link href="/contact">Contact Support</Link>
+                                <div className="mt-10 pt-10 border-t border-border/10 space-y-6">
+                                    <p className="text-xs font-medium text-muted-foreground text-center italic leading-relaxed">Require strategic coordination or support architecture clarification?</p>
+                                    <Button asChild variant="outline" className="w-full border-border/60 text-foreground hover:bg-muted font-bold h-12 rounded-xl">
+                                        <Link href="/contact">Inquiry Framework</Link>
                                     </Button>
                                 </div>
                             </CardContent>

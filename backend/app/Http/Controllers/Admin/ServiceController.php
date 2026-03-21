@@ -42,7 +42,7 @@ class ServiceController extends Controller
     public function destroy(Service $service)
     {
         // Prevent deleting if providers are offering it in the real world
-        if ($service->providers()->exists()) {
+        if ($service->providerServices()->exists()) {
             return response()->json(['message' => 'Cannot delete service that is currently offered by providers.'], 400);
         }
 

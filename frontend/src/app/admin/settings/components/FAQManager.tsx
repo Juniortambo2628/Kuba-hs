@@ -97,7 +97,7 @@ export function FAQManager() {
       </div>
 
       <DragDropContext onDragEnd={onDragEnd}>
-        <Droppable droppableId="faqs">
+        <Droppable droppableId="faqs" isDropDisabled={false} isCombineEnabled={false} ignoreContainerClipping={false}>
           {(provided) => (
             <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
               {faqs.map((faq, index) => (

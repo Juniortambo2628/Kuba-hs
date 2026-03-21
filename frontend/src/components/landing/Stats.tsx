@@ -10,32 +10,32 @@ export function Stats() {
   const stats = [
     { 
       id: 1, 
-      name: getS('stats', 'stat_1_label', 'Verified Providers'), 
-      value: getS('stats', 'stat_1_value', '500+'), 
+      name: getS('site_stats', 'stat_1_label', 'Verified Providers'), 
+      value: getS('site_stats', 'stat_1_value', '500+'), 
       icon: Users, 
       color: 'text-blue-400', 
       bg: 'bg-blue-400/20' 
     },
     { 
       id: 2, 
-      name: getS('stats', 'stat_2_label', 'Cities Covered'), 
-      value: getS('stats', 'stat_2_value', '10+'), 
+      name: getS('site_stats', 'stat_2_label', 'Cities Covered'), 
+      value: getS('site_stats', 'stat_2_value', '10+'), 
       icon: MapPin, 
       color: 'text-purple-400', 
       bg: 'bg-purple-400/20' 
     },
     { 
       id: 3, 
-      name: getS('stats', 'stat_3_label', 'Support Available'), 
-      value: getS('stats', 'stat_3_value', '24/7'), 
+      name: getS('site_stats', 'stat_3_label', 'Support Available'), 
+      value: getS('site_stats', 'stat_3_value', '24/7'), 
       icon: Clock, 
       color: 'text-cyan-400', 
       bg: 'bg-cyan-400/20' 
     },
     { 
       id: 4, 
-      name: getS('stats', 'stat_4_label', 'Happy Customers'), 
-      value: getS('stats', 'stat_4_value', '10k+'), 
+      name: getS('site_stats', 'stat_4_label', 'Happy Customers'), 
+      value: getS('site_stats', 'stat_4_value', '10k+'), 
       icon: Heart, 
       color: 'text-pink-400', 
       bg: 'bg-pink-400/20' 
@@ -103,7 +103,7 @@ export function Stats() {
                 <stat.icon className="w-8 h-8" />
               </div>
               <dd className="text-4xl font-bold tracking-tight text-white mb-2">{stat.value}</dd>
-              <dt className="text-sm font-medium text-white/60 tracking-widest">{stat.name}</dt>
+              <dt className="text-sm font-medium text-white/60 tracking-tight">{stat.name}</dt>
             </motion.div>
           ))}
         </dl>

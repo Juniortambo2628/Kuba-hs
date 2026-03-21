@@ -8,6 +8,7 @@ import { ArrowLeft, Calendar, User, Loader2, Share2, Facebook, Twitter, Linkedin
 import { Button } from "@/components/ui/button";
 import axiosInstance from "@/lib/axios";
 import { Post } from "@/types";
+import { getMediaUrl } from "@/lib/utils";
 
 export default function BlogPostDetail() {
   const { slug } = useParams();
@@ -32,9 +33,7 @@ export default function BlogPostDetail() {
   };
 
   const getImageUrl = (url?: string) => {
-    if (!url) return null;
-    if (url.startsWith('http')) return url;
-    return `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${url}`;
+    return getMediaUrl(url, 'service');
   };
 
   if (isLoading) {

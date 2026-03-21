@@ -18,9 +18,17 @@ export function NavigationManager() {
   const [settingId, setSettingId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
     fetchNavigation();
+
+    // Fix for react-beautiful-dnd invariant failure in React 18+
+    const animation = requestAnimationFrame(() => setEnabled(true));
+    return () => {
+      cancelAnimationFrame(animation);
+      setEnabled(false);
+    };
   }, []);
 
   const fetchNavigation = async () => {
@@ -32,7 +40,26 @@ export function NavigationManager() {
       if (navSetting) {
         setSettingId(navSetting.id);
         if (navSetting.value) {
-            setItems(JSON.parse(navSetting.value));
+            try {
+                let valueToParse = navSetting.value;
+                // Basic cleanup for common malformed JSON from certain DB drivers/migrations
+                if (typeof valueToParse === 'string') {
+                    // Remove erroneous backslashes if they are literal in the string
+                    if (valueToParse.includes('\\"')) {
+                        try {
+                            // If it's double encoded, this might fix it
+                            const unescaped = JSON.parse(`"${valueToParse}"`);
+                            if (typeof unescaped === 'string') valueToParse = unescaped;
+                        } catch(e) {}
+                    }
+                }
+                
+                const parsed = typeof valueToParse === 'string' ? JSON.parse(valueToParse) : valueToParse;
+                setItems(Array.isArray(parsed) ? parsed : []);
+            } catch (err) {
+                console.error("Failed to parse navigation menu setting:", err);
+                setItems([]);
+            }
         }
       }
     } catch (err) {
@@ -101,52 +128,67 @@ export function NavigationManager() {
         </div>
       </div>
 
-      <DragDropContext onDragEnd={onDragEnd}>
-        <Droppable droppableId="navigation">
-          {(provided) => (
-            <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
-              {items.map((item, index) => (
-                <Draggable key={item.id} draggableId={item.id} index={index}>
-                  {(provided) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      className="flex gap-4 p-4 bg-white dark:bg-zinc-900 border rounded-2xl items-center"
-                    >
-                      <div {...provided.dragHandleProps} className="text-muted-foreground cursor-grab">
-                        <GripVertical className="w-5 h-5" />
+      {!enabled ? null : items.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-12 border-2 border-dashed border-border/60 rounded-3xl bg-muted/30">
+          <p className="text-muted-foreground font-medium mb-4">No navigation links found</p>
+          <Button onClick={handleAdd} size="sm" className="rounded-full bg-primary/10 text-primary hover:bg-primary/20 border-none">
+            Add Your First Link
+          </Button>
+        </div>
+      ) : (
+        <DragDropContext onDragEnd={onDragEnd}>
+          <Droppable droppableId="navigation" isDropDisabled={false} isCombineEnabled={false} ignoreContainerClipping={false} direction="vertical">
+            {(provided) => (
+              <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
+                {items.map((item, index) => (
+                  <Draggable key={item.id} draggableId={item.id} index={index}>
+                    {(provided) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        className="flex gap-4 p-4 bg-white dark:bg-zinc-900 border rounded-2xl items-center"
+                      >
+                        <div {...provided.dragHandleProps} className="text-muted-foreground cursor-grab">
+                          <GripVertical className="w-5 h-5" />
+                        </div>
+                        <div className="flex-1 grid grid-cols-2 gap-6">
+                            <div className="space-y-1.5">
+                              <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 ml-1">
+                                Display Label
+                              </label>
+                              <Input 
+                                  value={item.label}
+                                  onChange={(e) => handleUpdate(item.id, 'label', e.target.value)}
+                                  placeholder="Link Label"
+                                  className="font-semibold bg-muted/5 border-border/40 focus:bg-white dark:focus:bg-zinc-800 transition-colors"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 ml-1 flex items-center gap-1">
+                                <LinkIcon className="w-3 h-3" />
+                                Destination Path
+                              </label>
+                              <Input 
+                                  value={item.url}
+                                  onChange={(e) => handleUpdate(item.id, 'url', e.target.value)}
+                                  placeholder="/path"
+                                  className="bg-muted/5 border-border/40 focus:bg-white dark:focus:bg-zinc-800 transition-colors font-mono text-sm"
+                              />
+                            </div>
+                        </div>
+                        <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)} className="text-red-500 hover:text-red-600 hover:bg-red-50">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
-                      <div className="flex-1 grid grid-cols-2 gap-4">
-                          <div className="relative">
-                            <Input 
-                                value={item.label}
-                                onChange={(e) => handleUpdate(item.id, 'label', e.target.value)}
-                                placeholder="Link Label"
-                                className="font-semibold"
-                            />
-                          </div>
-                          <div className="relative flex items-center">
-                            <LinkIcon className="w-4 h-4 absolute left-3 text-muted-foreground" />
-                            <Input 
-                                value={item.url}
-                                onChange={(e) => handleUpdate(item.id, 'url', e.target.value)}
-                                placeholder="/path"
-                                className="pl-9"
-                            />
-                          </div>
-                      </div>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)} className="text-red-500 hover:text-red-600 hover:bg-red-50">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
-      </DragDropContext>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
+      )}
     </div>
   );
 }

@@ -75,12 +75,14 @@ export function DataToolbar({
       {/* Search & Actions */}
       <div className="flex flex-1 items-center gap-3 w-full sm:w-auto">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
+            <Search className="w-4 h-4 text-muted-foreground" />
+          </div>
           <Input 
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder={searchPlaceholder}
-            className="pl-9 bg-background border-border h-10 w-full rounded-lg"
+            className="pl-10 bg-background border-border h-10 w-full rounded-lg"
           />
         </div>
 

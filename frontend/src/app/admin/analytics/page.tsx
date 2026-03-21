@@ -31,6 +31,8 @@ import {
 } from "recharts";
 import { useExport } from "@/hooks/useExport";
 import { Button } from "@/components/ui/button";
+import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { MetricCard } from "@/components/dashboard/MetricCard";
 
 interface AnalyticsData {
   trends: {
@@ -91,50 +93,40 @@ export default function AdminAnalytics() {
     { name: 'Admins', value: data.distribution.users.admins },
   ].filter(d => d.value > 0);
 
-  const formatCurrency = (val: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
+  const formatCurrency = (val: number) => `KES ${Number(val).toLocaleString()}`;
 
   const stats = [
-    { label: "Revenue", value: formatCurrency(data.summary.platform_revenue), icon: TrendingUp, growth: data.growth.revenue },
-    { label: "Bookings", value: data.summary.total_bookings.toLocaleString(), icon: Calendar, growth: data.growth.bookings },
-    { label: "Users", value: data.summary.total_users.toLocaleString(), icon: Users, growth: data.growth.users },
-    { label: "Avg Rating", value: Number(data.summary.avg_rating).toFixed(1), icon: Star, growth: 0 }
+    { label: "Revenue", value: formatCurrency(data.summary.platform_revenue), icon: TrendingUp, trend: `${data.growth.revenue >= 0 ? '+' : ''}${data.growth.revenue}%` },
+    { label: "Bookings", value: data.summary.total_bookings.toLocaleString(), icon: Calendar, trend: `${data.growth.bookings >= 0 ? '+' : ''}${data.growth.bookings}%` },
+    { label: "Users", value: data.summary.total_users.toLocaleString(), icon: Users, trend: `${data.growth.users >= 0 ? '+' : ''}${data.growth.users}%` },
+    { label: "Avg Rating", value: Number(data.summary.avg_rating).toFixed(1), icon: Star, trend: "Platform avg" }
   ];
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-12">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground tracking-tight">Analytics</h1>
-          <p className="text-sm text-muted-foreground mt-1">Platform health and growth metrics.</p>
-        </div>
+      <DashboardPageHeader 
+        title="Analytics" 
+        subtitle="Platform health and growth metrics."
+      >
         <Button 
           onClick={() => { if (data) exportToCSV(data.trends.revenue, 'revenue_trends'); }}
           variant="outline" size="sm"
         >
           <Download className="w-4 h-4 mr-1.5" /> Export
         </Button>
-      </div>
+      </DashboardPageHeader>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, i) => (
-          <Card key={i} className="border border-border">
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between mb-3">
-                <div className="p-2 bg-muted rounded-lg text-muted-foreground">
-                  <stat.icon className="w-4 h-4" />
-                </div>
-                {stat.label !== "Avg Rating" && (
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${stat.growth > 0 ? 'bg-muted text-foreground' : stat.growth < 0 ? 'bg-muted text-foreground' : 'bg-muted text-muted-foreground'}`}>
-                    {stat.growth > 0 ? '+' : ''}{stat.growth}%
-                  </span>
-                )}
-              </div>
-              <p className="text-2xl font-bold text-foreground tracking-tight">{stat.value}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{stat.label}</p>
-            </CardContent>
-          </Card>
+          <MetricCard 
+            key={i} 
+            label={stat.label} 
+            value={stat.value} 
+            icon={stat.icon} 
+            trend={stat.trend} 
+          />
         ))}
       </div>
 
@@ -145,7 +137,7 @@ export default function AdminAnalytics() {
             <BarChart className="w-4 h-4 text-muted-foreground" />
             <div>
               <CardTitle className="text-base font-semibold text-foreground">Revenue (30 Days)</CardTitle>
-              <p className="text-sm text-muted-foreground">Daily platform fee revenue.</p>
+              <p className="text-sm text-muted-foreground mt-0.5">Daily platform fee revenue.</p>
             </div>
           </div>
         </CardHeader>
@@ -161,10 +153,10 @@ export default function AdminAnalytics() {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
                 <XAxis dataKey="date" tick={{fontSize: 11}} tickLine={false} axisLine={false} stroke="var(--muted-foreground)" />
-                <YAxis tickFormatter={(val) => `$${val}`} tick={{fontSize: 11}} tickLine={false} axisLine={false} stroke="var(--muted-foreground)" />
+                <YAxis tickFormatter={(val) => `KES ${val}`} tick={{fontSize: 11}} tickLine={false} axisLine={false} stroke="var(--muted-foreground)" />
                 <Tooltip 
                   contentStyle={{ borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--foreground)', fontSize: 13 }}
-                  formatter={(value: any) => [`$${value}`, 'Revenue']}
+                  formatter={(value: any) => [`KES ${Number(value).toLocaleString()}`, 'Revenue']}
                 />
                 <Area type="monotone" dataKey="count" stroke="#71717a" strokeWidth={2} fillOpacity={1} fill="url(#colorRevenue)" />
               </AreaChart>
@@ -182,7 +174,7 @@ export default function AdminAnalytics() {
               <Activity className="w-4 h-4 text-muted-foreground" />
               <div>
                 <CardTitle className="text-base font-semibold text-foreground">Bookings Activity</CardTitle>
-                <p className="text-sm text-muted-foreground">Daily bookings trend.</p>
+                <p className="text-sm text-muted-foreground mt-0.5">Daily bookings trend.</p>
               </div>
             </div>
           </CardHeader>
@@ -208,7 +200,7 @@ export default function AdminAnalytics() {
               <PieChartIcon className="w-4 h-4 text-muted-foreground" />
               <div>
                 <CardTitle className="text-base font-semibold text-foreground">User Distribution</CardTitle>
-                <p className="text-sm text-muted-foreground">Roles across the platform.</p>
+                <p className="text-sm text-muted-foreground mt-0.5">Roles across the platform.</p>
               </div>
             </div>
           </CardHeader>

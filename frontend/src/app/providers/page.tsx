@@ -6,7 +6,7 @@ import axiosInstance from "@/lib/axios";
 import { useSearchParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { PageHero } from "@/components/shared/PageHero";
+import { HighImpactHero } from "@/components/shared/HighImpactHero";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import { getMediaUrl } from "@/lib/utils";
 
 const MapView = dynamic(() => import("@/components/shared/MapView"), {
   ssr: false,
@@ -34,7 +35,8 @@ interface Provider {
   longitude: number | string | null;
   service_radius: number | null;
   location_name: string;
-  rating_avg: number | null;
+  rating: number | null;
+  review_count: number;
   user: {
     name: string;
     profile_photo_path: string | null;
@@ -42,7 +44,10 @@ interface Provider {
   provider_services: any[];
 }
 
+import { useCMS } from "@/hooks/useCMS";
+
 function ProvidersContent() {
+  const { getS, getImg } = useCMS();
   const searchParams = useSearchParams();
   const categoryId = searchParams.get('category');
   const serviceId = searchParams.get('service');
@@ -51,7 +56,9 @@ function ProvidersContent() {
   const [providers, setProviders] = useState<Provider[]>([]);
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [view, setView] = useState<"grid" | "list" | "map">("grid");
-  const [filterOpen, setFilterOpen] = useState(true);
+  const heroTitle = getS('hero', 'providers_hero_title', "Find Trusted Pros Near You");
+  const heroSubtitle = getS('hero', 'providers_hero_subtitle', "Find the right pro for your home or office from our verified community.");
+  const heroImage = getImg('hero', 'providers_hero_image', "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?q=80&w=2070&auto=format&fit=crop");
 
   const [minRating, setMinRating] = useState<number | null>(null);
   const [maxPrice, setMaxPrice] = useState<number>(50000);
@@ -59,6 +66,7 @@ function ProvidersContent() {
   const [radius, setRadius] = useState(50);
   const [location, setLocation] = useState<{lat: number, lng: number} | null>(null);
   const [isLocating, setIsLocating] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
 
   const handleNearMe = () => {
     setIsLocating(true);
@@ -107,16 +115,12 @@ function ProvidersContent() {
 
   return (
     <>
-      <PageHero
-        title={searchQuery ? `Results for "${searchQuery}"` : "Our Professionals"}
-        subtitle="Find the best local service professionals for your project. All verified and ready to help."
-        breadcrumbs={[{ label: "Providers" }]}
-        bgImage="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?q=80&w=2070&auto=format&fit=crop"
-        gradientFrom="from-indigo-600"
-        gradientTo="to-blue-700"
-        searchAction="/providers"
-        searchPlaceholder="Search professionals..."
-        defaultSearch={searchQuery || ""}
+      <HighImpactHero
+        title={searchQuery ? `Professionals for "${searchQuery}"` : getS('hero_media', 'providers_hero_title', "Our Verified Professionals")}
+        subtitle={getS('hero_media', 'providers_hero_subtitle', "Connect with top-rated local experts specialized in your selected industry verticals.")}
+        badge={searchQuery ? "Search Results" : getS('hero_media', 'providers_hero_badge', "Verified Professionals")}
+        cmsKey="providers_hero_image"
+        cmsGroup="hero_media"
       />
 
       <div className="flex-1 py-10 md:py-16 bg-white dark:bg-[#0B0F19] transition-colors duration-300">
@@ -135,7 +139,7 @@ function ProvidersContent() {
                         {(minRating || onlyVerified || location) && (
                             <button 
                                 onClick={() => { setMinRating(null); setOnlyVerified(false); setLocation(null); }}
-                                className="text-[10px] font-bold text-blue-600 uppercase tracking-widest hover:underline"
+                                className="text-[10px] font-bold text-blue-600 capitalize tracking-widest hover:underline"
                             >
                                 Reset
                             </button>
@@ -283,34 +287,28 @@ function ProvidersContent() {
 
                {/* Cards Grid/List/Map */}
               {isPageLoading ? (
-                <div className={view === "grid" ? "grid grid-cols-1 md:grid-cols-2 gap-8" : "flex flex-col gap-6"}>
+                <div className={view === "grid" ? "grid grid-cols-1 md:grid-cols-2 gap-10" : "flex flex-col gap-8"}>
                   {Array.from({ length: 4 }).map((_, i) => (
-                    <Card key={i} className="bg-muted dark:bg-zinc-900/50 border-border dark:border-white/10 rounded-2xl overflow-hidden">
-                      <div className="h-40 bg-gray-200 dark:bg-zinc-800 animate-pulse" />
-                      <CardContent className="p-6 pt-14 space-y-3">
-                        <Skeleton className="h-6 w-3/4 bg-gray-200 dark:bg-white/10" />
-                        <Skeleton className="h-4 w-full bg-gray-200 dark:bg-white/10" />
-                      </CardContent>
-                    </Card>
+                    <Skeleton key={i} className="h-96 rounded-[2.5rem]" />
                   ))}
                 </div>
               ) : providers.length === 0 ? (
                 <motion.div
-                  className="text-center py-20 bg-muted dark:bg-white/5 border border-border dark:border-white/10 rounded-2xl"
+                  className="text-center py-24 bg-slate-50 dark:bg-zinc-900 border border-border/40 rounded-[3rem]"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
-                  <div className="w-20 h-20 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center mx-auto mb-6">
-                    <Search className="w-8 h-8 text-gray-400" />
+                  <div className="w-24 h-24 rounded-full bg-white dark:bg-black flex items-center justify-center mx-auto mb-8 shadow-xl">
+                    <Search className="w-10 h-10 text-muted-foreground/40" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">No professionals found</h3>
-                  <p className="text-muted-foreground dark:text-muted-foreground mb-8">Try adjusting your filters or search terms.</p>
-                  <Button asChild variant="outline" className="border-gray-300 dark:border-white/20 text-gray-700 dark:text-white">
-                    <Link href="/providers">Clear Filters</Link>
+                  <h3 className="text-3xl font-bold tracking-tight mb-3">No Professionals Found</h3>
+                  <p className="text-muted-foreground font-medium mb-10 max-w-sm mx-auto italic">Try adjusting your filters or search terms to explore more possibilities.</p>
+                  <Button asChild variant="outline" className="border-border/60 hover:bg-muted font-bold rounded-xl h-12 px-8">
+                    <Link href="/providers">Clear All Filters</Link>
                   </Button>
                 </motion.div>
               ) : view === "map" ? (
-                <div className="h-[600px] w-full mt-2">
+                <div className="h-[700px] w-full mt-4 rounded-[3rem] overflow-hidden border border-border/40 shadow-2xl">
                   <MapView 
                     providers={providers} 
                     showRadius={true}
@@ -318,89 +316,91 @@ function ProvidersContent() {
                   />
                 </div>
               ) : (
-                <div className={view === "grid" ? "grid grid-cols-1 md:grid-cols-2 gap-8" : "flex flex-col gap-6"}>
+                <div className={view === "grid" ? "grid grid-cols-1 md:grid-cols-2 gap-10" : "flex flex-col gap-8"}>
                   {providers.map((provider, index) => (
                     <motion.div
                       key={provider.id}
                       initial={{ opacity: 0, y: 20 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true, amount: 0.1 }}
-                      transition={{ duration: 0.4, delay: index * 0.05 }}
+                      transition={{ duration: 0.5, delay: index * 0.05 }}
                     >
                       <Link href={`/providers/${provider.id}`}>
-                        <Card className={`bg-white dark:bg-white/5 border-border dark:border-white/10 hover:border-blue-500/30 dark:hover:border-white/20 transition-all cursor-pointer group rounded-2xl overflow-hidden shadow-sm hover:shadow-xl flex ${view === "grid" ? "flex-col h-full" : "flex-col md:flex-row"}`}>
+                        <Card className={`bg-white dark:bg-black border border-border/40 hover:border-primary/40 transition-all duration-500 cursor-pointer group shadow-sm hover:shadow-2xl hover:shadow-primary/5 flex ${view === "grid" ? "flex-col h-full rounded-[2.5rem]" : "flex-col md:flex-row rounded-[2rem]"} overflow-hidden`}>
                           
-                          {/* Banner/Image */}
-                          <div className={`${view === "grid" ? "h-36" : "md:w-64 h-48 md:h-auto"} bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/40 dark:to-purple-900/40 relative overflow-hidden shrink-0`}>
+                          {/* Banner Area */}
+                          <div className={`${view === "grid" ? "h-40" : "md:w-72 h-48 md:h-auto"} bg-slate-50 dark:bg-zinc-900 relative overflow-hidden shrink-0 border-b border-border/10`}>
                             {provider.is_verified && (
-                              <div className="absolute top-4 right-4 bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1 backdrop-blur-md border border-green-200 dark:border-green-500/20 z-10">
-                                <Shield className="w-3 h-3" /> Verified
+                              <div className="absolute top-5 right-5 bg-white/80 dark:bg-black/80 backdrop-blur-xl border border-border/40 text-primary px-4 py-1.5 rounded-xl text-[10px] font-black tracking-widest capitalize flex items-center gap-2 z-10 shadow-lg">
+                                <Shield className="w-3.5 h-3.5" /> Verified
                               </div>
                             )}
-                            {view === "list" && (
-                              <img 
-                                src={provider.logo || "/placeholders/service-light.png"} 
-                                alt="" 
-                                className={`w-full h-full object-cover ${provider.logo ? "opacity-40" : "opacity-10"} group-hover:scale-105 transition-transform duration-500`} 
-                              />
-                            )}
+                            <div className="absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity">
+                               <img src="/logo-light.png" className="w-full h-full object-cover scale-150 rotate-12" alt="" />
+                            </div>
                           </div>
                           
-                          <CardContent className="p-6 relative flex-1 flex flex-col">
-                            {/* Avatar (only in grid) */}
+                          <CardContent className="p-8 relative flex-1 flex flex-col">
+                            {/* Institutional Avatar (only in grid) */}
                             {view === "grid" && (
-                              <div className="absolute -top-10 left-6">
-                                <div className="w-20 h-20 rounded-full border-4 border-white dark:border-[#0B0F19] bg-gray-100 dark:bg-zinc-800 overflow-hidden flex items-center justify-center font-bold text-2xl text-muted-foreground shadow-lg transition-transform group-hover:scale-105">
+                              <div className="absolute -top-12 left-8">
+                                <div className="w-24 h-24 rounded-3xl border-8 border-white dark:border-black bg-white dark:bg-zinc-900 overflow-hidden flex items-center justify-center shadow-xl transition-all duration-500 group-hover:scale-105 group-hover:-translate-y-2">
                                   {provider.logo ? (
-                                     <img src={provider.logo} alt={provider.business_name} className="w-full h-full object-cover" />
-                                 ) : (
-                                     <img src="/logo-light.png" alt={provider.business_name} className="w-full h-full object-cover opacity-20 p-4" />
-                                 )}
+                                     <img src={getMediaUrl(provider.logo, 'avatar')} alt={provider.business_name} className="w-full h-full object-cover" />
+                                  ) : (
+                                     <div className="w-full h-full bg-primary/5 flex items-center justify-center font-black text-3xl text-primary/20 italic">
+                                        {provider.business_name.charAt(0)}
+                                     </div>
+                                  )}
                                 </div>
                               </div>
                             )}
 
-                            <div className={`${view === "grid" ? "mt-10" : ""} flex-1`}>
-                              <div className="flex items-start justify-between mb-3">
-                                <div>
-                                  <h3 className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                            <div className={`${view === "grid" ? "mt-12" : "flex-1"}`}>
+                              <div className="flex items-start justify-between gap-4 mb-4">
+                                <div className="flex-1">
+                                  <h3 className="text-2xl font-bold tracking-tight group-hover:text-primary transition-colors italic leading-none">
                                     {provider.business_name}
                                   </h3>
-                                  <div className="flex items-center gap-4 mt-1.5">
-                                    <span className="text-label-caps flex items-center gap-1.5">
-                                      <MapPin className="w-4 h-4 text-blue-500" /> {provider.location_name}
-                                    </span>
-                                    <span className="text-label-caps flex items-center gap-1.5 text-amber-500 font-bold">
-                                      <Star className="w-4 h-4 fill-amber-500" /> {provider.rating_avg || 'New'}
-                                    </span>
+                                  <div className="flex flex-wrap items-center gap-4 mt-3">
+                                    <div className="flex items-center gap-1.5 text-muted-foreground transition-all group-hover:text-foreground">
+                                      <MapPin className="w-4 h-4 text-primary/40 group-hover:text-primary transition-colors" /> 
+                                      <span className="text-[11px] font-bold tracking-tight">{provider.location_name}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-amber-500 bg-amber-50 dark:bg-amber-500/5 px-2.5 py-1 rounded-lg border border-amber-100 dark:border-amber-500/10 transition-all">
+                                      <Star className="w-3.5 h-3.5 fill-amber-500" /> 
+                                      <span className="text-[11px] font-black">{provider.rating || 'NEW'}</span>
+                                    </div>
                                   </div>
                                 </div>
                                 {view === "list" && (
-                                  <div className="w-16 h-16 rounded-2xl border-2 border-border dark:border-white/10 bg-muted dark:bg-white/5 overflow-hidden flex items-center justify-center font-bold text-xl text-muted-foreground shrink-0">
+                                  <div className="w-20 h-20 rounded-2xl border border-border/40 bg-slate-50 dark:bg-zinc-900 overflow-hidden flex items-center justify-center font-bold text-xl text-muted-foreground shrink-0 shadow-sm transition-all group-hover:scale-105">
                                     {provider.logo ? (
-                                      <img src={provider.logo} alt="" className="w-full h-full object-cover" />
+                                      <img src={getMediaUrl(provider.logo, 'avatar')} alt="" className="w-full h-full object-cover" />
                                     ) : (
-                                      <img src="/logos/Kuba-Header-Footer-Logo-for-Dark-Mode.png" alt="" className="w-full h-full object-cover opacity-20 p-3" />
+                                      <div className="w-full h-full bg-primary/5 flex items-center justify-center font-black text-2xl text-primary/20 italic">
+                                        {provider.business_name.charAt(0)}
+                                      </div>
                                     )}
                                   </div>
                                 )}
                               </div>
-                              <p className="text-muted-foreground dark:text-muted-foreground text-sm mt-3 line-clamp-2">
-                                {provider.bio || "Professional home service provider ready to help with your next project. Highly rated and dependable."}
+                              <p className="text-muted-foreground text-sm font-medium leading-relaxed line-clamp-2 italic mb-6">
+                                {provider.bio || getS('providers', 'fallback_bio', "Institutional grade professional provider verified for specialized logistical and structural service requirements.")}
                               </p>
                               
-                              <div className="flex flex-wrap gap-2 mt-4">
-                                {["Fast Response", "Background Checked", "Insured"].map(badge => (
-                                  <span key={badge} className="text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-md bg-gray-100 dark:bg-white/5 text-muted-foreground border border-border dark:border-white/10">
+                              <div className="flex flex-wrap gap-2 mb-8">
+                                {["Rapid Deployment", "Verified Liability", "Consolidated Billing"].map(badge => (
+                                  <span key={badge} className="text-[9px] font-bold tracking-widest capitalize px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-zinc-900 text-muted-foreground/60 border border-border/20 transition-all group-hover:bg-primary/5 group-hover:text-primary group-hover:border-primary/10">
                                     {badge}
                                   </span>
                                 ))}
                               </div>
                             </div>
                             
-                            <div className="pt-5 mt-6 border-t border-border dark:border-white/10 flex items-center justify-between">
+                            <div className="pt-6 border-t border-border/10 flex items-center justify-between mt-auto">
                                <div className="flex flex-col">
-                                 <span className="text-[10px] text-muted-foreground font-bold tracking-widest leading-none mb-1">Starting from</span>
+                                 <span className="text-[9px] text-muted-foreground font-black tracking-widest capitalize leading-none mb-1.5">Baseline Pricing</span>
                                  {provider.provider_services && provider.provider_services.length > 0 ? (
                                    (() => {
                                      const minService = provider.provider_services.reduce((min, s) => 
@@ -408,29 +408,26 @@ function ProvidersContent() {
                                        provider.provider_services[0]
                                      );
                                      return (
-                                       <div className="flex flex-col">
-                                         <span className="text-gray-900 dark:text-white text-lg font-extrabold">
+                                       <div className="flex items-baseline gap-1">
+                                         <span className="text-foreground text-2xl font-black tracking-tighter">
                                            KES {Number(minService.base_price).toLocaleString()}
-                                           {minService.pricing_type === 'hourly' && <span className="text-sm font-normal text-muted-foreground ml-0.5">/hr</span>}
                                          </span>
-                                         {minService.pricing_type === 'hourly' && Number(minService.min_hours) > 1 && (
-                                           <span className="text-[9px] text-blue-600 font-bold uppercase tracking-tighter">Min {minService.min_hours} hrs</span>
-                                         )}
+                                         {minService.pricing_type === 'hourly' && <span className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize">/ Session</span>}
                                        </div>
                                      );
                                    })()
                                  ) : (
-                                   <span className="text-gray-900 dark:text-white text-lg font-extrabold">Custom Quote</span>
+                                   <span className="text-foreground text-xl font-black tracking-tighter italic">POA</span>
                                  )}
                                </div>
-                              <div className="flex items-center gap-3">
-                                <span className="text-xs font-bold text-blue-600 dark:text-blue-400 group-hover:translate-x-1 transition-transform flex items-center gap-1 opacity-0 group-hover:opacity-100">
-                                  View Profile <ArrowRight className="w-3.5 h-3.5" />
-                                </span>
-                                <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-white flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">
-                                  <ChevronRight className="w-5 h-5" />
-                                </div>
-                              </div>
+                               <div className="flex items-center gap-4">
+                                 <span className="text-[10px] font-black text-primary tracking-widest capitalize opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-500">
+                                   View Architecture
+                                 </span>
+                                 <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-zinc-900 text-primary border border-border/40 flex items-center justify-center group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all duration-500 shadow-sm">
+                                   <ArrowRight className="w-5 h-5" />
+                                 </div>
+                               </div>
                             </div>
                           </CardContent>
                         </Card>

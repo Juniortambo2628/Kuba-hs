@@ -8,6 +8,7 @@ use App\Models\Message;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use App\Http\Requests\StoreChatMessageRequest;
 
 class ChatController extends Controller
 {
@@ -70,14 +71,12 @@ class ChatController extends Controller
     /**
      * Send a message in a conversation.
      */
-    public function sendMessage(Request $request, Conversation $conversation)
+    public function sendMessage(StoreChatMessageRequest $request, Conversation $conversation)
     {
         $user = Auth::user();
         $this->authorizeConversation($conversation, $user);
 
-        $validated = $request->validate([
-            'body' => 'required|string|max:2000',
-        ]);
+        $validated = $request->validated();
 
         $message = Message::create([
             'conversation_id' => $conversation->id,

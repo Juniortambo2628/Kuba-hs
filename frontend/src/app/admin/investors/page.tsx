@@ -11,9 +11,13 @@ import {
   Clock,
   Mail,
   Building2,
+  Plus,
+  ArrowUpRight,
   DollarSign
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { DashboardStatusBadge } from "@/components/shared/DashboardStatusBadge";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { 
@@ -53,29 +57,13 @@ export default function AdminInvestorsPage() {
     i.company?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const getStatusBadge = (status: string) => {
-    const styles: Record<string, string> = {
-      pending: "bg-muted text-foreground border-border",
-      reviewed: "bg-muted text-foreground border-border",
-      contacted: "bg-muted text-foreground border-border",
-      rejected: "bg-muted text-foreground border-border",
-    };
-    return (
-      <Badge variant="outline" className={`rounded-full px-2.5 py-0.5 text-xs font-medium capitalize border ${styles[status] || ""}`}>
-        {status}
-      </Badge>
-    );
-  };
-
   return (
-    <div className="max-w-5xl mx-auto space-y-8 pb-12">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground tracking-tight">Investor Inquiries</h1>
-          <p className="text-sm text-muted-foreground mt-1">Manage potential investment outreach and lead status.</p>
-        </div>
-      </div>
+    <div className="h-full flex flex-col space-y-10 animate-in fade-in duration-500 pb-12">
+      {/* Standard Dashboard Header */}
+      <DashboardPageHeader 
+          title="Capital Architecture" 
+          subtitle="Oversee equity distribution, investor relations, and platform growth capitalization."
+      />
 
       <DataToolbar 
         search={searchTerm}
@@ -91,12 +79,12 @@ export default function AdminInvestorsPage() {
           <CardContent className="p-0">
             <Table>
               <TableHeader>
-                <TableRow className="hover:bg-transparent border-border">
-                  <TableHead className="pl-6 uppercase text-[10px] font-semibold text-muted-foreground tracking-wider h-12">Investor</TableHead>
-                  <TableHead className="uppercase text-[10px] font-semibold text-muted-foreground tracking-wider h-12">Details</TableHead>
-                  <TableHead className="uppercase text-[10px] font-semibold text-muted-foreground tracking-wider h-12">Status</TableHead>
-                  <TableHead className="uppercase text-[10px] font-semibold text-muted-foreground tracking-wider h-12">Date</TableHead>
-                  <TableHead className="pr-6 text-right uppercase text-[10px] font-semibold text-muted-foreground tracking-wider h-12">Actions</TableHead>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="text-[11px] font-bold text-muted-foreground pl-10 h-16">Stakeholder Asset</TableHead>
+                  <TableHead className="text-[11px] font-bold text-muted-foreground h-16">Investment Basis</TableHead>
+                  <TableHead className="text-[11px] font-bold text-muted-foreground h-16">Equity Share</TableHead>
+                  <TableHead className="text-[11px] font-bold text-muted-foreground h-16">Entry Date</TableHead>
+                  <TableHead className="text-[11px] font-bold text-muted-foreground pr-10 text-right h-16">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -133,11 +121,12 @@ export default function AdminInvestorsPage() {
                         <p className="text-xs font-semibold text-primary flex items-center gap-1"><DollarSign className="w-3 h-3" /> {inquiry.investment_range || 'General'}</p>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      {getStatusBadge(inquiry.status)}
+                    <TableCell className="text-[11px] font-bold text-foreground">
+                      {/* Assuming a default or calculated equity percentage for display */}
+                      {inquiry.investment_range ? 'X%' : 'N/A'} 
                     </TableCell>
-                    <TableCell className="text-sm font-medium text-muted-foreground">
-                      {new Date(inquiry.created_at).toLocaleDateString()}
+                    <TableCell className="text-[10px] font-bold text-muted-foreground">
+                      {new Date(inquiry.created_at).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}
                     </TableCell>
                     <TableCell className="pr-6 text-right">
                       <DropdownMenu>
@@ -226,10 +215,10 @@ export default function AdminInvestorsPage() {
                 </p>
 
                 <div className="flex items-center justify-between pt-3 border-t border-border">
-                  <span className="text-xs text-muted-foreground font-medium">
-                    {new Date(inquiry.created_at).toLocaleDateString()}
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                    {new Date(inquiry.created_at).toLocaleDateString(undefined, { day: '2-digit', month: 'short' })}
                   </span>
-                  {getStatusBadge(inquiry.status)}
+                  <DashboardStatusBadge status={inquiry.status} />
                 </div>
               </CardContent>
             </Card>

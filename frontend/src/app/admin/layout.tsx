@@ -53,7 +53,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <DashboardHeader isAdmin={true} />
 
         {/* Page Content */}
-        <div className="p-4 md:p-8 flex-1 overflow-y-auto">
+        <div className="admin-content-area p-4 md:p-6 flex-1 overflow-y-auto">
           <AnimatePresence mode="wait">
             <motion.div
               key={pathname}

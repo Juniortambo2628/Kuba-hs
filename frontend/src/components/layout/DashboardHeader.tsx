@@ -6,16 +6,17 @@ import {
   DropdownMenu, 
   DropdownMenuContent, 
   DropdownMenuItem, 
-  DropdownMenuLabel, 
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { User, LogOut, Home, LayoutDashboard, Sun, Moon, Bell, Settings } from "lucide-react";
-import Link from "next/link";
+import { Bell, Settings } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState } from "react";
 import axiosInstance from "@/lib/axios";
+import { UserAccountDropdown } from "@/components/shared/UserAccountDropdown";
+import { ThemeToggle } from "@/components/shared/ThemeToggle";
+import { GlobalSearch } from "@/components/shared/GlobalSearch";
+import { cn } from "@/lib/utils";
 
 interface DashboardHeaderProps {
   isAdmin?: boolean;
@@ -62,14 +63,19 @@ export function DashboardHeader({ isAdmin = false }: DashboardHeaderProps) {
         <SidebarTrigger className="lg:hidden text-muted-foreground hover:text-foreground" />
         {isAdmin && (
           <div className="hidden sm:flex items-center gap-2 text-muted-foreground">
-            <span className="text-xs font-medium">Admin Portal</span>
+            <span className="text-[11px] font-bold tracking-tight">Admin Portal</span>
             <span className="text-border">|</span>
-            <span className="text-xs font-medium text-primary">Control Center</span>
+            <span className="text-[11px] font-bold text-primary tracking-tight">Control Center</span>
           </div>
         )}
       </div>
 
       <div className="flex items-center gap-2">
+        {/* Global Search */}
+        <div className="hidden sm:block mr-2">
+          <GlobalSearch />
+        </div>
+
         {/* Notifications (Client/Provider only) */}
         {!isAdmin && (
           <DropdownMenu>
@@ -112,14 +118,11 @@ export function DashboardHeader({ isAdmin = false }: DashboardHeaderProps) {
           </DropdownMenu>
         )}
 
-        {/* Dark/Light Mode Toggle */}
-        <button
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className={`transition-colors rounded-lg flex items-center justify-center ${isAdmin ? 'p-2.5 bg-foreground text-background hover:bg-muted hover:text-foreground transition-all duration-300 rounded-xl shadow-md shadow-foreground/10 border border-border' : 'p-2 text-muted-foreground hover:text-foreground hover:bg-accent'}`}
-          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-        >
-          {theme === 'dark' ? <Sun className={isAdmin ? "w-4 h-4" : "w-5 h-5"} /> : <Moon className={isAdmin ? "w-4 h-4" : "w-5 h-5"} />}
-        </button>
+        {/* Theme Toggle */}
+        <ThemeToggle 
+          variant={isAdmin ? "solid" : "ghost"} 
+          className={cn(isAdmin && "p-2.5 shadow-md shadow-foreground/10 border border-border")} 
+        />
 
         {/* Settings shortcut (Client/Provider only) */}
         {!isAdmin && (
@@ -130,63 +133,7 @@ export function DashboardHeader({ isAdmin = false }: DashboardHeaderProps) {
 
         {/* User Dropdown */}
         <div className="flex items-center gap-2 ml-1 pl-2 border-l border-border">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-2 outline-none group p-1.5 rounded-lg hover:bg-accent transition-all">
-                <div className="text-right hidden sm:block">
-                  <p className="text-sm font-semibold text-foreground leading-tight tracking-tight">{user?.name}</p>
-                  <p className="text-xs font-medium text-muted-foreground leading-tight capitalize">{user?.role}</p>
-                </div>
-                {isAdmin ? (
-                  <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center overflow-hidden border border-border">
-                    {user?.avatar_url ? (
-                      <img src={user.avatar_url} alt={user?.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <User className="w-4 h-4 text-muted-foreground" />
-                    )}
-                  </div>
-                ) : (
-                  <Avatar className="w-8 h-8">
-                    <AvatarImage src={user?.avatar_url || ""} />
-                    <AvatarFallback className="bg-muted text-primary font-semibold text-xs">
-                      {user?.name?.[0] || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                )}
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52 mt-1">
-              <DropdownMenuLabel className="font-normal">
-                <p className="text-sm font-semibold tracking-tight">{user?.name}</p>
-                <p className="text-xs font-semibold text-muted-foreground">{user?.email}</p>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {isAdmin ? (
-                <>
-                  <DropdownMenuItem asChild className="cursor-pointer font-semibold">
-                    <Link href="/" className="flex items-center gap-2">
-                      <Home className="w-4 h-4 mr-2" /> Back to Home
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="cursor-pointer font-semibold">
-                    <Link href="/dashboard" className="flex items-center gap-2">
-                      <LayoutDashboard className="w-4 h-4 mr-2" /> Client Dashboard
-                    </Link>
-                  </DropdownMenuItem>
-                </>
-              ) : (
-                <>
-                  <DropdownMenuItem className="cursor-pointer font-semibold" asChild>
-                    <Link href={`/dashboard/${user?.role}/profile`}>Profile</Link>
-                  </DropdownMenuItem>
-                </>
-              )}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => logout()} className="cursor-pointer font-semibold text-red-500 focus:text-red-500">
-                <LogOut className="w-4 h-4 mr-2" /> Logout
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <UserAccountDropdown variant="dashboard" align="end" />
         </div>
       </div>
     </header>

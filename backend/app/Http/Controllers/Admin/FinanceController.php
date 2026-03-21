@@ -71,7 +71,7 @@ class FinanceController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function(\Illuminate\Database\Eloquent\Builder $q) use ($search) {
                 $q->where('transaction_id', 'like', "%{$search}%")
                   ->orWhereHas('customer', function($sq) use ($search) {
                       $sq->where('first_name', 'like', "%{$search}%")

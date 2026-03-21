@@ -23,6 +23,17 @@ import {
  Compass
 } from "lucide-react";
 import { toast } from "sonner";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function ServiceAddresses() {
  const { user, isLoading: authLoading } = useAuth();
@@ -37,7 +48,7 @@ export default function ServiceAddresses() {
   city: "",
   state: "",
   postal_code: "",
-  country: "South Africa",
+  country: "Kenya",
   is_default: false
  });
 
@@ -71,7 +82,7 @@ export default function ServiceAddresses() {
     city: "",
     state: "",
     postal_code: "",
-    country: "South Africa",
+    country: "Kenya",
     is_default: false
    });
    fetchAddresses();
@@ -83,7 +94,6 @@ export default function ServiceAddresses() {
  };
 
  const handleDeleteAddress = async (id: string) => {
-  if (!confirm("Are you sure you want to remove this service point?")) return;
   try {
    await axiosInstance.delete(`/api/client/addresses/${id}`);
    toast.success("Service point removed");
@@ -195,12 +205,30 @@ export default function ServiceAddresses() {
         <div className={`p-4 rounded-2xl ${address.is_default ? 'bg-muted text-primary shadow-lg shadow-sky-100' : 'bg-muted/50 text-foreground'} group-hover:scale-110 transition-transform duration-700`}>
          <Home className="w-6 h-6" />
         </div>
-        <button 
-          onClick={() => handleDeleteAddress(address.id)}
-          className="p-2 text-muted-foreground hover:text-red-500 transition-colors"
-        >
-         <Trash2 className="w-6 h-6" />
-        </button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <button className="p-2 text-muted-foreground hover:text-red-500 transition-colors">
+              <Trash2 className="w-6 h-6" />
+            </button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Remove Service Point?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete <span className="font-bold text-foreground">{address.street_address}</span>? This endpoint will be purged from your active dispatch list and historical records.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="rounded-xl font-bold text-xs uppercase tracking-widest text-foreground">Abort</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={() => handleDeleteAddress(address.id)}
+                className="rounded-xl font-bold text-xs uppercase tracking-widest bg-red-600 hover:bg-red-700 text-white"
+              >
+                Purge Asset
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
        </div>
 
        <div className="space-y-8">
@@ -226,7 +254,7 @@ export default function ServiceAddresses() {
         </div>
 
         <div className="flex gap-4">
-          <Button variant="outline" className="flex-1 h-12 border-border text-foreground hover:text-primary hover:bg-white hover:border-sky-100 rounded-xl font-semibold text-[9px] tracking-normal uppercase transition-all group/btn">
+          <Button onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${address.street_address}, ${address.city}, ${address.postal_code}`)}`, '_blank')} variant="outline" className="flex-1 h-12 border-border text-foreground hover:text-primary hover:bg-white hover:border-sky-100 rounded-xl font-semibold text-[9px] tracking-normal uppercase transition-all group/btn">
             <Compass className="w-3.5 h-3.5 mr-2 opacity-30 group-hover/btn:opacity-100" />
             Locate
           </Button>

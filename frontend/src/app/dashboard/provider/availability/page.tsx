@@ -235,7 +235,7 @@ export default function AvailabilityManagement() {
               <Switch 
                checked={!exc.is_closed} 
                onCheckedChange={(val) => updateException(idx, 'is_closed', !val)}
-               className="data-[state=checked]:bg-muted0 scale-75"
+               className="data-[state=checked]:bg-primary scale-75"
               />
             </div>
            </div>
@@ -271,7 +271,7 @@ export default function AvailabilityManagement() {
        )}
 
        {exceptions.length > 0 && (
-        <Button onClick={handleSaveExceptions} disabled={isSavingExceptions} className="w-full bg-muted0 hover:bg-amber-600 text-white rounded-2xl font-semibold h-12 uppercase tracking-normal text-[10px] gap-2 shadow-lg shadow-amber-100 mt-4">
+        <Button onClick={handleSaveExceptions} disabled={isSavingExceptions} className="w-full bg-amber-600 hover:bg-amber-700 text-white rounded-2xl font-semibold h-12 uppercase tracking-normal text-[10px] gap-2 shadow-lg shadow-amber-100 mt-4">
          {isSavingExceptions ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
          Save Exceptions
         </Button>

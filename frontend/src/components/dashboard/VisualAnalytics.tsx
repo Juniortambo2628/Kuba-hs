@@ -40,7 +40,7 @@ export function VisualAnalytics({
       </CardHeader>
       <CardContent className="p-6">
         <div className="h-[300px] w-full" style={{ minWidth: 0 }}>
-          <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
             {type === 'area' ? (
               <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>

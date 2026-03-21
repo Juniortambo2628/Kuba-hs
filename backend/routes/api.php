@@ -11,6 +11,10 @@ Route::get('/user', function (Request $request) {
 
 
 
+Route::get('/faqs', [MarketplaceController::class, 'faqs']);
+Route::get('/testimonials', [MarketplaceController::class, 'testimonials']);
+Route::get('/page-features', [\App\Http\Controllers\Api\PageFeatureController::class, 'index']);
+
 Route::get('/categories', [MarketplaceController::class, 'categories']);
 Route::get('/featured-services', [MarketplaceController::class, 'featured']);
 Route::get('/featured-services/{providerService}', [MarketplaceController::class, 'showService']);
@@ -59,6 +63,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Booking management
     Route::get('/bookings/{booking}', [\App\Http\Controllers\Api\BookingController::class, 'show']);
     Route::patch('/bookings/{booking}/status', [\App\Http\Controllers\Api\BookingController::class, 'updateStatus']);
+    Route::patch('/bookings/{booking}/reschedule', [\App\Http\Controllers\Api\BookingController::class, 'reschedule']);
 
     Route::post('/media/upload', [\App\Http\Controllers\MediaController::class, 'upload']);
     Route::delete('/media/{id}', [\App\Http\Controllers\MediaController::class, 'destroy']);
@@ -66,8 +71,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/notifications/read-all', [\App\Http\Controllers\Api\NotificationController::class, 'markAllAsRead']);
     Route::post('/notifications/{id}/read', [\App\Http\Controllers\Api\NotificationController::class, 'markAsRead']);
 
+    // Verification Routes
+    Route::get('/provider/verification', [\App\Http\Controllers\Api\VerificationController::class, 'index']);
+    Route::post('/provider/verification', [\App\Http\Controllers\Api\VerificationController::class, 'store']);
+    Route::get('/admin/workforce/verification', [\App\Http\Controllers\Api\VerificationController::class, 'index']);
+    Route::patch('/admin/workforce/verification/{id}', [\App\Http\Controllers\Api\VerificationController::class, 'update']);
+
     // Provider Management
-    Route::prefix('provider')->group(function () {
+    Route::group(['prefix' => 'provider'], function () {
         Route::get('/dashboard', [\App\Http\Controllers\Provider\DashboardController::class, 'index']);
         
         // Services CRUD
@@ -95,8 +106,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/client/loyalty', [\App\Http\Controllers\Client\LoyaltyController::class, 'index']);
     Route::post('/client/loyalty/redeem', [\App\Http\Controllers\Client\LoyaltyController::class, 'redeem']);
     Route::put('/client/profile', [\App\Http\Controllers\Client\ProfileController::class, 'update']);
+    Route::patch('/client/password', [\App\Http\Controllers\Client\ProfileController::class, 'changePassword']);
+    Route::patch('/client/addresses/{address}/default', [\App\Http\Controllers\Client\AddressController::class, 'setDefault']);
 
     // Payments (Paystack)
+    Route::post('/payments/paystack/initialize', [\App\Http\Controllers\Api\PaystackController::class, 'initialize']);
     Route::post('/payments/paystack/verify', [\App\Http\Controllers\Api\PaystackController::class, 'verify']);
     Route::get('/payments/provider/transactions', [\App\Http\Controllers\Api\PaystackController::class, 'providerTransactions']);
 
@@ -108,7 +122,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/invoices/{bookingId}/download', [\App\Http\Controllers\Api\InvoiceController::class, 'download']);
 
     // Admin routes
-    Route::prefix('admin')->name('admin.')->group(function () {
+    Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
         Route::get('/analytics', [\App\Http\Controllers\Admin\AnalyticsController::class, 'index']);
         Route::get('/bookings', [\App\Http\Controllers\Admin\BookingController::class, 'index']);
         Route::get('/payments', [\App\Http\Controllers\Admin\PaymentController::class, 'index']);
@@ -119,6 +133,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'index']);
         Route::post('/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'update']);
         Route::get('/feedback', [\App\Http\Controllers\Admin\FeedbackController::class, 'index']);
+        Route::put('/feedback/{id}', [\App\Http\Controllers\Admin\FeedbackController::class, 'update']);
 
         Route::apiResource('users', \App\Http\Controllers\Admin\UserController::class);
         Route::patch('users/{user}/toggle-status', [\App\Http\Controllers\Admin\UserController::class, 'toggleStatus']);
@@ -150,14 +165,24 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/investors/{investorInquiry}', [\App\Http\Controllers\Admin\InvestorInquiryController::class, 'show']);
         Route::patch('/investors/{investorInquiry}/status', [\App\Http\Controllers\Admin\InvestorInquiryController::class, 'updateStatus']);
 
+        // Custom Quotes (Commercial/Cooperatives)
+        Route::apiResource('quotes', \App\Http\Controllers\Admin\QuoteController::class)->except(['store']);
+        Route::patch('/quotes/{quote}/status', [\App\Http\Controllers\Admin\QuoteController::class, 'updateStatus']);
+
         // Email Templates
         Route::get('/email-templates', [\App\Http\Controllers\Admin\EmailTemplateController::class, 'index']);
         Route::get('/email-templates/{emailTemplate}', [\App\Http\Controllers\Admin\EmailTemplateController::class, 'show']);
         Route::put('/email-templates/{emailTemplate}', [\App\Http\Controllers\Admin\EmailTemplateController::class, 'update']);
+
+        // Contact Messages
+        Route::get('/contact', [\App\Http\Controllers\Admin\ContactController::class, 'index']);
+        Route::get('/contact/{contactMessage}', [\App\Http\Controllers\Admin\ContactController::class, 'show']);
+        Route::patch('/contact/{contactMessage}/status', [\App\Http\Controllers\Admin\ContactController::class, 'updateStatus']);
+        Route::delete('/contact/{contactMessage}', [\App\Http\Controllers\Admin\ContactController::class, 'destroy']);
     });
 
     // Chat Routes
-    Route::prefix('chat')->group(function () {
+    Route::group(['prefix' => 'chat'], function () {
         Route::get('/conversations', [\App\Http\Controllers\Api\ChatController::class, 'index']);
         Route::get('/conversations/{bookingId}', [\App\Http\Controllers\Api\ChatController::class, 'getConversation']);
         Route::post('/conversations/{conversation}/messages', [\App\Http\Controllers\Api\ChatController::class, 'sendMessage']);

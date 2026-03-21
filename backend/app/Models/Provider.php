@@ -64,6 +64,11 @@ class Provider extends Model implements \Spatie\MediaLibrary\HasMedia
         return $this->hasMany(Review::class);
     }
 
+    public function verificationDocuments(): HasMany
+    {
+        return $this->hasMany(VerificationDocument::class);
+    }
+
     /**
      * Get the indexable data array for the model.
      *

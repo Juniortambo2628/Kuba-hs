@@ -8,6 +8,9 @@ use App\Models\ServiceCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use App\Http\Requests\StoreProviderProfileRequest;
+use App\Http\Requests\UpdateProviderProfileRequest;
+use App\Services\ProviderManagementService;
 
 class ProviderController extends Controller
 {
@@ -35,42 +38,12 @@ class ProviderController extends Controller
     /**
      * Store a new provider profile.
      */
-    public function store(Request $request)
+    public function store(StoreProviderProfileRequest $request, ProviderManagementService $service)
     {
         $user = Auth::user();
+        $validated = $request->validated();
 
-        $validated = $request->validate([
-            'business_name' => 'required|string|max:255',
-            'bio' => 'nullable|string|max:1000',
-            'experience_years' => 'nullable|integer|min:0|max:50',
-            'location_name' => 'nullable|string|max:255',
-            'service_radius' => 'nullable|integer|min:1|max:200',
-            'services' => 'required|array|min:1',
-            'services.*.service_id' => 'required|exists:services,id',
-            'services.*.base_price' => 'required|numeric|min:0',
-            'services.*.pricing_type' => 'required|in:fixed,hourly,per_project',
-        ]);
-
-        // Create the provider profile
-        $provider = Provider::create([
-            'user_id' => $user->id,
-            'business_name' => $validated['business_name'],
-            'bio' => $validated['bio'] ?? null,
-            'experience_years' => $validated['experience_years'] ?? null,
-            'location_name' => $validated['location_name'] ?? null,
-            'service_radius' => $validated['service_radius'] ?? 25,
-        ]);
-
-        // Attach selected services with pricing
-        foreach ($validated['services'] as $service) {
-            ProviderService::create([
-                'provider_id' => $provider->id,
-                'service_id' => $service['service_id'],
-                'base_price' => $service['base_price'],
-                'pricing_type' => $service['pricing_type'],
-                'is_available' => true,
-            ]);
-        }
+        $service->setupProfile($user, $validated);
 
         return redirect()->route('dashboard')->with('success', 'Your provider profile has been set up!');
     }
@@ -108,7 +81,7 @@ class ProviderController extends Controller
     /**
      * Update an existing provider profile.
      */
-    public function update(Request $request)
+    public function update(UpdateProviderProfileRequest $request, ProviderManagementService $service)
     {
         $user = Auth::user();
         $provider = $user->provider;
@@ -117,38 +90,9 @@ class ProviderController extends Controller
             return redirect()->route('provider.setup');
         }
 
-        $validated = $request->validate([
-            'business_name' => 'required|string|max:255',
-            'bio' => 'nullable|string|max:1000',
-            'experience_years' => 'nullable|integer|min:0|max:50',
-            'location_name' => 'nullable|string|max:255',
-            'service_radius' => 'nullable|integer|min:1|max:200',
-            'services' => 'required|array|min:1',
-            'services.*.service_id' => 'required|exists:services,id',
-            'services.*.base_price' => 'required|numeric|min:0',
-            'services.*.pricing_type' => 'required|in:fixed,hourly,per_project',
-        ]);
+        $validated = $request->validated();
 
-        $provider->update([
-            'business_name' => $validated['business_name'],
-            'bio' => $validated['bio'] ?? null,
-            'experience_years' => $validated['experience_years'] ?? null,
-            'location_name' => $validated['location_name'] ?? null,
-            'service_radius' => $validated['service_radius'] ?? 25,
-        ]);
-
-        // Sync services: delete old ones, create new ones
-        $provider->providerServices()->delete();
-
-        foreach ($validated['services'] as $service) {
-            ProviderService::create([
-                'provider_id' => $provider->id,
-                'service_id' => $service['service_id'],
-                'base_price' => $service['base_price'],
-                'pricing_type' => $service['pricing_type'],
-                'is_available' => true,
-            ]);
-        }
+        $service->updateProfile($provider, $validated);
 
         return redirect()->route('dashboard')->with('success', 'Your profile has been updated!');
     }

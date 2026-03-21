@@ -20,6 +20,8 @@ class ServiceCategoryResource extends JsonResource
             'description' => $this->description,
             'slug' => $this->slug,
             'icon' => $this->icon_url,
+            'dynamic_icon_url' => $this->dynamic_icon_url,
+            'services_count' => (int) ($this->services_count ?? 0),
             'services' => ServiceResource::collection($this->whenLoaded('services')),
         ];
     }

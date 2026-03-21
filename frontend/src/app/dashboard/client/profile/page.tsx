@@ -25,6 +25,28 @@ import {
 import axiosInstance from "@/lib/axios";
 import { toast } from "sonner";
 import { KubaFilePond } from "@/components/ui/filepond";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogDescription,
+  DialogFooter
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
 
 const getAvatarUrl = (path: string | null | undefined) => {
   if (!path) return null;
@@ -39,6 +61,12 @@ export default function ProfileSettings() {
  const [addresses, setAddresses] = useState<any[]>([]);
  const [isSaving, setIsSaving] = useState(false);
  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({
+    current_password: "",
+    password: "",
+    password_confirmation: ""
+  });
   const [profileForm, setProfileForm] = useState({ 
     name: "", 
     first_name: "",
@@ -53,7 +81,7 @@ export default function ProfileSettings() {
   city: "",
   state: "",
   postal_code: "",
-  country: "South Africa",
+  country: "Kenya",
   is_default: false
  });
 
@@ -94,7 +122,7 @@ export default function ProfileSettings() {
     city: "",
     state: "",
     postal_code: "",
-    country: "South Africa",
+    country: "Kenya",
     is_default: false
    });
    fetchAddresses();
@@ -106,7 +134,7 @@ export default function ProfileSettings() {
  };
 
  const handleDeleteAddress = async (id: string) => {
-  if (!confirm("Are you sure you want to remove this address?")) return;
+  
   try {
    await axiosInstance.delete(`/api/client/addresses/${id}`);
    toast.success("Address removed");
@@ -116,31 +144,57 @@ export default function ProfileSettings() {
   }
  };
 
- const handleSaveProfile = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setIsSavingProfile(true);
-  try {
-   await axiosInstance.put("/api/client/profile", profileForm);
-   toast.success("Profile updated successfully");
-   await checkAuth(); // Refresh user data in context
-  } catch (err: any) {
-   toast.error(err.response?.data?.message || "Failed to update profile");
-  } finally {
-   setIsSavingProfile(false);
-  }
- };
+  const handleSaveProfile = async (e: React.FormEvent) => {
+   e.preventDefault();
+   setIsSavingProfile(true);
+   try {
+    await axiosInstance.put("/api/client/profile", profileForm);
+    toast.success("Profile updated successfully");
+    await checkAuth(); // Refresh user data in context
+   } catch (err: any) {
+    toast.error(err.response?.data?.message || "Failed to update profile");
+   } finally {
+    setIsSavingProfile(false);
+   }
+  };
 
- if (isLoading) {
-  return (
-   <div className="max-w-[1400px] mx-auto space-y-8 animate-pulse">
-    <Skeleton className="h-12 w-64 rounded-2xl" />
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-     <Skeleton className="h-[500px] rounded-[2.5rem] lg:col-span-1" />
-     <Skeleton className="h-[500px] rounded-[2.5rem] lg:col-span-2" />
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
+    try {
+      await axiosInstance.patch("/api/client/password", passwordForm);
+      toast.success("Password updated successfully");
+      setIsChangingPassword(false);
+      setPasswordForm({ current_password: "", password: "", password_confirmation: "" });
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to update password");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSetDefaultAddress = async (id: string) => {
+    try {
+      await axiosInstance.patch(`/api/client/addresses/${id}/default`);
+      toast.success("Default address updated");
+      fetchAddresses();
+    } catch (err) {
+      toast.error("Failed to update default address");
+    }
+  };
+
+  if (isLoading) {
+   return (
+    <div className="max-w-[1400px] mx-auto space-y-8 animate-pulse">
+     <Skeleton className="h-12 w-64 rounded-2xl" />
+     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <Skeleton className="h-[500px] rounded-[2.5rem] lg:col-span-1" />
+      <Skeleton className="h-[500px] rounded-[2.5rem] lg:col-span-2" />
+     </div>
     </div>
-   </div>
-  );
- }
+   );
+  }
+
 
  return (
   <div className="max-w-[1400px] mx-auto space-y-10 pb-12">
@@ -184,14 +238,35 @@ export default function ProfileSettings() {
          <h2 className="text-xl font-bold text-foreground uppercase tracking-tight">{user?.name}</h2>
          <div className="flex items-center justify-center gap-2">
            <span className="text-[10px] font-bold text-primary bg-primary/10 px-3 py-1 rounded-full uppercase tracking-wide">Verified Client</span>
-           <span className="text-[10px] font-bold text-muted-foreground bg-muted px-3 py-1 rounded-full uppercase tracking-wide">Since 2024</span>
+           <span className="text-[10px] font-bold text-muted-foreground bg-muted px-3 py-1 rounded-full uppercase tracking-wide">Since {user?.created_at ? new Date(user.created_at).getFullYear() : '—'}</span>
          </div>
         </div>
 
         <div className="space-y-4">
-         <Button className="w-full h-12 bg-primary hover:bg-primary text-white border-none rounded-xl transition-all shadow-md font-bold text-[10px] tracking-wide uppercase">
-           Sync Marketplace Data
-         </Button>
+          <AlertDialog>
+           <AlertDialogTrigger asChild>
+             <Button className="w-full h-12 bg-primary hover:bg-primary text-white border-none rounded-xl transition-all shadow-md font-bold text-[10px] tracking-wide uppercase">
+                Sync Marketplace Data
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Synchronize Marketplace Profile?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will refresh your account identifiers and synchronize your service history with the Kuba Elite registry. Your session will be updated to reflect the latest marketplace standings.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel className="rounded-xl font-bold text-xs uppercase tracking-widest text-foreground">Abort</AlertDialogCancel>
+                <AlertDialogAction 
+                  onClick={async () => { await checkAuth(); toast.success('Profile data synced.'); }}
+                  className="rounded-xl font-bold text-xs uppercase tracking-widest bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  Sync Now
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
          <p className="text-[10px] font-bold text-muted-foreground text-center">Protected by Kuba Guard Encryption.</p>
         </div>
        </CardContent>
@@ -298,9 +373,9 @@ export default function ProfileSettings() {
             {isSavingProfile ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
             Save Profile
            </Button>
-           <Button variant="outline" type="button" className="h-10 flex-1 md:flex-none border-border text-foreground hover:bg-muted rounded-xl font-bold px-8 transition-all text-[10px] tracking-wide uppercase shadow-sm">
-            Rotate Password
-           </Button>
+            <Button onClick={() => setIsChangingPassword(true)} variant="outline" type="button" className="h-10 flex-1 md:flex-none border-border text-foreground hover:bg-muted rounded-xl font-bold px-8 transition-all text-[10px] tracking-wide uppercase shadow-sm">
+             Rotate Password
+            </Button>
           </div>
          </div>
         </form>
@@ -389,12 +464,39 @@ export default function ProfileSettings() {
                 </div>
                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">{addr.city}, {addr.postal_code}</p>
               </div>
-              <button 
-                onClick={() => handleDeleteAddress(addr.id)}
-                className="absolute top-6 right-6 p-2 text-muted-foreground hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
+               <div className="flex justify-between items-center mt-4">
+                <Button 
+                  onClick={() => handleSetDefaultAddress(addr.id)}
+                  disabled={addr.is_default}
+                  className={`h-8 px-4 rounded-lg text-[9px] font-bold uppercase transition-all ${addr.is_default ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-muted hover:bg-primary hover:text-white text-muted-foreground'}`}
+                >
+                  {addr.is_default ? 'Standard Dispatch' : 'Set as Master'}
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <button className="p-2 text-muted-foreground hover:text-red-500 transition-colors">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Remove Service Location?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to remove <span className="font-bold text-foreground">"{addr.street_address}"</span>? This dispatch endpoint will be purged from your active registry.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel className="rounded-xl font-bold text-xs uppercase tracking-widest text-foreground">Keep It</AlertDialogCancel>
+                      <AlertDialogAction 
+                        onClick={() => handleDeleteAddress(addr.id)}
+                        className="rounded-xl font-bold text-xs uppercase tracking-widest bg-red-600 hover:bg-red-700 text-white border-none shadow-md"
+                      >
+                        Purge Location
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </div>
           )) : (
             <div className="col-span-2 py-8 text-center text-muted-foreground text-[10px] font-bold uppercase tracking-widest bg-muted/10 rounded-2xl border border-dashed border-border">
@@ -406,7 +508,59 @@ export default function ProfileSettings() {
        </CardContent>
       </Card>
      </div>
+    </div>
+
+    {/* Password Rotation Dialog */}
+    <Dialog open={isChangingPassword} onOpenChange={setIsChangingPassword}>
+      <DialogContent className="sm:max-w-[425px] rounded-[2rem] border-none bg-card/50 backdrop-blur-xl">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-bold uppercase tracking-tight italic">Security Protocol Rotation</DialogTitle>
+          <DialogDescription className="text-xs font-bold text-muted-foreground uppercase">
+            Execute a mandatory credential update to maintain high-fidelity account security.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleChangePassword} className="space-y-6 pt-4">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold uppercase tracking-widest ml-1">Current Cipher</Label>
+              <Input 
+                type="password" 
+                value={passwordForm.current_password}
+                onChange={(e) => setPasswordForm({...passwordForm, current_password: e.target.value})}
+                className="h-12 bg-muted/50 border-border rounded-xl font-bold" 
+                required 
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold uppercase tracking-widest ml-1">New Directive</Label>
+              <Input 
+                type="password" 
+                value={passwordForm.password}
+                onChange={(e) => setPasswordForm({...passwordForm, password: e.target.value})}
+                className="h-12 bg-muted/50 border-border rounded-xl font-bold" 
+                required 
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold uppercase tracking-widest ml-1">Verify Directive</Label>
+              <Input 
+                type="password" 
+                value={passwordForm.password_confirmation}
+                onChange={(e) => setPasswordForm({...passwordForm, password_confirmation: e.target.value})}
+                className="h-12 bg-muted/50 border-border rounded-xl font-bold" 
+                required 
+              />
+            </div>
+          </div>
+          <DialogFooter className="pt-4">
+            <Button type="submit" disabled={isSaving} className="w-full h-12 bg-primary text-white rounded-xl font-bold uppercase tracking-widest text-[10px]">
+              {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Shield className="w-4 h-4 mr-2" />}
+              Update Security Vector
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
    </div>
-  </div>
- );
+  );
 }

@@ -27,6 +27,14 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/cms-assets/:path*',
+        destination: 'http://localhost:8000/storage/:path*',
+      },
+    ];
+  },
 };
 
 export default withPWA(nextConfig);

@@ -45,9 +45,9 @@ class ReportController extends Controller
                     $booking->booking_number,
                     $booking->customer?->name,
                     $booking->service?->name,
-                    $booking->scheduled_date,
+                    $booking->scheduled_date?->format('Y-m-d H:i') ?? 'N/A',
                     $booking->status,
-                    $booking->total_price,
+                    $booking->final_price ?? $booking->estimated_price ?? '0.00',
                 ]);
             }
             fclose($file);

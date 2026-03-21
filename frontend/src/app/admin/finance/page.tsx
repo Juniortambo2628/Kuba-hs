@@ -14,8 +14,12 @@ import {
     ArrowRightLeft,
     Wallet,
     ShieldCheck,
-    Download
+    Download,
+    TrendingDown,
+    Activity,
+    Zap
 } from "lucide-react";
+import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
 import { 
     AreaChart, 
     Area, 
@@ -107,44 +111,44 @@ export default function AdminFinance() {
             animate={{ opacity: 1, y: 0 }}
             className="max-w-7xl mx-auto space-y-10 pb-12"
         >
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold text-foreground tracking-tight">Finance Audit</h1>
-                    <p className="text-sm text-muted-foreground mt-1">Monitor platform revenue, payouts, and transactional integrity.</p>
-                </div>
+            {/* Standard Dashboard Header */}
+            <DashboardPageHeader 
+                title="Financial Treasury" 
+                subtitle="Monitor platform revenue, merchant payouts, and transactional integrity."
+            >
                 <div className="flex gap-3">
-                    <button className="h-10 px-4 bg-muted text-foreground hover:bg-muted/80 rounded-xl text-[10px] font-bold tracking-widest uppercase flex items-center gap-2 border border-border transition-all">
-                        <Download className="w-4 h-4" /> Export Report
+                    <button className="h-12 px-6 bg-primary hover:bg-black text-white rounded-2xl font-bold shadow-md transition-all flex items-center gap-2 group">
+                        <Download className="w-5 h-5 group-hover:translate-y-0.5 transition-transform" /> 
+                        Export Ledger
                     </button>
                 </div>
-            </div>
+            </DashboardPageHeader>
 
             {/* Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <MetricCard 
-                    label="Volume" 
-                    value={`$${Number(stats?.total_volume || 0).toLocaleString()}`} 
+                    label="Transaction Volume" 
+                    value={`KES ${Number(stats?.total_volume || 0).toLocaleString()}`} 
                     icon={DollarSign} 
-                    trend="Gross Transaction Value"
+                    trend="Gross platform flow"
                 />
                 <MetricCard 
                     label="Platform Profit" 
-                    value={`$${Number(stats?.total_platform_fees || 0).toLocaleString()}`} 
+                    value={`KES ${Number(stats?.total_platform_fees || 0).toLocaleString()}`} 
                     icon={TrendingUp} 
-                    trend="10% Applied Fee"
+                    trend="System commission"
                 />
                 <MetricCard 
                     label="Merchant Payouts" 
-                    value={`$${Number(stats?.total_provider_payouts || 0).toLocaleString()}`} 
+                    value={`KES ${Number(stats?.total_provider_payouts || 0).toLocaleString()}`} 
                     icon={Wallet} 
-                    trend="Distributed Capital"
+                    trend="Settled accounts"
                 />
                 <MetricCard 
-                    label="In Escrow" 
-                    value={`$${Number(stats?.pending_payouts || 0).toLocaleString()}`} 
+                    label="Escrow Capital" 
+                    value={`KES ${Number(stats?.pending_payouts || 0).toLocaleString()}`} 
                     icon={ShieldCheck} 
-                    trend="Verification Pending"
+                    trend="Pending verification"
                 />
             </div>
 
@@ -155,7 +159,7 @@ export default function AdminFinance() {
                         <div className="flex items-center justify-between">
                             <div>
                                 <CardTitle className="text-lg font-bold tracking-tight">Revenue Dynamics</CardTitle>
-                                <p className="text-[10px] uppercase font-bold tracking-[0.2em] text-muted-foreground mt-1">Fiscal Performance Overview</p>
+                                <p className="text-xs font-bold text-muted-foreground mt-1">Fiscal Performance Overview</p>
                             </div>
                             <div className="p-3 bg-primary/10 rounded-2xl">
                                 <BarChart3 className="w-5 h-5 text-primary" />
@@ -182,8 +186,8 @@ export default function AdminFinance() {
                                     <YAxis 
                                         axisLine={false} 
                                         tickLine={false} 
-                                        tick={{fontSize: 10, fontWeight: 600}}
-                                        tickFormatter={(val) => `$${val}`}
+                                        tick={{fontSize: 10, fontWeight: 700}}
+                                        tickFormatter={(val) => `KES ${val}`}
                                     />
                                     <Tooltip 
                                         contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
@@ -216,7 +220,7 @@ export default function AdminFinance() {
                         <div className="flex items-center justify-between">
                             <div>
                                 <CardTitle className="text-lg font-bold tracking-tight">Channel Audit</CardTitle>
-                                <p className="text-[10px] uppercase font-bold tracking-[0.2em] text-muted-foreground mt-1">Transaction Mediums</p>
+                                <p className="text-xs font-bold text-muted-foreground mt-1">Transaction Mediums</p>
                             </div>
                             <div className="p-3 bg-muted rounded-2xl">
                                 <PieChartIcon className="w-5 h-5 text-foreground" />
@@ -246,8 +250,8 @@ export default function AdminFinance() {
                         <div className="grid grid-cols-2 gap-4 w-full mt-4">
                             {(stats?.payment_methods || []).map((method, i) => (
                                 <div key={i} className="flex items-center gap-2">
-                                    <div className={`w-2 h-2 rounded-full ${i === 0 ? 'bg-primary' : 'bg-muted-foreground opacity-30'}`} />
-                                    <span className="text-[10px] font-bold uppercase tracking-wider truncate">{method.payment_method}</span>
+                                    <div className={`w-2.5 h-2.5 rounded-full ${i === 0 ? 'bg-primary shadow-[0_0_8px_rgba(var(--primary-rgb),0.5)]' : 'bg-muted-foreground opacity-30'}`} />
+                                    <span className="text-[11px] font-bold text-foreground tracking-tight truncate">{method.payment_method}</span>
                                 </div>
                             ))}
                         </div>
@@ -260,18 +264,18 @@ export default function AdminFinance() {
                 <CardHeader className="p-8 border-b border-border/50 flex flex-row items-center justify-between">
                     <div>
                         <CardTitle className="text-xl font-bold tracking-tight">Financial Ledger</CardTitle>
-                        <p className="text-[10px] uppercase font-bold tracking-[0.2em] text-muted-foreground mt-1">Deep-audit of platform capital flow</p>
+                        <p className="text-xs font-bold text-muted-foreground mt-1">Deep-audit of platform capital flow and volume.</p>
                     </div>
                 </CardHeader>
                 <CardContent className="p-0">
                     <Table>
                         <TableHeader>
                             <TableRow className="hover:bg-transparent border-border/50">
-                                <TableHead className="pl-8 uppercase text-[10px] font-bold tracking-[0.2em] h-14">TXID / Date</TableHead>
-                                <TableHead className="uppercase text-[10px] font-bold tracking-[0.2em] h-14">Participants</TableHead>
-                                <TableHead className="uppercase text-[10px] font-bold tracking-[0.2em] h-14">Gross / Profit</TableHead>
-                                <TableHead className="uppercase text-[10px] font-bold tracking-[0.2em] h-14">Status</TableHead>
-                                <TableHead className="pr-8 text-right uppercase text-[10px] font-bold tracking-[0.2em] h-14">Order</TableHead>
+                                <TableHead className="pl-8 text-[11px] font-bold h-14">TXID / Date</TableHead>
+                                <TableHead className="text-[11px] font-bold h-14">Participants</TableHead>
+                                <TableHead className="text-[11px] font-bold h-14">Gross / Profit</TableHead>
+                                <TableHead className="text-[11px] font-bold h-14">Status</TableHead>
+                                <TableHead className="pr-8 text-right text-[11px] font-bold h-14">Order Reference</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -297,8 +301,8 @@ export default function AdminFinance() {
                                     </TableCell>
                                     <TableCell>
                                         <div className="space-y-1">
-                                            <p className="text-sm font-bold text-foreground tabular-nums">${payment.amount}</p>
-                                            <p className="text-[9px] font-bold text-emerald-600 tabular-nums">Net: +${payment.platform_fee}</p>
+                                            <p className="text-sm font-bold text-foreground tabular-nums">KES {Number(payment.amount).toLocaleString()}</p>
+                                            <p className="text-[10px] font-bold text-emerald-600 tabular-nums">Net Profit: +KES {Number(payment.platform_fee).toLocaleString()}</p>
                                         </div>
                                     </TableCell>
                                     <TableCell>
@@ -307,7 +311,9 @@ export default function AdminFinance() {
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="pr-8 text-right">
-                                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">#{payment.booking.booking_number}</p>
+                                        <Badge variant="secondary" className="bg-muted/50 text-foreground font-bold rounded-lg border-none hover:bg-muted font-mono text-[10px]">
+                                            {payment.booking.booking_number}
+                                        </Badge>
                                     </TableCell>
                                 </TableRow>
                             ))}
