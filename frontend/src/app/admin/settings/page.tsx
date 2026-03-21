@@ -83,6 +83,59 @@ export default function UnifiedSettingsPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [activeMainTab, setActiveMainTab] = useState("brand");
 
+    const MAX_IMAGE_SIZE = 1 * 1024 * 1024; // 1MB threshold
+    const MAX_IMAGE_WIDTH = 1920;
+    const COMPRESS_QUALITY = 0.8;
+
+    const compressImage = (file: File): Promise<File> => {
+        return new Promise((resolve) => {
+            if (file.size <= MAX_IMAGE_SIZE || file.type === 'image/svg+xml') {
+                return resolve(file);
+            }
+
+            const img = new Image();
+            const canvas = document.createElement('canvas');
+            const url = URL.createObjectURL(file);
+
+            img.onload = () => {
+                URL.revokeObjectURL(url);
+                let { width, height } = img;
+
+                if (width > MAX_IMAGE_WIDTH) {
+                    height = Math.round(height * (MAX_IMAGE_WIDTH / width));
+                    width = MAX_IMAGE_WIDTH;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d')!;
+                ctx.drawImage(img, 0, 0, width, height);
+
+                const mimeType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+                canvas.toBlob(
+                    (blob) => {
+                        if (blob && blob.size < file.size) {
+                            const compressed = new File([blob], file.name, { type: mimeType, lastModified: Date.now() });
+                            console.log(`Compressed ${file.name}: ${(file.size/1024).toFixed(0)}KB → ${(compressed.size/1024).toFixed(0)}KB`);
+                            resolve(compressed);
+                        } else {
+                            resolve(file);
+                        }
+                    },
+                    mimeType,
+                    COMPRESS_QUALITY
+                );
+            };
+
+            img.onerror = () => {
+                URL.revokeObjectURL(url);
+                resolve(file);
+            };
+
+            img.src = url;
+        });
+    };
+
     const BACKEND_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/api$/, '');
     
     const getMediaUrl = (url: any) => {
@@ -127,18 +180,26 @@ export default function UnifiedSettingsPage() {
         try {
             const formData = new FormData();
             const allSettings = Object.values(settings).flat();
+
+            // Compress all pending image files first
+            const compressedFiles: Record<string, File> = {};
+            for (const [id, file] of Object.entries(files)) {
+                compressedFiles[id] = await compressImage(file);
+            }
             
             allSettings.forEach((s, index) => {
                 formData.append(`settings[${index}][id]`, s.id);
                 formData.append(`settings[${index}][value]`, s.value || "");
                 
-                if (s.type === 'image' && files[s.id]) {
-                    formData.append(`settings[${index}][file]`, files[s.id]);
+                if (s.type === 'image' && compressedFiles[s.id]) {
+                    formData.append(`settings[${index}][file]`, compressedFiles[s.id]);
                 }
             });
 
             await axiosInstance.post("/api/admin/settings", formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
+                headers: { 'Content-Type': 'multipart/form-data' },
+                maxBodyLength: Infinity,
+                maxContentLength: Infinity,
             });
             
             toast.success("Synchronized! Site settings updated.");
@@ -231,7 +292,7 @@ export default function UnifiedSettingsPage() {
                                         </div>
                                     </div>
 
-                                    <div className={`grid grid-cols-1 ${group.id === 'hero_media' ? 'md:grid-cols-2 xl:grid-cols-3' : 'md:grid-cols-2 lg:grid-cols-2'} gap-6`}>
+                                    <div className={`grid grid-cols-1 ${group.id === 'hero_backgrounds' ? 'md:grid-cols-2 xl:grid-cols-3' : 'md:grid-cols-2 lg:grid-cols-2'} gap-6`}>
                                         {group.settings.map(setting => (
                                             <div key={setting.id}>
                                                 {setting.type === 'image' ? (
