@@ -35,7 +35,7 @@ class SettingsController extends Controller
             'settings' => 'required|array',
             'settings.*.id' => 'required|exists:site_settings,id',
             'settings.*.value' => 'nullable|string|max:10000',
-            'settings.*.file' => 'nullable|file|mimes:jpg,jpeg,png,svg,webp|max:10240',
+            'settings.*.file' => 'nullable|file|mimes:jpg,jpeg,png,svg,webp|max:20480',
         ]);
 
         try {
