@@ -1,18 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { User } from "@/types";
 import axiosInstance from "@/lib/axios";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
-  Search, 
   MoreHorizontal, 
-  UserPlus,
   Mail,
   Download,
   Trash2
@@ -28,25 +24,48 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel
 } from "@/components/ui/dropdown-menu";
-import { UserDialog } from "@/components/admin/UserDialog";
+import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { DashboardStatusBadge } from "@/components/shared/DashboardStatusBadge";
+import { DashboardEmptyState } from "@/components/shared/DashboardEmptyState";
 import { toast } from "sonner";
+import { UserDialog } from "@/components/admin/UserDialog";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
-export default function AdminUsers() {
+function AdminUsersContent() {
   const { search, setSearch } = useSearchState();
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [viewMode, setViewMode] = useState<'grid'|'list'>('grid');
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [statusId, setStatusId] = useState<{ id: string, active: boolean } | null>(null);
   const { exportToCSV } = useExport();
+  
+  const searchParams = useSearchParams();
+  const userId = searchParams.get('id');
 
   useEffect(() => {
-    fetchUsers(search);
-  }, [search]);
+    fetchUsers(search, userId ?? "");
+  }, [search, userId]);
 
-  const fetchUsers = async (s = "") => {
+  const fetchUsers = async (s = "", id = "") => {
     try {
-      const res = await axiosInstance.get(`/api/admin/users?search=${s}`);
+      setIsLoading(true);
+      const url = id 
+        ? `/api/admin/users?id=${id}` 
+        : `/api/admin/users?search=${s}`;
+      const res = await axiosInstance.get(url);
       setUsers(res.data.data || []);
     } catch (err) {
       console.error("Failed to fetch users:", err);
@@ -82,7 +101,6 @@ export default function AdminUsers() {
   };
 
   const deleteUser = async (id: string) => {
-    if (!confirm("Are you sure you want to permanently delete this user? This action cannot be undone.")) return;
     try {
         await axiosInstance.delete(`/api/admin/users/${id}`);
         toast.success("User deleted successfully");
@@ -104,13 +122,11 @@ export default function AdminUsers() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-12">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground tracking-tight">Users</h1>
-          <p className="text-sm text-muted-foreground mt-1">Manage platform participants: clients, providers, and staff.</p>
-        </div>
-      </div>
+      <DashboardPageHeader 
+        title="Personnel Registry" 
+        subtitle="Manage platform participants: high-fidelity profiles for clients, providers, and executive staff."
+      />
+
       <DataToolbar 
         search={search}
         onSearchChange={setSearch}
@@ -126,18 +142,17 @@ export default function AdminUsers() {
         ]}
       />
 
-      {/* Content area: Grid or List */}
       {viewMode === 'list' ? (
         <Card className="border border-border overflow-hidden bg-card">
           <CardContent className="p-0">
             <Table>
               <TableHeader>
-                <TableRow className="hover:bg-transparent border-border">
-                  <TableHead className="pl-6 uppercase text-[10px] font-semibold text-muted-foreground tracking-wider h-12">User</TableHead>
-                  <TableHead className="uppercase text-[10px] font-semibold text-muted-foreground tracking-wider h-12">Role</TableHead>
-                  <TableHead className="uppercase text-[10px] font-semibold text-muted-foreground tracking-wider h-12">Status</TableHead>
-                  <TableHead className="uppercase text-[10px] font-semibold text-muted-foreground tracking-wider h-12">Joined</TableHead>
-                  <TableHead className="pr-6 text-right uppercase text-[10px] font-semibold text-muted-foreground tracking-wider h-12">Actions</TableHead>
+                <TableRow className="hover:bg-transparent border-border/50">
+                  <TableHead className="pl-10 h-16 text-[11px] font-bold text-muted-foreground">System Identity</TableHead>
+                  <TableHead className="h-16 text-[11px] font-bold text-muted-foreground">Access Architecture</TableHead>
+                  <TableHead className="h-16 text-[11px] font-bold text-muted-foreground">Account Status</TableHead>
+                  <TableHead className="h-16 text-[11px] font-bold text-muted-foreground">Onboarding Phase</TableHead>
+                  <TableHead className="pr-10 text-right h-16 text-[11px] font-bold text-muted-foreground">Operations</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -153,13 +168,18 @@ export default function AdminUsers() {
                   ))
                 ) : users.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="h-48 text-center text-muted-foreground text-sm">No users found</TableCell>
+                    <TableCell colSpan={5} className="p-0">
+                      <DashboardEmptyState 
+                        title="No users found" 
+                        description="Try adjusting your search or filters to find what you're looking for."
+                      />
+                    </TableCell>
                   </TableRow>
                 ) : users.map((u) => (
                   <TableRow key={u.id} className="group border-border hover:bg-muted/50 transition-colors">
                     <TableCell className="pl-6">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center text-primary font-semibold text-xs uppercase overflow-hidden border border-border">
+                        <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-primary font-bold text-xs overflow-hidden border border-border shadow-sm">
                           {u.avatar_url ? <img src={u.avatar_url} alt={u.name} className="w-full h-full object-cover" /> : u.name[0]}
                         </div>
                         <div>
@@ -169,17 +189,13 @@ export default function AdminUsers() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold tracking-wide uppercase border ${u.role === 'admin' ? 'bg-muted text-foreground border-border' : 'bg-muted text-muted-foreground'}`}>
-                        {u.role}
-                      </Badge>
+                      <DashboardStatusBadge status={u.role} type="role" />
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold tracking-wide uppercase border bg-muted text-foreground border-border`}>
-                        {u.is_active ? "Active" : "Suspended"}
-                      </Badge>
+                      <DashboardStatusBadge status={u.is_active ? "Active" : "Suspended"} />
                     </TableCell>
-                    <TableCell className="text-sm font-medium text-muted-foreground">
-                      {new Date(u.created_at).toLocaleDateString()}
+                    <TableCell className="text-[10px] font-bold text-muted-foreground">
+                      {new Date(u.created_at).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}
                     </TableCell>
                     <TableCell className="pr-6 text-right">
                       <DropdownMenu>
@@ -189,15 +205,15 @@ export default function AdminUsers() {
                           </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-36 rounded-xl">
-                          <DropdownMenuLabel className="text-[10px] uppercase font-semibold text-muted-foreground">Actions</DropdownMenuLabel>
+                          <DropdownMenuLabel className="text-[11px] font-bold text-muted-foreground tracking-tight">User Operations</DropdownMenuLabel>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => openEditDialog(u)} className="cursor-pointer text-xs font-medium">Edit User</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => toggleStatus(u.id)} className={`cursor-pointer text-xs font-medium ${u.is_active ? 'text-amber-500 focus:text-amber-600 focus:bg-amber-50' : 'text-emerald-500 focus:text-emerald-600 focus:bg-emerald-50'}`}>
+                          <DropdownMenuItem onClick={() => openEditDialog(u)} className="cursor-pointer text-xs font-medium text-foreground">Edit User</DropdownMenuItem>
+                           <DropdownMenuItem onClick={() => setStatusId({ id: u.id, active: u.is_active })} className={`cursor-pointer text-xs font-medium ${u.is_active ? 'text-amber-500 focus:text-amber-600 focus:bg-amber-50' : 'text-emerald-500 focus:text-emerald-600 focus:bg-emerald-50'}`}>
                             {u.is_active ? "Suspend" : "Activate"}
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => deleteUser(u.id)} className="cursor-pointer text-xs font-medium text-red-500 focus:text-red-600 focus:bg-red-50 gap-2">
-                             <Trash2 className="w-3.5 h-3.5" /> Permanently Delete
+                           <DropdownMenuItem onClick={() => setDeleteId(u.id)} className="cursor-pointer text-xs font-medium text-red-500 focus:text-red-600 focus:bg-red-50 gap-2">
+                            <Trash2 className="w-3.5 h-3.5" /> Permanently Delete
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -213,12 +229,15 @@ export default function AdminUsers() {
           {isLoading ? (
             Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-44 rounded-xl" />)
           ) : users.length === 0 ? (
-            <div className="col-span-full h-48 flex items-center justify-center text-muted-foreground text-sm border border-dashed border-border rounded-xl">No users found</div>
+            <DashboardEmptyState 
+              title="No users found" 
+              className="col-span-full"
+            />
           ) : users.map((u) => (
             <Card key={u.id} className="border border-border bg-card hover:shadow-md transition-all group overflow-hidden">
               <CardContent className="p-5">
                 <div className="flex justify-between items-start mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center text-primary font-bold text-lg uppercase overflow-hidden border border-border shadow-sm group-hover:border-primary/20 transition-colors">
+                  <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center text-primary font-bold text-xl overflow-hidden border border-border/60 shadow-inner group-hover:border-primary/20 transition-all">
                     {u.avatar_url ? <img src={u.avatar_url} alt={u.name} className="w-full h-full object-cover" /> : u.name[0]}
                   </div>
                   <DropdownMenu>
@@ -228,12 +247,12 @@ export default function AdminUsers() {
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-36 rounded-xl">
-                      <DropdownMenuItem onClick={() => openEditDialog(u)} className="cursor-pointer text-xs font-medium">Edit User</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => toggleStatus(u.id)} className={`cursor-pointer text-xs font-medium ${u.is_active ? 'text-amber-500 focus:text-amber-600 focus:bg-amber-50' : 'text-emerald-500 focus:text-emerald-600 focus:bg-emerald-50'}`}>
+                      <DropdownMenuItem onClick={() => openEditDialog(u)} className="cursor-pointer text-xs font-medium text-foreground">Edit User</DropdownMenuItem>
+                       <DropdownMenuItem onClick={() => setStatusId({ id: u.id, active: u.is_active })} className={`cursor-pointer text-xs font-medium ${u.is_active ? 'text-amber-500 focus:text-amber-600 focus:bg-amber-50' : 'text-emerald-500 focus:text-emerald-600 focus:bg-emerald-50'}`}>
                         {u.is_active ? "Suspend User" : "Activate User"}
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => deleteUser(u.id)} className="cursor-pointer text-xs font-medium text-red-500 focus:text-red-600 focus:bg-red-50 gap-2">
+                       <DropdownMenuItem onClick={() => setDeleteId(u.id)} className="cursor-pointer text-xs font-medium text-red-500 focus:text-red-600 focus:bg-red-50 gap-2">
                          <Trash2 className="w-3.5 h-3.5" /> Purge Account
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -244,12 +263,8 @@ export default function AdminUsers() {
                   <p className="text-xs text-muted-foreground flex items-center gap-1.5 truncate"><Mail className="w-3 h-3 flex-shrink-0" /> {u.email}</p>
                 </div>
                 <div className="flex items-center justify-between pt-4 border-t border-border">
-                  <Badge variant="outline" className={`rounded-full px-2 py-0.5 text-[9px] font-semibold tracking-wide uppercase border ${u.role === 'admin' ? 'bg-muted text-foreground border-border' : 'bg-muted text-muted-foreground'}`}>
-                    {u.role}
-                  </Badge>
-                  <Badge variant="outline" className={`rounded-full px-2 py-0.5 text-[9px] font-semibold tracking-wide uppercase border bg-muted text-foreground border-border`}>
-                    {u.is_active ? "Active" : "Suspended"}
-                  </Badge>
+                  <DashboardStatusBadge status={u.role} type="role" showIcon={false} />
+                  <DashboardStatusBadge status={u.is_active ? "Active" : "Suspended"} showIcon={false} />
                 </div>
               </CardContent>
             </Card>
@@ -257,12 +272,72 @@ export default function AdminUsers() {
         </div>
       )}
 
-      <UserDialog 
+       <UserDialog 
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
         onSave={handleSaveUser}
         user={selectedUser}
       />
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent className="rounded-3xl border-border bg-card/95 backdrop-blur-xl max-w-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-black italic tracking-tight">Purge User Identity?</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm font-medium text-muted-foreground leading-relaxed">
+              This action will permanently remove this participant from the Kuba registry. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2 sm:gap-0 pt-4">
+            <AlertDialogCancel className="rounded-xl font-bold text-xs uppercase tracking-widest text-foreground">Abort</AlertDialogCancel>
+            <AlertDialogAction 
+                className="rounded-xl font-bold text-xs uppercase tracking-widest bg-red-600 hover:bg-red-700 text-white border-none shadow-md"
+                onClick={() => {
+                    if (deleteId) {
+                        deleteUser(deleteId);
+                        setDeleteId(null);
+                    }
+                }}
+            >
+                Execute Purge
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Status Toggle Confirmation */}
+      <AlertDialog open={!!statusId} onOpenChange={(open) => !open && setStatusId(null)}>
+        <AlertDialogContent className="rounded-3xl border-border bg-card/95 backdrop-blur-xl max-w-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-black italic tracking-tight">Modify Access Rights?</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm font-medium text-muted-foreground leading-relaxed">
+              Are you sure you want to {statusId?.active ? "suspend" : "activate"} this personnel's marketplace access?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2 sm:gap-0 pt-4">
+            <AlertDialogCancel className="rounded-xl font-bold text-xs uppercase tracking-widest text-foreground">Dismiss</AlertDialogCancel>
+            <AlertDialogAction 
+                className={`rounded-xl font-bold text-xs uppercase tracking-widest text-white border-none shadow-md ${statusId?.active ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}
+                onClick={() => {
+                    if (statusId) {
+                        toggleStatus(statusId.id);
+                        setStatusId(null);
+                    }
+                }}
+            >
+                Confirm Mutation
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
+  );
+}
+
+export default function AdminUsers() {
+  return (
+    <Suspense fallback={<div className="max-w-6xl mx-auto p-8"><Skeleton className="h-[600px] w-full rounded-2xl" /></div>}>
+      <AdminUsersContent />
+    </Suspense>
   );
 }

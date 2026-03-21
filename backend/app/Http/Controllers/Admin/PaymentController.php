@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
+use App\Http\Resources\PaymentResource;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -11,7 +12,7 @@ class PaymentController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Payment::with(['customer', 'provider.user']);
+        $query = Payment::with(['customer', 'provider.user', 'booking.service']);
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -37,7 +38,7 @@ class PaymentController extends Controller
         ];
 
         return response()->json([
-            'payments' => $payments,
+            'payments' => PaymentResource::collection($payments)->response()->getData(true),
             'stats' => $stats,
         ]);
     }

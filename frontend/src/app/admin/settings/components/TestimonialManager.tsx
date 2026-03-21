@@ -98,7 +98,7 @@ export function TestimonialManager() {
       </div>
 
       <DragDropContext onDragEnd={onDragEnd}>
-        <Droppable droppableId="testimonials">
+        <Droppable droppableId="testimonials" isDropDisabled={false} isCombineEnabled={false} ignoreContainerClipping={false}>
           {(provided) => (
             <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
               {items.map((item, index) => (

@@ -10,9 +10,11 @@ import {
   ChevronRight,
   Info,
   Code,
-  FileText
+  FileText,
+  Plus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -59,21 +61,21 @@ export default function AdminEmailTemplatesPage() {
   };
 
   return (
-    <div className="h-full flex flex-col space-y-8 animate-in fade-in duration-500">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground uppercase tracking-tight">Email Core System</h1>
-          <p className="text-muted-foreground text-sm">Design and personalize automated system notifications.</p>
-        </div>
-      </div>
+    <div className="h-full flex flex-col space-y-10 animate-in fade-in duration-500 pb-8">
+      {/* Standard Dashboard Header */}
+      <DashboardPageHeader 
+        title="Email Core System" 
+        subtitle="Design and personalize automated system notifications and transactional triggers."
+      />
 
       <div className="flex-1 flex flex-col lg:flex-row gap-8 min-h-0">
         {/* List */}
         <div className="w-full lg:w-1/3 bg-white rounded-3xl border border-border shadow-sm flex flex-col overflow-hidden">
             <div className="p-6 border-b border-border bg-muted/50">
                 <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
+                        <Search className="w-4 h-4 text-muted-foreground" />
+                    </div>
                     <Input 
                         placeholder="Search templates..." 
                         className="pl-10 h-10 bg-white border-border rounded-xl text-xs"
@@ -100,7 +102,7 @@ export default function AdminEmailTemplatesPage() {
                                         <Mail className="w-4 h-4" />
                                     </div>
                                     <div>
-                                        <div className="text-[11px] font-semibold uppercase tracking-tight leading-none">{t.name}</div>
+                                        <div className="text-[11px] font-bold tracking-tight leading-none">{t.name}</div>
                                         <div className="text-[9px] font-bold opacity-60 mt-1 uppercase tracking-normal">{t.key}</div>
                                     </div>
                                 </div>
@@ -125,29 +127,29 @@ export default function AdminEmailTemplatesPage() {
                     >
                         <div className="p-8 border-b border-border flex items-center justify-between shrink-0">
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center text-white shadow-lg shadow-sky-200">
+                                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-sm border border-primary/20">
                                     <Edit3 className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <h2 className="text-lg font-semibold text-foreground uppercase tracking-tight">{selectedTemplate.name}</h2>
-                                    <Badge variant="outline" className="text-[9px] font-semibold uppercase bg-gray-100 border-none text-muted-foreground">Template Logic: Database</Badge>
+                                    <h2 className="text-xl font-bold text-foreground tracking-tight">{selectedTemplate.name}</h2>
+                                    <Badge variant="outline" className="text-[9px] font-bold bg-muted border-none text-muted-foreground">Template logic: Database record</Badge>
                                 </div>
                             </div>
                             <Button 
                                 onClick={handleUpdate}
                                 disabled={isSaving}
-                                className="bg-primary hover:bg-primary/90 text-white font-bold rounded-xl h-11 px-6 flex gap-2 shadow-lg shadow-sky-100"
+                                className="bg-primary hover:bg-black text-white font-bold rounded-xl h-12 px-8 flex gap-2 shadow-lg shadow-primary/10 transition-all"
                             >
                                 {isSaving ? <Save className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                                <span>PUBLISH CHANGES</span>
+                                <span>Publish Changes</span>
                             </Button>
                         </div>
                         
                         <div className="flex-1 overflow-y-auto p-8 space-y-8">
-                            <div className="space-y-3">
-                                <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-normal flex items-center gap-2">
-                                    <FileText className="w-3 h-3" />
-                                    Subject Line
+                            <div className="space-y-4">
+                                <label className="text-xs font-bold text-muted-foreground flex items-center gap-2">
+                                    <FileText className="w-4 h-4" />
+                                    Subject Line Architecture
                                 </label>
                                 <Input 
                                     value={selectedTemplate.subject}
@@ -158,29 +160,29 @@ export default function AdminEmailTemplatesPage() {
                             </div>
 
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                <div className="space-y-3">
-                                    <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-normal flex items-center gap-2">
-                                        <Code className="w-3 h-3" />
+                                <div className="space-y-4">
+                                    <label className="text-xs font-bold text-muted-foreground flex items-center gap-2">
+                                        <Code className="w-4 h-4" />
                                         Template Body (Markdown)
                                     </label>
                                     <Textarea 
                                         value={selectedTemplate.body}
                                         onChange={(e) => setSelectedTemplate({...selectedTemplate, body: e.target.value})}
-                                        className="min-h-[400px] bg-muted/50 border-border rounded-2xl text-xs font-mono p-6 focus:bg-white transition-all text-foreground"
+                                        className="min-h-[450px] bg-muted/30 border-border/60 rounded-2xl text-sm font-mono p-8 focus:bg-white transition-all text-foreground"
                                         placeholder="Start writing your email template..."
                                     />
                                 </div>
 
                                 <div className="space-y-6">
-                                    <div className="p-6 bg-muted rounded-2xl border border-sky-100 relative overflow-hidden">
-                                        <Info className="absolute -right-2 -bottom-2 w-24 h-24 text-sky-200/40" />
-                                        <h4 className="text-[11px] font-semibold text-primary uppercase mb-4 flex items-center gap-2">
+                                    <div className="p-8 bg-primary/5 rounded-2xl border border-primary/10 relative overflow-hidden">
+                                        <Info className="absolute -right-2 -bottom-2 w-24 h-24 text-primary/10" />
+                                        <h4 className="text-[11px] font-bold text-primary mb-5 flex items-center gap-2">
                                             <Info className="w-4 h-4" />
-                                            Available Variables
+                                            Available Dynamic Variables
                                         </h4>
-                                        <div className="flex flex-wrap gap-2 relative z-10">
+                                        <div className="flex wrap gap-2 relative z-10">
                                             {selectedTemplate.variables?.map(v => (
-                                                <Badge key={v} className="bg-white text-primary border-sky-100 text-[10px] font-semibold px-3 py-1 rounded-lg shadow-sm">
+                                                <Badge key={v} className="bg-white text-primary border-primary/10 text-[10px] font-bold px-3 py-1.5 rounded-lg shadow-sm">
                                                     {"{{"}{v}{"}}"}
                                                 </Badge>
                                             ))}
@@ -190,10 +192,10 @@ export default function AdminEmailTemplatesPage() {
                                         </p>
                                     </div>
 
-                                    <div className="p-0 bg-muted rounded-2xl border border-border overflow-hidden flex flex-col h-full">
-                                        <div className="px-6 py-4 bg-gray-100/50 border-b border-border flex items-center justify-between">
-                                            <h4 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-normal">Live Email Preview</h4>
-                                            <Badge className="bg-white text-muted-foreground border-border text-[9px]">Branded: Kuba</Badge>
+                                    <div className="p-0 bg-muted/10 rounded-2xl border border-border/60 overflow-hidden flex flex-col h-full">
+                                        <div className="px-6 py-4 bg-muted/30 border-b border-border/60 flex items-center justify-between">
+                                            <h4 className="text-[11px] font-bold text-muted-foreground">Live Delivery Preview</h4>
+                                            <Badge className="bg-white text-muted-foreground border-border text-[9px] font-bold">Branded Output</Badge>
                                         </div>
                                         <div className="flex-1 overflow-y-auto p-8 bg-card">
                                             <div className="max-w-md mx-auto space-y-8">
@@ -227,11 +229,11 @@ export default function AdminEmailTemplatesPage() {
 
                                                 {/* Footer Component */}
                                                 <div className="pt-12 border-t border-border text-center space-y-2">
-                                                    <p className="text-[10px] text-muted-foreground font-medium">
-                                                        © {new Date().getFullYear()} Kuba. All rights reserved.
+                                                    <p className="text-[10px] text-muted-foreground font-bold">
+                                                        © {new Date().getFullYear()} Kuba Architecture. All rights reserved.
                                                     </p>
-                                                    <p className="text-[9px] text-sky-500 font-bold uppercase tracking-normal cursor-pointer hover:underline">
-                                                        Unsubscribe
+                                                    <p className="text-[10px] text-primary font-bold cursor-pointer hover:underline">
+                                                        Unsubscribe Preferences
                                                     </p>
                                                 </div>
                                             </div>
@@ -241,14 +243,15 @@ export default function AdminEmailTemplatesPage() {
                             </div>
                         </div>
                     </motion.div>
+
                 ) : (
                     <div className="flex-1 flex flex-col items-center justify-center p-20 text-center space-y-4">
-                        <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center text-muted-foreground">
+                        <div className="w-24 h-24 bg-muted rounded-[2rem] flex items-center justify-center text-muted-foreground/30 shadow-inner">
                             <Mail className="w-10 h-10" />
                         </div>
-                        <h3 className="text-lg font-semibold text-muted-foreground uppercase tracking-tight leading-none">Select a template</h3>
-                        <p className="max-w-[240px] text-[10px] font-bold text-muted-foreground uppercase tracking-normal leading-relaxed">
-                            Choose an automated automated flow from the list to begin designing its content.
+                        <h3 className="text-xl font-bold text-foreground tracking-tight">Select Communication Dispatch</h3>
+                        <p className="max-w-[280px] text-xs font-bold text-muted-foreground leading-relaxed">
+                            Choose an automated workflow from the audit list to begin designing its content architecture.
                         </p>
                     </div>
                 )}

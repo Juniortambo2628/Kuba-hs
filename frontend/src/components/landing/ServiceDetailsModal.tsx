@@ -150,7 +150,7 @@ export function ServiceDetailsModal({ isOpen, onClose, serviceId }: ServiceDetai
                   </div>
                   <div className="text-right">
                     <p className="text-2xl font-bold text-gray-900 dark:text-white">KES {service.base_price.toLocaleString()}</p>
-                    <p className="text-[10px] font-semibold text-gray-400 tracking-widest">{service.pricing_type}</p>
+                    <p className="text-[10px] font-semibold text-gray-400 tracking-tight">{service.pricing_type}</p>
                   </div>
                 </div>
               </DialogHeader>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import axiosInstance from "@/lib/axios";
 import { Card, CardContent } from "@/components/ui/card";
@@ -27,9 +28,10 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
 import { BookingDetailDialog } from "@/components/booking/BookingDetailDialog";
 import { MetricCard } from "@/components/dashboard/MetricCard";
+import { BookingCard } from "@/components/shared/BookingCard";
+import { DashboardEmptyState } from "@/components/shared/DashboardEmptyState";
 
 import { Booking, User, LoyaltyTier } from "@/types";
 
@@ -126,12 +128,12 @@ export default function ClientOverview() {
       {/* Welcome Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">Welcome to Kuba, {user?.name?.split(' ')[0]}</h1>
-            <p className="text-sm text-muted-foreground mt-1">Your home service requests are being prioritized.</p>
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">Welcome back, {user?.name?.split(' ')[0]}</h1>
+            <p className="text-sm text-muted-foreground mt-1">We're helping you find the best pros for your home.</p>
         </div>
         <Link href="/services">
           <Button className="bg-foreground text-background hover:bg-muted hover:text-foreground rounded-xl font-semibold px-6 shadow-md transition-all gap-2">
-            Request New Service
+            Book a Service
             <Plus className="w-4 h-4" />
           </Button>
         </Link>
@@ -145,9 +147,9 @@ export default function ClientOverview() {
         className="grid grid-cols-1 md:grid-cols-3 gap-6"
       >
         {[
-          { label: "Active Requests", value: stats?.active_bookings || 0, icon: Clock, trend: "On schedule" },
-          { label: "Service History", value: stats?.total_bookings || 0, icon: CheckCircle, trend: "Total completed" },
-          { label: "Membership Tier", value: stats?.membership_tier?.name || "Member", icon: Star, trend: stats?.membership_tier ? "Status active" : "Join rewards" }
+          { label: "Current Jobs", value: stats?.active_bookings || 0, icon: Clock, trend: "On schedule" },
+          { label: "Past Jobs", value: stats?.total_bookings || 0, icon: CheckCircle, trend: "Total completed" },
+          { label: "My Level", value: stats?.membership_tier?.name || "Member", icon: Star, trend: stats?.membership_tier ? "Status active" : "Join rewards" }
         ].map((stat, i) => (
           <MetricCard 
             key={i} 
@@ -163,65 +165,50 @@ export default function ClientOverview() {
         {/* Main Content: Upcoming Services */}
         <div className="lg:col-span-2 space-y-6">
           <div className="flex items-center justify-between px-2">
-             <h2 className="text-lg font-bold text-foreground tracking-tight">Next Appointments</h2>
-             <Link href="/dashboard/client/bookings" className="text-[10px] font-semibold text-muted-foreground hover:text-foreground transition-colors uppercase tracking-normal">
-                View All History
+             <h2 className="text-lg font-bold text-foreground tracking-tight">Upcoming Jobs</h2>
+             <Link href="/dashboard/client/bookings" className="text-[10px] font-semibold text-muted-foreground hover:text-foreground transition-colors capitalize tracking-normal">
+                See All
              </Link>
           </div>
 
           {upcoming.length > 0 ? (
-            <div className="grid gap-4">
-              {upcoming.map((booking) => (
-                <Card key={booking.id} className="border border-border bg-card/50 backdrop-blur-md hover:shadow-md transition-all group overflow-hidden flex flex-col cursor-pointer border-none shadow-sm">
-                  <CardContent className="p-5 flex-1 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div className="flex gap-4">
-                        <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center text-foreground border border-border group-hover:border-primary/50 transition-all shrink-0">
-                             <div className="text-center">
-                                <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground leading-none">{new Date(booking.scheduled_date).toLocaleString('default', { month: 'short' })}</p>
-                                <p className="text-lg font-bold text-foreground leading-none mt-1">{new Date(booking.scheduled_date).getDate()}</p>
-                             </div>
-                        </div>
-                        <div className="space-y-1">
-                            <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors capitalize">
-                                {booking.service?.name}
-                            </h3>
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-[10px] text-muted-foreground uppercase tracking-wider">
-                                <span className="flex items-center gap-1.5"><Clock className="w-3 h-3" /> {booking.scheduled_time || 'Pending Time'}</span>
-                                <span className="flex items-center gap-1.5"><MapPin className="w-3 h-3" /> {booking.address?.city || 'Location TBD'}</span>
-                            </div>
-                        </div>
-                    </div>
+              upcoming.map((booking) => (
+                <BookingCard
+                  key={booking.id}
+                  booking={booking}
+                  type="client"
+                  onClick={() => {
+                    setSelectedBooking(booking);
+                    setIsDetailOpen(true);
+                  }}
+                  actions={
                     <Button 
                         onClick={(e) => {
                             e.stopPropagation();
                             setSelectedBooking(booking);
                             setIsDetailOpen(true);
                         }}
-                        className="rounded-xl font-semibold text-[9px] tracking-normal border-border text-foreground hover:text-background hover:bg-foreground hover:border-foreground transition-all ml-auto" 
+                        className="rounded-xl font-semibold text-[9px] tracking-normal border-border text-foreground hover:text-background hover:bg-foreground hover:border-foreground transition-all" 
                         variant="outline"
                         size="sm"
                     >
-                        MANAGE
+                        Manage
                     </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                  }
+                />
+              ))
           ) : (
-            <Card className="border border-dashed border-border min-h-[300px] flex items-center justify-center flex-col gap-6 text-center bg-transparent shadow-none">
-                <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center text-muted-foreground">
-                    <Briefcase className="w-8 h-8 opacity-50" />
-                </div>
-                <div className="space-y-2">
-                    <p className="text-[10px] font-semibold text-foreground uppercase tracking-normal">No service requests yet</p>
-                    <p className="text-[11px] text-muted-foreground">Professional help is just a few clicks away.</p>
-                </div>
+            <DashboardEmptyState
+              icon={Briefcase}
+              title="No jobs yet"
+              description="Professional help is just a few clicks away."
+            >
                 <Link href="/services">
-                    <Button className="h-10 bg-foreground text-background hover:bg-muted hover:text-foreground transition-all duration-300 rounded-xl flex items-center justify-center font-semibold px-6 shadow-md shadow-foreground/10 border border-border tracking-tight uppercase text-xs">
-                        Browse Services
+                    <Button className="h-10 bg-foreground text-background hover:bg-muted hover:text-foreground transition-all duration-300 rounded-xl flex items-center justify-center font-semibold px-6 shadow-md shadow-foreground/10 border border-border tracking-tight capitalize text-xs">
+                        Search Services
                     </Button>
                 </Link>
-            </Card>
+            </DashboardEmptyState>
           )}
         </div>
 
@@ -231,7 +218,7 @@ export default function ClientOverview() {
                 <CardContent className="p-6 relative z-10 space-y-6">
                      <div className="flex justify-between items-start">
                         <div className="space-y-1">
-                            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Loyalty Status</p>
+                            <p className="text-[10px] font-semibold text-muted-foreground capitalize tracking-wide">Rewards</p>
                              <h3 className="text-xl font-bold tracking-tight text-foreground">{user?.membership_tier?.name || stats?.membership_tier?.name || 'Explorer'}</h3>
                         </div>
                         <div className="p-3 bg-muted rounded-2xl">
@@ -242,7 +229,7 @@ export default function ClientOverview() {
                     <div className="space-y-4">
                         <div className="flex justify-between items-end">
                             <div className="space-y-1">
-                                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Points Available</p>
+                                <p className="text-[10px] font-semibold text-muted-foreground capitalize tracking-wide">My Points</p>
                                 <p className="text-3xl font-semibold tabular-nums text-foreground">{stats?.loyalty_points || 0}</p>
                             </div>
                             <TrendingUp className="w-6 h-6 text-muted-foreground opacity-50 mb-1" />
@@ -253,7 +240,7 @@ export default function ClientOverview() {
                                 style={{ width: `${Math.min(100, ((stats?.loyalty_points || 0) % 1000) / 10)}%` }}
                             ></div>
                         </div>
-                        <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-normal text-right">
+                        <p className="text-[9px] font-semibold text-muted-foreground capitalize tracking-normal text-right">
                             {1000 - ((stats?.loyalty_points || 0) % 1000)} Points to next reward
                         </p>
                     </div>
@@ -261,9 +248,9 @@ export default function ClientOverview() {
                     <Button 
                         onClick={handleRedeem}
                         disabled={isRedeeming}
-                        className="w-full h-10 bg-foreground text-background hover:bg-muted hover:text-foreground transition-all duration-300 rounded-xl font-semibold text-[10px] tracking-normal uppercase"
+                        className="w-full h-10 bg-foreground text-background hover:bg-muted hover:text-foreground transition-all duration-300 rounded-xl font-semibold text-[10px] tracking-normal capitalize"
                     >
-                        {isRedeeming ? <Loader2 className="w-4 h-4 animate-spin" /> : 'REDEEM REWARDS'}
+                        {isRedeeming ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Get My Reward'}
                     </Button>
                 </CardContent>
            </Card>

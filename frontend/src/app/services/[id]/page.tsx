@@ -5,8 +5,8 @@ import { useParams } from "next/navigation";
 import axiosInstance from "@/lib/axios";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { PageHero } from "@/components/shared/PageHero";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { HighImpactHero } from "@/components/shared/HighImpactHero";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
@@ -101,76 +101,64 @@ export default function CategoryDetailPage() {
         <main className="min-h-screen bg-white dark:bg-[#0B0F19] selection:bg-blue-500/30 transition-colors duration-300">
             <Navbar />
             
-            <section className="relative h-[400px] flex items-center justify-center overflow-hidden">
-                <div className="absolute inset-0 z-0">
-                    <img src={bgImage} alt={category.name} className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-transparent dark:from-[#0B0F19] dark:via-[#0B0F19]/60 dark:to-transparent" />
+            <HighImpactHero
+                title={category.name}
+                subtitle={category.description || `Discover specialized ${category.name.toLowerCase()} solutions tailored for your requirements.`}
+                breadcrumbs={[
+                    { label: "Services", href: "/services" },
+                    { label: category.name }
+                ]}
+                bgImage={bgImage}
+            >
+                <div className="flex flex-wrap gap-4 mt-2">
+                    <div className="px-4 py-2 bg-primary/10 border border-primary/20 rounded-xl flex items-center gap-2">
+                        <ShieldCheck className="w-4 h-4 text-primary" />
+                        <span className="text-[10px] font-bold text-primary tracking-widest capitalize">Verified Ecosystem</span>
+                    </div>
                 </div>
-                
-                <div className="relative z-10 text-center space-y-6 max-w-4xl px-4">
-                    <motion.div 
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="mx-auto w-24 h-24 rounded-3xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center mb-8"
-                    >
-                        {Icon}
-                    </motion.div>
-                    <motion.h1 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-5xl md:text-7xl font-semibold text-white tracking-tighter"
-                    >
-                        {category.name}
-                    </motion.h1>
-                    <motion.p 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 }}
-                        className="text-xl text-gray-300 font-medium max-w-2xl mx-auto"
-                    >
-                        {category.description}
-                    </motion.p>
-                </div>
-            </section>
+            </HighImpactHero>
 
-            <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            <section className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
                     {/* Services Column */}
-                    <div className="lg:col-span-2 space-y-8">
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-3xl font-semibold text-foreground dark:text-white tracking-tighter leading-none">
-                                Browse <span className="text-sky-600">{category.name}</span> Services
-                            </h2>
-                            <span className="bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 font-semibold text-[10px] px-3 py-1 rounded-full tracking-widest border border-sky-100 dark:border-sky-500/20">
-                                {category.services?.length || 0} Specializations Available
+                    <div className="lg:col-span-2 space-y-12">
+                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                            <div>
+                                <h2 className="text-3xl font-bold tracking-tight text-foreground italic flex items-center gap-3">
+                                   <div className="w-8 h-1 bg-primary rounded-full hidden md:block" /> {category.name} <span className="text-muted-foreground font-medium NOT-italic">Specializations</span>
+                                </h2>
+                                <p className="text-muted-foreground font-medium text-sm mt-2 font-sans">Select a specific service profile to view active professionals in your region.</p>
+                            </div>
+                            <span className="shrink-0 bg-primary/5 text-primary font-bold text-[10px] px-4 py-2 rounded-xl tracking-widest border border-primary/10 capitalize">
+                                {category.services?.length || 0} Domains Available
                             </span>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             {category.services?.map((service, i) => (
                                 <motion.div 
                                     key={service.id}
                                     initial={{ opacity: 0, y: 20 }}
                                     whileInView={{ opacity: 1, y: 0 }}
                                     viewport={{ once: true }}
-                                    transition={{ delay: i * 0.1 }}
+                                    transition={{ delay: i * 0.05 }}
                                 >
                                     <Link href={`/providers?service=${service.id}`} className="group block h-full">
-                                        <Card className="h-full bg-gray-50 dark:bg-white/5 border-none shadow-sm hover:shadow-xl hover:bg-white dark:hover:bg-white/10 transition-all duration-500 rounded-[2rem] overflow-hidden">
-                                            <CardContent className="p-8 space-y-4 flex flex-col justify-between h-full">
-                                                <div className="space-y-3">
-                                                    <div className="w-12 h-12 rounded-2xl bg-white dark:bg-white/5 shadow-sm flex items-center justify-center group-hover:scale-110 group-hover:bg-sky-600 transition-all duration-500">
-                                                        <Plus className="w-5 h-5 text-sky-600 group-hover:text-white transition-colors" />
+                                        <Card className="h-full bg-white dark:bg-black border border-border/40 shadow-sm hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 rounded-[2.5rem] overflow-hidden group-hover:border-primary/30">
+                                            <CardContent className="p-8 space-y-6 flex flex-col justify-between h-full">
+                                                <div className="space-y-4">
+                                                    <div className="w-14 h-14 rounded-2xl bg-slate-50 dark:bg-zinc-900 border border-border/40 shadow-sm flex items-center justify-center group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all duration-500">
+                                                        <Plus className="w-6 h-6 text-primary group-hover:text-white" />
                                                     </div>
-                                                    <h3 className="text-xl font-semibold text-foreground dark:text-white group-hover:text-sky-600 transition-colors leading-tight">
+                                                    <h3 className="text-xl font-bold tracking-tight group-hover:text-primary transition-colors leading-tight">
                                                         {service.name}
                                                     </h3>
-                                                    <p className="text-gray-500 dark:text-gray-400 text-sm font-medium leading-relaxed">
+                                                    <p className="text-muted-foreground text-sm font-medium leading-relaxed italic">
                                                         {service.description}
                                                     </p>
                                                 </div>
-                                                <div className="pt-4 flex items-center text-xs font-semibold text-sky-600 dark:text-sky-400 tracking-widest group-hover:translate-x-2 transition-transform duration-500">
-                                                    Find active providers <ArrowRight className="ml-2 w-4 h-4" />
+                                                <div className="pt-6 border-t border-border/10 flex items-center text-[10px] font-bold text-primary tracking-widest group-hover:translate-x-2 transition-transform duration-500 capitalize">
+                                                    Explore Professionals <ArrowRight className="ml-2 w-4 h-4" />
                                                 </div>
                                             </CardContent>
                                         </Card>
@@ -181,56 +169,63 @@ export default function CategoryDetailPage() {
                     </div>
 
                     {/* Sidebar / CTA Column */}
-                    <div className="space-y-8">
-                        <Card className="bg-primary border-none rounded-[2.5rem] p-10 text-white relative overflow-hidden group">
-                            <div className="absolute -top-20 -right-20 w-64 h-64 bg-sky-600/30 rounded-full blur-[100px] group-hover:bg-sky-600/50 transition-all duration-1000"></div>
-                            <div className="relative z-10 space-y-6">
-                                <ShieldCheck className="w-12 h-12 text-sky-400" />
-                                <h3 className="text-2xl font-semibold tracking-tighter italic">Why trust <span className="text-sky-400">KUBA</span>?</h3>
-                                <div className="space-y-4">
+                    <div className="space-y-10">
+                        <div className="bg-primary dark:bg-indigo-950/40 border border-primary/20 rounded-[2.5rem] p-10 text-white relative overflow-hidden group shadow-2xl shadow-primary/20">
+                            <div className="absolute -top-32 -right-32 w-80 h-80 bg-white/10 rounded-full blur-[100px] group-hover:bg-white/20 transition-all duration-1000"></div>
+                            <div className="relative z-10 space-y-8">
+                                <div className="p-4 bg-white/10 backdrop-blur-md rounded-2xl w-fit border border-white/20">
+                                   <ShieldCheck className="w-8 h-8 text-white" />
+                                </div>
+                                <h3 className="text-3xl font-bold tracking-tighter leading-tight italic">Consolidated <span className="text-white/60">Professional</span> Ecosystem.</h3>
+                                <div className="space-y-4 pt-4">
                                     {[
-                                        "Vetted & Verified Professionals",
-                                        "Secure Integrated Payments",
-                                        "24/7 Priority Support",
-                                        "100% Satisfaction Guarantee"
+                                        "Industry Verified Expertise",
+                                        "Unified Transaction Layer",
+                                        "Institutional Compliance",
+                                        "Strategic Support Framework"
                                     ].map((benefit, i) => (
                                         <div key={i} className="flex items-center gap-3">
-                                            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                                            <span className="text-sm font-bold text-gray-300">{benefit}</span>
+                                            <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center border border-white/20">
+                                               <CheckCircle2 className="w-3 h-3 text-white" />
+                                            </div>
+                                            <span className="text-xs font-bold text-white/80 tracking-tight">{benefit}</span>
                                         </div>
                                     ))}
                                 </div>
-                                <Button className="w-full h-14 bg-white text-foreground hover:bg-sky-50 hover:scale-[1.02] transition-all rounded-2xl font-semibold tracking-widest text-[11px] mt-4">
-                                    Become a Provider
+                                <Button className="w-full h-14 bg-white text-primary hover:bg-slate-50 hover:scale-[1.02] transition-all rounded-2xl font-bold tracking-widest text-[10px] capitalize shadow-xl mt-6">
+                                    Partner with Kuba
                                 </Button>
                             </div>
-                        </Card>
+                        </div>
 
-                        <div className="bg-gray-50 dark:bg-white/5 rounded-[2.5rem] p-8 border border-border dark:border-white/10 space-y-6">
-                            <h4 className="text-sm font-semibold text-foreground dark:text-white tracking-widest flex items-center gap-2">
-                                <User className="w-4 h-4 text-sky-600" /> Popular in this category
+                        <div className="bg-slate-50 dark:bg-zinc-900 rounded-[2.5rem] p-8 border border-border/40 space-y-8">
+                            <h4 className="text-[11px] font-bold text-muted-foreground tracking-widest capitalize flex items-center gap-2">
+                                <User className="w-4 h-4 text-primary" /> Emerging Talent
                             </h4>
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-between p-4 bg-white dark:bg-white/5 rounded-2xl border border-border dark:border-white/5">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse"></div>
-                                        <div>
-                                            <p className="text-sm font-bold text-foreground dark:text-white">Alex Johnson</p>
-                                            <div className="flex text-amber-500"><Star className="w-3 h-3 fill-current" /><Star className="w-3 h-3 fill-current" /><Star className="w-3 h-3 fill-current" /><Star className="w-3 h-3 fill-current" /><Star className="w-3 h-3 fill-current" /></div>
+                            <div className="space-y-4">
+                                {[
+                                    { name: "Alex Johnson", rating: 5, status: "PLATINUM" },
+                                    { name: "Sarah Miller", rating: 4, status: "VERIFIED" }
+                                ].map((pro, i) => (
+                                    <div key={i} className="flex items-center justify-between p-5 bg-white dark:bg-black rounded-2xl border border-border/40 hover:border-primary/20 transition-colors shadow-sm">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center font-bold text-xs text-muted-foreground border border-border/20">
+                                               {pro.name.charAt(0)}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold tracking-tight text-foreground">{pro.name}</p>
+                                                <div className="flex gap-0.5 text-amber-500">
+                                                    {Array.from({ length: pro.rating }).map((_, j) => (
+                                                        <Star key={j} className="w-3 h-3 fill-current" />
+                                                    ))}
+                                                </div>
+                                            </div>
                                         </div>
+                                        <span className={`text-[8px] font-bold tracking-widest px-2.5 py-1 rounded-lg border ${i === 0 ? 'bg-indigo-50 text-indigo-600 border-indigo-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'}`}>
+                                            {pro.status}
+                                        </span>
                                     </div>
-                                    <span className="text-[10px] font-semibold text-emerald-500 bg-emerald-50 px-2 py-1 rounded-lg">VERIFIED</span>
-                                </div>
-                                <div className="flex items-center justify-between p-4 bg-white dark:bg-white/5 rounded-2xl border border-border dark:border-white/5">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse"></div>
-                                        <div>
-                                            <p className="text-sm font-bold text-foreground dark:text-white">Sarah Miller</p>
-                                            <div className="flex text-amber-500"><Star className="w-3 h-3 fill-current" /><Star className="w-3 h-3 fill-current" /><Star className="w-3 h-3 fill-current" /><Star className="w-3 h-3 fill-current" /><Star className="w-3 h-3 fill-current" /></div>
-                                        </div>
-                                    </div>
-                                    <span className="text-[10px] font-semibold text-emerald-500 bg-emerald-50 px-2 py-1 rounded-lg">VERIFIED</span>
-                                </div>
+                                ))}
                             </div>
                         </div>
                     </div>

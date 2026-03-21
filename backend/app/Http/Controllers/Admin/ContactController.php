@@ -5,15 +5,12 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\ContactMessage;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 
 class ContactController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return Inertia::render('Admin/Contact/Index', [
-            'messages' => ContactMessage::latest()->paginate(10)
-        ]);
+        return response()->json(ContactMessage::latest()->paginate(10));
     }
 
     public function show(ContactMessage $contactMessage)
@@ -22,9 +19,7 @@ class ContactController extends Controller
             $contactMessage->update(['status' => 'read']);
         }
 
-        return Inertia::render('Admin/Contact/Show', [
-            'message' => $contactMessage
-        ]);
+        return response()->json($contactMessage);
     }
 
     public function updateStatus(Request $request, ContactMessage $contactMessage)
@@ -35,12 +30,15 @@ class ContactController extends Controller
 
         $contactMessage->update($validated);
 
-        return back()->with('success', 'Message status updated.');
+        return response()->json([
+            'message' => 'Message status updated.', 
+            'contactMessage' => $contactMessage
+        ]);
     }
 
     public function destroy(ContactMessage $contactMessage)
     {
         $contactMessage->delete();
-        return redirect()->route('admin.contact.index')->with('success', 'Message deleted.');
+        return response()->json(['message' => 'Message deleted.']);
     }
 }

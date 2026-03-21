@@ -19,7 +19,7 @@ class FeedbackController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function(\Illuminate\Database\Eloquent\Builder $q) use ($search) {
                 $q->where('comment', 'like', "%{$search}%")
                   ->orWhereHas('customer', function($sub) use ($search) {
                       $sub->where('first_name', 'like', "%{$search}%")
@@ -35,6 +35,23 @@ class FeedbackController extends Controller
                 'avg' => round(Review::avg('rating') ?: 0, 1),
                 'poor_ratings' => Review::where('rating', '<=', 2)->count(),
             ]
+        ]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:published,hidden,resolved'
+        ]);
+
+        $feedback = Review::findOrFail($id);
+        $feedback->update([
+            'status' => $request->status
+        ]);
+
+        return response()->json([
+            'message' => 'Feedback status updated successfully',
+            'data' => new ReviewResource($feedback)
         ]);
     }
 }

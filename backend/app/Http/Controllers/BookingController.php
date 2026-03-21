@@ -14,6 +14,9 @@ use App\Models\User;
 use App\Models\ServiceCategory;
 use App\Models\Service;
 use Inertia\Response;
+use App\Http\Requests\StoreBookingRequest;
+use App\Http\Requests\UpdateBookingStatusRequest;
+use App\Services\BookingService;
 
 class BookingController extends Controller
 {
@@ -22,6 +25,7 @@ class BookingController extends Controller
      */
     public function index(Request $request): Response
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
         
         if ($user->role === 'provider') {
@@ -48,76 +52,15 @@ class BookingController extends Controller
     /**
      * Store a newly created booking in storage.
      */
-    public function store(Request $request)
+    public function store(StoreBookingRequest $request, BookingService $bookingService)
     {
-        $validated = $request->validate([
-            'provider_id' => 'required|exists:providers,id',
-            'service_id' => 'required|exists:services,id',
-            'scheduled_date' => 'required|date|after:now',
-            'description' => 'nullable|string',
-            'service_type' => 'required|in:residential,commercial,large_scale',
-            'quantity' => 'required|integer|min:1',
-            'images' => 'nullable|array',
-            'images.*' => 'image|max:5120', // 5MB limit
-            'address_id' => 'nullable|exists:addresses,id',
-            // If new address is provided
-            'new_address' => 'required_without:address_id|array',
-            'new_address.street_address' => 'required_with:new_address',
-            'new_address.city' => 'required_with:new_address',
-            'new_address.state' => 'required_with:new_address',
-            'new_address.postal_code' => 'required_with:new_address',
-        ]);
-
+        $validated = $request->validated();
+        /** @var \App\Models\User $user */
         $user = Auth::user();
+        
+        $images = $request->hasFile('images') ? $request->file('images') : null;
 
-        // Handle Address
-        $addressId = $validated['address_id'] ?? null;
-        if (!$addressId && isset($validated['new_address'])) {
-            $address = Address::create([
-                'user_id' => $user->id,
-                'address_type' => $validated['service_type'] === 'residential' ? 'residential' : 'business',
-                'street_address' => $validated['new_address']['street_address'],
-                'city' => $validated['new_address']['city'],
-                'state' => $validated['new_address']['state'],
-                'postal_code' => $validated['new_address']['postal_code'],
-                'country' => 'USA', // default for now
-                'is_default' => true,
-            ]);
-            $addressId = $address->id;
-        }
-
-        // Get Service Price
-        $providerService = ProviderService::where('provider_id', $validated['provider_id'])
-            ->where('service_id', $validated['service_id'])
-            ->firstOrFail();
-
-        $booking = Booking::create([
-            'customer_id' => $user->id,
-            'provider_id' => $validated['provider_id'],
-            'service_id' => $validated['service_id'],
-            'booking_number' => 'BK-' . strtoupper(Str::random(8)),
-            'scheduled_date' => $validated['scheduled_date'],
-            'status' => 'pending',
-            'payment_status' => 'pending',
-            'address_id' => $addressId,
-            'description' => $validated['description'] ?? null,
-            'service_type' => $validated['service_type'],
-            'quantity' => $validated['quantity'],
-            'estimated_price' => $providerService->base_price * $validated['quantity'],
-        ]);
-
-        // Handle Images
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $image) {
-                $booking->addMedia($image)->toMediaCollection('issue_images');
-            }
-        }
-
-        // Notify Provider
-        $booking->provider->user->notify(new \App\Notifications\BookingStatusUpdated($booking));
-
-        // Notify Customer (Confirmation)
-        $user->notify(new \App\Notifications\BookingStatusUpdated($booking));
+        $bookingService->createBooking($user, $validated, $images);
 
         return redirect()->route('dashboard')->with('success', 'Booking request sent successfully!');
     }
@@ -125,39 +68,12 @@ class BookingController extends Controller
     /**
      * Update the specified booking status.
      */
-    public function updateStatus(Request $request, Booking $booking)
+    public function updateStatus(UpdateBookingStatusRequest $request, Booking $booking, BookingService $bookingService)
     {
-        $validated = $request->validate([
-            'status' => 'required|in:confirmed,cancelled,completed',
-        ]);
-
+        $validated = $request->validated();
         $user = Auth::user();
 
-        // Authorization check
-        if ($user->id !== $booking->provider_id && $user->id !== $booking->customer_id) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        // Provider can confirm, cancel, or complete
-        if ($user->id === $booking->provider_id) {
-            // Add specific logic if needed (e.g., cannot confirm if already cancelled)
-        }
-
-        // Customer can only cancel
-        if ($user->id === $booking->customer_id && $validated['status'] !== 'cancelled') {
-            abort(403, 'Customers can only cancel bookings.');
-        }
-
-        $booking->update([
-            'status' => $validated['status'],
-        ]);
-
-        // Notify the OTHER party
-        if ($user->id === $booking->provider_id) {
-            $booking->customer->notify(new \App\Notifications\BookingStatusUpdated($booking));
-        } elseif ($user->id === $booking->customer_id) {
-            $booking->provider->user->notify(new \App\Notifications\BookingStatusUpdated($booking));
-        }
+        $bookingService->updateBookingStatus($booking, $user, $validated['status']);
 
         return back()->with('success', 'Booking status updated successfully.');
     }

@@ -10,11 +10,23 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, FileText, Search, ShieldCheck, Zap, PenTool, Calendar, User as UserIcon, Eye, Trash2, Edit3, Loader2, Image as ImageIcon } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Plus, FileText, ShieldCheck, Zap, PenTool, Calendar, User as UserIcon, Trash2, Edit3, Loader2, Image as ImageIcon } from "lucide-react";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { DataToolbar } from "@/components/shared/DataToolbar";
+import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
 
 interface Post {
  id: string;
@@ -97,7 +109,6 @@ export default function AdminBlog() {
  };
 
  const handleDelete = async (id: string) => {
-  if (!confirm("Are you sure you want to delete this article?")) return;
   try {
    await axiosInstance.delete(`/api/admin/blog/${id}`);
    toast.success("Article deleted");
@@ -123,36 +134,30 @@ export default function AdminBlog() {
  return (
   <div className="max-w-[1400px] mx-auto space-y-10 pb-12">
    {/* Blog Header */}
-   <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 text-glow-red">
-    <div className="space-y-2">
-      <h1 className="text-4xl md:text-5xl font-semibold text-foreground tracking-tight uppercase">
-        Editorial <span className="text-primary">Journal</span>
-      </h1>
-      <p className="text-muted-foreground font-bold text-sm flex items-center gap-2">
-        <ShieldCheck className="w-4 h-4 text-muted-foreground" />
-        Authored content and marketplace insights for the Kuba community.
-      </p>
-    </div>
+   <DashboardPageHeader 
+    title="Editorial Journal" 
+    subtitle="Authored content and marketplace insights for the community."
+   >
     <Button 
      onClick={openCreate}
-     className="h-14 bg-primary hover:bg-primary text-white rounded-2xl font-semibold px-10 shadow-xl shadow-gray-100 transition-all uppercase tracking-normal text-[11px] flex items-center gap-2 group"
+     className="h-12 bg-primary hover:bg-black text-white rounded-2xl font-bold px-8 shadow-md transition-all flex items-center gap-2 group"
     >
       <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
       Compose New Article
     </Button>
-   </div>
+   </DashboardPageHeader>
 
    {/* Create/Edit Dialog */}
    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
     <DialogContent className="sm:max-w-2xl rounded-3xl p-6 bg-white outline-none border-none shadow-2xl">
      <DialogHeader>
-      <DialogTitle className="text-xl font-semibold uppercase text-foreground">
+      <DialogTitle className="text-xl font-bold text-foreground">
        {selectedPost ? "Edit Article" : "New Article"}
       </DialogTitle>
      </DialogHeader>
      <div className="space-y-5 py-4">
       <div className="space-y-2">
-       <Label className="text-xs font-bold text-muted-foreground uppercase tracking-normal">Title</Label>
+       <Label className="text-xs font-bold text-muted-foreground tracking-tight">Title</Label>
        <Input
         className="bg-muted border-none rounded-xl h-14 font-bold"
         value={form.title}
@@ -161,35 +166,34 @@ export default function AdminBlog() {
        />
       </div>
       <div className="space-y-2">
-       <Label className="text-xs font-bold text-muted-foreground uppercase tracking-normal">Excerpt</Label>
+       <Label className="text-xs font-bold text-muted-foreground tracking-tight">Excerpt</Label>
        <Input
-        className="bg-muted border-none rounded-xl h-14 font-medium"
+        className="bg-muted border-none rounded-xl h-14 font-bold"
         value={form.excerpt}
         onChange={(e) => setForm({ ...form, excerpt: e.target.value })}
         placeholder="Brief summary..."
        />
       </div>
       <div className="space-y-2">
-       <Label className="text-xs font-bold text-muted-foreground uppercase tracking-normal">Content</Label>
+       <Label className="text-xs font-bold text-muted-foreground tracking-tight">Content</Label>
        <Textarea
-        className="bg-muted border-none rounded-xl min-h-[200px] font-medium"
+        className="bg-muted border-none rounded-xl min-h-[200px] font-bold"
         value={form.content}
         onChange={(e) => setForm({ ...form, content: e.target.value })}
         placeholder="Write your article content..."
        />
       </div>
       <div className="flex items-center justify-between p-4 bg-muted rounded-xl">
-       <Label className="text-xs font-bold text-muted-foreground uppercase tracking-normal">Publish immediately</Label>
+       <Label className="text-xs font-bold text-muted-foreground tracking-tight">Publish immediately</Label>
        <Switch
         checked={form.is_published}
         onCheckedChange={(checked) => setForm({ ...form, is_published: checked })}
-        className="data-[state=checked]:bg-muted0"
        />
       </div>
       <Button
        onClick={handleSave}
        disabled={isSubmitting || !form.title || !form.content}
-       className="w-full h-14 rounded-xl bg-primary hover:bg-black text-white font-semibold uppercase tracking-normal mt-4"
+       className="w-full h-14 rounded-xl bg-primary hover:bg-black text-white font-bold mt-4"
       >
        {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : selectedPost ? "Update Article" : "Publish Article"}
       </Button>
@@ -218,11 +222,11 @@ export default function AdminBlog() {
       <Table>
        <TableHeader>
         <TableRow className="hover:bg-transparent border-border">
-         <TableHead className="pl-10 h-16 uppercase text-[10px] font-semibold tracking-wide text-muted-foreground">Article Identity</TableHead>
-         <TableHead className="h-16 uppercase text-[10px] font-semibold tracking-wide text-muted-foreground">Author</TableHead>
-         <TableHead className="h-16 uppercase text-[10px] font-semibold tracking-wide text-muted-foreground">Status</TableHead>
-         <TableHead className="h-16 uppercase text-[10px] font-semibold tracking-wide text-muted-foreground">Publish Date</TableHead>
-         <TableHead className="h-16 pr-10 text-right uppercase text-[10px] font-semibold tracking-wide text-muted-foreground">Governance</TableHead>
+         <TableHead className="pl-10 h-16 text-[11px] font-bold tracking-tight text-muted-foreground">Article Identity</TableHead>
+         <TableHead className="h-16 text-[11px] font-bold tracking-tight text-muted-foreground">Author</TableHead>
+         <TableHead className="h-16 text-[11px] font-bold tracking-tight text-muted-foreground">Status</TableHead>
+         <TableHead className="h-16 text-[11px] font-bold tracking-tight text-muted-foreground">Publish Date</TableHead>
+         <TableHead className="h-16 pr-10 text-right text-[11px] font-bold tracking-tight text-muted-foreground">Governance</TableHead>
         </TableRow>
        </TableHeader>
        <TableBody>
@@ -238,23 +242,23 @@ export default function AdminBlog() {
                )}
              </div>
              <div className="space-y-1">
-               <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors tracking-tight uppercase line-clamp-1">{post.title}</p>
-               <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-normal ">/{post.slug}</p>
+               <p className="text-sm font-bold text-foreground group-hover:text-primary transition-colors tracking-tight line-clamp-1">{post.title}</p>
+               <p className="text-[10px] font-bold text-muted-foreground tracking-tight">/{post.slug}</p>
              </div>
            </div>
           </TableCell>
           <TableCell className="py-6">
-           <div className="flex items-center gap-2 text-xs font-semibold text-foreground opacity-60">
+           <div className="flex items-center gap-2 text-xs font-bold text-foreground opacity-60">
              <UserIcon className="w-3.5 h-3.5" />
              {post.author?.name || "Kuba System"}
            </div>
           </TableCell>
           <TableCell className="py-6">
-           <Badge variant="outline" className={`rounded-full px-3 py-1 font-semibold text-[8px] uppercase tracking-normal border ${post.is_published ? "bg-muted text-foreground border-border" : "bg-muted text-muted-foreground"}`}>
+           <Badge variant="outline" className={`rounded-full px-3 py-1 font-bold text-[9px] tracking-tight border ${post.is_published ? "bg-muted text-foreground border-border" : "bg-muted text-muted-foreground"}`}>
              {post.is_published ? "Published" : "Draft Status"}
            </Badge>
           </TableCell>
-          <TableCell className="py-6 text-[10px] font-semibold text-muted-foreground uppercase ">
+          <TableCell className="py-6 text-[10px] font-bold text-muted-foreground">
            <div className="flex items-center gap-2">
              <Calendar className="w-3 h-3" />
              {new Date(post.created_at).toLocaleDateString('default', { day: '2-digit', month: 'short', year: 'numeric' })}
@@ -264,9 +268,30 @@ export default function AdminBlog() {
            <button onClick={() => openEdit(post)} className="p-2.5 text-muted-foreground hover:text-primary hover:bg-red-50 rounded-xl transition-all">
              <Edit3 className="w-4 h-4" />
            </button>
-           <button onClick={() => handleDelete(post.id)} className="p-2.5 text-muted-foreground hover:text-red-600 hover:bg-red-50 rounded-xl transition-all">
-             <Trash2 className="w-4 h-4" />
-           </button>
+           <AlertDialog>
+             <AlertDialogTrigger asChild>
+               <button className="p-2.5 text-muted-foreground hover:text-red-600 hover:bg-red-50 rounded-xl transition-all">
+                 <Trash2 className="w-4 h-4" />
+               </button>
+             </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Purge Literary Asset?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete <span className="font-bold text-foreground">"{post.title}"</span>? This article will be permanently removed from the editorial manuscript registry and platform archives.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="rounded-xl font-bold text-xs uppercase tracking-widest text-foreground">Abort</AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={() => handleDelete(post.id)}
+                    className="rounded-xl font-bold text-xs uppercase tracking-widest bg-red-600 hover:bg-red-700 text-white border-none shadow-md"
+                  >
+                    Confirm Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </TableCell>
          </TableRow>
         ))}
@@ -275,7 +300,7 @@ export default function AdminBlog() {
           <TableCell colSpan={5} className="h-80 text-center">
            <div className="flex flex-col items-center justify-center gap-4 text-muted-foreground">
              <FileText className="h-16 w-16 opacity-10" />
-             <p className="text-[10px] font-semibold uppercase tracking-[0.3em] ">No literary assets discovered</p>
+             <p className="text-[11px] font-bold tracking-tight">No literary assets discovered</p>
            </div>
           </TableCell>
          </TableRow>
@@ -289,7 +314,7 @@ export default function AdminBlog() {
      {filteredPosts.length === 0 ? (
       <div className="col-span-full h-80 flex flex-col items-center justify-center gap-4 text-muted-foreground border border-dashed border-border rounded-xl">
         <FileText className="h-16 w-16 opacity-10" />
-        <p className="text-[10px] font-semibold uppercase tracking-[0.3em] ">No literary assets discovered</p>
+        <p className="text-[11px] font-bold tracking-tight">No literary assets discovered</p>
       </div>
      ) : filteredPosts.map((post) => (
       <Card key={post.id} className="border border-border bg-card hover:shadow-md transition-all group overflow-hidden flex flex-col">
@@ -299,11 +324,11 @@ export default function AdminBlog() {
         ) : (
          <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground/30 group-hover:text-primary/10 transition-colors">
           <ImageIcon className="w-12 h-12 mb-2" />
-          <span className="text-xs uppercase tracking-widest font-semibold">No Image</span>
+          <span className="text-xs tracking-tight font-bold">No Image</span>
          </div>
         )}
         <div className="absolute top-4 right-4 flex flex-col gap-2">
-         <Badge variant="outline" className={`rounded-full px-2.5 py-1 font-semibold text-[9px] uppercase tracking-wider border shadow-sm backdrop-blur-md ${post.is_published ? "bg-black/50 text-white border-white/20" : "bg-white/50 text-black border-black/20"}`}>
+         <Badge variant="outline" className={`rounded-full px-2.5 py-1 font-bold text-[9px] tracking-tight border shadow-sm backdrop-blur-md ${post.is_published ? "bg-black/50 text-white border-white/20" : "bg-white/50 text-black border-black/20"}`}>
           {post.is_published ? "Published" : "Draft"}
          </Badge>
         </div>
@@ -314,7 +339,7 @@ export default function AdminBlog() {
          <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-tight">
           {post.title}
          </h3>
-         <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest ">
+         <p className="text-[10px] font-bold text-muted-foreground tracking-tight">
           /{post.slug}
          </p>
         </div>
@@ -323,7 +348,7 @@ export default function AdminBlog() {
          {post.excerpt || "No excerpt provided for this article..."}
         </p>
 
-        <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground border-t border-border pt-4">
+        <div className="flex items-center gap-2 text-[10px] font-bold tracking-tight text-muted-foreground border-t border-border pt-4">
          <div className="flex items-center gap-1.5 flex-1 w-0 truncate">
            <UserIcon className="w-3.5 h-3.5 flex-shrink-0" />
            <span className="truncate">{post.author?.name || "Kuba System"}</span>
@@ -335,12 +360,33 @@ export default function AdminBlog() {
         </div>
 
         <div className="grid grid-cols-2 gap-2 pt-4">
-         <Button onClick={() => openEdit(post)} variant="outline" size="sm" className="w-full h-9 bg-background hover:bg-muted text-xs font-semibold">
+         <Button onClick={() => openEdit(post)} variant="outline" size="sm" className="w-full h-9 bg-background hover:bg-muted text-xs font-bold">
           <Edit3 className="w-3.5 h-3.5 mr-2" /> Edit
          </Button>
-         <Button onClick={() => handleDelete(post.id)} variant="ghost" size="sm" className="w-full h-9 text-red-500 hover:text-red-600 hover:bg-red-50 text-xs font-semibold">
-          <Trash2 className="w-3.5 h-3.5 mr-2" /> Delete
-         </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="ghost" size="sm" className="w-full h-9 text-red-500 hover:text-red-600 hover:bg-red-50 text-xs font-bold">
+                <Trash2 className="w-3.5 h-3.5 mr-2" /> Delete
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Execute Deletion?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action is irreversible. The article <span className="font-bold text-foreground">"{post.title}"</span> will be purged from the Kuba registry.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel className="rounded-xl font-bold text-xs uppercase tracking-widest text-foreground">Cancel</AlertDialogCancel>
+                <AlertDialogAction 
+                  onClick={() => handleDelete(post.id)}
+                  className="rounded-xl font-bold text-xs uppercase tracking-widest bg-red-600 hover:bg-red-700 text-white border-none shadow-md"
+                >
+                  Confirm Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
        </CardContent>
       </Card>
@@ -352,18 +398,18 @@ export default function AdminBlog() {
      <div className="absolute top-0 right-0 p-10 opacity-10 group-hover:scale-125 transition-transform duration-1000">
        <Zap className="w-40 h-40" />
      </div>
-     <div className="space-y-4 relative z-10">
-       <h3 className="text-3xl font-semibold uppercase tracking-tight">Editorial Metrics</h3>
+      <div className="space-y-4 relative z-10">
+       <h3 className="text-3xl font-bold tracking-tight">Editorial Metrics</h3>
        <p className="text-xs font-bold text-muted-foreground max-w-md">Your platform content drives engagement and market SEO. Ensure your manuscript quality adheres to Kuba Elite standards.</p>
      </div>
      <div className="grid grid-cols-2 gap-10 relative z-10">
        <div className="text-center space-y-1">
-         <span className="block text-4xl font-semibold tabular-nums">{posts.length}</span>
-         <span className="block text-[10px] font-semibold uppercase tracking-normal text-muted-foreground">Total Assets</span>
+         <span className="block text-4xl font-bold tabular-nums">{posts.length}</span>
+         <span className="block text-[10px] font-bold tracking-tight text-muted-foreground">Total Assets</span>
        </div>
        <div className="text-center space-y-1">
-         <span className="block text-4xl font-semibold tabular-nums text-sky-500">{posts.filter(p => !p.is_published).length}</span>
-         <span className="block text-[10px] font-semibold uppercase tracking-normal text-muted-foreground">Pending Drafts</span>
+         <span className="block text-4xl font-bold tabular-nums text-sky-500">{posts.filter(p => !p.is_published).length}</span>
+         <span className="block text-[10px] font-bold tracking-tight text-muted-foreground">Pending Drafts</span>
        </div>
      </div>
    </div>

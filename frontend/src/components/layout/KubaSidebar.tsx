@@ -30,7 +30,13 @@ import {
   TrendingUp,
   DollarSign,
   FileText,
-  Monitor
+  Monitor,
+  Users,
+  Grid3X3,
+  Gift,
+  HelpCircle,
+  Quote,
+  Inbox
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -50,15 +56,20 @@ const adminItems = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
   { title: "Analytics", url: "/admin/analytics", icon: TrendingUp },
   { title: "Bookings", url: "/admin/bookings", icon: CalendarCheck },
-  { title: "Users", url: "/admin/users", icon: ShieldCheck },
-  { title: "Categories", url: "/admin/categories", icon: LayoutDashboard },
+  { title: "Quotes", url: "/admin/quotes", icon: Quote },
+  { title: "Users", url: "/admin/users", icon: Users },
+  { title: "Verification", url: "/admin/workforce/verification", icon: ShieldCheck },
+  { title: "Categories", url: "/admin/categories", icon: Grid3X3 },
   { title: "Payments", url: "/admin/payments", icon: DollarSign },
-  { title: "Loyalty", url: "/admin/loyalty", icon: Star },
-  { title: "Blog", url: "/admin/blog", icon: FileText },
+  { title: "Loyalty", url: "/admin/loyalty", icon: Gift },
+  { title: "Blog", url: "/admin/blog", icon: PenTool },
   { title: "Investors", url: "/admin/investors", icon: Briefcase },
   { title: "Feedback", url: "/admin/feedback", icon: MessageSquare },
   { title: "Reports", url: "/admin/reports", icon: ClipboardList },
   { title: "Email", url: "/admin/email-templates", icon: Mail },
+  { title: "Contact", url: "/admin/contact", icon: Inbox },
+  { title: "FAQs", url: "/admin/faqs", icon: HelpCircle },
+  { title: "Testimonials", url: "/admin/testimonials", icon: Star },
   { title: "Platform CMS", url: "/admin/settings", icon: Settings },
 ];
 
@@ -67,6 +78,7 @@ const providerItems = [
   { title: "Services", url: "/dashboard/provider/services", icon: Briefcase },
   { title: "Activity", url: "/dashboard/provider/availability", icon: Clock },
   { title: "Orders", url: "/dashboard/provider/bookings", icon: ClipboardList },
+  { title: "Verification", url: "/dashboard/provider/verification", icon: ShieldCheck },
   { title: "Messages", url: "/dashboard/provider/messages", icon: MessageSquare },
   { title: "Reviews", url: "/dashboard/provider/reviews", icon: Star },
   { title: "Profile", url: "/dashboard/provider/profile", icon: User },
@@ -89,9 +101,14 @@ export function KubaSidebar() {
       <SidebarHeader className="px-6 py-8">
         <Link href="/" className="flex items-center gap-2.5 group transition-transform hover:scale-105 duration-300">
             <img 
-              src="/logos/Kuba-Header-Footer-Logo-for-Dark-Mode.png" 
+              src="/assets/Kuba-Header-footter-Logo-for-Light-Mode.png" 
               alt="KUBA" 
-              className="h-8 w-auto object-contain" 
+              className="h-8 w-auto object-contain dark:hidden" 
+            />
+            <img 
+              src="/assets/Kuba-Header-Footer-Logo-for-Dark-Mode.png" 
+              alt="KUBA" 
+              className="h-8 w-auto object-contain hidden dark:block" 
             />
         </Link>
       </SidebarHeader>
@@ -132,7 +149,7 @@ export function KubaSidebar() {
       <SidebarFooter className="px-4 pb-6 pt-4 border-t border-sidebar-border">
         <button 
           onClick={() => logout()}
-          className="flex items-center gap-3.5 w-full px-4 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition-all text-[11px] font-bold tracking-widest group"
+          className="flex items-center gap-3.5 w-full px-4 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition-all text-xs font-black uppercase tracking-widest group"
         >
           <LogOut className="w-[18px] h-[18px] group-hover:-translate-x-1 transition-transform" />
           <span>Terminate Session</span>

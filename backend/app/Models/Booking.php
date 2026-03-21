@@ -22,6 +22,7 @@ class Booking extends Model implements HasMedia
         'service_id',
         'booking_number',
         'scheduled_date',
+        'scheduled_time',
         'scheduled_end_date',
         'status',
         'address_id',
@@ -42,7 +43,15 @@ class Booking extends Model implements HasMedia
         'final_price' => 'decimal:2',
     ];
 
-    protected $appends = ['image_urls'];
+    protected $appends = ['image_urls', 'total_price'];
+
+    /**
+     * Get the standardized total price (final or estimated).
+     */
+    public function getTotalPriceAttribute(): float
+    {
+        return (float) ($this->final_price ?? $this->estimated_price ?? 0);
+    }
 
     public function getImageUrlsAttribute(): array
     {

@@ -6,6 +6,14 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+Route::get('/test-cors', function () {
+    return response('CORS Test', 200)->header('Access-Control-Allow-Origin', '*');
+});
+
+Route::get('/storage-test', function () {
+    return response('Storage Route Test', 200)->header('Access-Control-Allow-Origin', '*');
+});
+
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
@@ -70,10 +78,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/schedule', [\App\Http\Controllers\ScheduleController::class, 'index'])->name('schedule.index');
     Route::put('/schedule', [\App\Http\Controllers\ScheduleController::class, 'update'])->name('schedule.update');
 
-    // Payments
+    /* 
+    // Legacy Payments (Deprecated for API-driven Paystack flow)
     Route::get('/payment/{booking}', [\App\Http\Controllers\PaymentController::class, 'show'])->name('payment.show');
     Route::post('/payment/{booking}/intent', [\App\Http\Controllers\PaymentController::class, 'createIntent'])->name('payment.intent');
     Route::post('/payment/{booking}/confirm', [\App\Http\Controllers\PaymentController::class, 'confirm'])->name('payment.confirm');
+    */
 
     // Chat
     Route::get('/chat', [\App\Http\Controllers\ChatController::class, 'index'])->name('chat.index');
@@ -114,5 +124,26 @@ Route::middleware('auth')->group(function () {
         Route::delete('/media/delete', [\App\Http\Controllers\Admin\MediaController::class, 'delete'])->name('media.delete');
     });
 });
+
+// Local Development Storage Proxy for CORS (Artisan serve compatibility)
+if (app()->isLocal()) {
+    Route::get('/cms-assets/{path}', function ($path) {
+        \Log::info("CMS Assets Proxy hit: " . $path);
+        $fullPath = storage_path('app/public/' . $path);
+        if (!file_exists($fullPath)) {
+            \Log::warning("CMS Assets Proxy file not found: " . $fullPath);
+            abort(404);
+        }
+        
+        $file = file_get_contents($fullPath);
+        $type = mime_content_type($fullPath);
+        
+        return response($file, 200)
+            ->header('Content-Type', $type)
+            ->header('Access-Control-Allow-Origin', '*')
+            ->header('Access-Control-Allow-Methods', 'GET')
+            ->header('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With');
+    })->where('path', '.*');
+}
 
 require __DIR__.'/auth.php';

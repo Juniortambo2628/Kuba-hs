@@ -5,8 +5,11 @@ import { Building2, CheckCircle2, ArrowRight, ShieldCheck, Zap } from "lucide-re
 import { designSystem } from "@/lib/design-system";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useCMS } from "@/hooks/useCMS";
 
 export function CorporateSolutions() {
+  const { getS } = useCMS();
+
   return (
     <section className="py-24 bg-primary overflow-hidden relative">
       {/* Background Decor */}
@@ -21,26 +24,26 @@ export function CorporateSolutions() {
             viewport={{ once: true }}
             className="flex-1 space-y-8"
           >
-            <div className={designSystem.typography.section.badge}>
-              <Building2 className="w-3.5 h-3.5 inline mr-2" />
-              For Enterprises & SMEs
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-white font-bold text-xs tracking-tight">
+              <Building2 className="w-3.5 h-3.5 inline" />
+              {getS('market_narratives', 'corp_badge', 'For Businesses & Offices')}
             </div>
             
             <h2 className={designSystem.typography.section.title + " text-white"}>
-              Streamline Your <br />
-              <span className="text-white/60">Business Operations</span>
+              {getS('market_narratives', 'corp_title_1', 'Manage Your')} <br />
+              <span className="text-white/60">{getS('market_narratives', 'corp_title_2', 'Office Services Easily')}</span>
             </h2>
             
             <p className={designSystem.typography.section.subtitle + " text-white/70"}>
-              Kuba provides tailored service packages for corporate clients. From office maintenance to professional consulting, manage everything through one centralized dashboard.
+              {getS('market_narratives', 'corp_desc', 'Kuba provides custom service plans for businesses. From office cleaning to repairs, manage everything in one place.')}
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[
-                "Consolidated Monthly Billing",
-                "Dedicated Account Manager",
-                "Priority Service Allocation",
-                "Vetted Enterprise Pros"
+                getS('corporate', 'corp_feature_1', 'One Monthly Bill'),
+                getS('corporate', 'corp_feature_2', 'Your Own Support Contact'),
+                getS('corporate', 'corp_feature_3', 'Fastest Service'),
+                getS('corporate', 'corp_feature_4', 'Top-Rated Business Pros')
               ].map((item, i) => (
                 <div key={i} className="flex items-center gap-3 text-white/80">
                   <CheckCircle2 className="w-5 h-5 text-white" />
@@ -51,10 +54,12 @@ export function CorporateSolutions() {
 
             <div className="pt-4 flex flex-wrap gap-4">
               <Button asChild className="bg-white text-primary hover:bg-white/90 h-14 px-8 rounded-2xl font-bold text-sm shadow-xl transition-all hover:scale-105 active:scale-95">
-                <Link href="/contact?type=corporate">Get a Corporate Quote</Link>
+                <Link href="/contact?type=corporate">Get a Business Quote</Link>
               </Button>
-              <Button variant="outline" className="border-white/20 text-white hover:bg-white/10 h-14 px-8 rounded-2xl font-bold text-sm">
-                Learn More <ArrowRight className="ml-2 w-4 h-4" />
+              <Button asChild variant="outline" className="border-white/20 text-white hover:bg-white/10 h-14 px-8 rounded-2xl font-bold text-sm">
+                <Link href="/about">
+                  Learn More <ArrowRight className="ml-2 w-4 h-4" />
+                </Link>
               </Button>
             </div>
           </motion.div>
@@ -88,7 +93,7 @@ export function CorporateSolutions() {
                         className="h-full bg-white" 
                       />
                    </div>
-                   <div className="flex justify-between text-[10px] font-semibold text-white/60 tracking-widest uppercase">
+                   <div className="flex justify-between text-[10px] font-semibold text-white/60 tracking-tight">
                       <span>Service Efficiency</span>
                       <span>99.9%</span>
                    </div>

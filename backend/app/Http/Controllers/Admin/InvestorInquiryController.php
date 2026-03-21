@@ -10,7 +10,7 @@ class InvestorInquiryController extends Controller
 {
     public function index()
     {
-        return InvestorInquiry::latest()->get();
+        return \App\Http\Resources\InvestorInquiryResource::collection(InvestorInquiry::latest()->get());
     }
 
     public function show(InvestorInquiry $investorInquiry)
@@ -18,7 +18,7 @@ class InvestorInquiryController extends Controller
         if ($investorInquiry->status === 'pending') {
             $investorInquiry->update(['status' => 'reviewed']);
         }
-        return $investorInquiry;
+        return new \App\Http\Resources\InvestorInquiryResource($investorInquiry);
     }
 
     public function updateStatus(Request $request, InvestorInquiry $investorInquiry)

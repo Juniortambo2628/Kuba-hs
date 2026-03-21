@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, Moon, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
+import { Menu } from "lucide-react";
 import { useCMS } from "@/hooks/useCMS";
 import { useAuth } from "@/contexts/AuthContext";
-import { User, LogOut, LayoutDashboard, Home, Briefcase } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { User, Briefcase } from "lucide-react";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -17,19 +17,17 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-
-const getAvatarUrl = (path: string | null | undefined) => {
-  if (!path) return null;
-  if (path.startsWith('http')) return path;
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, '') || 'http://localhost:8000';
-  return `${baseUrl}/storage/${path.replace('storage/', '')}`;
-};
+import { UserAccountDropdown } from "@/components/shared/UserAccountDropdown";
+import { ThemeToggle } from "@/components/shared/ThemeToggle";
+import { GlobalSearch } from "@/components/shared/GlobalSearch";
+import { ServiceMegamenu } from "./ServiceMegamenu";
 
 export function Navbar() {
-  const { theme, setTheme } = useTheme();
   const { getS, getImg } = useCMS();
   const { user, logout } = useAuth();
+  const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
+  const [isMegamenuOpen, setIsMegamenuOpen] = useState(false);
   const [navItems, setNavItems] = useState([
     {"id": "nav_1", "label": "Services", "url": "/services"},
     {"id": "nav_2", "label": "Providers", "url": "/providers"},
@@ -43,7 +41,7 @@ export function Navbar() {
 
   useEffect(() => {
     setMounted(true);
-    const navString = getS('general', 'navigation_menu', '');
+    const navString = getS('identity', 'navigation_menu', '');
     if (navString) {
       try {
         setNavItems(JSON.parse(navString));
@@ -67,7 +65,10 @@ export function Navbar() {
   }
 
   return (
-    <nav className="fixed top-0 w-full z-50 bg-white/80 dark:bg-[#0B0F19]/80 backdrop-blur-md border-b border-gray-200 dark:border-white/5 transition-colors duration-300">
+    <nav 
+      className="fixed top-0 w-full z-50 bg-white/80 dark:bg-[#0B0F19]/80 backdrop-blur-md border-b border-gray-200 dark:border-white/5 transition-colors duration-300"
+      onMouseLeave={() => setIsMegamenuOpen(false)}
+    >
       <div className="container mx-auto px-4 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
@@ -86,71 +87,86 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
-            {navItems.map(item => (
-                <Link key={item.id} href={item.url} className="text-[13px] font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors tracking-tight">
+          <div className="hidden md:flex items-center gap-1">
+            {navItems.map(item => {
+              const isActive = pathname === item.url;
+              const isServices = item.label.toLowerCase() === "services";
+              
+              if (isServices) {
+                return (
+                  <div 
+                    key={item.id}
+                    className="relative h-full flex items-center"
+                    onMouseEnter={() => setIsMegamenuOpen(true)}
+                  >
+                    <Link 
+                      href={item.url} 
+                      className={`px-4 py-2 text-sm font-bold rounded-xl transition-all duration-300 tracking-tight flex items-center gap-1 ${
+                        isActive || isMegamenuOpen
+                          ? "bg-primary/10 text-primary" 
+                          : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5"
+                      }`}
+                    >
+                      {item.label}
+                    </Link>
+                  </div>
+                );
+              }
+
+              const solutionLabels = ["investors", "commercial", "cooperatives", "solutions"];
+              if (solutionLabels.includes(item.label.toLowerCase())) return null;
+
+              return (
+                <Link 
+                  key={item.id} 
+                  href={item.url} 
+                  className={`px-4 py-2 text-sm font-bold rounded-xl transition-all duration-300 tracking-tight flex items-center h-fit ${
+                    isActive 
+                      ? "bg-primary/10 text-primary" 
+                      : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5"
+                  }`}
+                >
                   {item.label}
                 </Link>
-            ))}
+              );
+            })}
+
+            {/* Solutions Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="px-4 py-2 text-sm font-bold rounded-xl text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-all duration-300 tracking-tight flex items-center gap-1 outline-none">
+                  Solutions
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-52 mt-2 rounded-2xl border-gray-100 dark:border-white/10 shadow-xl p-2">
+                <DropdownMenuItem asChild className="rounded-xl focus:bg-primary/5 focus:text-primary cursor-pointer py-3 px-4">
+                  <Link href="/investors" className="font-bold text-sm">Investors</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="rounded-xl focus:bg-primary/5 focus:text-primary cursor-pointer py-3 px-4">
+                  <Link href="/commercial" className="font-bold text-sm">Commercial</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="rounded-xl focus:bg-primary/5 focus:text-primary cursor-pointer py-3 px-4">
+                  <Link href="/cooperatives" className="font-bold text-sm">Cooperatives</Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-3">
+            {/* Global Search */}
+            <GlobalSearch />
+
             {/* Theme Toggle */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 relative"
-            >
-              <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-              <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-              <span className="sr-only">Toggle theme</span>
-            </Button>
+            <ThemeToggle />
 
             {user ? (
-               <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-10 w-10 rounded-full bg-sky-50 border border-sky-100 p-0 overflow-hidden group">
-                      {user.avatar_url ? (
-                        <img src={getAvatarUrl(user.avatar_url) || ""} alt={user.name} className="h-full w-full object-cover" />
-                      ) : (
-                        <div className="h-full w-full flex items-center justify-center bg-sky-600 text-white font-black text-xs">
-                          {user.name.substring(0, 2)}
-                        </div>
-                      )}
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 mt-2 rounded-2xl border-gray-100 shadow-xl">
-                    <DropdownMenuLabel className="font-black text-[10px] tracking-widest text-gray-400">Account</DropdownMenuLabel>
-                    <div className="px-2 py-1.5">
-                      <p className="text-sm font-black text-[#1E293B] truncate">{user.name}</p>
-                      <p className="text-[10px] font-bold text-gray-400 truncate tracking-tighter">{user.role} member</p>
-                    </div>
-                    <DropdownMenuSeparator className="bg-gray-50" />
-                    <DropdownMenuItem asChild className="rounded-xl focus:bg-sky-50 focus:text-sky-600 cursor-pointer">
-                      <Link href="/" className="flex items-center gap-2 font-bold text-xs tracking-wider">
-                        <Home className="w-4 h-4" /> Back to Home
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="rounded-xl focus:bg-sky-50 focus:text-sky-600 cursor-pointer">
-                      <Link href="/dashboard" className="flex items-center gap-2 font-bold text-xs tracking-wider">
-                        <LayoutDashboard className="w-4 h-4" /> Dashboard
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator className="bg-gray-50" />
-                    <DropdownMenuItem onClick={() => logout()} className="rounded-xl focus:bg-red-50 focus:text-red-600 text-red-500 cursor-pointer">
-                      <div className="flex items-center gap-2 font-bold text-xs tracking-wider w-full">
-                        <LogOut className="w-4 h-4" /> Logout
-                      </div>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-               </DropdownMenu>
+              <UserAccountDropdown variant="navbar" />
             ) : (
               <>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="text-sm font-semibold text-gray-700 dark:text-white hover:text-primary transition-colors cursor-pointer">
+                    <button className="text-sm font-semibold text-gray-700 dark:text-white hover:text-primary transition-colors cursor-pointer ml-2">
                       Sign In
                     </button>
                   </DropdownMenuTrigger>
@@ -163,8 +179,8 @@ export function Navbar() {
                           <User className="w-4 h-4" />
                         </div>
                         <div>
-                          <p className="font-bold text-gray-900 dark:text-white">Client</p>
-                          <p className="text-[10px] text-gray-400 font-medium">Book home services</p>
+                          <p className="font-bold text-gray-900 dark:text-white">Customer</p>
+                          <p className="text-[10px] text-gray-400 font-medium">Book a verified pro</p>
                         </div>
                       </Link>
                     </DropdownMenuItem>
@@ -174,32 +190,29 @@ export function Navbar() {
                           <Briefcase className="w-4 h-4" />
                         </div>
                         <div>
-                          <p className="font-bold text-gray-900 dark:text-white">Provider</p>
-                          <p className="text-[10px] text-gray-400 font-medium">Manage your services</p>
+                          <p className="font-bold text-gray-900 dark:text-white">Pro</p>
+                          <p className="text-[10px] text-gray-400 font-medium">Manage your jobs</p>
                         </div>
                       </Link>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
                 <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground text-pro-button rounded-full px-6">
-                  <Link href="/register/provider">Sign up as a Provider</Link>
+                  <Link href="/register/provider">Join as a Pro</Link>
                 </Button>
               </>
             )}
           </div>
 
+          {/* Megamenu Overlay */}
+          <ServiceMegamenu 
+            isOpen={isMegamenuOpen} 
+            onClose={() => setIsMegamenuOpen(false)} 
+          />
+
           {/* Mobile Navigation */}
           <div className="md:hidden flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="rounded-full text-gray-600 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 relative"
-            >
-              <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-              <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-              <span className="sr-only">Toggle theme</span>
-            </Button>
+            <ThemeToggle />
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10">
@@ -219,8 +232,8 @@ export function Navbar() {
                       <User className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className="font-bold text-gray-900 dark:text-white">Sign in as Client</p>
-                      <p className="text-xs text-gray-400">Book home services</p>
+                      <p className="font-bold text-gray-900 dark:text-white">Sign in as Customer</p>
+                      <p className="text-xs text-gray-400">Book a verified pro</p>
                     </div>
                   </Link>
                   <Link href="/login/provider" className="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors">
@@ -228,13 +241,13 @@ export function Navbar() {
                       <Briefcase className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className="font-bold text-gray-900 dark:text-white">Sign in as Provider</p>
-                      <p className="text-xs text-gray-400">Manage your services</p>
+                      <p className="font-bold text-gray-900 dark:text-white">Sign in as Pro</p>
+                      <p className="text-xs text-gray-400">Manage your jobs</p>
                     </div>
                   </Link>
                   <div className="h-px bg-gray-200 dark:bg-white/10 my-2" />
-                  <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full w-full">
-                    <Link href="/register/provider">Sign up as a Provider</Link>
+                  <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-full w-full">
+                    <Link href="/register/provider">Join as a Pro</Link>
                   </Button>
                 </div>
               </SheetContent>

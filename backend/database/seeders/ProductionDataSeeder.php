@@ -80,6 +80,8 @@ class ProductionDataSeeder extends Seeder
             ['key' => 'hero_subtitle', 'value' => 'Find trusted professionals for cleaning, plumbing, and electrical work in Nairobi.', 'group' => 'hero', 'label' => 'Hero Subtitle (Home)', 'type' => 'textarea'],
             ['key' => 'hero_bg_image', 'value' => '', 'group' => 'hero', 'label' => 'Hero Background Image', 'type' => 'image'],
             ['key' => 'hero_cta_text', 'value' => 'Get Started', 'group' => 'hero', 'label' => 'Hero CTA Button', 'type' => 'text'],
+            ['key' => 'services_hero_image', 'value' => '', 'group' => 'hero', 'label' => 'Services Page Hero', 'type' => 'image'],
+            ['key' => 'providers_hero_image', 'value' => '', 'group' => 'hero', 'label' => 'Providers Page Hero', 'type' => 'image'],
 
             // About Page
             ['key' => 'about_hero_title', 'value' => 'Connecting Kenyans to Quality Services', 'group' => 'about', 'label' => 'About Hero Title', 'type' => 'text'],
@@ -97,18 +99,28 @@ class ProductionDataSeeder extends Seeder
             // Investors
             ['key' => 'investors_hero_title', 'value' => 'Invest in the Future of Service Delivery', 'group' => 'sections', 'label' => 'Investors Hero Title', 'type' => 'text'],
             ['key' => 'investors_hero_subtitle', 'value' => 'Join us in scaling Africa\'s premier digital marketplace for essential services.', 'group' => 'sections', 'label' => 'Investors Hero Subtitle', 'type' => 'textarea'],
+            ['key' => 'investors_hero_image', 'value' => '', 'group' => 'sections', 'label' => 'Investors Hero Image', 'type' => 'image'],
 
             // Commercial / Business
             ['key' => 'commercial_hero_title', 'value' => 'Institutional Grade Facility Management', 'group' => 'sections', 'label' => 'Commercial Hero Title', 'type' => 'text'],
             ['key' => 'commercial_hero_subtitle', 'value' => 'Tailored solutions for businesses, from HR support to security and maintenance.', 'group' => 'sections', 'label' => 'Commercial Hero Subtitle', 'type' => 'textarea'],
+            ['key' => 'commercial_hero_image', 'value' => '', 'group' => 'sections', 'label' => 'Commercial Hero Image', 'type' => 'image'],
+            ['key' => 'commercial_thesis_title', 'value' => 'Consolidated Excellence for Modern Enterprise', 'group' => 'sections', 'label' => 'Commercial Thesis Title', 'type' => 'text'],
+            ['key' => 'commercial_thesis_body', 'value' => 'Kuba provides a unified service infrastructure for organizations that demand quality and accountability. From daily janitorial needs to complex facility management, we scale with your business.', 'group' => 'sections', 'label' => 'Commercial Thesis Body', 'type' => 'textarea'],
 
             // Cooperatives
             ['key' => 'cooperatives_hero_title', 'value' => 'Empowering SACCOs & Community Groups', 'group' => 'sections', 'label' => 'Cooperatives Hero Title', 'type' => 'text'],
             ['key' => 'cooperatives_hero_subtitle', 'value' => 'Financial advisory and group-focused services for Kenyan community growth.', 'group' => 'sections', 'label' => 'Cooperatives Hero Subtitle', 'type' => 'textarea'],
+            ['key' => 'cooperatives_hero_image', 'value' => '', 'group' => 'sections', 'label' => 'Cooperatives Hero Image', 'type' => 'image'],
+            ['key' => 'cooperatives_thesis_title', 'value' => 'Stronger Together through Shared Services', 'group' => 'sections', 'label' => 'Cooperatives Thesis Title', 'type' => 'text'],
+            ['key' => 'cooperatives_thesis_body', 'value' => 'We help gated communities and SACCOs leverage collective bargaining power to secure premium home services at negotiated rates, managed via a single platform.', 'group' => 'sections', 'label' => 'Cooperatives Thesis Body', 'type' => 'textarea'],
 
             // Blog / Journal
-            ['key' => 'blog_hero_title', 'value' => 'The Kuba Journal', 'group' => 'sections', 'label' => 'Blog Hero Title', 'type' => 'text'],
-            ['key' => 'blog_hero_subtitle', 'value' => 'Insights, updates, and expert tips from the world of professional services.', 'group' => 'sections', 'label' => 'Blog Hero Subtitle', 'type' => 'textarea'],
+            ['key' => 'blog_hero_title', 'value' => 'The Kuba Journal', 'group' => 'sections', 'label' => 'Journal Hero Title', 'type' => 'text'],
+            ['key' => 'blog_hero_subtitle', 'value' => 'Insights, updates, and expert tips from the world of professional services.', 'group' => 'sections', 'label' => 'Journal Hero Subtitle', 'type' => 'textarea'],
+            ['key' => 'journal_hero_image', 'value' => '', 'group' => 'sections', 'label' => 'Journal Page Hero', 'type' => 'image'],
+            ['key' => 'journal_thesis_title', 'value' => 'Redefining Service in the Digital Age', 'group' => 'sections', 'label' => 'Journal Thesis Title', 'type' => 'text'],
+            ['key' => 'journal_thesis_body', 'value' => 'Explore our deep dives into how technology is transforming the Kenyan service economy and empowering local artisans.', 'group' => 'sections', 'label' => 'Journal Thesis Body', 'type' => 'textarea'],
 
             // Legal URLs
             ['key' => 'terms_of_service_url', 'value' => '/terms', 'group' => 'sections', 'label' => 'Terms of Service URL', 'type' => 'text'],

@@ -95,7 +95,8 @@ export function BookingDetailDialog({ isOpen, onClose, booking, onUpdateStatus }
                                 <Clock className="w-3 h-3" /> Scheduled Time
                             </p>
                             <p className="font-black text-[#1E293B]">
-                                {booking.scheduled_date ? format(new Date(booking.scheduled_date), 'PPP p') : 'TBD'}
+                                {booking.scheduled_date ? format(new Date(booking.scheduled_date), 'PPP') : 'TBD'}
+                                {booking.scheduled_time && <span className="block text-[10px] text-sky-600 uppercase tracking-widest mt-0.5">{booking.scheduled_time}</span>}
                             </p>
                         </div>
                         <div className="space-y-1.5">

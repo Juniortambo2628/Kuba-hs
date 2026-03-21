@@ -285,7 +285,7 @@ export function HeroSearchModal({ isOpen, onClose, initialTab }: HeroSearchModal
 
         {/* Footer */}
         <div className="p-6 bg-muted/30 dark:bg-white/5 border-t border-border flex items-center justify-between">
-           <p className="text-[9px] font-bold text-muted-foreground tracking-widest">
+           <p className="text-[9px] font-bold text-muted-foreground tracking-tight">
              Press <kbd className="bg-muted px-1.5 py-0.5 rounded border border-border inline-block">ESC</kbd> to exit
            </p>
             <Link href="/providers" onClick={onClose} className="text-label-caps text-primary flex items-center gap-2 group">

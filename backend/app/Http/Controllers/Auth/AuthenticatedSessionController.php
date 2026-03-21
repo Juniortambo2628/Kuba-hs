@@ -27,7 +27,7 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): \Symfony\Component\HttpFoundation\Response
+    public function store(LoginRequest $request): \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
     {
         $request->authenticate();
 
@@ -46,7 +46,7 @@ class AuthenticatedSessionController extends Controller
     /**
      * Destroy an authenticated session.
      */
-    public function destroy(Request $request): \Symfony\Component\HttpFoundation\Response
+    public function destroy(Request $request): \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
     {
         Auth::guard('web')->logout();
 

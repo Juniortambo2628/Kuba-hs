@@ -17,6 +17,7 @@ class Review extends Model
         'provider_id',
         'rating',
         'comment',
+        'status',
     ];
 
     protected $casts = [

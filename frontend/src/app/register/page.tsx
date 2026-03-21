@@ -10,7 +10,7 @@ import { designSystem } from "@/lib/design-system";
 export default function RegisterChoicePage() {
   return (
     <div className="min-h-screen bg-white dark:bg-[#0B0F19] flex items-center justify-center p-4">
-      <Link href="/" className="absolute top-8 left-8 flex items-center gap-2 text-[10px] font-bold tracking-widest uppercase text-muted-foreground hover:text-gray-900 dark:hover:text-white transition-colors z-10">
+      <Link href="/" className="absolute top-8 left-8 flex items-center gap-2 text-[10px] font-bold tracking-widest capitalize text-muted-foreground hover:text-gray-900 dark:hover:text-white transition-colors z-10">
         <ChevronLeft className="w-4 h-4" /> Return to Home
       </Link>
       <div className="max-w-4xl w-full grid md:grid-cols-2 gap-8 mt-12">
@@ -26,12 +26,12 @@ export default function RegisterChoicePage() {
               <div className="w-14 h-14 bg-indigo-100 dark:bg-indigo-500/20 rounded-2xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 mb-6 group-hover:scale-110 transition-transform">
                 <User className="w-7 h-7" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3 uppercase tracking-tight">I am a Client</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3 capitalize tracking-tight">I'm a Customer</h2>
               <p className="text-gray-500 dark:text-gray-400 mb-8 leading-relaxed">
-                I'm looking for verified professionals to help with my home, office, or personal needs.
+                I'm looking for trusted pros for my home or business.
               </p>
-              <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold uppercase text-xs tracking-widest">
-                Register as Client <ChevronRight className="w-4 h-4" />
+              <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold capitalize text-xs tracking-widest">
+                Join as a Customer <ChevronRight className="w-4 h-4" />
               </div>
             </div>
           </Link>
@@ -48,12 +48,12 @@ export default function RegisterChoicePage() {
               <div className="w-14 h-14 bg-emerald-100 dark:bg-emerald-500/20 rounded-2xl flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-6 group-hover:scale-110 transition-transform">
                 <Briefcase className="w-7 h-7" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3 uppercase tracking-tight">I am a Provider</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3 capitalize tracking-tight">I'm a Pro</h2>
               <p className="text-gray-500 dark:text-gray-400 mb-8 leading-relaxed">
-                I want to offer my specialized services and grow my business on the Kuba platform.
+                I want to offer my services and grow my business with Kuba.
               </p>
-              <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold uppercase text-xs tracking-widest">
-                Register as Provider <ChevronRight className="w-4 h-4" />
+              <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold capitalize text-xs tracking-widest">
+                Join as a Pro <ChevronRight className="w-4 h-4" />
               </div>
             </div>
           </Link>

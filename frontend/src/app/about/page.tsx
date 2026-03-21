@@ -3,61 +3,32 @@
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { Shield, Trophy, Gem, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useCMS } from "@/hooks/useCMS";
-
-const values = [
-  {
-    title: "Quality First",
-    desc: "We vet every provider to ensure only the highest standards of service for your home.",
-    icon: Trophy,
-    color: "text-yellow-500",
-    bg: "bg-yellow-500/10",
-  },
-  {
-    title: "Full Transparency",
-    desc: "Upfront pricing and clear communication between providers and customers.",
-    icon: Gem,
-    color: "text-purple-500",
-    bg: "bg-purple-500/10",
-  },
-  {
-    title: "Safety Guaranteed",
-    desc: "Your security is paramount. Every transaction and provider is monitored for safety.",
-    icon: Shield,
-    color: "text-blue-500",
-    bg: "bg-blue-500/10",
-  },
-];
+import { usePageFeatures } from "@/hooks/usePageFeatures";
+import { HighImpactHero } from "@/components/shared/HighImpactHero";
+import { FeatureCardGrid } from "@/components/shared/FeatureCardGrid";
+import { Shield } from "lucide-react";
 
 export default function AboutPage() {
-  const { getS } = useCMS();
+  const { getS, getImg } = useCMS();
+  const { features: values } = usePageFeatures('about');
+
+
 
   return (
     <main className="min-h-screen bg-white dark:bg-[#0B0F19] selection:bg-blue-500/30 transition-colors duration-300">
       <Navbar />
 
-      {/* Hero Banner */}
-      <section className="relative pt-20 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-purple-700" />
-        <div className="absolute inset-0 bg-black/30" />
-        <div className="relative z-10 py-24 md:py-32 text-center text-white">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6">About KUBA</h1>
-            <div className="flex items-center justify-center gap-2 text-white/70 font-medium text-sm">
-              <Link href="/" className="hover:text-white transition-colors">Home</Link>
-              <ChevronRight className="w-4 h-4" />
-              <span className="text-white">About Us</span>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+      <HighImpactHero
+        title={getS('hero_media', 'about_hero_title', 'About KUBA')}
+        subtitle={getS('hero_media', 'about_hero_subtitle', 'Redefining how home services are delivered across the continent.')}
+        badge={getS('hero_media', 'about_hero_badge', 'Who We Are')}
+        cmsKey="about_hero_image"
+        cmsGroup="hero_media"
+      />
 
       {/* Our Story */}
       <section className="py-24 px-4">
@@ -73,7 +44,7 @@ export default function AboutPage() {
             >
               <div className="flex-[3] relative rounded-2xl overflow-hidden shadow-2xl min-h-[400px]">
                 <img
-                  src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=2070&auto=format&fit=crop"
+                  src={getImg('about_page', 'about_story_image_1', 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=2070&auto=format&fit=crop')}
                   alt="Professional at work"
                   className="absolute inset-0 w-full h-full object-cover hover:scale-105 transition-transform duration-700"
                 />
@@ -81,14 +52,14 @@ export default function AboutPage() {
               <div className="flex-[2] flex flex-col gap-4">
                 <div className="flex-1 rounded-2xl overflow-hidden shadow-xl relative">
                   <img
-                    src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?q=80&w=2070&auto=format&fit=crop"
+                    src={getImg('about_page', 'about_story_image_2', 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?q=80&w=2070&auto=format&fit=crop')}
                     alt="Team collaboration"
                     className="absolute inset-0 w-full h-full object-cover hover:scale-105 transition-transform duration-700"
                   />
                 </div>
                 <div className="flex-1 rounded-2xl overflow-hidden shadow-xl relative">
                   <img
-                    src="https://images.unsplash.com/photo-1556741533-6e6a62bd8b49?q=80&w=2070&auto=format&fit=crop"
+                    src={getImg('about_page', 'about_story_image_3', 'https://images.unsplash.com/photo-1556741533-6e6a62bd8b49?q=80&w=2070&auto=format&fit=crop')}
                     alt="Customer service"
                     className="absolute inset-0 w-full h-full object-cover hover:scale-105 transition-transform duration-700"
                   />
@@ -146,24 +117,13 @@ export default function AboutPage() {
             <span className="text-blue-600 dark:text-blue-400 font-semibold tracking-[4px] text-xs mb-4 block">Our Values</span>
             <h2 className="text-4xl font-bold text-gray-900 dark:text-white">The Principles That Drive Us</h2>
           </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            {values.map((value, i) => (
-              <motion.div
-                key={i}
-                className="bg-white dark:bg-zinc-900 p-10 rounded-3xl shadow-lg dark:shadow-none border border-border dark:border-white/10 text-center hover:-translate-y-2 transition-transform duration-300"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.3 }}
-                transition={{ duration: 0.5, delay: i * 0.15 }}
-              >
-                <div className={`w-16 h-16 rounded-2xl ${value.bg} ${value.color} flex items-center justify-center mx-auto mb-6`}>
-                  <value.icon className="w-8 h-8" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">{value.title}</h3>
-                <p className="text-muted-foreground dark:text-muted-foreground text-sm leading-relaxed">{value.desc}</p>
-              </motion.div>
-            ))}
-          </div>
+          <FeatureCardGrid
+            features={values}
+            columns={3}
+            accentColor="blue"
+            fallbackIcon={Shield}
+            variant="centered"
+          />
         </div>
       </section>
 

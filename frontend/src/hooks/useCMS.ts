@@ -48,9 +48,15 @@ export function useCMS() {
   }, [settings]);
 
   const getImg = useCallback((group: string, key: string, fallback: string) => {
-    const url = settings[group]?.[key]?.image_url;
-    if (!url) return fallback;
-    return url.startsWith('http') ? url : `${BACKEND_URL}${url}`;
+    const setting = settings[group]?.[key];
+    const url = setting?.image_url || setting?.value;
+    if (!url || (setting?.type === 'image' && !url)) return fallback;
+    const finalUrl = url.startsWith('http') ? url : `${BACKEND_URL}${url}`;
+    // Use the local CORS proxy for storage assets when in development
+    if (finalUrl.includes('/storage/')) {
+        return finalUrl.replace('/storage/', '/cms-assets/');
+    }
+    return finalUrl;
   }, [settings]);
 
   return useMemo(() => ({ settings, isLoading, getS, getImg }), [settings, isLoading, getS, getImg]);

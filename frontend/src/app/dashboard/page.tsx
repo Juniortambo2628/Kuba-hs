@@ -31,11 +31,11 @@ interface Booking {
 const getStatusBadge = (status: string) => {
   switch (status) {
     case "pending":
-      return <Badge variant="outline" className="bg-muted dark:bg-muted0/10 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/20">Pending</Badge>;
+      return <Badge variant="outline" className="bg-muted dark:bg-muted/10 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/20">Pending</Badge>;
     case "confirmed":
       return <Badge variant="outline" className="bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/20">Confirmed</Badge>;
     case "completed":
-      return <Badge variant="outline" className="bg-muted dark:bg-muted0/10 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20">Completed</Badge>;
+      return <Badge variant="outline" className="bg-muted dark:bg-muted/10 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20">Completed</Badge>;
     case "cancelled":
       return <Badge variant="destructive">Cancelled</Badge>;
     default:

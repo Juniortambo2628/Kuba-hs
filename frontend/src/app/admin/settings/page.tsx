@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import axiosInstance, { handleApiError } from "@/lib/axios";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -13,20 +13,18 @@ import {
   Layout, 
   Globe, 
   CreditCard, 
-  ShieldCheck, 
   Image as ImageIcon,
-  Activity,
-  ExternalLink,
-  ChevronRight,
   Sparkles,
-  Zap,
-  Lock,
-  Mail,
-  Phone,
-  MapPin,
-  MessageSquare,
-  Star,
-  Navigation
+  Navigation,
+  Share2,
+  BarChart3,
+  Smartphone,
+  Info,
+  Home,
+  Palette,
+  Layers,
+  Type,
+  FileText
 } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -34,10 +32,8 @@ import { FilePond, registerPlugin } from 'react-filepond';
 import 'filepond/dist/filepond.min.css';
 import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
 import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
-import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { FAQManager } from "./components/FAQManager";
-import { TestimonialManager } from "./components/TestimonialManager";
+import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
 import { NavigationManager } from "./components/NavigationManager";
 
 registerPlugin(FilePondPluginImagePreview);
@@ -59,14 +55,24 @@ interface Metadata {
     maintenance_mode: boolean;
 }
 
-const GROUP_LABELS: Record<string, { label: string, icon: any, color: string }> = {
-    'branding': { label: 'Platform Identity', icon: Globe, color: 'text-blue-500' },
-    'hero': { label: 'Hero Experience', icon: Sparkles, color: 'text-amber-500' },
-    'payment': { label: 'Financial Gateways', icon: CreditCard, color: 'text-emerald-500' },
-    'config': { label: 'System Guard', icon: SettingsIcon, color: 'text-indigo-500' },
-    'about': { label: 'Brand Story', icon: Layout, color: 'text-rose-500' },
-    'sections': { label: 'Site Content', icon: Layout, color: 'text-purple-500' },
-    'social': { label: 'Digital Presence', icon: Activity, color: 'text-sky-500' }
+const GROUP_CONFIG: Record<string, { label: string, icon: any, category: string, description: string }> = {
+    // ── Brand & Identity ──
+    'identity': { label: 'Brand Identity', icon: Globe, category: 'brand', description: 'Logos, favicons, and site branding.' },
+    'social_links': { label: 'Social Links', icon: Share2, category: 'brand', description: 'Social media handles and platform links.' },
+
+    // ── Hero Visuals ──
+    'hero_backgrounds': { label: 'Backgrounds', icon: ImageIcon, category: 'hero', description: 'Hero background images for all page sections.' },
+    'hero_text': { label: 'Titles & Copy', icon: Type, category: 'hero', description: 'Headlines, subtitles, and badge text for hero banners.' },
+
+    // ── Content ──
+    'home_hero': { label: 'Landing — Hero', icon: Sparkles, category: 'content', description: 'Homepage headline, subtitle, and call-to-action button.' },
+    'about_page': { label: 'Landing — How We Operate', icon: Info, category: 'content', description: 'Three-step process cards, images, and section headings.' },
+    'site_stats': { label: 'Landing — Impact Metrics', icon: BarChart3, category: 'content', description: 'Numerical counters showing platform growth.' },
+    'market_narratives': { label: 'Pages — Section Content', icon: Layout, category: 'content', description: 'Body text for featured sections and portals.' },
+
+    // ── System & Config ──
+    'support_info': { label: 'Contact & Support', icon: Smartphone, category: 'system', description: 'Contact emails, phone numbers, and addresses.' },
+    'financial_config': { label: 'Fees & Payments', icon: CreditCard, category: 'system', description: 'Platform fees, currency settings, and payout thresholds.' },
 };
 
 export default function UnifiedSettingsPage() {
@@ -75,7 +81,23 @@ export default function UnifiedSettingsPage() {
     const [files, setFiles] = useState<Record<string, File>>({});
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+    const [activeMainTab, setActiveMainTab] = useState("brand");
+
     const BACKEND_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/api$/, '');
+    
+    const getMediaUrl = (url: any) => {
+        if (!url || typeof url !== 'string') {
+            if (url && typeof url === 'object') {
+                console.warn("getMediaUrl received an object instead of string:", url);
+            }
+            return "";
+        }
+        const finalUrl = url.startsWith('http') ? url : `${BACKEND_URL}${url}`;
+        if (finalUrl.includes('/storage/')) {
+            return finalUrl.replace('/storage/', '/cms-assets/');
+        }
+        return finalUrl;
+    };
 
     useEffect(() => {
         fetchSettings();
@@ -132,286 +154,216 @@ export default function UnifiedSettingsPage() {
     if (isLoading) {
         return (
             <div className="max-w-[1600px] mx-auto space-y-8 p-4 md:p-8 animate-pulse">
-                <div className="h-12 w-64 bg-muted rounded-2xl" />
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    <div className="lg:col-span-3 space-y-4">
-                        {[1, 2, 3, 4, 5].map(i => <Skeleton key={i} className="h-14 w-full rounded-2xl" />)}
-                    </div>
-                    <div className="lg:col-span-9 space-y-6">
-                        {[1, 2].map(i => <Skeleton key={i} className="h-64 w-full rounded-3xl" />)}
+                <div className="h-10 w-64 bg-muted rounded-xl" />
+                <div className="space-y-6">
+                    <div className="h-14 w-full bg-muted rounded-2xl" />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {[1, 2, 3].map(i => <Skeleton key={i} className="h-48 w-full rounded-3xl" />)}
                     </div>
                 </div>
             </div>
         );
     }
 
-    const groups = Object.keys(settings).sort((a, b) => {
-        const order = ['branding', 'hero', 'payment', 'config', 'about', 'sections', 'social'];
-        return order.indexOf(a) - order.indexOf(b);
-    });
+    const getGroupsByCategory = (cat: string) => {
+        return Object.entries(GROUP_CONFIG)
+            .filter(([_, config]) => config.category === cat)
+            .map(([groupId, config]) => ({
+                id: groupId,
+                ...config,
+                settings: settings[groupId] || []
+            }))
+            .filter(group => group.settings.length > 0);
+    };
+
+    const categories = [
+        { id: 'brand', label: 'Brand & Identity', icon: Palette },
+        { id: 'hero', label: 'Hero Visuals', icon: Layers },
+        { id: 'content', label: 'Content', icon: FileText },
+        { id: 'system', label: 'System & Config', icon: SettingsIcon },
+        { id: 'navigation', label: 'Navigation', icon: Navigation },
+    ];
 
     return (
-        <div className="max-w-[1600px] mx-auto space-y-8 pb-20 p-4 md:p-8">
-            {/* Control Center Header */}
-            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 bg-white dark:bg-zinc-900 shadow-sm border border-border/40 p-6 md:p-8 rounded-[2.5rem] relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl group-hover:bg-primary/10 transition-colors" />
-                <div className="space-y-2 relative z-10">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2.5 bg-primary/10 text-primary rounded-xl">
-                            <Zap className="w-5 h-5 fill-primary" />
+        <div className="max-w-[1600px] mx-auto space-y-10 pb-20 p-4 md:p-6 bg-[#F8FAFC] dark:bg-black min-h-screen">
+            <DashboardPageHeader 
+                title="Platform Architecture" 
+                subtitle="Consolidated site parameters, narratives, and global configurations."
+            >
+                <Button 
+                    onClick={handleSave} 
+                    disabled={isSaving} 
+                    className="rounded-xl bg-primary text-white hover:bg-black h-12 px-8 font-bold shadow-lg shadow-primary/20 transition-all flex items-center gap-2"
+                >
+                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                    Save Configuration
+                </Button>
+            </DashboardPageHeader>
+
+            <Tabs defaultValue="brand" onValueChange={setActiveMainTab} className="w-full">
+                <div className="flex items-center justify-between mb-8 overflow-x-auto no-scrollbar scroll-smooth">
+                    <TabsList className="bg-transparent h-auto p-0 flex gap-8 border-b border-border/10 rounded-none w-full justify-start">
+                        {categories.map(cat => (
+                            <TabsTrigger 
+                                key={cat.id}
+                                value={cat.id} 
+                                className="relative h-14 px-0 rounded-none bg-transparent data-[state=active]:bg-transparent text-muted-foreground data-[state=active]:text-primary font-bold text-sm border-b-2 border-transparent data-[state=active]:border-primary transition-all flex items-center gap-2.5 group whitespace-nowrap"
+                            >
+                                <cat.icon className="w-4.5 h-4.5" />
+                                {cat.label}
+                            </TabsTrigger>
+                        ))}
+                    </TabsList>
+                </div>
+
+                {['brand', 'hero', 'content', 'system'].map(catId => (
+                    <TabsContent key={catId} value={catId} className="mt-0 focus:outline-none">
+                        <div className="space-y-12">
+                            {getGroupsByCategory(catId).map(group => (
+                                <section key={group.id} className="space-y-6">
+                                    <div className="flex items-center gap-4">
+                                        <div className={`p-3 rounded-2xl bg-white dark:bg-zinc-900 border border-border/40 shadow-sm text-primary`}>
+                                            <group.icon className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-xl font-bold tracking-tight text-foreground">{group.label}</h3>
+                                            <p className="text-xs font-medium text-muted-foreground">{group.description}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className={`grid grid-cols-1 ${group.id === 'hero_media' ? 'md:grid-cols-2 xl:grid-cols-3' : 'md:grid-cols-2 lg:grid-cols-2'} gap-6`}>
+                                        {group.settings.map(setting => (
+                                            <div key={setting.id}>
+                                                {setting.type === 'image' ? (
+                                                     <Card className="border border-border/40 bg-white dark:bg-zinc-900 rounded-2xl shadow-sm overflow-hidden group/media-card hover:border-primary/20 transition-all">
+                                                        <div className="p-4 border-b border-border/10 bg-muted/5 flex items-center justify-between">
+                                                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground truncate max-w-[80%]">
+                                                                {setting.label || setting.key.replace(/_/g, ' ')}
+                                                            </span>
+                                                            <ImageIcon className="w-3.5 h-3.5 text-muted-foreground/40" />
+                                                        </div>
+                                                        <div className="p-4 space-y-4">
+                                                            <div className="relative aspect-video rounded-xl overflow-hidden bg-muted/20 border border-border/40 group/asset">
+                                                                {setting.image_url ? (
+                                                                    <img 
+                                                                        src={getMediaUrl(setting.image_url)} 
+                                                                        alt={setting.label} 
+                                                                        className="w-full h-full object-cover transition-transform duration-500 group-hover/asset:scale-105" 
+                                                                    />
+                                                                ) : (
+                                                                    <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground/30 py-8">
+                                                                        <ImageIcon className="w-8 h-8 mb-2" />
+                                                                        <span className="text-[8px] font-black uppercase tracking-widest">Missing Asset</span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <FilePond
+                                                                files={files[setting.id] ? [files[setting.id]] : (typeof setting.image_url === 'string' && setting.image_url) ? [getMediaUrl(setting.image_url)] : []}
+                                                                onupdatefiles={(fileItems) => {
+                                                                    const file = fileItems[0]?.file as File | undefined;
+                                                                    if (file) {
+                                                                        setFiles(prev => ({ ...prev, [setting.id]: file }));
+                                                                    }
+                                                                }}
+                                                                allowMultiple={false}
+                                                                maxFiles={1}
+                                                                labelIdle='<span class="text-[10px] font-bold uppercase tracking-tighter">Update Visual</span>'
+                                                                className="tight-pond"
+                                                            />
+                                                        </div>
+                                                    </Card>
+                                                ) : (
+                                                    <Card className="p-6 border border-border/40 bg-white dark:bg-zinc-900 rounded-2xl shadow-sm space-y-3 hover:border-primary/20 transition-all">
+                                                        <div className="flex items-center justify-between gap-4">
+                                                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground truncate">
+                                                                {setting.label || setting.key.replace(/_/g, ' ')}
+                                                            </label>
+                                                            <div className="p-1 px-2.5 bg-primary/5 rounded-lg text-[10px] font-bold text-primary/60 border border-primary/10">
+                                                                {setting.key}
+                                                            </div>
+                                                        </div>
+                                                        {setting.type === 'textarea' ? (
+                                                            <textarea 
+                                                                className="w-full min-h-[120px] bg-muted/5 border border-border/40 rounded-xl px-4 py-3 text-foreground text-sm font-semibold outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all resize-none leading-relaxed"
+                                                                value={setting.value || ""}
+                                                                onChange={(e) => handleValueChange(setting.group, setting.id, e.target.value)}
+                                                            />
+                                                        ) : (
+                                                            <Input 
+                                                                className="h-12 bg-muted/5 border-border/40 px-4 font-bold text-foreground focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all rounded-xl"
+                                                                value={setting.value || ""}
+                                                                onChange={(e) => handleValueChange(setting.group, setting.id, e.target.value)}
+                                                            />
+                                                        )}
+                                                        {setting.description && (
+                                                            <p className="text-[10px] font-medium text-muted-foreground/60 italic px-1">
+                                                                {setting.description}
+                                                            </p>
+                                                        )}
+                                                    </Card>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </section>
+                            ))}
                         </div>
-                        <h1 className="text-3xl font-black text-foreground tracking-tight uppercase italic">Platform CMS</h1>
+                    </TabsContent>
+                ))}
+
+                <TabsContent value="navigation" className="mt-0 focus:outline-none">
+                    <div className="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-border/40 shadow-sm min-h-[600px]">
+                        <div className="mb-10 flex items-center gap-4">
+                            <div className="p-3 bg-primary/10 text-primary rounded-2xl">
+                                <Navigation className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h3 className="text-2xl font-bold tracking-tight text-foreground">Global Navigation Engine</h3>
+                                <p className="text-sm font-medium text-muted-foreground">Manage header, footer, and utility links across the primary storefront.</p>
+                            </div>
+                        </div>
+                        <NavigationManager />
                     </div>
-                    <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                        <Lock className="w-3.5 h-3.5" /> Secure system-wide configuration terminal
-                    </p>
-                </div>
-                <div className="flex flex-wrap items-center gap-4 relative z-10">
-                    <Button asChild variant="outline" className="rounded-2xl border-border h-14 px-6 font-bold text-[11px] tracking-widest uppercase hover:bg-muted transition-all">
-                        <Link href="/" target="_blank" className="flex items-center gap-2.5">
-                            <ExternalLink className="w-4 h-4" />
-                            Live Preview
-                        </Link>
-                    </Button>
-                    <Button 
-                        onClick={handleSave} 
-                        disabled={isSaving} 
-                        className="rounded-2xl bg-foreground text-background hover:bg-zinc-800 dark:hover:bg-white dark:hover:text-black h-14 px-10 font-bold text-[11px] tracking-widest uppercase shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] transition-all gap-3"
-                    >
-                        {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                        Commit Changes
-                    </Button>
-                </div>
+                </TabsContent>
+            </Tabs>
+
+            {/* Floating Environment Badge */}
+            <div className="fixed bottom-8 right-8 z-50">
+                {metadata && (
+                    <div className="bg-zinc-900 dark:bg-zinc-800 text-white rounded-3xl p-3 px-6 shadow-2xl flex items-center gap-5 border border-white/10 backdrop-blur-3xl">
+                        <div className="flex items-center gap-2.5">
+                            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_15px_rgba(16,185,129,0.5)]" />
+                            <span className="text-[11px] font-bold text-zinc-400">Node v{metadata.version}</span>
+                        </div>
+                        <div className="h-4 w-px bg-white/10" />
+                        <span className="text-[11px] font-black uppercase tracking-widest text-amber-500">{metadata.environment}</span>
+                    </div>
+                )}
             </div>
 
-            <Tabs defaultValue={groups[0]} orientation="vertical" className="w-full">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                    {/* Navigation Sidebar */}
-                    <aside className="lg:col-span-3 xl:col-span-3 space-y-8 sticky top-24">
-                        <div className="bg-white dark:bg-zinc-900 border border-border/40 rounded-[2rem] p-4 shadow-sm overflow-hidden">
-                            <h2 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] mb-6 ml-4 mt-2">Configuration Clusters</h2>
-                            <TabsList className="bg-transparent flex flex-col w-full h-auto p-0 space-y-1.5 items-stretch border-none shadow-none">
-                                {groups.map(group => {
-                                    const info = GROUP_LABELS[group] || { label: group.replace('_', ' '), icon: Layout, color: 'text-zinc-500' };
-                                    return (
-                                        <TabsTrigger 
-                                            key={group} 
-                                            value={group} 
-                                            className="group relative justify-start px-5 py-4 rounded-2xl text-[13px] font-bold data-[state=active]:bg-primary/[0.08] data-[state=active]:text-primary text-muted-foreground hover:bg-muted/50 transition-all flex items-center gap-4 border-none shadow-none text-left"
-                                        >
-                                            <div className={`p-2 rounded-xl transition-colors ${info.color} bg-background group-data-[state=active]:bg-primary group-data-[state=active]:text-white shadow-sm`}>
-                                                <info.icon className="w-4 h-4" />
-                                            </div>
-                                            <span className="flex-1 truncate">{info.label}</span>
-                                            <ChevronRight className="w-4 h-4 opacity-0 group-data-[state=active]:opacity-100 group-data-[state=active]:translate-x-1 transition-all" />
-                                        </TabsTrigger>
-                                    );
-                                })}
-                                <TabsTrigger value="faqs" className="group relative justify-start px-5 py-4 rounded-2xl text-[13px] font-bold data-[state=active]:bg-primary/[0.08] data-[state=active]:text-primary text-muted-foreground hover:bg-muted/50 transition-all flex items-center gap-4 border-none shadow-none text-left">
-                                    <div className="p-2 rounded-xl transition-colors text-purple-500 bg-background group-data-[state=active]:bg-primary group-data-[state=active]:text-white shadow-sm">
-                                        <MessageSquare className="w-4 h-4" />
-                                    </div>
-                                    <span className="flex-1 truncate">FAQ Management</span>
-                                    <ChevronRight className="w-4 h-4 opacity-0 group-data-[state=active]:opacity-100 group-data-[state=active]:translate-x-1 transition-all" />
-                                </TabsTrigger>
-                                <TabsTrigger value="testimonials" className="group relative justify-start px-5 py-4 rounded-2xl text-[13px] font-bold data-[state=active]:bg-primary/[0.08] data-[state=active]:text-primary text-muted-foreground hover:bg-muted/50 transition-all flex items-center gap-4 border-none shadow-none text-left">
-                                    <div className="p-2 rounded-xl transition-colors text-amber-500 bg-background group-data-[state=active]:bg-primary group-data-[state=active]:text-white shadow-sm">
-                                        <Star className="w-4 h-4" />
-                                    </div>
-                                    <span className="flex-1 truncate">Testimonials</span>
-                                    <ChevronRight className="w-4 h-4 opacity-0 group-data-[state=active]:opacity-100 group-data-[state=active]:translate-x-1 transition-all" />
-                                </TabsTrigger>
-                                <TabsTrigger value="navigation" className="group relative justify-start px-5 py-4 rounded-2xl text-[13px] font-bold data-[state=active]:bg-primary/[0.08] data-[state=active]:text-primary text-muted-foreground hover:bg-muted/50 transition-all flex items-center gap-4 border-none shadow-none text-left">
-                                    <div className="p-2 rounded-xl transition-colors text-rose-500 bg-background group-data-[state=active]:bg-primary group-data-[state=active]:text-white shadow-sm">
-                                        <Navigation className="w-4 h-4" />
-                                    </div>
-                                    <span className="flex-1 truncate">Site Navigation</span>
-                                    <ChevronRight className="w-4 h-4 opacity-0 group-data-[state=active]:opacity-100 group-data-[state=active]:translate-x-1 transition-all" />
-                                </TabsTrigger>
-                            </TabsList>
-                        </div>
-
-                        {/* System Metadata Card */}
-                        {metadata && (
-                            <div className="bg-zinc-900 dark:bg-zinc-900 border border-zinc-800 rounded-[2rem] p-6 text-white shadow-2xl relative overflow-hidden group/meta">
-                                <div className="absolute bottom-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full -mb-16 -mr-16 blur-2xl" />
-                                <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Terminal Pulse</span>
-                                </div>
-                                <div className="space-y-4 relative z-10">
-                                    <div className="flex flex-col gap-1">
-                                        <span className="text-[10px] font-bold text-zinc-500 uppercase">Version Manifest</span>
-                                        <span className="text-xl font-black tracking-tight">{metadata.version}</span>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4 mt-8 pt-6 border-t border-zinc-800">
-                                        <div className="space-y-1">
-                                            <span className="text-[9px] font-bold text-zinc-500 uppercase">Environment</span>
-                                            <div className="flex items-center gap-1.5 text-[10px] font-black uppercase text-amber-400">
-                                                <Activity className="w-3 h-3" />
-                                                {metadata.environment}
-                                            </div>
-                                        </div>
-                                        <div className="space-y-1">
-                                            <span className="text-[9px] font-bold text-zinc-500 uppercase">Health Status</span>
-                                            <div className="flex items-center gap-1.5 text-[10px] font-black uppercase text-emerald-400">
-                                                <ShieldCheck className="w-3 h-3" />
-                                                Active
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </aside>
-
-                    {/* Content Area */}
-                    <div className="lg:col-span-9 xl:col-span-9 focus:outline-none min-h-[600px]">
-                        <AnimatePresence mode="wait">
-                            {groups.map(group => (
-                                <TabsContent key={group} value={group} className="mt-0 focus:outline-none">
-                                    <motion.div 
-                                        initial={{ opacity: 0, x: 20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: -10 }}
-                                        transition={{ duration: 0.4 }}
-                                        className="space-y-8"
-                                    >
-                                        <div className="grid grid-cols-1 gap-8">
-                                            {settings[group].map((setting) => (
-                                                <Card key={setting.id} className="border border-border/40 bg-white dark:bg-zinc-900 rounded-[2.5rem] shadow-sm hover:shadow-md transition-shadow overflow-hidden group/card">
-                                                    <div className="px-8 py-8 md:px-10 md:py-10 border-b border-border/30 bg-muted/5">
-                                                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                                                            <div className="space-y-2">
-                                                                <div className="flex items-center gap-3">
-                                                                    <div className="w-1.5 h-6 bg-primary rounded-full group-hover/card:scale-y-110 transition-transform" />
-                                                                    <CardTitle className="text-lg font-black text-foreground uppercase tracking-tight">
-                                                                        {setting.label || setting.key.replace(/_/g, ' ')}
-                                                                    </CardTitle>
-                                                                </div>
-                                                                <CardDescription className="text-sm font-medium text-muted-foreground ml-4">
-                                                                    {setting.description || `Configuring the ${setting.key.replace(/_/g, ' ')} for the platform.`}
-                                                                </CardDescription>
-                                                            </div>
-                                                            <div className="px-5 py-2.5 bg-background rounded-2xl border border-border/50 text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                                                                <Zap className="w-3.5 h-3.5" />
-                                                                {setting.type} Property
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <CardContent className="px-8 py-10 md:px-10 md:p-12">
-                                                        <div className="space-y-6">
-                                                            {setting.type === 'textarea' ? (
-                                                                <div className="relative">
-                                                                    <textarea 
-                                                                        className="w-full min-h-[160px] bg-muted/20 border border-border/50 rounded-3xl px-6 py-6 text-foreground text-sm font-semibold outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all resize-none leading-relaxed"
-                                                                        value={setting.value || ""}
-                                                                        onChange={(e) => handleValueChange(group, setting.id, e.target.value)}
-                                                                        placeholder={`Enter deployment payload for ${setting.key}...`}
-                                                                    />
-                                                                </div>
-                                                            ) : setting.type === 'image' ? (
-                                                                <div className="grid grid-cols-1 md:grid-cols-5 gap-10 items-start">
-                                                                    <div className="md:col-span-2 space-y-4">
-                                                                        <div className="flex items-center gap-2 mb-2">
-                                                                            <ImageIcon className="w-4 h-4 text-primary" />
-                                                                            <span className="text-[10px] font-black text-foreground uppercase tracking-widest">Active Asset</span>
-                                                                        </div>
-                                                                        <div className="relative aspect-video rounded-3xl overflow-hidden border-2 border-dashed border-border/60 bg-muted/20 flex items-center justify-center group/asset p-4">
-                                                                            {setting.image_url ? (
-                                                                                <img 
-                                                                                    src={setting.image_url.startsWith('http') ? setting.image_url : `${BACKEND_URL}${setting.image_url}`} 
-                                                                                    alt={setting.label} 
-                                                                                    className="max-h-full max-w-full object-contain transition-transform duration-700 group-hover/asset:scale-105" 
-                                                                                />
-                                                                            ) : (
-                                                                                <div className="flex flex-col items-center gap-4 text-muted-foreground/40">
-                                                                                    <div className="p-4 bg-muted/50 rounded-full">
-                                                                                        <ImageIcon className="w-10 h-10" />
-                                                                                    </div>
-                                                                                    <span className="text-[10px] font-black uppercase tracking-widest">No Asset Deployed</span>
-                                                                                </div>
-                                                                            )}
-                                                                        </div>
-                                                                    </div>
-                                                                    <div className="md:col-span-3 space-y-4">
-                                                                        <div className="flex items-center gap-2 mb-2">
-                                                                            <Activity className="w-4 h-4 text-primary" />
-                                                                            <span className="text-[10px] font-black text-foreground uppercase tracking-widest">Update Stream</span>
-                                                                        </div>
-                                                                        <FilePond
-                                                                            files={files[setting.id] ? [files[setting.id]] : []}
-                                                                            onupdatefiles={(fileItems) => {
-                                                                                const file = fileItems[0]?.file as File | undefined;
-                                                                                if (file) {
-                                                                                    setFiles(prev => ({ ...prev, [setting.id]: file }));
-                                                                                }
-                                                                            }}
-                                                                            allowMultiple={false}
-                                                                            maxFiles={1}
-                                                                            name={`file_${setting.id}`}
-                                                                            labelIdle='Drop professional asset or <span class="filepond--label-action">Browse System</span>'
-                                                                            className="settings-upload-pond"
-                                                                        />
-                                                                    </div>
-                                                                </div>
-                                                            ) : (
-                                                                <div className="relative group/input">
-                                                                    <div className="absolute left-6 top-1/2 -translate-y-1/2 text-muted-foreground/50 group-focus-within/input:text-primary transition-colors">
-                                                                        {setting.key.includes('email') ? <Mail className="w-5 h-5" /> : 
-                                                                         setting.key.includes('phone') ? <Phone className="w-5 h-5" /> :
-                                                                         setting.key.includes('address') ? <MapPin className="w-5 h-5" /> :
-                                                                         <SettingsIcon className="w-5 h-5" />}
-                                                                    </div>
-                                                                    <Input 
-                                                                        className="h-16 bg-muted/20 border-border/50 pl-16 pr-8 font-bold text-foreground focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all rounded-2xl shadow-sm border-2"
-                                                                        value={setting.value || ""}
-                                                                        onChange={(e) => handleValueChange(group, setting.id, e.target.value)}
-                                                                        maxLength={255}
-                                                                    />
-                                                                </div>
-                                                            )}
-                                                            
-                                                            <div className="flex justify-between items-center bg-muted/10 p-4 rounded-2xl border border-border/30">
-                                                                <div className="flex items-center gap-3">
-                                                                    <div className="flex h-2 w-2 relative">
-                                                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                                                                    </div>
-                                                                    <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-[0.2em]">Real-time Status</span>
-                                                                </div>
-                                                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest tabular-nums">
-                                                                    {setting.value?.length || 0} <span className="text-muted-foreground/40 mx-1">/</span> 255
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                    </CardContent>
-                                                </Card>
-                                            ))}
-                                        </div>
-                                    </motion.div>
-                                </TabsContent>
-                            ))}
-                        </AnimatePresence>
-
-                        <TabsContent value="faqs" className="mt-0 focus:outline-none">
-                            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4 }}>
-                                <FAQManager />
-                            </motion.div>
-                        </TabsContent>
-                        <TabsContent value="testimonials" className="mt-0 focus:outline-none">
-                            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4 }}>
-                                <TestimonialManager />
-                            </motion.div>
-                        </TabsContent>
-                        <TabsContent value="navigation" className="mt-0 focus:outline-none">
-                            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4 }}>
-                                <NavigationManager />
-                            </motion.div>
-                        </TabsContent>
-                    </div>
-                </div>
-            </Tabs>
+            <style jsx global>{`
+                .tight-pond .filepond--root {
+                    margin-bottom: 0;
+                    font-family: inherit;
+                }
+                .tight-pond .filepond--panel-root {
+                    background-color: transparent !important;
+                    border: 2px dashed rgba(0,0,0,0.08) !important;
+                    border-radius: 16px;
+                }
+                .tight-pond .filepond--label-idle {
+                    font-size: 11px;
+                    font-weight: 800;
+                    color: #64748b;
+                }
+                .no-scrollbar::-webkit-scrollbar {
+                    display: none;
+                }
+                .no-scrollbar {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                }
+            `}</style>
         </div>
     );
 }

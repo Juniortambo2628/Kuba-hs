@@ -25,7 +25,7 @@ class DashboardController extends Controller
             ->limit(10)
             ->get();
 
-        return Inertia::render('Admin/Dashboard', [
+        return response()->json([
             'stats' => [
                 'users' => $userCount,
                 'providers' => $providerCount,
@@ -33,7 +33,7 @@ class DashboardController extends Controller
                 'completed_bookings' => $completedBookings,
                 'revenue' => round($revenue, 2),
             ],
-            'recentBookings' => $recentBookings,
+            'recent_bookings' => $recentBookings,
         ]);
     }
 }

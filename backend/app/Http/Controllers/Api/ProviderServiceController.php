@@ -7,6 +7,8 @@ use App\Models\ProviderService;
 use App\Models\Service;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\StoreProviderServiceRequest;
+use App\Services\ProviderManagementService;
 
 class ProviderServiceController extends Controller
 {
@@ -33,7 +35,7 @@ class ProviderServiceController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreProviderServiceRequest $request, ProviderManagementService $serviceManager)
     {
         $user = Auth::user();
         $provider = $user->provider;
@@ -42,30 +44,7 @@ class ProviderServiceController extends Controller
             return response()->json(['error' => 'Provider profile not found'], 404);
         }
 
-        $validated = $request->validate([
-            'service_id' => 'required|exists:services,id',
-            'base_price' => 'required|numeric|min:0',
-            'is_available' => 'boolean',
-            'pricing_type' => 'nullable|string|in:fixed,hourly,quote',
-            'min_hours' => 'nullable|integer|min:1',
-            'travel_fee' => 'nullable|numeric|min:0',
-            'equipment_included' => 'nullable|boolean',
-            'extra_configs' => 'nullable|array',
-        ]);
-
-        $providerService = $provider->providerServices()->updateOrCreate(
-            ['id' => $request->id ?? null],
-            [
-                'service_id' => $validated['service_id'],
-                'base_price' => $validated['base_price'],
-                'pricing_type' => $validated['pricing_type'] ?? 'fixed',
-                'min_hours' => $validated['min_hours'] ?? 1,
-                'travel_fee' => $validated['travel_fee'] ?? 0,
-                'equipment_included' => $validated['equipment_included'] ?? false,
-                'extra_configs' => $validated['extra_configs'] ?? null,
-                'is_available' => $validated['is_available'] ?? true,
-            ]
-        );
+        $providerService = $serviceManager->syncProviderService($provider, $request->validated());
 
         return response()->json([
             'message' => 'Service configuration synchronized successfully',
@@ -73,7 +52,7 @@ class ProviderServiceController extends Controller
         ]);
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $id, ProviderManagementService $serviceManager)
     {
         $user = Auth::user();
         $provider = $user->provider;
@@ -92,8 +71,7 @@ class ProviderServiceController extends Controller
             'extra_configs' => 'nullable|array',
         ]);
 
-        $providerService = $provider->providerServices()->findOrFail($id);
-        $providerService->update($validated);
+        $providerService = $serviceManager->updateProviderService($provider, $validated, $id);
 
         return response()->json([
             'message' => 'Service updated successfully',

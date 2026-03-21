@@ -54,6 +54,7 @@ export interface Provider {
   user?: User;
   services?: ProviderService[];
   reviews?: Review[];
+  starting_price?: number | string | null;
 }
 
 export interface ProviderService {
@@ -82,6 +83,8 @@ export interface Booking {
   service_id?: number;
   address_id?: number;
   scheduled_date: string;
+  rescheduled_at?: string;
+  cancellation_reason?: string;
   scheduled_time?: string;
   scheduled_end_date?: string;
   status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
@@ -190,6 +193,19 @@ export interface InvestorInquiry {
   created_at: string;
 }
 
+export interface CustomQuote {
+  id: string;
+  organization_name: string;
+  contact_person: string;
+  email: string;
+  phone: string;
+  organization_type: 'commercial' | 'cooperative' | 'other';
+  service_category: string;
+  description: string;
+  status: 'pending' | 'reviewed' | 'contacted' | 'contracted' | 'rejected';
+  created_at: string;
+}
+
 export interface EmailTemplate {
   id: string;
   key: string;
@@ -210,4 +226,14 @@ export interface Post {
   author_id: string | number;
   created_at: string;
   author?: User;
+}
+
+export interface ContactMessage {
+  id: string | number;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  status: 'new' | 'read' | 'replied';
+  created_at: string;
 }

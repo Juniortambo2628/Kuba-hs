@@ -21,6 +21,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         \Illuminate\Support\Facades\Schema::defaultStringLength(191);
-        \Illuminate\Support\Facades\Vite::prefetch(concurrency: 3);
+        Vite::prefetch(concurrency: 3);
+        \App\Models\Review::observe(\App\Observers\ReviewObserver::class);
     }
 }

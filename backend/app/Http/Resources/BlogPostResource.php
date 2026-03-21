@@ -21,8 +21,10 @@ class BlogPostResource extends JsonResource
             'slug' => $this->slug,
             'content' => $this->content,
             'excerpt' => $this->excerpt,
-            'image' => $this->image,
+            'image_url' => $this->image_url,
             'is_published' => $this->is_published,
+            'status' => $this->is_published ? 'published' : 'draft',
+            'view_count' => (int) ($this->view_count ?? 0),
             'author' => new UserResource($this->whenLoaded('author')),
             'created_at' => $this->created_at,
         ];

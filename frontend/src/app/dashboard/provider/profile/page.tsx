@@ -55,6 +55,7 @@ export default function ProviderProfile() {
         business_name: "",
         bio: "",
         location_name: "",
+        phone: user?.phone || "+254",
         latitude: null,
         longitude: null,
         experience_years: 0,
@@ -204,6 +205,20 @@ export default function ProviderProfile() {
                         onChange={(e) => setProfile({ ...profile, business_name: e.target.value })}
                         className="w-full h-12 pl-12 pr-4 bg-muted/50 border border-border rounded-xl text-[11px] font-bold focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground outline-none shadow-sm"
                         placeholder="e.g. Acme Services Ltd"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-muted-foreground tracking-wider ml-1">Contact Phone</label>
+                    <div className="relative group">
+                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                      <input 
+                        type="text" 
+                        value={profile.phone}
+                        onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+                        className="w-full h-12 pl-12 pr-4 bg-muted/50 border border-border rounded-xl text-[11px] font-bold focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground outline-none shadow-sm"
+                        placeholder="+254 700 000 000"
                       />
                     </div>
                   </div>

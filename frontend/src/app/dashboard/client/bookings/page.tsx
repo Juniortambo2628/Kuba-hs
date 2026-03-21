@@ -36,6 +36,9 @@ import { toast } from "sonner";
 import dynamic from "next/dynamic";
 import { DataToolbar } from "@/components/shared/DataToolbar";
 import { BookingProgressTracker } from "@/components/bookings/BookingProgressTracker";
+import { BookingStatusBadge } from "@/components/shared/BookingStatusBadge";
+import { BookingCard } from "@/components/shared/BookingCard";
+import { DashboardEmptyState } from "@/components/shared/DashboardEmptyState";
 
 import { Booking, User } from "@/types";
 
@@ -95,25 +98,6 @@ export default function ClientBookings() {
   return "Evening Session";
  };
 
- const getStatusStyle = (status: string) => {
-  switch (status.toLowerCase()) {
-   case 'completed': return 'text-foreground bg-muted';
-   case 'confirmed': return 'text-blue-600 bg-blue-50';
-   case 'pending': return 'text-amber-600 bg-muted';
-   case 'cancelled': return 'text-primary bg-muted';
-   default: return 'text-gray-600 bg-muted';
-  }
- };
-
- const getStatusIcon = (status: string) => {
-  switch (status.toLowerCase()) {
-   case 'completed': return <CheckCircle className="w-3.5 h-3.5" />;
-   case 'confirmed': return <Clock className="w-3.5 h-3.5" />;
-   case 'pending': return <AlertCircle className="w-3.5 h-3.5" />;
-   case 'cancelled': return <XCircle className="w-3.5 h-3.5" />;
-   default: return null;
-  }
- };
 
  if (isLoading) {
   return (
@@ -208,12 +192,9 @@ export default function ClientBookings() {
          <TableCell className="py-6 font-semibold text-foreground text-sm">
           KES {booking.estimated_price.toLocaleString()}
          </TableCell>
-         <TableCell className="py-6">
-          <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full ${getStatusStyle(booking.status)} font-semibold text-[9px] uppercase tracking-normal`}>
-            {getStatusIcon(booking.status)}
-            {booking.status}
-          </div>
-         </TableCell>
+          <TableCell className="py-6">
+           <BookingStatusBadge status={booking.status} />
+          </TableCell>
          <TableCell className="pr-10 py-6 text-right">
           <div className="flex items-center justify-end gap-2">
             <BookingActions 
@@ -228,19 +209,20 @@ export default function ClientBookings() {
          </TableCell>
         </TableRow>
        ))}
-       {bookings.length === 0 && (
-        <TableRow>
-         <TableCell colSpan={6} className="h-80 text-center">
-          <div className="flex flex-col items-center justify-center gap-4 text-muted-foreground">
-            <ClipboardList className="w-12 h-12 opacity-20" />
-            <p className="text-[10px] font-semibold uppercase tracking-normal tracking-normal ">No bookings found in your history</p>
-            <Button asChild variant="link" className="text-primary font-bold uppercase text-[9px] tracking-normal underline decoration-2 underline-offset-4">
-              <Link href="/services">Book your first service</Link>
-            </Button>
-          </div>
-         </TableCell>
-        </TableRow>
-       )}
+        {bookings.length === 0 && (
+         <TableRow>
+          <TableCell colSpan={6} className="p-0">
+           <DashboardEmptyState
+             title="No bookings found in your history"
+             className="min-h-[400px]"
+           >
+             <Button asChild variant="link" className="text-primary font-bold uppercase text-[9px] tracking-normal underline decoration-2 underline-offset-4">
+               <Link href="/services">Book your first service</Link>
+             </Button>
+           </DashboardEmptyState>
+          </TableCell>
+         </TableRow>
+        )}
       </TableBody>
      </Table>
     </CardContent>
@@ -248,72 +230,25 @@ export default function ClientBookings() {
    ) : (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
      {bookings.length === 0 ? (
-       <div className="col-span-full h-48 flex flex-col items-center justify-center text-muted-foreground border-2 border-dashed border-border rounded-[2.5rem] ">
-        <ClipboardList className="w-12 h-12 opacity-20 mb-4" />
-        No bookings found
-       </div>
+       <DashboardEmptyState
+         title="No bookings found"
+         className="col-span-full h-48"
+       />
      ) : bookings.map((booking) => (
-       <Card key={booking.id} className="border border-border group overflow-hidden border-none cursor-pointer hover:shadow-md transition-all bg-card/50 backdrop-blur-md">
-         <CardContent className="p-0 flex flex-col">
-          <div className="p-6 flex-1 flex flex-col gap-6">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-semibold text-primary uppercase bg-muted px-2 py-1 rounded-md">
-                #{booking.booking_number}
-              </span>
-              <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full ${getStatusStyle(booking.status)} font-semibold text-[9px] uppercase tracking-normal`}>
-                {getStatusIcon(booking.status)}
-                {booking.status}
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-muted/50 flex flex-col items-center justify-center border border-border group-hover:border-primary/50 transition-all shrink-0">
-                <span className="text-[9px] font-semibold text-muted-foreground uppercase">
-                  {new Date(booking.scheduled_date).toLocaleString('default', { month: 'short' })}
-                </span>
-                <span className="text-xl font-bold text-foreground leading-none mt-0.5">
-                  {new Date(booking.scheduled_date).getDate()}
-                </span>
-              </div>
-              <div className="space-y-1">
-                <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">
-                  {booking.service?.name}
-                </h3>
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Professional Service</p>
-              </div>
-            </div>
-
-            <div className="px-6 py-4 bg-muted/30 border-y border-border/50">
-                <BookingProgressTracker status={booking.status} paymentStatus={booking.payment_status} />
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4 border-b border-border py-4 px-6">
-              <div className="space-y-1">
-                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Scheduled Time</p>
-                <div className="flex items-center gap-1.5 text-[10px] font-semibold text-foreground">
-                  <Clock className="w-3 h-3 text-muted-foreground mb-0.5" /> {getTimeSession(booking.scheduled_date)}
-                </div>
-              </div>
-              <div className="space-y-1 pl-4 border-l border-border">
-                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Price Est.</p>
-                <div className="flex items-center gap-1.5 text-sm font-bold text-foreground">
-                  KES {booking.estimated_price.toLocaleString()}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between pt-2">
-               <BookingActions 
-                booking={booking} 
-                userEmail={user?.email || ""} 
-                onRefresh={() => fetchBookings(searchQuery, filterStatus)}
-                onMessage={handleMessageProvider}
-                isStartingChat={isStartingChat === booking.id}
-              />
-            </div>
-          </div>
-         </CardContent>
-       </Card>
+       <BookingCard
+          key={booking.id}
+          booking={booking}
+          type="client"
+          actions={
+            <BookingActions 
+             booking={booking} 
+             userEmail={user?.email || ""} 
+             onRefresh={() => fetchBookings(searchQuery, filterStatus)}
+             onMessage={handleMessageProvider}
+             isStartingChat={isStartingChat === booking.id}
+           />
+          }
+       />
      ))}
     </div>
    )}
