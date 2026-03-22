@@ -122,7 +122,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/invoices/{bookingId}/download', [\App\Http\Controllers\Api\InvoiceController::class, 'download']);
 
     // Admin routes
-    Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
+    Route::group(['prefix' => 'admin', 'as' => 'api.admin.'], function () {
         Route::get('/analytics', [\App\Http\Controllers\Admin\AnalyticsController::class, 'index']);
         Route::get('/bookings', [\App\Http\Controllers\Admin\BookingController::class, 'index']);
         Route::get('/payments', [\App\Http\Controllers\Admin\PaymentController::class, 'index']);
