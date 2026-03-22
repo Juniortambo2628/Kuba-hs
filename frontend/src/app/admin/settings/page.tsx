@@ -146,7 +146,8 @@ export default function UnifiedSettingsPage() {
             return "";
         }
         const finalUrl = url.startsWith('http') ? url : `${BACKEND_URL}${url}`;
-        if (finalUrl.includes('/storage/')) {
+        // Only use /cms-assets/ proxy in local dev (artisan serve CORS workaround)
+        if (finalUrl.includes('localhost') && finalUrl.includes('/storage/')) {
             return finalUrl.replace('/storage/', '/cms-assets/');
         }
         return finalUrl;
@@ -187,7 +188,10 @@ export default function UnifiedSettingsPage() {
                 compressedFiles[id] = await compressImage(file);
             }
             
-            allSettings.forEach((s, index) => {
+            // Filter out json type settings (handled by their own components)
+            const saveable = allSettings.filter(s => s.type !== 'json');
+            
+            saveable.forEach((s, index) => {
                 formData.append(`settings[${index}][id]`, s.id);
                 formData.append(`settings[${index}][value]`, s.value || "");
                 

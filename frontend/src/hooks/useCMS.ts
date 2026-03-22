@@ -52,8 +52,8 @@ export function useCMS() {
     const url = setting?.image_url || setting?.value;
     if (!url || (setting?.type === 'image' && !url)) return fallback;
     const finalUrl = url.startsWith('http') ? url : `${BACKEND_URL}${url}`;
-    // Use the local CORS proxy for storage assets when in development
-    if (finalUrl.includes('/storage/')) {
+    // Only use /cms-assets/ proxy in local dev (artisan serve CORS workaround)
+    if (finalUrl.includes('localhost') && finalUrl.includes('/storage/')) {
         return finalUrl.replace('/storage/', '/cms-assets/');
     }
     return finalUrl;
