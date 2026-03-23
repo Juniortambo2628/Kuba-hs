@@ -116,11 +116,10 @@ function ProvidersContent() {
   return (
     <>
       <HighImpactHero
-        title={searchQuery ? `Professionals for "${searchQuery}"` : getS('hero_media', 'providers_hero_title', "Our Verified Professionals")}
-        subtitle={getS('hero_media', 'providers_hero_subtitle', "Connect with top-rated local experts specialized in your selected industry verticals.")}
-        badge={searchQuery ? "Search Results" : getS('hero_media', 'providers_hero_badge', "Verified Professionals")}
-        cmsKey="providers_hero_image"
-        cmsGroup="hero_media"
+        title={searchQuery ? `Professionals for "${searchQuery}"` : getS('hero_text', 'providers_hero_title', "Our Verified Professionals")}
+        subtitle={getS('hero_text', 'providers_hero_subtitle', "Connect with top-rated local experts specialized in your selected industry verticals.")}
+        badge={searchQuery ? "Search Results" : getS('hero_text', 'providers_hero_badge', "Verified Professionals")}
+        cmsKey="providers"
       />
 
       <div className="flex-1 py-10 md:py-16 bg-white dark:bg-[#0B0F19] transition-colors duration-300">

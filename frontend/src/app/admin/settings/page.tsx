@@ -308,33 +308,21 @@ export default function UnifiedSettingsPage() {
                                                             <ImageIcon className="w-3.5 h-3.5 text-muted-foreground/40" />
                                                         </div>
                                                         <div className="p-4 space-y-4">
-                                                            <div className="relative aspect-video rounded-xl overflow-hidden bg-muted/20 border border-border/40 group/asset">
-                                                                {setting.image_url ? (
-                                                                    <img 
-                                                                        src={getMediaUrl(setting.image_url)} 
-                                                                        alt={setting.label} 
-                                                                        className="w-full h-full object-cover transition-transform duration-500 group-hover/asset:scale-105" 
-                                                                    />
-                                                                ) : (
-                                                                    <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground/30 py-8">
-                                                                        <ImageIcon className="w-8 h-8 mb-2" />
-                                                                        <span className="text-[8px] font-black uppercase tracking-widest">Missing Asset</span>
-                                                                    </div>
-                                                                )}
+                                                            <div className="relative aspect-video rounded-xl overflow-hidden bg-muted/5 border border-border/10 group/asset flex items-center justify-center">
+                                                                <FilePond
+                                                                    files={files[setting.id] ? [files[setting.id]] : (typeof setting.image_url === 'string' && setting.image_url) ? [getMediaUrl(setting.image_url)] : []}
+                                                                    onupdatefiles={(fileItems) => {
+                                                                        const file = fileItems[0]?.file as File | undefined;
+                                                                        if (file) {
+                                                                            setFiles(prev => ({ ...prev, [setting.id]: file }));
+                                                                        }
+                                                                    }}
+                                                                    allowMultiple={false}
+                                                                    maxFiles={1}
+                                                                    labelIdle='<div class="flex flex-col items-center gap-1"><span class="text-primary/60 font-bold uppercase text-[10px]">Update Visual</span><span class="text-[8px] text-muted-foreground/50">Drop image or Click</span></div>'
+                                                                    className="w-full h-full"
+                                                                />
                                                             </div>
-                                                            <FilePond
-                                                                files={files[setting.id] ? [files[setting.id]] : (typeof setting.image_url === 'string' && setting.image_url) ? [getMediaUrl(setting.image_url)] : []}
-                                                                onupdatefiles={(fileItems) => {
-                                                                    const file = fileItems[0]?.file as File | undefined;
-                                                                    if (file) {
-                                                                        setFiles(prev => ({ ...prev, [setting.id]: file }));
-                                                                    }
-                                                                }}
-                                                                allowMultiple={false}
-                                                                maxFiles={1}
-                                                                labelIdle='<span class="text-[10px] font-bold uppercase tracking-tighter">Update Visual</span>'
-                                                                className="tight-pond"
-                                                            />
                                                         </div>
                                                     </Card>
                                                 ) : (

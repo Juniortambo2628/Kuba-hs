@@ -23,11 +23,10 @@ export default function AboutPage() {
       <Navbar />
 
       <HighImpactHero
-        title={getS('hero_media', 'about_hero_title', 'About KUBA')}
-        subtitle={getS('hero_media', 'about_hero_subtitle', 'Redefining how home services are delivered across the continent.')}
-        badge={getS('hero_media', 'about_hero_badge', 'Who We Are')}
-        cmsKey="about_hero_image"
-        cmsGroup="hero_media"
+        title={getS('hero_text', 'about_hero_title', 'About KUBA')}
+        subtitle={getS('hero_text', 'about_hero_subtitle', 'Redefining how home services are delivered across the continent.')}
+        badge={getS('hero_text', 'about_hero_badge', 'Who We Are')}
+        cmsKey="about"
       />
 
       {/* Our Story */}

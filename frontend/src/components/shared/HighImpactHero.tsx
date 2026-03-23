@@ -30,7 +30,7 @@ export function HighImpactHero({
   badge,
   bgImage: propBgImage,
   cmsKey,
-  cmsGroup = 'hero_media',
+  cmsGroup = 'hero_text',
   breadcrumbs,
   fullScreen = false,
   children,
@@ -39,10 +39,13 @@ export function HighImpactHero({
   const { getS, getImg } = useCMS();
 
   // Resolution order: Prop > CMS > Radial Gradient Fallback
-  const heroBackground = propBgImage || (cmsKey ? getImg(cmsGroup, cmsKey, "") : "");
-  const displayTitle = title || (cmsKey ? getS(cmsGroup, `${cmsKey}_title`, "") : "");
-  const displaySubtitle = subtitle || (cmsKey ? getS(cmsGroup, `${cmsKey}_subtitle`, "") : "");
-  const displayBadge = badge || (cmsKey ? getS(cmsGroup, `${cmsKey}_badge`, "") : "");
+  // If we are using the default hero_text group, images should come from hero_backgrounds
+  const imgGroup = cmsGroup === 'hero_text' ? 'hero_backgrounds' : cmsGroup;
+  
+  const heroBackground = propBgImage || (cmsKey ? getImg(imgGroup, `${cmsKey}_hero_image`, "") : "");
+  const displayTitle = title || (cmsKey ? getS(cmsGroup, `${cmsKey}_hero_title`, "") : "");
+  const displaySubtitle = subtitle || (cmsKey ? getS(cmsGroup, `${cmsKey}_hero_subtitle`, "") : "");
+  const displayBadge = badge || (cmsKey ? getS(cmsGroup, `${cmsKey}_hero_badge`, "") : "");
 
   return (
     <section className={`relative overflow-hidden flex items-center text-center ${fullScreen ? 'min-h-screen pt-20' : 'pt-32 pb-20 md:pb-32'} ${className}`}>

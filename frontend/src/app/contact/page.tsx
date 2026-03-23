@@ -69,11 +69,10 @@ export default function ContactPage() {
       <Navbar />
 
       <HighImpactHero
-        title={getS('hero_media', 'contact_hero_title', "Get in Touch")}
-        subtitle={getS('hero_media', 'contact_hero_subtitle', "Have questions? We're here to help you find the best services for your home.")}
-        badge={getS('hero_media', 'contact_hero_badge', "Get in Touch")}
-        cmsKey="contact_hero_image"
-        cmsGroup="hero_media"
+        title={getS('hero_text', 'contact_hero_title', "Get in Touch")}
+        subtitle={getS('hero_text', 'contact_hero_subtitle', "Have questions? We're here to help you find the best services for your home.")}
+        badge={getS('hero_text', 'contact_hero_badge', "Get in Touch")}
+        cmsKey="contact"
       />
 
       <section className="py-20 flex-1">

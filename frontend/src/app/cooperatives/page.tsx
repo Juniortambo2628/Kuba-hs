@@ -21,11 +21,10 @@ export default function CooperativesPage() {
       <Navbar />
 
       <HighImpactHero
-        title={getS('hero_media', 'cooperatives_hero_title', 'Community Centered & Scalable Solutions')}
-        subtitle={getS('hero_media', 'cooperatives_hero_subtitle', 'Serving multiple members under one structure. Kuba empowers cooperatives with negotiated rates and community-driven service allocation.')}
-        badge={getS('hero_media', 'cooperatives_hero_badge', 'Kuba Cooperatives & Groups')}
-        cmsKey="cooperatives_hero_image"
-        cmsGroup="hero_media"
+        title={getS('hero_text', 'cooperatives_hero_title', 'Community Centered & Scalable Solutions')}
+        subtitle={getS('hero_text', 'cooperatives_hero_subtitle', 'Serving multiple members under one structure. Kuba empowers cooperatives with negotiated rates and community-driven service allocation.')}
+        badge={getS('hero_text', 'cooperatives_hero_badge', 'Kuba Cooperatives & Groups')}
+        cmsKey="cooperatives"
       />
 
       {/* Thesis Section */}

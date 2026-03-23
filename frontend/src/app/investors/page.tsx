@@ -50,18 +50,17 @@ export default function InvestorsPage() {
     }
   };
 
-  const bgImage = getImg('hero_media', 'investors_hero_image', '');
+  const bgImage = getImg('hero_backgrounds', 'investors_hero_image', '');
 
   return (
     <div className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white font-sans transition-colors duration-300">
       <Navbar />
 
       <HighImpactHero
-        title={getS('hero_media', 'investors_hero_title', 'Scaling the Future of Home Services.')}
-        subtitle={getS('hero_media', 'investors_hero_subtitle', 'Join us in transforming how millions of homeowners connect with verified professionals.')}
-        badge={getS('hero_media', 'investors_hero_badge', "Investor Relations")}
-        cmsKey="investors_hero_image"
-        cmsGroup="hero_media"
+        title={getS('hero_text', 'investors_hero_title', 'Scaling the Future of Home Services.')}
+        subtitle={getS('hero_text', 'investors_hero_subtitle', 'Join us in transforming how millions of homeowners connect with verified professionals.')}
+        badge={getS('hero_text', 'investors_hero_badge', "Investor Relations")}
+        cmsKey="investors"
       />
 
       {/* Stats/Metrics */}
