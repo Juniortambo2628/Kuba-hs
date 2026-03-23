@@ -12,8 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('bookings', function (Blueprint $table) {
-            $table->timestamp('rescheduled_at')->nullable()->after('scheduled_date');
-            $table->text('cancellation_reason')->nullable()->after('status');
+            if (!Schema::hasColumn('bookings', 'rescheduled_at')) {
+                $table->timestamp('rescheduled_at')->nullable()->after('scheduled_date');
+            }
+            if (!Schema::hasColumn('bookings', 'cancellation_reason')) {
+                $table->text('cancellation_reason')->nullable()->after('status');
+            }
         });
     }
 
