@@ -151,28 +151,28 @@ export function NavigationManager() {
                         <div {...provided.dragHandleProps} className="text-muted-foreground cursor-grab">
                           <GripVertical className="w-5 h-5" />
                         </div>
-                        <div className="flex-1 grid grid-cols-2 gap-6">
+                        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
                             <div className="space-y-1.5">
-                              <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 ml-1">
-                                Display Label
+                              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 ml-1">
+                                Navigation Label
                               </label>
                               <Input 
                                   value={item.label}
                                   onChange={(e) => handleUpdate(item.id, 'label', e.target.value)}
-                                  placeholder="Link Label"
-                                  className="font-semibold bg-muted/5 border-border/40 focus:bg-white dark:focus:bg-zinc-800 transition-colors"
+                                  placeholder="e.g. Services"
+                                  className="font-bold bg-muted/20 border-border/30 focus:bg-white dark:focus:bg-zinc-800 transition-all rounded-xl h-12"
                               />
                             </div>
                             <div className="space-y-1.5">
-                              <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 ml-1 flex items-center gap-1">
-                                <LinkIcon className="w-3 h-3" />
-                                Destination Path
+                              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 ml-1 flex items-center gap-1.5">
+                                <LinkIcon className="w-3 h-3 text-primary/40" />
+                                Destination Route
                               </label>
                               <Input 
                                   value={item.url}
                                   onChange={(e) => handleUpdate(item.id, 'url', e.target.value)}
                                   placeholder="/path"
-                                  className="bg-muted/5 border-border/40 focus:bg-white dark:focus:bg-zinc-800 transition-colors font-mono text-sm"
+                                  className="bg-muted/20 border-border/30 focus:bg-white dark:focus:bg-zinc-800 transition-all font-mono text-sm rounded-xl h-12"
                               />
                             </div>
                         </div>

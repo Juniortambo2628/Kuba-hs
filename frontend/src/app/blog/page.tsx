@@ -53,11 +53,10 @@ export default function BlogList() {
       <Navbar />
 
       <HighImpactHero
-        title={getS('hero_media', 'blog_hero_title', 'The Kuba Journal')}
-        subtitle={getS('hero_media', 'blog_hero_subtitle', 'Insights, updates, and expert tips from the world of professional services.')}
-        badge={getS('hero_media', 'blog_hero_badge', "Kuba Journal")}
-        cmsKey="blog_hero_image"
-        cmsGroup="hero_media"
+        title={getS('hero_text', 'blog_hero_title', 'The Kuba Journal')}
+        subtitle={getS('hero_text', 'blog_hero_subtitle', 'Insights, updates, and expert tips from the world of professional services.')}
+        badge={getS('hero_text', 'blog_hero_badge', "Kuba Journal")}
+        cmsKey="journal"
       />
 
       {/* Thesis / Featured Content Section */}

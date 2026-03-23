@@ -21,11 +21,10 @@ export default function CommercialPage() {
       <Navbar />
 
       <HighImpactHero
-        title={getS('hero_media', 'commercial_hero_title', 'Services for Modern Organizations')}
-        subtitle={getS('hero_media', 'commercial_hero_subtitle', 'From facility management to staff wellness, Kuba supports your business operations with verified professionals and consolidated management.')}
-        badge={getS('hero_media', 'commercial_hero_badge', 'Kuba Business Solutions')}
-        cmsKey="commercial_hero_image"
-        cmsGroup="hero_media"
+        title={getS('hero_text', 'commercial_hero_title', 'Services for Modern Organizations')}
+        subtitle={getS('hero_text', 'commercial_hero_subtitle', 'From facility management to staff wellness, Kuba supports your business operations with verified professionals and consolidated management.')}
+        badge={getS('hero_text', 'commercial_hero_badge', 'Kuba Business Solutions')}
+        cmsKey="commercial"
       />
 
       {/* Thesis Section */}

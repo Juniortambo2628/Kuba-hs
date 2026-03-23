@@ -24,7 +24,7 @@ export function Hero() {
 
   if (!mounted) return null;
 
-  const bgImage = getImg('hero_media', 'hero_bg_image', "https://images.unsplash.com/photo-1600585154340-be6199f7a099?q=80&w=2070&auto=format&fit=crop");
+  const bgImage = getImg('hero_backgrounds', 'hero_bg_image', "https://images.unsplash.com/photo-1600585154340-be6199f7a099?q=80&w=2070&auto=format&fit=crop");
 
   return (
     <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">

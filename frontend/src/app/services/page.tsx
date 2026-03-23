@@ -82,11 +82,10 @@ export default function ServicesPage() {
       <Navbar />
 
       <HighImpactHero
-        title={getS('hero_media', 'services_hero_title', "Our Services")}
-        subtitle={getS('hero_media', 'services_hero_subtitle', "Find the best help for your home and business from our trusted service categories.")}
-        badge={getS('hero_media', 'services_hero_badge', "Our Marketplace")}
-        cmsKey="services_hero_image"
-        cmsGroup="hero_media"
+        title={getS('hero_text', 'services_hero_title', "Our Services")}
+        subtitle={getS('hero_text', 'services_hero_subtitle', "Find the best help for your home and business from our trusted service categories.")}
+        badge={getS('hero_text', 'services_hero_badge', "Our Marketplace")}
+        cmsKey="services"
       />
 
       <div className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
