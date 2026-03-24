@@ -5,3 +5,4 @@ deployment:
     - export PUBLICPATH=/home/ycpixrti/public_html/api/public/
     - /bin/cp -R backend/* $DEPLOYPATH
     - /bin/cp -R backend/public/* $PUBLICPATH
+    - /bin/cp backend/public/.htaccess $PUBLICPATH
