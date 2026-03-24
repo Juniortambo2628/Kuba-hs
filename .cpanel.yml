@@ -2,6 +2,6 @@
 deployment:
   tasks:
     - export DEPLOYPATH=/home/ycpixrti/kuba_backend/
-    - export PUBLICPATH=/home/ycpixrti/public_html/api/
+    - export PUBLICPATH=/home/ycpixrti/public_html/api/public/
     - /bin/cp -R backend/* $DEPLOYPATH
     - /bin/cp -R backend/public/* $PUBLICPATH

@@ -14,6 +14,14 @@
     RewriteCond %{HTTP:x-xsrf-token} .
     RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
 
+    # Force non-WWW for api.kuba.co.ke
+    RewriteCond %{HTTP_HOST} ^www\.api\.kuba\.co\.ke$ [NC]
+    RewriteRule ^(.*)$ https://api.kuba.co.ke/$1 [L,R=301]
+
+    # Force HTTPS
+    RewriteCond %{HTTPS} off
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
     # Redirect Trailing Slashes If Not A Folder...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_URI} (.+)/$
