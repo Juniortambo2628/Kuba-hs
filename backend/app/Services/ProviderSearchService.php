@@ -57,10 +57,7 @@ class ProviderSearchService
         }
 
         if ($minRating) {
-            $query->whereHas('reviews', function($q) use ($minRating) {
-                $q->select(\Illuminate\Support\Facades\DB::raw('avg(rating)'))
-                  ->havingRaw('avg(rating) >= ?', [$minRating]);
-            });
+            $query->having('reviews_avg_rating', '>=', $minRating);
         }
 
         if ($isVerified) {
