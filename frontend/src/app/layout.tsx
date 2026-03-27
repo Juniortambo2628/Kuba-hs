@@ -16,8 +16,22 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Kuba - Home Services Marketplace",
-  description: "Connect with trusted home service professionals.",
+  title: "Kuba - Elite Home Services Marketplace",
+  description: "Premium on-demand home professional services with precision and care.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Kuba",
+  },
+};
+
+export const viewport = {
+  themeColor: "#0284c7",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 import { CookieConsent } from "@/components/shared/CookieConsent";

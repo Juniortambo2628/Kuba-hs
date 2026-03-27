@@ -1,6 +1,7 @@
 "use client";
 
 import { use, useState, useEffect } from "react";
+import { useScroll, useSpring } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -32,8 +33,20 @@ export default function BlogClient({ params }: { params: Promise<{ slug: string 
 
   const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
 
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
+
   return (
     <div className="min-h-screen bg-background pt-32 pb-24">
+      {/* Reading Progress Bar */}
+      <motion.div
+        className="fixed top-0 left-0 right-0 h-1 bg-primary z-[100] origin-left"
+        style={{ scaleX }}
+      />
       <article className="max-w-[900px] mx-auto px-6">
         <motion.div
            initial={{ opacity: 0, y: 20 }}
@@ -102,9 +115,11 @@ export default function BlogClient({ params }: { params: Promise<{ slug: string 
               <h3 className="text-2xl font-bold text-foreground tracking-tight">Need expert services?</h3>
               <p className="text-muted-foreground max-w-md mx-auto">Skip the hassle and let Kuba's verified professionals handle your next project with precision.</p>
               <Link href="/services">
-                <Button className="bg-foreground text-background hover:bg-muted hover:text-foreground h-12 px-8 font-bold text-[10px] uppercase tracking-widest rounded-xl transition-all shadow-xl mt-4">
-                  Browse Marketplace
-                </Button>
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Button className="bg-foreground text-background hover:bg-muted hover:text-foreground h-12 px-8 font-bold text-[10px] uppercase tracking-widest rounded-xl transition-all shadow-xl mt-4">
+                    Browse Marketplace
+                  </Button>
+                </motion.div>
               </Link>
           </div>
       </div>
