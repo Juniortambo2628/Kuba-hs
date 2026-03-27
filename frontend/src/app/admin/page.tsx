@@ -123,7 +123,7 @@ function AdminDashboardContent() {
       </DashboardPageHeader>
 
       {/* Metric Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {metricCards.map((card, i) => (
           <MetricCard 
             key={i} 
@@ -156,13 +156,13 @@ function AdminDashboardContent() {
 
       {/* Bookings Table */}
       <Card className="border border-border overflow-hidden rounded-dashboard">
-        <CardHeader className="border-b border-border px-6 py-4">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <CardHeader className="border-b border-border px-4 sm:px-6 py-4">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
             <div>
               <CardTitle className="text-base font-semibold text-foreground">Recent Bookings</CardTitle>
               <p className="text-sm text-muted-foreground mt-0.5">Latest marketplace activity.</p>
             </div>
-            <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row items-center gap-2 w-full lg:w-auto">
               <div className="relative flex-1 sm:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input 
@@ -187,7 +187,8 @@ function AdminDashboardContent() {
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <Table>
+          <div className="overflow-x-auto custom-scrollbar">
+            <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent border-border bg-muted/20">
                 <TableHead className="pl-6 text-[11px] font-bold text-muted-foreground tracking-tight h-10">Order</TableHead>
@@ -245,6 +246,7 @@ function AdminDashboardContent() {
               )}
             </TableBody>
           </Table>
+          </div>
           
           <div className="p-4 border-t border-border flex justify-center">
             <Link href="/admin/bookings" className="flex items-center gap-1.5 text-xs text-primary hover:underline font-bold group">

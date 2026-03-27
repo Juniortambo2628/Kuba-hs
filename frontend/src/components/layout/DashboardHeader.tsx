@@ -76,10 +76,10 @@ export function DashboardHeader({ isAdmin = false }: DashboardHeaderProps) {
         {isAdmin ? (
           <button 
             onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
-            className="flex items-center gap-3 px-4 py-2 rounded-xl bg-accent/50 border border-border hover:bg-accent transition-all text-muted-foreground group mr-4"
+            className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 rounded-xl bg-accent/50 border border-border hover:bg-accent transition-all text-muted-foreground group"
           >
             <Search className="w-4 h-4 group-hover:text-primary transition-colors" />
-            <span className="text-[11px] font-black uppercase tracking-tight">Quick Jump</span>
+            <span className="hidden xs:inline-flex text-[10px] sm:text-[11px] font-black uppercase tracking-tight">Quick Jump</span>
             <kbd className="hidden sm:inline-flex h-5 select-none items-center gap-1 rounded-md border bg-muted px-2 font-mono text-[9px] font-black opacity-60">
               <span className="text-xs">⌘</span>K
             </kbd>

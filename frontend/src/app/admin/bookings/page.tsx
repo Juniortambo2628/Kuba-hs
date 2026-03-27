@@ -154,7 +154,8 @@ function AdminBookingsContent() {
       {viewMode === 'list' ? (
         <Card className="border-none shadow-premium bg-card/50 backdrop-blur-md overflow-hidden rounded-[2rem]">
           <CardContent className="p-0">
-            <Table>
+            <div className="overflow-x-auto custom-scrollbar">
+              <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent border-border bg-muted/20">
                   <TableHead className="w-12 pl-6"><Checkbox checked={selectedBookings.length === bookings.length && bookings.length > 0} onCheckedChange={(val) => val ? setSelectedBookings(bookings.map(b => b.id.toString())) : setSelectedBookings([])} /></TableHead>
@@ -256,6 +257,7 @@ function AdminBookingsContent() {
                 )}
               </TableBody>
             </Table>
+          </div>
           </CardContent>
         </Card>
       ) : (

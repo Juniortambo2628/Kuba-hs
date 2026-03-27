@@ -112,8 +112,8 @@ export function HeroSearchModal({ isOpen, onClose, initialTab }: HeroSearchModal
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[700px] p-0 overflow-hidden bg-white dark:bg-[#0B0F19] border-border rounded-[2.5rem] shadow-2xl">
-        <DialogHeader className="p-8 pb-4">
+      <DialogContent className="w-[calc(100%-2rem)] sm:max-w-[700px] p-0 overflow-hidden bg-white dark:bg-[#0B0F19] border-border rounded-3xl sm:rounded-[2.5rem] shadow-2xl max-h-[90vh] flex flex-col">
+        <DialogHeader className="p-5 sm:p-8 pb-2 sm:pb-4 shrink-0">
           <DialogTitle className="text-heading-md flex items-center gap-3">
              Find <span className="text-primary">Professionals</span>
              <Badge variant="outline" className="text-label-caps rounded-full px-3 py-1 border-primary/20 text-primary bg-primary/5">
@@ -125,7 +125,7 @@ export function HeroSearchModal({ isOpen, onClose, initialTab }: HeroSearchModal
           </DialogDescription>
         </DialogHeader>
 
-        <div className="p-8 pt-2 space-y-8">
+        <div className="p-5 sm:p-8 pt-2 space-y-5 sm:space-y-8 overflow-y-auto flex-1 custom-scrollbar">
           {/* Search Tabs */}
           <div className="flex p-1 bg-muted/50 dark:bg-white/5 rounded-2xl w-fit">
             <button 
@@ -197,12 +197,12 @@ export function HeroSearchModal({ isOpen, onClose, initialTab }: HeroSearchModal
                   </button>
                )}
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2">
               {categories.map((cat) => (
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(selectedCategory === cat.id ? null : cat.id)}
-                  className={`px-4 py-2 rounded-xl text-label-caps lowercase transition-all border ${
+                  className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-label-caps transition-all border ${
                     selectedCategory === cat.id 
                     ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20" 
                     : "bg-muted/50 dark:bg-white/5 text-muted-foreground hover:bg-muted dark:hover:bg-white/10 border-border"
@@ -220,7 +220,7 @@ export function HeroSearchModal({ isOpen, onClose, initialTab }: HeroSearchModal
               {isSearching ? "Searching..." : results.length > 0 ? `Matched Results (${results.length})` : searchTerm.length >= 2 ? "No results found" : "Top Rated Pros Near You"}
             </h4>
             
-            <ScrollArea className="h-[300px] -mx-8 px-8">
+            <ScrollArea className="h-[250px] sm:h-[300px] -mx-5 sm:-mx-8 px-5 sm:px-8">
               <div className="space-y-3 pb-4">
                 {results.length > 0 ? (
                   results.map((result, idx) => (
@@ -298,11 +298,11 @@ export function HeroSearchModal({ isOpen, onClose, initialTab }: HeroSearchModal
         </div>
 
         {/* Footer */}
-        <div className="p-6 bg-muted/30 dark:bg-white/5 border-t border-border flex items-center justify-between">
-           <p className="text-[9px] font-bold text-muted-foreground tracking-tight">
+        <div className="p-4 sm:p-6 bg-muted/30 dark:bg-white/5 border-t border-border flex items-center justify-between shrink-0">
+           <p className="text-[9px] font-bold text-muted-foreground tracking-tight hidden sm:block">
              Press <kbd className="bg-muted px-1.5 py-0.5 rounded border border-border inline-block">ESC</kbd> to exit
            </p>
-            <Link href="/providers" onClick={onClose} className="text-label-caps text-primary flex items-center gap-2 group">
+            <Link href="/providers" onClick={onClose} className="text-label-caps text-primary flex items-center gap-2 group text-[10px] sm:text-xs">
               Visit Full Directory <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
             </Link>
         </div>
