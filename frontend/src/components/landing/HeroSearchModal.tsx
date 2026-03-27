@@ -148,13 +148,13 @@ export function HeroSearchModal({ isOpen, onClose, initialTab }: HeroSearchModal
             <div className="relative flex items-center bg-muted/50 dark:bg-white/5 rounded-2xl px-6 h-16 border border-border group-focus-within:border-primary/50 transition-all">
               {activeTab === "service" ? (
                 <>
-                  <Search className="text-primary w-5 h-5 mr-4" />
+                  <Search className="text-primary w-5 h-5 mr-4 flex-shrink-0" />
                   <Input 
                     autoFocus
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="What service are you looking for?"
-                    className="bg-transparent border-none text-foreground placeholder:text-muted-foreground focus-visible:ring-0 px-0 h-10 font-semibold text-lg"
+                    placeholder="Search services..."
+                    className="bg-transparent border-none text-foreground placeholder:text-muted-foreground focus-visible:ring-0 px-0 h-10 font-semibold text-lg flex-1"
                   />
                   {searchTerm && (
                     <button onClick={() => setSearchTerm("")} className="ml-2 p-1 hover:bg-muted rounded-full transition-colors text-muted-foreground">
@@ -164,13 +164,13 @@ export function HeroSearchModal({ isOpen, onClose, initialTab }: HeroSearchModal
                 </>
               ) : (
                 <>
-                  <MapPin className="text-primary w-5 h-5 mr-4" />
+                  <MapPin className="text-primary w-5 h-5 mr-4 flex-shrink-0" />
                   <Input 
                     autoFocus
                     value={locationTerm}
                     onChange={(e) => setLocationTerm(e.target.value)}
-                    placeholder="Enter city or neighborhood in Kenya..."
-                    className="bg-transparent border-none text-foreground placeholder:text-muted-foreground focus-visible:ring-0 px-0 h-10 font-semibold text-lg"
+                    placeholder="Enter city or neighborhood..."
+                    className="bg-transparent border-none text-foreground placeholder:text-muted-foreground focus-visible:ring-0 px-0 h-10 font-semibold text-lg flex-1"
                   />
                   {locationTerm && (
                     <button onClick={() => setLocationTerm("")} className="ml-2 p-1 hover:bg-muted rounded-full transition-colors text-muted-foreground">

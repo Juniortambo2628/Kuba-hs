@@ -79,10 +79,10 @@ export function Navbar() {
           {/* Logo */}
             <Link href="/" className="inline-flex items-center gap-2 group">
               <div className="relative h-8 w-32 dark:hidden">
-                <Image src="/assets/Kuba-Header-footter-Logo-for-Light-Mode.png" alt="Kuba" fill sizes="(max-width: 768px) 128px, 128px" className="object-contain" priority />
+                <Image src={getImg('identity', 'logo_light', '/assets/Kuba-Header-footter-Logo-for-Light-Mode.png')} alt="Kuba" fill sizes="(max-width: 768px) 128px, 128px" className="object-contain" priority />
               </div>
               <div className="relative h-8 w-32 hidden dark:block">
-                <Image src="/assets/Kuba-Header-Footer-Logo-for-Dark-Mode.png" alt="Kuba" fill sizes="(max-width: 768px) 128px, 128px" className="object-contain" priority />
+                <Image src={getImg('identity', 'logo_dark', '/assets/Kuba-Header-Footer-Logo-for-Dark-Mode.png')} alt="Kuba" fill sizes="(max-width: 768px) 128px, 128px" className="object-contain" priority />
               </div>
             <span className="sr-only">KUBA</span>
           </Link>
@@ -226,10 +226,10 @@ export function Navbar() {
                   <div className="px-6 pt-8 pb-4 border-b border-gray-100 dark:border-white/5">
                     <Link href="/" className="inline-flex items-center gap-2">
                       <div className="relative h-7 w-28 dark:hidden">
-                        <Image src="/assets/Kuba-Header-footter-Logo-for-Light-Mode.png" alt="Kuba" fill sizes="112px" className="object-contain" />
+                        <Image src={getImg('identity', 'logo_light', '/assets/Kuba-Header-footter-Logo-for-Light-Mode.png')} alt="Kuba" fill sizes="112px" className="object-contain" />
                       </div>
                       <div className="relative h-7 w-28 hidden dark:block">
-                        <Image src="/assets/Kuba-Header-Footer-Logo-for-Dark-Mode.png" alt="Kuba" fill sizes="112px" className="object-contain" />
+                        <Image src={getImg('identity', 'logo_dark', '/assets/Kuba-Header-Footer-Logo-for-Dark-Mode.png')} alt="Kuba" fill sizes="112px" className="object-contain" />
                       </div>
                     </Link>
                   </div>

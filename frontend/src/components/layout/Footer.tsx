@@ -18,10 +18,10 @@ export function Footer() {
             <div className="md:col-span-1">
                 <Link href="/" className="inline-flex items-center gap-2">
                   <div className="relative h-8 w-32 dark:hidden">
-                    <Image src="/assets/Kuba-Header-footter-Logo-for-Light-Mode.png" alt="Kuba" fill sizes="128px" className="object-contain" priority />
+                    <Image src={useCMS().getImg('identity', 'logo_light', '/assets/Kuba-Header-footter-Logo-for-Light-Mode.png')} alt="Kuba" fill sizes="128px" className="object-contain" priority />
                   </div>
                   <div className="relative h-8 w-32 hidden dark:block">
-                    <Image src="/assets/Kuba-Header-Footer-Logo-for-Dark-Mode.png" alt="Kuba" fill sizes="128px" className="object-contain" priority />
+                    <Image src={useCMS().getImg('identity', 'logo_dark', '/assets/Kuba-Header-Footer-Logo-for-Dark-Mode.png')} alt="Kuba" fill sizes="128px" className="object-contain" priority />
                   </div>
                 </Link>
                 <p className="text-gray-500 dark:text-gray-400 text-sm mb-6 leading-relaxed">
