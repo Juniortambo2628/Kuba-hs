@@ -259,16 +259,15 @@ export function Navbar() {
 
                     <p className="px-3 mb-3 text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em]">Solutions</p>
                     {[
-                      { label: "Investors", url: "/investors", icon: "📊" },
-                      { label: "Commercial", url: "/commercial", icon: "🏢" },
-                      { label: "Cooperatives", url: "/cooperatives", icon: "🤝" },
+                      { label: "Investors", url: "/investors" },
+                      { label: "Commercial", url: "/commercial" },
+                      { label: "Cooperatives", url: "/cooperatives" },
                     ].map(item => (
                       <Link 
                         key={item.label} 
                         href={item.url} 
                         className="flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-all"
                       >
-                        <span className="text-lg">{item.icon}</span>
                         {item.label}
                       </Link>
                     ))}
