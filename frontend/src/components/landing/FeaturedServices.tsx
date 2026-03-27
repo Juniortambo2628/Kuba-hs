@@ -68,9 +68,9 @@ export function FeaturedServices() {
   if (!isLoading && services.length === 0) return null;
 
   return (
-    <section className="py-24 bg-muted/50 overflow-hidden">
+    <section className="py-12 sm:py-24 bg-muted/50 overflow-hidden">
       <div className="container px-4 mx-auto">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-12 gap-4 sm:gap-6">
           <LandingSectionHeader 
             badge="New Services"
             title={<>Just <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-500 to-indigo-500">Added</span></>}
@@ -87,7 +87,7 @@ export function FeaturedServices() {
           >
             <Link 
               href="/providers"
-              className="group flex items-center gap-3 px-8 py-4 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl text-sm font-bold text-gray-900 dark:text-white hover:border-sky-500/50 transition-all shadow-sm hover:shadow-xl"
+              className="group flex items-center gap-3 px-6 sm:px-8 py-3 sm:py-4 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl text-xs sm:text-sm font-bold text-gray-900 dark:text-white hover:border-sky-500/50 transition-all shadow-sm hover:shadow-xl"
             >
               See All Services
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform text-sky-500" />
@@ -97,13 +97,13 @@ export function FeaturedServices() {
 
         {services.length > 0 && (
           <Tabs defaultValue="All" className="w-full">
-            <div className="flex justify-center mb-10 overflow-x-auto pb-4 hide-scrollbar">
-              <TabsList className="bg-gray-100/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl h-auto p-1.5 inline-flex">
+            <div className="flex justify-start md:justify-center mb-8 sm:mb-10 overflow-x-auto pb-2 hide-scrollbar -mx-4 px-4">
+              <TabsList className="bg-white/80 dark:bg-white/5 backdrop-blur-md border border-gray-200/80 dark:border-white/10 rounded-full h-auto p-1 sm:p-1.5 inline-flex gap-1 shadow-sm">
                 {["All", ...Array.from(new Set(services.map(s => s.category)))].map(cat => (
                   <TabsTrigger 
                     key={cat} 
                     value={cat}
-                    className="rounded-xl px-6 py-2.5 text-sm font-bold text-gray-600 dark:text-gray-300 data-[state=active]:bg-white dark:data-[state=active]:bg-sky-500 data-[state=active]:text-sky-600 dark:data-[state=active]:text-white data-[state=active]:shadow-sm transition-all whitespace-nowrap"
+                    className="rounded-full px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-gray-500 dark:text-gray-400 data-[state=active]:bg-gradient-to-r data-[state=active]:from-sky-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-sky-500/20 transition-all whitespace-nowrap"
                   >
                     {cat}
                   </TabsTrigger>
