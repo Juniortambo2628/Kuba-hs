@@ -18,7 +18,6 @@ import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-import { ServiceDetailsModal } from "./ServiceDetailsModal";
 import { getMediaUrl } from "@/lib/utils";
 import { LandingSectionHeader } from "@/components/shared/LandingSectionHeader";
 import Image from "next/image";
@@ -49,8 +48,6 @@ interface Service {
 export function FeaturedServices() {
   const [services, setServices] = useState<Service[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchFeatured = async () => {
@@ -66,10 +63,7 @@ export function FeaturedServices() {
     fetchFeatured();
   }, []);
 
-  const handleCardClick = (id: string) => {
-    setSelectedServiceId(id);
-    setIsModalOpen(true);
-  };
+
 
   if (!isLoading && services.length === 0) return null;
 
@@ -148,9 +142,9 @@ export function FeaturedServices() {
                               whileInView={{ opacity: 1, y: 0 }}
                               viewport={{ once: true }}
                               transition={{ duration: 0.5, delay: i * 0.1 }}
-                              onClick={() => handleCardClick(service.id)}
                             >
-                              <Card className="group relative h-[450px] bg-white dark:bg-white/5 border-gray-100 dark:border-white/10 rounded-[32px] overflow-hidden hover:shadow-2xl hover:shadow-sky-500/10 transition-all duration-500 cursor-pointer">
+                              <Link href={`/services/${service.id}`} className="block h-full group">
+                                <Card className="relative h-[450px] bg-white dark:bg-white/5 border-gray-100 dark:border-white/10 rounded-[32px] overflow-hidden hover:shadow-2xl hover:shadow-sky-500/10 transition-all duration-500">
                                 {/* Image Header */}
                                 <div className="relative h-56 overflow-hidden">
                                    <Image 
@@ -200,6 +194,7 @@ export function FeaturedServices() {
                                   </div>
                                 </CardContent>
                               </Card>
+                             </Link>
                             </motion.div>
                           </CarouselItem>
                         ))
@@ -217,11 +212,6 @@ export function FeaturedServices() {
         )}
       </div>
 
-      <ServiceDetailsModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        serviceId={selectedServiceId} 
-      />
     </section>
   );
 }
