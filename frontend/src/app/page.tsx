@@ -1,21 +1,21 @@
 import { Metadata } from "next";
-import dynamic from "next/dynamic";
+import nextDynamic from "next/dynamic";
 import { getMediaUrl } from "@/lib/utils";
 import { Navbar } from "@/components/layout/Navbar";
 import { Hero } from "@/components/landing/Hero";
 import { Footer } from "@/components/layout/Footer";
 
 // Below-fold sections — lazy loaded for faster TTI
-const FeaturedServices = dynamic(() => import("@/components/landing/FeaturedServices").then(m => ({ default: m.FeaturedServices })));
-const About = dynamic(() => import("@/components/landing/About").then(m => ({ default: m.About })));
-const Categories = dynamic(() => import("@/components/landing/Categories").then(m => ({ default: m.Categories })));
-const Stats = dynamic(() => import("@/components/landing/Stats").then(m => ({ default: m.Stats })));
-const CorporateSolutions = dynamic(() => import("@/components/landing/CorporateSolutions").then(m => ({ default: m.CorporateSolutions })));
-const FeaturedProviders = dynamic(() => import("@/components/landing/FeaturedProviders").then(m => ({ default: m.FeaturedProviders })));
-const Testimonials = dynamic(() => import("@/components/landing/Testimonials").then(m => ({ default: m.Testimonials })));
-const FAQ = dynamic(() => import("@/components/landing/FAQ").then(m => ({ default: m.FAQ })));
-const CTA = dynamic(() => import("@/components/landing/CTA").then(m => ({ default: m.CTA })));
-const TrustCarousel = dynamic(() => import("@/components/shared/TrustCarousel").then(m => ({ default: m.TrustCarousel })));
+const FeaturedServices = nextDynamic(() => import("@/components/landing/FeaturedServices").then(m => ({ default: m.FeaturedServices })));
+const About = nextDynamic(() => import("@/components/landing/About").then(m => ({ default: m.About })));
+const Categories = nextDynamic(() => import("@/components/landing/Categories").then(m => ({ default: m.Categories })));
+const Stats = nextDynamic(() => import("@/components/landing/Stats").then(m => ({ default: m.Stats })));
+const CorporateSolutions = nextDynamic(() => import("@/components/landing/CorporateSolutions").then(m => ({ default: m.CorporateSolutions })));
+const FeaturedProviders = nextDynamic(() => import("@/components/landing/FeaturedProviders").then(m => ({ default: m.FeaturedProviders })));
+const Testimonials = nextDynamic(() => import("@/components/landing/Testimonials").then(m => ({ default: m.Testimonials })));
+const FAQ = nextDynamic(() => import("@/components/landing/FAQ").then(m => ({ default: m.FAQ })));
+const CTA = nextDynamic(() => import("@/components/landing/CTA").then(m => ({ default: m.CTA })));
+const TrustCarousel = nextDynamic(() => import("@/components/shared/TrustCarousel").then(m => ({ default: m.TrustCarousel })));
 
 export async function generateMetadata(): Promise<Metadata> {
   try {
@@ -37,10 +37,21 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
+export const dynamic = 'force-static';
+
 export default async function Home() {
   let heroData = null;
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/settings`, { cache: 'no-store' });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s build-time timeout
+    
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/settings`, { 
+      signal: controller.signal,
+      next: { revalidate: 3600 } // Revalidate every hour if using a dynamic provider, otherwise ignored for export
+    });
+    
+    clearTimeout(timeoutId);
+    
     const data = await res.json();
     const settings = data.settings || {};
     
