@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { DashboardHeader } from "@/components/layout/DashboardHeader";
+import { AdminCommandPalette } from "@/components/shared/AdminCommandPalette";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -48,6 +49,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <SidebarProvider>
       <KubaSidebar />
+      <AdminCommandPalette />
       <main className="flex-1 bg-background min-h-screen flex flex-col">
         {/* Header */}
         <DashboardHeader isAdmin={true} />

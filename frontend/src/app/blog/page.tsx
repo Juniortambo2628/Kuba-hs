@@ -11,8 +11,10 @@ import { Footer } from "@/components/layout/Footer";
 import { HighImpactHero } from "@/components/shared/HighImpactHero";
 import axiosInstance from "@/lib/axios";
 import { Post } from "@/types";
-import { useCMS } from "@/hooks/useCMS";
+import { useCMS } from "@/contexts/CMSContext";
 import { getMediaUrl } from "@/lib/utils";
+import { designSystem } from "@/lib/design-system";
+import Image from "next/image";
 
 export default function BlogList() {
   const { getS, getImg, isLoading: cmsLoading } = useCMS();
@@ -49,7 +51,7 @@ export default function BlogList() {
 
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white font-sans transition-colors duration-300">
+    <div className="min-h-screen">
       <Navbar />
 
       <HighImpactHero
@@ -69,10 +71,10 @@ export default function BlogList() {
             className="space-y-8"
           >
             <div>
-              <h2 className="text-3xl font-bold tracking-tight mb-6">
+              <h2 className={designSystem.typography.section.title}>
                 {getS('sections', 'journal_thesis_title', 'Redefining Service in the Digital Age')}
               </h2>
-              <p className="text-gray-600 dark:text-muted-foreground leading-relaxed font-medium text-lg">
+              <p className={designSystem.typography.section.subtitle}>
                 {getS('sections', 'journal_thesis_body', 'In a rapidly evolving marketplace, knowledge is the ultimate currency. Our Journal is dedicated to documenting the shifts in how services are discovery, delivered, and experienced in Kenya.')}
               </p>
             </div>
@@ -101,10 +103,11 @@ export default function BlogList() {
             viewport={{ once: true }}
             className="relative"
           >
-            <div className="aspect-[4/3] rounded-[3rem] overflow-hidden bg-muted shadow-2xl">
-              <img 
+            <div className="aspect-[4/3] rounded-[3rem] overflow-hidden bg-muted shadow-2xl relative">
+              <Image 
                 src={getImg('market_narratives', 'journal_featured_image', 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&q=80')} 
-                className="w-full h-full object-cover" 
+                fill
+                className="object-cover" 
                 alt="Journal Featured" 
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-10">
@@ -122,7 +125,7 @@ export default function BlogList() {
       <section className="py-24 bg-slate-50 dark:bg-zinc-950/40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-16">
-            <h2 className="text-3xl font-bold tracking-tight">Latest Narratives</h2>
+            <h2 className={designSystem.typography.section.title}>Latest Narratives</h2>
             
             <form onSubmit={handleSearch} className="relative w-full md:w-96">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -160,10 +163,11 @@ export default function BlogList() {
                   <Link href={`/blog/${post.slug}`} className="flex-1 flex flex-col">
                     <div className="relative aspect-[16/10] overflow-hidden bg-muted">
                       {post.image_url ? (
-                        <img 
+                        <Image 
                           src={getImageUrl(post.image_url) || ""} 
                           alt={post.title} 
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" 
+                          fill
+                          className="object-cover group-hover:scale-110 transition-transform duration-1000" 
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-muted-foreground/30">

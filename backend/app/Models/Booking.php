@@ -34,6 +34,8 @@ class Booking extends Model implements HasMedia
         'final_price',
         'payment_status',
         'cancellation_reason',
+        'promo_code_id',
+        'discount_amount',
     ];
 
     protected $casts = [
@@ -89,6 +91,11 @@ class Booking extends Model implements HasMedia
     public function payment(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(Payment::class);
+    }
+
+    public function promoCode(): BelongsTo
+    {
+        return $this->belongsTo(PromoCode::class);
     }
 
     /**

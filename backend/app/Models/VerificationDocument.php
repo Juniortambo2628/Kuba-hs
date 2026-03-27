@@ -16,7 +16,22 @@ class VerificationDocument extends Model
         'file_path',
         'status',
         'rejection_reason',
+        'expires_at',
     ];
+
+    protected $casts = [
+        'expires_at' => 'date',
+    ];
+
+    protected $appends = ['is_expired'];
+
+    public function getIsExpiredAttribute(): bool
+    {
+        if (!$this->expires_at) {
+            return false;
+        }
+        return $this->expires_at->isPast();
+    }
 
     public function provider(): BelongsTo
     {

@@ -21,6 +21,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ServiceDetailsModal } from "./ServiceDetailsModal";
 import { getMediaUrl } from "@/lib/utils";
 import { LandingSectionHeader } from "@/components/shared/LandingSectionHeader";
+import Image from "next/image";
 
 
 interface Service {
@@ -152,10 +153,12 @@ export function FeaturedServices() {
                               <Card className="group relative h-[450px] bg-white dark:bg-white/5 border-gray-100 dark:border-white/10 rounded-[32px] overflow-hidden hover:shadow-2xl hover:shadow-sky-500/10 transition-all duration-500 cursor-pointer">
                                 {/* Image Header */}
                                 <div className="relative h-56 overflow-hidden">
-                                   <img 
-                                     src={getMediaUrl(service.image_urls?.[0]?.url || service.service_thumbnail_url, 'service')} 
+                                   <Image 
+                                     src={getMediaUrl(service.image_urls?.[0]?.url || service.service_thumbnail_url, 'service') || "/placeholders/service-light.png"} 
                                      alt={service.name}
-                                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                     fill
+                                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                     className="object-cover group-hover:scale-110 transition-transform duration-700"
                                    />
                                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
                                   <div className="absolute top-4 right-4">

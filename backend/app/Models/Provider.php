@@ -29,6 +29,10 @@ class Provider extends Model implements \Spatie\MediaLibrary\HasMedia
         'verification_documents',
         'availability_status',
         'specialized_skills',
+        'quality_score',
+        'compliance_status',
+        'balance',
+        'total_earned',
     ];
 
     protected $casts = [
@@ -37,6 +41,9 @@ class Provider extends Model implements \Spatie\MediaLibrary\HasMedia
         'latitude' => 'decimal:8',
         'longitude' => 'decimal:8',
         'specialized_skills' => 'json',
+        'quality_score' => 'decimal:2',
+        'balance' => 'decimal:2',
+        'total_earned' => 'decimal:2',
     ];
 
     public function user(): BelongsTo
@@ -67,6 +74,11 @@ class Provider extends Model implements \Spatie\MediaLibrary\HasMedia
     public function verificationDocuments(): HasMany
     {
         return $this->hasMany(VerificationDocument::class);
+    }
+
+    public function payouts(): HasMany
+    {
+        return $this->hasMany(Payout::class);
     }
 
     /**

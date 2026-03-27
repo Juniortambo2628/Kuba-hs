@@ -52,8 +52,16 @@ class BookingService
             $price = ($providerService->base_price * $data['quantity']);
         }
 
-        // Add Travel Fee
-        $price += (float) ($providerService->travel_fee ?? 0);
+        // Handle Promo Code
+        $promoCode = null;
+        $discountAmount = 0;
+        if (isset($data['promo_code'])) {
+            $promoCode = \App\Models\PromoCode::where('code', $data['promo_code'])->first();
+            if ($promoCode && $promoCode->isValid($price)) {
+                $discountAmount = $promoCode->calculateDiscount($price);
+                $price = max(0, $price - $discountAmount);
+            }
+        }
 
         $booking = Booking::create([
             'customer_id' => $user->id,
@@ -69,7 +77,14 @@ class BookingService
             'quantity' => $data['quantity'],
             'quantity_label' => $data['quantity_label'] ?? null,
             'estimated_price' => $price,
+            'promo_code_id' => $promoCode?->id,
+            'discount_amount' => $discountAmount,
         ]);
+
+        // Increment Promo Code Usage
+        if ($promoCode) {
+            $promoCode->increment('used_count');
+        }
 
         // Handle Images
         if ($images) {

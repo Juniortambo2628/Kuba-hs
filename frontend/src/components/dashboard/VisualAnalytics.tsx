@@ -36,11 +36,11 @@ export function VisualAnalytics({
   return (
     <Card className="border border-border overflow-hidden group shadow-sm">
       <CardHeader className="px-6 py-5 border-b border-border">
-        <CardTitle className="text-base font-semibold text-foreground tracking-tight">{title}</CardTitle>
+        <CardTitle className="text-lg font-black text-foreground tracking-tight">{title}</CardTitle>
       </CardHeader>
       <CardContent className="p-6">
-        <div className="h-[300px] w-full" style={{ minWidth: 0 }}>
-          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+        <div className="h-[300px] w-full">
+          <ResponsiveContainer width="99%" height="100%">
             {type === 'area' ? (
               <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>

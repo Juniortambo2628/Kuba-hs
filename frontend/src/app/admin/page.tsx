@@ -29,10 +29,11 @@ import {
   ChevronRight,
   Download,
 } from "lucide-react";
-import { MetricCard } from "@/components/dashboard/MetricCard";
+import { MetricCard } from "@/components/shared/MetricCard";
 import { VisualAnalytics } from "@/components/dashboard/VisualAnalytics";
 import { useSearchState } from "@/hooks/useSearchState";
 import { useExport } from "@/hooks/useExport";
+import { useApiData } from "@/hooks/useApiData";
 import Link from "next/link";
 
 import { Booking, User, Provider } from "@/types";
@@ -56,36 +57,20 @@ function AdminDashboardContent() {
   const { user, isLoading: authLoading } = useAuth();
   const { search, setSearch, status, setStatus } = useSearchState();
   const router = useRouter();
-  const [stats, setStats] = useState<AdminStats | null>(null);
   const [trends, setTrends] = useState<any>({ users: [], bookings: [], revenue: [] });
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: analyticsData, isLoading: analyticsLoading } = useApiData<any>("/api/admin/analytics");
+  const { data: bookingsData, isLoading: bookingsLoading, refetch: fetchBookings } = useApiData<any>(`/api/admin/bookings?search=${search}&status=${status}`, { initialData: null });
+  
+  const stats = analyticsData ? { ...analyticsData.summary, growth: analyticsData.growth } as AdminStats : null;
+  const bookings = (bookingsData?.data || []) as Booking[];
+  const isLoading = analyticsLoading || bookingsLoading;
   const { exportToCSV } = useExport();
 
   useEffect(() => {
-    if (!authLoading && user?.role === 'admin') {
-      fetchData(search, status);
+    if (analyticsData?.trends) {
+      setTrends(analyticsData.trends);
     }
-  }, [authLoading, user, search, status]);
-
-  const fetchData = async (search = "", status = "") => {
-    try {
-      const [analyticsRes, bookingsRes] = await Promise.all([
-        axiosInstance.get("/api/admin/analytics"),
-        axiosInstance.get(`/api/admin/bookings?search=${search}&status=${status}`),
-      ]);
-      setStats({
-        ...analyticsRes.data.summary,
-        growth: analyticsRes.data.growth
-      });
-      setTrends(analyticsRes.data.trends || { users: [], bookings: [], revenue: [] });
-      setBookings(bookingsRes.data.data || []);
-    } catch (err) {
-      console.error("Failed to fetch admin data:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [analyticsData]);
 
   if (isLoading) {
     return (

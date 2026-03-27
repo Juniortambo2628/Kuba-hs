@@ -6,18 +6,19 @@ import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import Link from "next/link";
-import { useCMS } from "@/hooks/useCMS";
+import { useCMS } from "@/contexts/CMSContext";
 import { usePageFeatures } from "@/hooks/usePageFeatures";
 import { HighImpactHero } from "@/components/shared/HighImpactHero";
 import { FeatureCardGrid } from "@/components/shared/FeatureCardGrid";
 import { CTABanner } from "@/components/shared/CTABanner";
+import Image from "next/image";
 
 export default function CommercialPage() {
   const { getS, getImg } = useCMS();
   const { features: categories } = usePageFeatures('commercial');
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white font-sans transition-colors duration-300">
+    <div className="min-h-screen">
       <Navbar />
 
       <HighImpactHero
@@ -75,10 +76,11 @@ export default function CommercialPage() {
             viewport={{ once: true }}
             className="relative"
           >
-            <div className="aspect-[4/3] rounded-[3rem] overflow-hidden bg-muted shadow-2xl">
-              <img 
+            <div className="aspect-[4/3] rounded-[3rem] overflow-hidden bg-muted shadow-2xl relative">
+              <Image 
                 src={getImg('market_narratives', 'commercial_thesis_image', 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&q=80')} 
-                className="w-full h-full object-cover" 
+                fill
+                className="object-cover" 
                 alt="Commercial Excellence" 
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-10">

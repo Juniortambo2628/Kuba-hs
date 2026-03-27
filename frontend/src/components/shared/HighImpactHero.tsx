@@ -3,8 +3,9 @@
 import { motion } from "framer-motion";
 import { ChevronRight, Home } from "lucide-react";
 import Link from "next/link";
-import { useCMS } from "@/hooks/useCMS";
+import { useCMS } from "@/contexts/CMSContext";
 import { designSystem } from "@/lib/design-system";
+import Image from "next/image";
 
 interface Breadcrumb {
   label: string;
@@ -52,20 +53,26 @@ export function HighImpactHero({
       {/* Background with Theme-aware Overlay & Fallback Gradient */}
       {heroBackground ? (
         <div className="absolute inset-0 z-0 overflow-hidden">
-          <motion.img 
+          <motion.div 
             initial={{ scale: 1.1, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 1.2 }}
-            src={heroBackground} 
-            className="w-full h-full object-cover transition-opacity duration-700" 
-            alt="Hero Background" 
-          />
+            className="w-full h-full relative"
+          >
+            <Image 
+              src={heroBackground} 
+              alt="Hero Background" 
+              fill
+              priority
+              className="object-cover transition-opacity duration-700" 
+            />
+          </motion.div>
           {/* Theme-aware Overlay */}
           <div className="absolute inset-0 bg-white/40 dark:bg-black/75 z-[1]" />
           <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-black via-transparent to-transparent z-[1]" />
         </div>
       ) : (
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-indigo-500/10 dark:from-indigo-500/20 via-transparent to-transparent -z-10" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-500/10 dark:from-blue-500/20 via-transparent to-transparent -z-10" />
       )}
 
       <div className={designSystem.layouts.container + " relative z-10 flex flex-col items-center justify-center mx-auto"}>
@@ -77,16 +84,16 @@ export function HighImpactHero({
             className="w-full flex flex-col items-center"
           >
             {displayBadge && (
-              <span className="inline-block px-5 py-2 mb-8 text-[10px] font-bold tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 rounded-full backdrop-blur-md">
+              <span className={designSystem.typography.hero.badge}>
                 {displayBadge.charAt(0).toUpperCase() + displayBadge.slice(1).toLowerCase()}
               </span>
             )}
             
-            <h1 className="text-4xl md:text-7xl font-black tracking-tighter mb-8 leading-[0.9] text-gray-900 dark:text-white drop-shadow-sm">
+            <h1 className={`${designSystem.typography.hero.title} text-gray-900 dark:text-white mb-8`}>
               {displayTitle}
             </h1>
             
-            <p className="max-w-2xl mx-auto text-lg md:text-xl text-gray-600 dark:text-muted-foreground mb-4 leading-relaxed font-medium">
+            <p className={`${designSystem.typography.hero.subtitle} text-gray-600 dark:text-muted-foreground mb-4`}>
               {displaySubtitle}
             </p>
 

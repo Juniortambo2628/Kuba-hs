@@ -5,9 +5,10 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
-import { useCMS } from "@/hooks/useCMS";
+import { useCMS } from "@/contexts/CMSContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 import { User, Briefcase } from "lucide-react";
 import { 
   DropdownMenu, 
@@ -55,8 +56,12 @@ export function Navbar() {
         <div className="container mx-auto px-4 lg:px-8 h-full flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Link href="/" className="inline-flex items-center gap-2 mb-4">
-                  <img src="/assets/Kuba-Header-footter-Logo-for-Light-Mode.png" alt="Kuba" className="h-8 w-auto dark:hidden" />
-                  <img src="/assets/Kuba-Header-Footer-Logo-for-Dark-Mode.png" alt="Kuba" className="h-8 w-auto hidden dark:block" />
+                  <div className="relative h-8 w-32 dark:hidden">
+                    <Image src="/assets/Kuba-Header-footter-Logo-for-Light-Mode.png" alt="Kuba" fill sizes="(max-width: 768px) 128px, 128px" className="object-contain" priority />
+                  </div>
+                  <div className="relative h-8 w-32 hidden dark:block">
+                    <Image src="/assets/Kuba-Header-Footer-Logo-for-Dark-Mode.png" alt="Kuba" fill sizes="(max-width: 768px) 128px, 128px" className="object-contain" priority />
+                  </div>
                 </Link>
           </div>
         </div>
@@ -72,17 +77,13 @@ export function Navbar() {
       <div className="container mx-auto px-4 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-             <img 
-                src="/assets/Kuba-Header-footter-Logo-for-Light-Mode.png" 
-                alt="Kuba" 
-                className="h-10 w-auto dark:hidden" 
-             />
-             <img 
-                src="/assets/Kuba-Header-Footer-Logo-for-Dark-Mode.png" 
-                alt="Kuba" 
-                className="h-10 w-auto hidden dark:block" 
-             />
+            <Link href="/" className="inline-flex items-center gap-2 group">
+              <div className="relative h-8 w-32 dark:hidden">
+                <Image src="/assets/Kuba-Header-footter-Logo-for-Light-Mode.png" alt="Kuba" fill sizes="(max-width: 768px) 128px, 128px" className="object-contain" priority />
+              </div>
+              <div className="relative h-8 w-32 hidden dark:block">
+                <Image src="/assets/Kuba-Header-Footer-Logo-for-Dark-Mode.png" alt="Kuba" fill sizes="(max-width: 768px) 128px, 128px" className="object-contain" priority />
+              </div>
             <span className="sr-only">KUBA</span>
           </Link>
 

@@ -20,4 +20,18 @@ class SiteSetting extends Model implements HasMedia
         'label',
         'description',
     ];
+
+    /**
+     * Set up auto-caching.
+     */
+    protected static function booted()
+    {
+        static::saved(function () {
+            \Illuminate\Support\Facades\Cache::forget('cms_settings_global');
+        });
+
+        static::deleted(function () {
+            \Illuminate\Support\Facades\Cache::forget('cms_settings_global');
+        });
+    }
 }

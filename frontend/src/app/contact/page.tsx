@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import axiosInstance from "@/lib/axios";
 import { toast } from "sonner";
-import { useCMS } from "@/hooks/useCMS";
+import { useCMS } from "@/contexts/CMSContext";
 
 export default function ContactPage() {
   const { getS, getImg } = useCMS();
@@ -65,7 +65,7 @@ export default function ContactPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-white dark:bg-[#0B0F19] flex flex-col selection:bg-blue-500/30 transition-colors duration-300">
+    <div className="min-h-screen flex flex-col">
       <Navbar />
 
       <HighImpactHero
@@ -233,7 +233,7 @@ export default function ContactPage() {
       </section>
 
       <Footer />
-    </main>
+    </div>
   );
 }
 

@@ -10,7 +10,7 @@ export function getMediaUrl(path: string | null | undefined, fallbackType: 'avat
     switch (fallbackType) {
       case 'avatar': return '/placeholders/user-placeholder.png';
       case 'testimonial': return 'https://images.unsplash.com/photo-1542038784456-1ea8e935640e?q=80&w=200&auto=format&fit=crop';
-      default: return 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?q=80&w=800&auto=format&fit=crop';
+      default: return 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=800&auto=format&fit=crop';
     }
   }
   

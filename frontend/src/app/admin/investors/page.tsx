@@ -30,21 +30,14 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { DataToolbar } from "@/components/shared/DataToolbar";
+import { useApiData } from "@/hooks/useApiData";
 import { InvestorInquiry } from "@/types";
 
 export default function AdminInvestorsPage() {
-  const [inquiries, setInquiries] = useState<InvestorInquiry[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<'grid'|'list'>('grid');
-
-  useEffect(() => { fetchInquiries(); }, []);
-
-  const fetchInquiries = async () => {
-    try { const { data } = await axiosInstance.get("/api/admin/investors"); setInquiries(data); }
-    catch (error) { console.error("Failed to fetch inquiries", error); }
-    finally { setIsLoading(false); }
-  };
+  const { data: inquiriesRaw, isLoading, refetch: fetchInquiries } = useApiData<any>("/api/admin/investors", { initialData: [] });
+  const inquiries = (Array.isArray(inquiriesRaw) ? inquiriesRaw : inquiriesRaw?.data || []) as InvestorInquiry[];
 
   const updateStatus = async (id: string, status: string) => {
     try { await axiosInstance.patch(`/api/admin/investors/${id}/status`, { status }); fetchInquiries(); }

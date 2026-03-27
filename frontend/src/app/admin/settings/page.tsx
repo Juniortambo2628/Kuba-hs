@@ -46,6 +46,7 @@ import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
 import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
 import { motion, AnimatePresence } from "framer-motion";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { useApiData } from "@/hooks/useApiData";
 import { NavigationManager } from "./components/NavigationManager";
 
 registerPlugin(FilePondPluginImagePreview);
@@ -277,10 +278,11 @@ const GROUP_CONFIG: Record<string, { label: string, icon: any, category: string,
 };
 
 export default function UnifiedSettingsPage() {
-    const [settings, setSettings] = useState<Record<string, Setting[]>>({});
-    const [metadata, setMetadata] = useState<Metadata | null>(null);
+    const { data: settingsData, isLoading, refetch: fetchSettings, setData: setSettingsData } = useApiData<any>("/api/admin/settings");
+    const settings = settingsData?.settings || {} as Record<string, Setting[]>;
+    const metadata = settingsData?.metadata || null as Metadata | null;
+
     const [files, setFiles] = useState<Record<string, File>>({});
-    const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [activeMainTab, setActiveMainTab] = useState("brand");
 
@@ -354,33 +356,23 @@ export default function UnifiedSettingsPage() {
         return finalUrl;
     };
 
-    useEffect(() => {
-        fetchSettings();
-    }, []);
-
-    const fetchSettings = async () => {
-        try {
-            const res = await axiosInstance.get("/api/admin/settings");
-            setSettings(res.data.settings);
-            setMetadata(res.data.metadata);
-        } catch (err) {
-            toast.error(handleApiError(err));
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
     const handleValueChange = (group: string, id: string, value: string) => {
-        setSettings(prev => ({
+        setSettingsData((prev: any) => ({
             ...prev,
-            [group]: prev[group].map(s => s.id === id ? { ...s, value } : s)
+            settings: {
+                ...prev.settings,
+                [group]: (prev.settings[group] as Setting[]).map((s: Setting) => s.id === id ? { ...s, value } : s)
+            }
         }));
     };
 
     const handleRemoveImage = (group: string, id: string) => {
-        setSettings(prev => ({
+        setSettingsData((prev: any) => ({
             ...prev,
-            [group]: prev[group].map(s => s.id === id ? { ...s, value: "", image_url: null } : s)
+            settings: {
+                ...prev.settings,
+                [group]: (prev.settings[group] as Setting[]).map((s: Setting) => s.id === id ? { ...s, value: "", image_url: null } : s)
+            }
         }));
         setFiles(prev => {
             const newFiles = { ...prev };
@@ -394,7 +386,7 @@ export default function UnifiedSettingsPage() {
         setIsSaving(true);
         try {
             const formData = new FormData();
-            const allSettings = Object.values(settings).flat();
+            const allSettings = Object.values(settings).flat() as Setting[];
 
             // Compress all pending image files first
             const compressedFiles: Record<string, File> = {};
@@ -403,9 +395,9 @@ export default function UnifiedSettingsPage() {
             }
             
             // Filter out json type settings (handled by their own components)
-            const saveable = allSettings.filter(s => s.type !== 'json');
+            const saveable = allSettings.filter(s => s.type !== 'json') as Setting[];
             
-            saveable.forEach((s, index) => {
+            saveable.forEach((s: Setting, index: number) => {
                 formData.append(`settings[${index}][id]`, s.id);
                 formData.append(`settings[${index}][value]`, s.value || "");
                 
@@ -511,7 +503,7 @@ export default function UnifiedSettingsPage() {
                                     </div>
 
                                     <div className={`grid grid-cols-1 ${group.id === 'hero_backgrounds' ? 'md:grid-cols-2 xl:grid-cols-3' : 'md:grid-cols-2 lg:grid-cols-2'} gap-6`}>
-                                        {group.settings.map(setting => (
+                                        {group.settings.map((setting: Setting) => (
                                             <div key={setting.id}>
                                                 {setting.type === 'image' ? (
                                                     <ImageSettingCard 

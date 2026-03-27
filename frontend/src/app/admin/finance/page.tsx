@@ -34,10 +34,11 @@ import {
     PieChart,
     Pie
 } from "recharts";
-import { MetricCard } from "@/components/dashboard/MetricCard";
+import { MetricCard } from "@/components/shared/MetricCard";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useApiData } from "@/hooks/useApiData";
 import { motion } from "framer-motion";
 
 interface MonthData {
@@ -70,25 +71,9 @@ interface FinanceStats {
 }
 
 export default function AdminFinance() {
-    const [stats, setStats] = useState<FinanceStats | null>(null);
-    const [recentPayments, setRecentPayments] = useState<Payment[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        fetchFinanceData();
-    }, []);
-
-    const fetchFinanceData = async () => {
-        try {
-            const res = await axiosInstance.get("/api/admin/finance");
-            setStats(res.data.stats);
-            setRecentPayments(res.data.recent_payments);
-        } catch (err) {
-            console.error("Failed to fetch finance data:", err);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    const { data: financeData, isLoading } = useApiData<any>("/api/admin/finance");
+    const stats = financeData?.stats as FinanceStats | null;
+    const recentPayments = (financeData?.recent_payments || []) as Payment[];
 
     if (isLoading) {
         return (

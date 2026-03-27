@@ -26,8 +26,8 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { MetricCard } from "@/components/dashboard/MetricCard";
-import { PerformanceMetrics } from "@/components/dashboard/PerformanceMetrics";
+import { MetricCard } from "@/components/shared/MetricCard";
+import { PerformanceMetrics } from "@/components/shared/PerformanceMetrics";
 import { ProviderEarnings } from "@/components/dashboard/ProviderEarnings";
 import { BookingStatusBadge } from "@/components/shared/BookingStatusBadge";
 import { BookingCard } from "@/components/shared/BookingCard";

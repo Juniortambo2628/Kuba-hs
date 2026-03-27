@@ -52,7 +52,7 @@ export default function QuoteRequestPage() {
   };
 
   return (
-    <main className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <Navbar />
       
       <section className="pt-32 pb-24 overflow-hidden relative bg-primary">
@@ -229,6 +229,6 @@ export default function QuoteRequestPage() {
       </section>
 
       <Footer />
-    </main>
+    </div>
   );
 }

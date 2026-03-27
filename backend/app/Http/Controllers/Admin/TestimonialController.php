@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Testimonial;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+
 
 class TestimonialController extends Controller
 {
@@ -26,7 +28,9 @@ class TestimonialController extends Controller
         ]);
 
         $testimonial = Testimonial::create($validated);
+        Cache::forget('api_testimonials_all');
         return response()->json($testimonial, 201);
+
     }
 
     public function show(Testimonial $testimonial)
@@ -47,13 +51,17 @@ class TestimonialController extends Controller
         ]);
 
         $testimonial->update($validated);
+        Cache::forget('api_testimonials_all');
         return response()->json($testimonial);
+
     }
 
     public function destroy(Testimonial $testimonial)
     {
         $testimonial->delete();
+        Cache::forget('api_testimonials_all');
         return response()->json(null, 204);
+
     }
 
     public function reorder(Request $request)
@@ -68,6 +76,8 @@ class TestimonialController extends Controller
             Testimonial::where('id', $item['id'])->update(['order' => $item['order']]);
         }
 
+        Cache::forget('api_testimonials_all');
         return response()->json(['message' => 'Reordered successfully']);
+
     }
 }

@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "@/lib/axios";
 import { cn, getMediaUrl } from "@/lib/utils";
+import { designSystem } from "@/lib/design-system";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -17,7 +19,7 @@ import {
   Home, Briefcase, Building2, Heart, Car, CheckCircle2, Search, Map as MapIcon
 } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useCMS } from "@/hooks/useCMS";
+import { useCMS } from "@/contexts/CMSContext";
 
 const MapView = dynamic(() => import("@/components/shared/MapView"), {
   ssr: false,
@@ -78,7 +80,7 @@ export default function ServicesPage() {
   });
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black font-sans transition-colors duration-300">
+    <div className="min-h-screen">
       <Navbar />
 
       <HighImpactHero
@@ -134,7 +136,7 @@ export default function ServicesPage() {
           {/* Main Grid Content */}
           <div className="flex-1 space-y-12">
             <div className="flex items-center justify-between">
-               <h2 className="text-2xl font-bold tracking-tight">
+               <h2 className={designSystem.typography.section.title}>
                  {categories.length} <span className="text-muted-foreground font-medium">Industry Categories Found</span>
                </h2>
                <div className="flex bg-slate-50 dark:bg-zinc-900 p-1.5 rounded-2xl border border-border/40">
@@ -170,11 +172,14 @@ export default function ServicesPage() {
 
                     if (isMedia) {
                       return (
-                        <img 
-                          src={getMediaUrl(dynamicUrl)} 
-                          alt="" 
-                          className="w-6 h-6 object-contain" 
-                        />
+                        <div className="relative w-6 h-6">
+                          <Image 
+                            src={getMediaUrl(dynamicUrl)} 
+                            alt="" 
+                            fill
+                            className="object-contain" 
+                          />
+                        </div>
                       );
                     }
 

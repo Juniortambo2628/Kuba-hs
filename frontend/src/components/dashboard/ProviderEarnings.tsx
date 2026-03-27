@@ -41,9 +41,9 @@ export function ProviderEarnings() {
         <Card className="border-none bg-white dark:bg-white/5 shadow-sm rounded-3xl overflow-hidden">
             <CardHeader className="p-8 border-b border-border/50">
                 <div className="flex items-center justify-between">
-                    <div>
-                        <CardTitle className="text-xl font-bold tracking-tight">Earning History</CardTitle>
-                        <p className="text-xs text-muted-foreground mt-1 uppercase tracking-widest font-semibold text-[9px]">Recent Payouts & Transactions</p>
+                    <div className="space-y-1">
+                        <CardTitle className="text-2xl font-black tracking-tight text-foreground">Earning History</CardTitle>
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Recent Payouts & Transactions</p>
                     </div>
                     <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                         <CreditCard className="w-5 h-5" />

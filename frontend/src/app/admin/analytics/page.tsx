@@ -32,7 +32,8 @@ import {
 import { useExport } from "@/hooks/useExport";
 import { Button } from "@/components/ui/button";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
-import { MetricCard } from "@/components/dashboard/MetricCard";
+import { MetricCard } from "@/components/shared/MetricCard";
+import { useApiData } from "@/hooks/useApiData";
 
 interface AnalyticsData {
   trends: {
@@ -61,17 +62,9 @@ interface AnalyticsData {
 const MONO_COLORS = ['#71717a', '#a1a1aa', '#d4d4d8', '#52525b', '#e4e4e7'];
 
 export default function AdminAnalytics() {
-  const [data, setData] = useState<AnalyticsData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data, isLoading, refetch: fetchAnalytics } = useApiData<AnalyticsData>("/api/admin/analytics", { initialData: null });
   const { exportToCSV } = useExport();
 
-  useEffect(() => { fetchAnalytics(); }, []);
-
-  const fetchAnalytics = async () => {
-    try { const res = await axiosInstance.get("/api/admin/analytics"); setData(res.data); }
-    catch (err) { console.error("Failed to fetch analytics:", err); }
-    finally { setIsLoading(false); }
-  };
 
   if (isLoading) {
     return (

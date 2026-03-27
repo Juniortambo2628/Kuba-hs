@@ -5,7 +5,7 @@ import { Building2, CheckCircle2, ArrowRight, ShieldCheck, Zap } from "lucide-re
 import { designSystem } from "@/lib/design-system";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useCMS } from "@/hooks/useCMS";
+import { useCMS } from "@/contexts/CMSContext";
 
 export function CorporateSolutions() {
   const { getS } = useCMS();

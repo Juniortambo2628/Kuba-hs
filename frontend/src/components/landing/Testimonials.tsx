@@ -16,6 +16,8 @@ import axiosInstance from "@/lib/axios";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getMediaUrl } from "@/lib/utils";
 import { LandingSectionHeader } from "@/components/shared/LandingSectionHeader";
+import Image from "next/image";
+import { designSystem } from "@/lib/design-system";
 
 interface TestimonialItem {
   id: number;
@@ -83,11 +85,13 @@ export function Testimonials() {
                       </p>
                       
                       <div className="flex items-center gap-5 mt-auto pt-6 border-t border-gray-100 dark:border-white/5">
-                        <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-lg border-2 border-white dark:border-white/10 shrink-0 group-hover:scale-110 transition-transform duration-500">
-                          <img 
+                        <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-lg border-2 border-white dark:border-white/10 shrink-0 group-hover:scale-110 transition-transform duration-500 relative">
+                          <Image 
                               src={getMediaUrl(testimonial.image_url, 'testimonial')} 
                               alt={testimonial.client_name} 
-                              className="w-full h-full object-cover"
+                              fill
+                              sizes="56px"
+                              className="object-cover"
                           />
                         </div>
                         <div>

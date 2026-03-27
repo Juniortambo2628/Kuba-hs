@@ -27,6 +27,7 @@ import Link from "next/link";
 
 import { Provider } from "@/types";
 import { getMediaUrl } from "@/lib/utils";
+import Image from "next/image";
 import { LandingSectionHeader } from "@/components/shared/LandingSectionHeader";
 
 
@@ -131,10 +132,12 @@ export function FeaturedProviders() {
                       <Card className="group relative h-[420px] rounded-[2.5rem] overflow-hidden hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-500 border-0 bg-black cursor-pointer flex flex-col">
                         {/* Cover Background */}
                         <div className="absolute inset-0 z-0">
-                          <img 
+                          <Image 
                             src={getMediaUrl(provider.logo || provider.user?.avatar_url) || "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?q=80&w=800&auto=format&fit=crop"} 
                             alt={`${provider.business_name} cover`}
-                            className="w-full h-full object-cover opacity-60 group-hover:opacity-70 group-hover:scale-110 transition-all duration-700" 
+                            fill
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            className="object-cover opacity-60 group-hover:opacity-70 group-hover:scale-110 transition-all duration-700" 
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F19] via-[#0B0F19]/80 to-transparent" />
                         </div>
@@ -154,11 +157,23 @@ export function FeaturedProviders() {
                         {/* Content */}
                         <CardContent className="relative z-10 p-8 pt-10 mt-auto flex flex-col">
                           <div className="flex items-end gap-5 mb-5">
-                              <div className="w-20 h-20 rounded-2xl border-2 border-white/20 bg-gray-900 overflow-hidden shrink-0 shadow-2xl group-hover:-translate-y-2 transition-transform duration-500">
+                              <div className="w-20 h-20 rounded-2xl border-2 border-white/20 bg-gray-900 overflow-hidden shrink-0 shadow-2xl group-hover:-translate-y-2 transition-transform duration-500 relative">
                                  {provider.logo || provider.user?.avatar_url ? (
-                                     <img src={getMediaUrl(provider.logo || provider.user?.avatar_url, 'avatar')} alt={provider.business_name} className="w-full h-full object-cover" />
+                                     <Image 
+                                      src={getMediaUrl(provider.logo || provider.user?.avatar_url, 'avatar') || "/placeholders/kuba-placeholder.png"} 
+                                      alt={provider.business_name} 
+                                      fill
+                                      sizes="80px"
+                                      className="object-cover" 
+                                     />
                                  ) : (
-                                     <img src="/placeholders/kuba-placeholder.png" alt={provider.business_name} className="w-full h-full object-cover opacity-50" />
+                                     <Image 
+                                      src="/placeholders/kuba-placeholder.png" 
+                                      alt={provider.business_name} 
+                                      fill
+                                      sizes="80px"
+                                      className="object-cover opacity-50" 
+                                     />
                                  )}
                               </div>
                               <div className="flex-1 pb-1">

@@ -36,6 +36,7 @@ class StoreBookingRequest extends FormRequest
             'new_address.city' => 'required_with:new_address',
             'new_address.state' => 'required_with:new_address',
             'new_address.postal_code' => 'required_with:new_address',
+            'promo_code' => 'nullable|string|exists:promo_codes,code',
         ];
     }
 }
