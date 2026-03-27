@@ -28,6 +28,9 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
+import { DataToolbar } from "@/components/shared/DataToolbar";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -39,31 +42,16 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
-import { DataToolbar } from "@/components/shared/DataToolbar";
 import { CustomQuote } from "@/types";
+import { useApiData } from "@/hooks/useApiData";
+import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { toast } from "sonner";
 
 export default function AdminQuotesPage() {
-  const [quotes, setQuotes] = useState<CustomQuote[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<'grid'|'list'>('grid');
-
-  useEffect(() => { fetchQuotes(); }, []);
-
-  const fetchQuotes = async () => {
-    try { 
-      const { data } = await axiosInstance.get("/api/admin/quotes"); 
-      setQuotes(data.data || data); 
-    }
-    catch (error) { 
-      console.error("Failed to fetch quotes", error); 
-      toast.error("Failed to load quote requests.");
-    }
-    finally { setIsLoading(false); }
-  };
+  const { data: quotesData, isLoading, refetch: fetchQuotes } = useApiData<any>("/api/admin/quotes", { initialData: null });
+  const quotes = (quotesData?.data || quotesData || []) as CustomQuote[];
 
   const updateStatus = async (id: string, status: string) => {
     try { 
@@ -117,7 +105,7 @@ export default function AdminQuotesPage() {
       />
 
       {viewMode === 'list' ? (
-        <Card className="border border-border overflow-hidden bg-card">
+        <Card className="border border-border/40 overflow-hidden bg-card/50 backdrop-blur-md border-none shadow-sm rounded-2xl">
           <CardContent className="p-0">
             <Table>
               <TableHeader>
@@ -187,30 +175,16 @@ export default function AdminQuotesPage() {
                           <DropdownMenuItem onClick={() => updateStatus(quote.id, 'contracted')} className="cursor-pointer text-xs font-medium text-green-600">
                             <CheckCircle className="w-4 h-4 mr-2" /> Contract
                           </DropdownMenuItem>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="cursor-pointer text-xs font-medium text-red-500 focus:text-red-600">
-                                <XCircle className="w-4 h-4 mr-2" /> Delete
-                              </DropdownMenuItem>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Purge Enterprise Inquiry?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Are you sure you want to delete the inquiry from <span className="font-bold text-foreground">{quote.organization_name}</span>? This action will remove the lead from the enterprise pipeline permanently.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel className="rounded-xl font-bold text-xs uppercase tracking-widest text-foreground">Abort</AlertDialogCancel>
-                                <AlertDialogAction 
-                                  onClick={() => deleteQuote(quote.id)}
-                                  className="rounded-xl font-bold text-xs uppercase tracking-widest bg-red-600 hover:bg-red-700 text-white border-none shadow-md"
-                                >
-                                  Confirm Purge
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                          <ConfirmDeleteDialog
+                            trigger={
+                                <button className="w-full text-left px-2 py-1.5 text-xs font-medium text-red-500 hover:text-red-600 hover:bg-red-50 gap-2 flex items-center rounded-md">
+                                    <XCircle className="w-4 h-4" /> Delete Request
+                                </button>
+                            }
+                            title="Purge Enterprise Inquiry?"
+                            description={`Are you sure you want to delete the inquiry from ${quote.organization_name}? This action will remove the lead from the enterprise pipeline permanently.`}
+                            onConfirm={() => deleteQuote(quote.id)}
+                          />
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -225,12 +199,12 @@ export default function AdminQuotesPage() {
           {isLoading ? (
             [1,2,3].map(i => <Skeleton key={i} className="h-64 rounded-xl" />)
           ) : filteredQuotes.length === 0 ? (
-            <div className="col-span-full py-16 text-center bg-muted/30 rounded-xl border border-dashed border-border">
-              <FileText className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
-              <p className="text-sm text-muted-foreground">No enterprise inquiries found.</p>
+            <div className="col-span-full py-16 text-center bg-transparent border-2 border-dashed border-border/60 rounded-[2.5rem]">
+              <FileText className="w-8 h-8 text-muted-foreground mx-auto mb-3 opacity-30" />
+              <p className="text-[10px] font-bold tracking-normal text-muted-foreground">No enterprise inquiries found.</p>
             </div>
           ) : filteredQuotes.map((quote) => (
-            <Card key={quote.id} className="border border-border relative group bg-card hover:shadow-md transition-all">
+            <Card key={quote.id} className="border border-border bg-card/50 backdrop-blur-md rounded-2xl shadow-sm hover:shadow-md transition-all group overflow-hidden border-none text-left">
               <div className="absolute top-3 right-3">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -248,30 +222,16 @@ export default function AdminQuotesPage() {
                     <DropdownMenuItem onClick={() => updateStatus(quote.id, 'contracted')} className="cursor-pointer text-xs font-medium text-green-600">
                       <CheckCircle className="w-4 h-4 mr-2" /> Contract
                     </DropdownMenuItem>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="cursor-pointer text-xs font-medium text-red-500 focus:text-red-600">
-                          <XCircle className="w-4 h-4 mr-2" /> Delete
-                        </DropdownMenuItem>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Execute Deletion Protocol?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Confirming this will purge the inquiry from <span className="font-bold text-foreground">{quote.organization_name}</span>. This is an irreversible removal from the Kuba enterprise registry.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel className="rounded-xl font-bold text-xs uppercase tracking-widest text-foreground">Cancel</AlertDialogCancel>
-                          <AlertDialogAction 
-                            onClick={() => deleteQuote(quote.id)}
-                            className="rounded-xl font-bold text-xs uppercase tracking-widest bg-red-600 hover:bg-red-700 text-white border-none shadow-md"
-                          >
-                            Purge Asset
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                    <ConfirmDeleteDialog
+                      trigger={
+                          <button className="w-full text-left px-2 py-1.5 text-xs font-medium text-red-500 hover:text-red-600 hover:bg-red-50 gap-2 flex items-center rounded-md">
+                              <XCircle className="w-4 h-4" /> Delete Request
+                          </button>
+                      }
+                      title="Execute Deletion Protocol?"
+                      description={`Confirming this will purge the inquiry from ${quote.organization_name}. This is an irreversible removal from the Kuba enterprise registry.`}
+                      onConfirm={() => deleteQuote(quote.id)}
+                    />
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>

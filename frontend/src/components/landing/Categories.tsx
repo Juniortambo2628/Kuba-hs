@@ -9,13 +9,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { 
-  Star, MapPin, Clock, ShieldCheck, 
-  CheckCircle2, Users, ArrowRight, MessageSquare, ChevronRight,
-  Wrench, Sparkles, Droplet, Zap, Home, Briefcase, Building2, Grid,
-  HeartPulse, GraduationCap, Gavel, Soup, Truck, Activity
+  ArrowRight, 
+  ChevronRight,
+  Grid,
 } from "lucide-react";
 import Link from "next/link";
+import { designSystem } from "@/lib/design-system";
+import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
+import { iconMap, getCategoryIcon } from "@/lib/category-icons";
 
 interface Category {
   id: string;
@@ -29,45 +31,26 @@ interface Category {
   services: any[];
 }
 
-const iconMap: Record<string, React.ReactNode> = {
-  wrench: <Wrench className="w-8 h-8 text-blue-500" />,
-  sparkles: <Sparkles className="w-8 h-8 text-purple-500" />,
-  droplet: <Droplet className="w-8 h-8 text-cyan-500" />,
-  droplets: <Droplet className="w-8 h-8 text-cyan-500" />,
-  bolt: <Zap className="w-8 h-8 text-yellow-500" />,
-  zap: <Zap className="w-8 h-8 text-yellow-500" />,
-  car: <Wrench className="w-8 h-8 text-rose-500" />,
-  home: <Home className="w-8 h-8 text-blue-500" />,
-  heart: <Activity className="w-8 h-8 text-pink-500" />,
-  heartpulse: <HeartPulse className="w-8 h-8 text-rose-500" />,
-  briefcase: <Briefcase className="w-8 h-8 text-indigo-500" />,
-  building: <Building2 className="w-8 h-8 text-emerald-500" />,
-  building2: <Building2 className="w-8 h-8 text-emerald-500" />,
-  graduationcap: <GraduationCap className="w-8 h-8 text-blue-600" />,
-  gavel: <Gavel className="w-8 h-8 text-amber-600" />,
-  soup: <Soup className="w-8 h-8 text-orange-500" />,
-  truck: <Truck className="w-8 h-8 text-slate-500" />,
-};
-
-const getCategoryIcon = (category: Category) => {
+const getCategoryDisplayIcon = (category: Category) => {
   const dynamicUrl = category.dynamic_icon_url;
   const isMedia = dynamicUrl && (dynamicUrl.includes('/') || dynamicUrl.includes('.') || dynamicUrl.startsWith('http'));
 
   if (isMedia) {
     return (
-      <img 
-        src={getMediaUrl(dynamicUrl)} 
-        alt="" 
-        className="w-5 h-5 object-contain" 
-      />
+      <div className="relative w-5 h-5">
+        <Image 
+          src={getMediaUrl(dynamicUrl) || "/placeholders/kuba-placeholder.png"} 
+          alt={category.name} 
+          fill
+          sizes="40px"
+          className="object-contain"
+        />
+      </div>
     );
   }
 
-  const iconName = (dynamicUrl || category.icon || "wrench").toLowerCase();
-  const IconNode = iconMap[iconName] || <Grid className="w-5 h-5 text-gray-500" />;
-  
-  // Return the element directly since iconMap contains ReactNodes
-  return IconNode;
+  // Use icon property from category with the imported helper
+  return getCategoryIcon(category.icon, "w-8 h-8 text-blue-500");
 };
 
 const cardVariants = {
@@ -108,10 +91,10 @@ export function Categories() {
           transition={{ duration: 0.6 }}
         >
           <div>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4 tracking-tight">
+            <h2 className={designSystem.typography.section.title}>
               Explore All Categories
             </h2>
-            <p className="text-gray-500 dark:text-gray-400 text-lg max-w-2xl">
+            <p className={designSystem.typography.section.subtitle}>
               Find the right help for your home or business from our list of services.
             </p>
           </div>
@@ -154,7 +137,7 @@ export function Categories() {
                   >
                       <div className="flex items-center gap-4">
                           <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-white/5 flex items-center justify-center group-data-[state=active]:bg-blue-50 dark:group-data-[state=active]:bg-blue-500/10 transition-colors">
-                            {getCategoryIcon(category)}
+                            {getCategoryDisplayIcon(category)}
                           </div>
                           <div className="text-left">
                             <div className="font-bold text-gray-900 dark:text-gray-300 group-data-[state=active]:text-blue-600 dark:group-data-[state=active]:text-blue-400 text-lg tracking-tight">

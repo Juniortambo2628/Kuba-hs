@@ -9,8 +9,13 @@ const withPWA = withPWAInit({
 });
 
 const nextConfig: NextConfig = {
+  output: 'export',
   turbopack: {},
   images: {
+    unoptimized: true,
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+
     remotePatterns: [
       {
         protocol: "https",
@@ -21,8 +26,17 @@ const nextConfig: NextConfig = {
         hostname: "images.unsplash.com",
       },
       {
+        protocol: "https",
+        hostname: "api.dicebear.com",
+      },
+      {
         protocol: "http",
         hostname: "localhost",
+        port: "8000",
+      },
+      {
+        protocol: "http",
+        hostname: "127.0.0.1",
         port: "8000",
       },
     ],
@@ -31,7 +45,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/cms-assets/:path*',
-        destination: 'http://localhost:8000/storage/:path*',
+        destination: 'http://127.0.0.1:8000/storage/:path*',
       },
     ];
   },

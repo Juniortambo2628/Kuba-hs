@@ -12,6 +12,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DataToolbar } from "@/components/shared/DataToolbar";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
 import { DashboardStatusBadge } from "@/components/shared/DashboardStatusBadge";
+import { useApiData } from "@/hooks/useApiData";
+import { toast } from "sonner";
 
 interface Review {
  id: string;
@@ -27,33 +29,15 @@ interface Review {
 }
 
 export default function AdminFeedback() {
-    const [reviews, setReviews] = useState<Review[]>([]);
-    const [stats, setStats] = useState<any>(null);
-    const [isLoading, setIsLoading] = useState(true);
     const [search, setSearch] = useState("");
     const [ratingFilter, setRatingFilter] = useState("");
     const [viewMode, setViewMode] = useState<'grid'|'list'>('grid');
 
-    useEffect(() => {
-        fetchFeedback();
-    }, [ratingFilter]);
+    const { data: feedbackData, isLoading, refetch: fetchFeedback } = useApiData<any>(`/api/admin/feedback?search=${search}&rating=${ratingFilter}`, { initialData: null });
+    
+    const reviews = (feedbackData?.data || []) as Review[];
+    const stats = feedbackData?.stats || null;
 
-    const fetchFeedback = async () => {
-        setIsLoading(true);
-        try {
-            const params = new URLSearchParams();
-            if (search) params.append('search', search);
-            if (ratingFilter) params.append('rating', ratingFilter);
-            
-            const res = await axiosInstance.get(`/api/admin/feedback?${params.toString()}`);
-            setReviews(res.data.data || []);
-            setStats(res.data.stats);
-        } catch (err) {
-            console.error("Failed to fetch feedback:", err);
-        } finally {
-            setIsLoading(false);
-        }
-    };
 
     const renderStars = (rating: number) => {
         return (
@@ -68,9 +52,10 @@ export default function AdminFeedback() {
     const handleStatusUpdate = async (id: string, newStatus: string) => {
         try {
             await axiosInstance.put(`/api/admin/feedback/${id}`, { status: newStatus });
-            setReviews(reviews.map(r => r.id === id ? { ...r, status: newStatus as any } : r));
+            toast.success("Sentiment status updated");
+            fetchFeedback();
         } catch (err) {
-            console.error("Failed to update status", err);
+            toast.error("Cloud synchronization failed");
         }
     };
 
@@ -247,7 +232,7 @@ export default function AdminFeedback() {
                             <p className="text-xs font-bold text-muted-foreground">No market sentiment recorded in the registry</p>
                         </div>
                     ) : reviews.map((review) => (
-                        <Card key={review.id} className="border border-border bg-card hover:shadow-md transition-all group overflow-hidden flex flex-col">
+                        <Card key={review.id} className="border border-border/40 border-none bg-card/50 backdrop-blur-md shadow-sm rounded-2xl hover:shadow-md transition-all group overflow-hidden flex flex-col">
                             <CardContent className="p-5 flex-1 flex flex-col">
                                 <div className="flex items-start justify-between mb-4">
                                     <div className="flex items-center gap-3">

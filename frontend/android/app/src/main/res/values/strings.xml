@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Kuba</string>
+    <string name="title_activity_main">Kuba</string>
+    <string name="package_name">com.kuba.app</string>
+    <string name="custom_url_scheme">com.kuba.app</string>
+</resources>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import axiosInstance from "@/lib/axios";
+import Image from "next/image";
 
 interface Partner {
   id: string;
@@ -52,9 +53,11 @@ export function TrustCarousel() {
           ) : (
             [...partners, ...partners, ...partners].map((partner, i) => (
               <div key={i} className="grayscale hover:grayscale-0 opacity-40 hover:opacity-100 transition-all duration-500 px-4">
-                <img 
+                <Image 
                   src={partner.logo_path} 
                   alt={partner.name} 
+                  width={120}
+                  height={40}
                   className="h-10 md:h-12 w-auto object-contain"
                 />
               </div>

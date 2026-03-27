@@ -20,6 +20,8 @@ import {
 import Link from "next/link";
 import axiosInstance from "@/lib/axios";
 import { designSystem } from "@/lib/design-system";
+import { HighImpactHero } from "@/components/shared/HighImpactHero";
+import { useCMS } from "@/contexts/CMSContext";
 
 const ICON_MAP: Record<string, any> = {
   'Home Essentials': Home,
@@ -42,6 +44,7 @@ interface Category {
 }
 
 export default function CategoriesPage() {
+  const { getS } = useCMS();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -61,38 +64,15 @@ export default function CategoriesPage() {
   };
 
   return (
-    <main className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <Navbar />
       
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-20 overflow-hidden bg-primary">
-        <div className="absolute inset-0 bg-black/20" />
-        <div className="container relative z-10 mx-auto px-6 text-center text-white">
-          <motion.span 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={designSystem.typography.hero.badge}
-          >
-            Explore Kuba
-          </motion.span>
-          <motion.h1 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className={designSystem.typography.hero.title}
-          >
-            Service Categories
-          </motion.h1>
-          <motion.p 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className={designSystem.typography.hero.subtitle + " text-white/70"}
-          >
-            Find the right professional for any task across our specialized industry verticals.
-          </motion.p>
-        </div>
-      </section>
+      <HighImpactHero
+        title={getS('hero_text', 'categories_hero_title', 'Service Categories')}
+        subtitle={getS('hero_text', 'categories_hero_subtitle', 'Find the right professional for any task across our specialized industry verticals.')}
+        badge={getS('hero_text', 'categories_hero_badge', 'Explore Kuba')}
+        cmsKey="categories"
+      />
 
       {/* Categories Grid */}
       <section className="py-24 container mx-auto px-6">
@@ -149,6 +129,6 @@ export default function CategoriesPage() {
       </section>
 
       <Footer />
-    </main>
+    </div>
   );
 }

@@ -12,12 +12,15 @@ class SettingsController extends Controller
 {
     public function index()
     {
-        $settings = SiteSetting::orderBy('group')->get()->groupBy('group');
+        $formattedSettings = \Illuminate\Support\Facades\Cache::rememberForever('cms_settings_global', function () {
+            $settings = SiteSetting::orderBy('group')->get()->groupBy('group');
 
-        $formattedSettings = [];
-        foreach ($settings as $group => $items) {
-            $formattedSettings[$group] = SiteSettingResource::collection($items);
-        }
+            $formatted = [];
+            foreach ($settings as $group => $items) {
+                $formatted[$group] = SiteSettingResource::collection($items);
+            }
+            return $formatted;
+        });
 
         return response()->json([
             'settings' => $formattedSettings,

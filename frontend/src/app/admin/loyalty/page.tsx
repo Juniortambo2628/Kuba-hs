@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { useApiData } from "@/hooks/useApiData";
 
 interface Tier {
  id: number;
@@ -33,20 +34,22 @@ interface Transaction {
 }
 
 export default function AdminLoyalty() {
- const [tiers, setTiers] = useState<Tier[]>([]);
- const [transactions, setTransactions] = useState<Transaction[]>([]);
- const [isLoading, setIsLoading] = useState(true);
+  const [ledgerPage, setLedgerPage] = useState(1);
+  const { data: tiers, isLoading: tiersLoading, refetch: fetchTiers } = useApiData<Tier[]>("/api/admin/loyalty/tiers", { initialData: [] });
+  const { data: transData, isLoading: transLoading } = useApiData<any>(`/api/admin/loyalty/transactions?page=${ledgerPage}`, { initialData: null });
+  
+  const transactions = (transData?.data || []) as Transaction[];
+  const totalPages = transData?.meta?.last_page || 1;
+  const isLoading = tiersLoading || transLoading;
 
- const [isSheetOpen, setIsSheetOpen] = useState(false);
- const [currentTier, setCurrentTier] = useState<Partial<Tier>>({});
- const [isSaving, setIsSaving] = useState(false);
- const [isLedgerOpen, setIsLedgerOpen] = useState(false);
- const [ledgerPage, setLedgerPage] = useState(1);
- const [totalPages, setTotalPages] = useState(1);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [currentTier, setCurrentTier] = useState<Partial<Tier>>({});
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLedgerOpen, setIsLedgerOpen] = useState(false);
 
- useEffect(() => {
-  fetchData();
- }, [ledgerPage]);
+ const fetchData = () => {
+    fetchTiers();
+ };
 
  const handleOpenSheet = (tier?: Tier) => {
   if (tier) {
@@ -73,22 +76,6 @@ export default function AdminLoyalty() {
    toast.error("Failed to save tier");
   } finally {
    setIsSaving(false);
-  }
- };
-
- const fetchData = async () => {
-  try {
-   const [tiersRes, transRes] = await Promise.all([
-    axiosInstance.get("/api/admin/loyalty/tiers"),
-    axiosInstance.get(`/api/admin/loyalty/transactions?page=${ledgerPage}`)
-   ]);
-   setTiers(tiersRes.data.data || []);
-   setTransactions(transRes.data.data || []);
-   setTotalPages(transRes.data.meta?.last_page || 1);
-  } catch (err) {
-   console.error("Failed to fetch loyalty data:", err);
-  } finally {
-   setIsLoading(false);
   }
  };
 
@@ -197,7 +184,7 @@ export default function AdminLoyalty() {
                         </div>
                     </div>
 
-     <Card className="border border-border border-none overflow-hidden shadow-sm">
+     <Card className="border border-border/40 bg-card/50 backdrop-blur-md border-none overflow-hidden shadow-sm rounded-2xl">
       <Table>
        <TableBody>
         {transactions.map((t) => (
@@ -254,7 +241,7 @@ export default function AdminLoyalty() {
                         </SheetHeader>
                     </div>
      <div className="py-8 space-y-6">
-      <Card className="border border-border border-none overflow-hidden shadow-sm">
+      <Card className="border border-border/40 bg-card/50 backdrop-blur-md border-none overflow-hidden shadow-sm rounded-2xl">
        <Table>
         <TableBody>
          {transactions.map((t) => (

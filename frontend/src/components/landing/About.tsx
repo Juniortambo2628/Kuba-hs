@@ -5,7 +5,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, CalendarCheck, CheckCircle2, Check, ArrowRight } from "lucide-react";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { useCMS } from "@/hooks/useCMS";
+import { useCMS } from "@/contexts/CMSContext";
+import { designSystem } from "@/lib/design-system";
+import Image from "next/image";
 
 export function About() {
   const { getS, getImg } = useCMS();
@@ -48,20 +50,26 @@ export function About() {
           {/* Left: Sticky Image Container */}
           <div className="hidden lg:block sticky top-32 h-[600px] w-full rounded-[2.5rem] overflow-hidden shadow-2xl bg-gray-100 dark:bg-white/5 border-4 border-white dark:border-white/10 relative">
             <AnimatePresence mode="wait">
-              <motion.img
+              <motion.div
                 key={activeStep}
-                src={
-                  activeStep === "search" ? getImg('about_page', 'step_1_image', 'https://images.unsplash.com/photo-1590400813936-cefaef6c8ac5?q=80&w=800&auto=format&fit=crop') :
-                  activeStep === "time" ? getImg('about_page', 'step_2_image', 'https://images.unsplash.com/photo-1506784365847-bbad939e9335?q=80&w=800&auto=format&fit=crop') :
-                  getImg('about_page', 'step_3_image', 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=800&auto=format&fit=crop')
-                }
-                alt="How it works"
                 initial={{ opacity: 0, scale: 1.05 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.5 }}
-                className="absolute inset-0 w-full h-full object-cover"
-              />
+                className="absolute inset-0 w-full h-full"
+              >
+                <Image
+                  src={
+                    activeStep === "search" ? getImg('about_page', 'step_1_image', 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=800&auto=format&fit=crop') || "/placeholders/service-light.png" :
+                    activeStep === "time" ? getImg('about_page', 'step_2_image', 'https://images.unsplash.com/photo-1506784365847-bbad939e9335?q=80&w=800&auto=format&fit=crop') || "/placeholders/service-light.png" :
+                    getImg('about_page', 'step_3_image', 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=800&auto=format&fit=crop') || "/placeholders/service-light.png"
+                  }
+                  alt="How it works"
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="object-cover"
+                />
+              </motion.div>
             </AnimatePresence>
             <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent opacity-60" />
             
@@ -82,17 +90,17 @@ export function About() {
           {/* Right: Content & Accordion */}
           <div className="flex flex-col justify-center h-full pt-10 lg:pt-20">
             <div className="mb-12 space-y-4">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 font-bold text-sm tracking-tight">
-                <span className="relative flex h-2 w-2">
+              <div className={designSystem.typography.section.badge}>
+                <span className="relative flex h-2 w-2 mr-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
                 </span>
                 {getS('about_page', 'about_badge', 'Simple Process')}
               </div>
-              <h2 className="text-4xl md:text-6xl font-black tracking-tight text-gray-900 dark:text-white leading-[1.1]">
+              <h2 className={designSystem.typography.section.title}>
                 {getS('about_page', 'about_title_1', 'How we')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-blue-600">{getS('about_page', 'about_title_2', 'operate')}</span>
               </h2>
-              <p className="text-xl text-gray-600 dark:text-gray-400 leading-relaxed font-medium">
+              <p className={designSystem.typography.section.subtitle}>
                 {getS('about_page', 'about_desc', 'Getting the services you need has never been easier. Just three simple steps to connect with trusted professionals in your area.')}
               </p>
             </div>

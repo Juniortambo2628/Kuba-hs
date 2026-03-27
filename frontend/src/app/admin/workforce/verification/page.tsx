@@ -30,6 +30,7 @@ import {
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
 import { DashboardStatusBadge } from "@/components/shared/DashboardStatusBadge";
 import { toast } from "sonner";
+import { useApiData } from "@/hooks/useApiData";
 import { Input } from "@/components/ui/input";
 import { 
   Dialog, 
@@ -42,25 +43,9 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
 function AdminVerificationContent() {
-  const [proposals, setProposals] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: proposals, isLoading, refetch: fetchProposals } = useApiData<any[]>("/api/admin/workforce/verification", { initialData: [] });
   const [search, setSearch] = useState("");
   const [rejectionData, setRejectionData] = useState<{ id: number, reason: string } | null>(null);
-
-  useEffect(() => {
-    fetchProposals();
-  }, []);
-
-  const fetchProposals = async () => {
-    try {
-      const res = await axiosInstance.get("/api/admin/workforce/verification");
-      setProposals(res.data);
-    } catch (err) {
-      toast.error("Failed to load verification requests");
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleUpdateStatus = async (id: number, status: 'approved' | 'rejected', reason?: string) => {
     try {

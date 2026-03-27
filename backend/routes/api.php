@@ -23,6 +23,7 @@ Route::get('/featured-services/{providerService}/similar', [MarketplaceControlle
 Route::get('/categories/{category}', [MarketplaceController::class, 'showCategory']);
 Route::get('/search', [MarketplaceController::class, 'search']);
 Route::get('/trust-partners', [MarketplaceController::class, 'trustPartners']);
+Route::post('/promo-codes/validate', [MarketplaceController::class, 'validatePromoCode']);
 Route::get('/providers', [MarketplaceController::class, 'providers']);
 Route::get('/providers/{provider}', [MarketplaceController::class, 'show']);
 Route::get('/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'index']);
@@ -124,7 +125,12 @@ Route::middleware('auth:sanctum')->group(function () {
     // Admin routes
     Route::group(['prefix' => 'admin', 'as' => 'api.admin.'], function () {
         Route::get('/analytics', [\App\Http\Controllers\Admin\AnalyticsController::class, 'index']);
+        Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index']);
+        Route::get('/messages-summary', [\App\Http\Controllers\Admin\DashboardController::class, 'messagesSummary']);
         Route::get('/bookings', [\App\Http\Controllers\Admin\BookingController::class, 'index']);
+        Route::get('/bookings/{booking}', [\App\Http\Controllers\Admin\BookingController::class, 'show']);
+        Route::patch('/bookings/{booking}/status', [\App\Http\Controllers\Admin\BookingController::class, 'updateStatus']);
+        Route::delete('/bookings/{booking}', [\App\Http\Controllers\Admin\BookingController::class, 'destroy']);
         Route::get('/payments', [\App\Http\Controllers\Admin\PaymentController::class, 'index']);
         Route::get('/finance', [\App\Http\Controllers\Admin\FinanceController::class, 'index']);
         Route::get('/finance/transactions', [\App\Http\Controllers\Admin\FinanceController::class, 'transactions']);
@@ -135,8 +141,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/feedback', [\App\Http\Controllers\Admin\FeedbackController::class, 'index']);
         Route::put('/feedback/{id}', [\App\Http\Controllers\Admin\FeedbackController::class, 'update']);
 
+        Route::apiResource('trust-partners', \App\Http\Controllers\Admin\TrustPartnerController::class);
+        Route::apiResource('page-features', \App\Http\Controllers\Admin\PageFeatureController::class);
+
         Route::apiResource('users', \App\Http\Controllers\Admin\UserController::class);
         Route::patch('users/{user}/toggle-status', [\App\Http\Controllers\Admin\UserController::class, 'toggleStatus']);
+
 
         // Loyalty routes
         Route::get('/loyalty/tiers', [\App\Http\Controllers\Admin\LoyaltyController::class, 'index']);
@@ -148,7 +158,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Categories & Services
         Route::apiResource('categories', \App\Http\Controllers\Admin\CategoryController::class);
-        Route::apiResource('services', \App\Http\Controllers\Admin\ServiceController::class)->except(['index', 'show']);
+        Route::apiResource('services', \App\Http\Controllers\Admin\ServiceController::class);
         Route::apiResource('blog', \App\Http\Controllers\Admin\BlogController::class);
 
         // CMS Features
@@ -161,13 +171,17 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/reports/generate', [\App\Http\Controllers\Admin\ReportController::class, 'generate']);
 
         // Investor Inquiries
-        Route::get('/investors', [\App\Http\Controllers\Admin\InvestorInquiryController::class, 'index']);
-        Route::get('/investors/{investorInquiry}', [\App\Http\Controllers\Admin\InvestorInquiryController::class, 'show']);
-        Route::patch('/investors/{investorInquiry}/status', [\App\Http\Controllers\Admin\InvestorInquiryController::class, 'updateStatus']);
+        Route::apiResource('investors', \App\Http\Controllers\Admin\InvestorInquiryController::class)->except(['store']);
+        Route::patch('investors/{investor_inquiry}/status', [\App\Http\Controllers\Admin\InvestorInquiryController::class, 'updateStatus']);
 
         // Custom Quotes (Commercial/Cooperatives)
         Route::apiResource('quotes', \App\Http\Controllers\Admin\QuoteController::class)->except(['store']);
         Route::patch('/quotes/{quote}/status', [\App\Http\Controllers\Admin\QuoteController::class, 'updateStatus']);
+
+        // Promo Codes
+        Route::apiResource('promo-codes', \App\Http\Controllers\Admin\PromoCodeController::class);
+        Route::patch('promo-codes/{promo_code}/toggle-status', [\App\Http\Controllers\Admin\PromoCodeController::class, 'toggleStatus']);
+        Route::post('promo-codes/validate', [\App\Http\Controllers\Admin\PromoCodeController::class, 'validateCode']);
 
         // Email Templates
         Route::get('/email-templates', [\App\Http\Controllers\Admin\EmailTemplateController::class, 'index']);
@@ -179,6 +193,17 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/contact/{contactMessage}', [\App\Http\Controllers\Admin\ContactController::class, 'show']);
         Route::patch('/contact/{contactMessage}/status', [\App\Http\Controllers\Admin\ContactController::class, 'updateStatus']);
         Route::delete('/contact/{contactMessage}', [\App\Http\Controllers\Admin\ContactController::class, 'destroy']);
+
+        // Compliance & Verification Audits
+        Route::get('/compliance/overview', [\App\Http\Controllers\Api\Admin\ComplianceController::class, 'overview']);
+        Route::get('/compliance/providers', [\App\Http\Controllers\Api\Admin\ComplianceController::class, 'providers']);
+        Route::get('/compliance/providers/{provider}/documents', [\App\Http\Controllers\Api\Admin\ComplianceController::class, 'providerDocuments']);
+        Route::patch('/compliance/documents/{document}/review', [\App\Http\Controllers\Api\Admin\ComplianceController::class, 'reviewDocument']);
+
+        // Financial Operations & Payouts
+        Route::get('/financials/overview', [\App\Http\Controllers\Api\Admin\FinancialController::class, 'overview']);
+        Route::get('/financials/payouts', [\App\Http\Controllers\Api\Admin\FinancialController::class, 'payouts']);
+        Route::post('/financials/payouts/{payout}/process', [\App\Http\Controllers\Api\Admin\FinancialController::class, 'process']);
     });
 
     // Chat Routes

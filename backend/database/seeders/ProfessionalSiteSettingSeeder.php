@@ -39,7 +39,7 @@ class ProfessionalSiteSettingSeeder extends Seeder
             ['key' => 'PAYSTACK_PAYMENT_URL', 'value' => 'https://api.paystack.co', 'group' => 'payment', 'label' => 'Paystack URL', 'type' => 'text'],
 
             // How We Operate — Step Images (Landing Page)
-            ['key' => 'step_1_image', 'value' => 'https://images.unsplash.com/photo-1590400813936-cefaef6c8ac5?q=80&w=800&auto=format&fit=crop', 'group' => 'about_page', 'label' => 'Step 1 Image — Tell Us What You Need', 'type' => 'image'],
+            ['key' => 'step_1_image', 'value' => 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=800&auto=format&fit=crop', 'group' => 'about_page', 'label' => 'Step 1 Image — Tell Us What You Need', 'type' => 'image'],
             ['key' => 'step_2_image', 'value' => 'https://images.unsplash.com/photo-1506784365847-bbad939e9335?q=80&w=800&auto=format&fit=crop', 'group' => 'about_page', 'label' => 'Step 2 Image — Choose a Time', 'type' => 'image'],
             ['key' => 'step_3_image', 'value' => 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=800&auto=format&fit=crop', 'group' => 'about_page', 'label' => 'Step 3 Image — We Handle the Rest', 'type' => 'image'],
         ];

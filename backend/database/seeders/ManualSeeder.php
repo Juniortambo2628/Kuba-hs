@@ -22,9 +22,9 @@ class ManualSeeder extends Seeder
         }
 
         $testimonials = [
-            ['client_name' => 'Sarah Kamau', 'client_role' => 'Business Owner', 'content' => 'Kuba has completely transformed how I manage my office maintenance. The professionals are top-tier and always on time!', 'rating' => 5, 'image_url' => 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah', 'is_active' => true, 'order' => 1],
-            ['client_name' => 'Mwangi Peter', 'client_role' => 'Homeowner', 'content' => 'I needed a plumber urgently and found one through Kuba within minutes. Excellent service and totally reliable.', 'rating' => 5, 'image_url' => 'https://api.dicebear.com/7.x/avataaars/svg?seed=Mwangi', 'is_active' => true, 'order' => 2],
-            ['client_name' => 'Joy Mutheu', 'client_role' => 'Corporate Manager', 'content' => 'The consolidated billing for our enterprise needs makes accounting so much easier. Highly recommended for any Nairobi office!', 'rating' => 5, 'image_url' => 'https://api.dicebear.com/7.x/avataaars/svg?seed=Joy', 'is_active' => true, 'order' => 3],
+            ['client_name' => 'Sarah Kamau', 'client_role' => 'Business Owner', 'content' => 'Kuba has completely transformed how I manage my office maintenance. The professionals are top-tier and always on time!', 'rating' => 5, 'image_url' => 'https://api.dicebear.com/7.x/initials/svg?seed=Sarah', 'is_active' => true, 'order' => 1],
+            ['client_name' => 'Mwangi Peter', 'client_role' => 'Homeowner', 'content' => 'I needed a plumber urgently and found one through Kuba within minutes. Excellent service and totally reliable.', 'rating' => 5, 'image_url' => 'https://api.dicebear.com/7.x/initials/svg?seed=Mwangi', 'is_active' => true, 'order' => 2],
+            ['client_name' => 'Joy Mutheu', 'client_role' => 'Corporate Manager', 'content' => 'The consolidated billing for our enterprise needs makes accounting so much easier. Highly recommended for any Nairobi office!', 'rating' => 5, 'image_url' => 'https://api.dicebear.com/7.x/initials/svg?seed=Joy', 'is_active' => true, 'order' => 3],
         ];
 
         foreach($testimonials as $test) { 

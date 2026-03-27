@@ -3,7 +3,9 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useCMS } from "@/hooks/useCMS";
+import { useCMS } from "@/contexts/CMSContext";
+import { designSystem } from "@/lib/design-system";
+import Image from "next/image";
 
 export function CTA() {
   const { getS } = useCMS();
@@ -26,15 +28,15 @@ export function CTA() {
             
             {/* Left Content Area */}
             <div className="p-10 md:p-16 lg:p-24 flex flex-col justify-center text-left">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold text-xs tracking-tight mb-8 border border-blue-100 dark:border-blue-500/20 w-fit shrink-0 backdrop-blur-md">
+              <div className={designSystem.typography.section.badge}>
                 Get Started Today
               </div>
               
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 dark:text-white mb-6 tracking-tight leading-[1.1]">
+              <h2 className={designSystem.typography.section.title}>
                 {getS('home_hero', 'cta_title', 'Ready to find a professional?')}
               </h2>
               
-              <p className="text-xl font-medium text-gray-600 dark:text-gray-400 mb-12 max-w-xl leading-relaxed">
+              <p className={designSystem.typography.section.subtitle}>
                 {getS('home_hero', 'cta_description', 'Join thousands of happy customers who have already found reliable help through KUBA. The smart way to handle home services.')}
               </p>
               
@@ -51,10 +53,12 @@ export function CTA() {
             {/* Right Rich Media Collage */}
             <div className="max-lg:hidden relative h-full w-full min-h-[500px]">
                 <div className="absolute inset-0 bg-gradient-to-l from-transparent to-gray-50 dark:to-[#0f1523] z-10 w-24" />
-                <img 
+                <Image 
                     src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=1200&auto=format&fit=crop" 
                     alt="Professionals"
-                    className="absolute inset-0 w-full h-full object-cover object-left rounded-r-[3rem]"
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    className="object-cover object-left rounded-r-[3rem]"
                 />
                 <div className="absolute inset-0 bg-blue-900/10 mix-blend-overlay" />
                 

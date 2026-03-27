@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 import { openLegalModal } from "@/components/shared/LegalModals";
-import { useCMS } from "@/hooks/useCMS";
+import { useCMS } from "@/contexts/CMSContext";
+import Image from "next/image";
 
 export function Footer() {
   const { getS } = useCMS();
@@ -15,9 +16,13 @@ export function Footer() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
             
             <div className="md:col-span-1">
-                <Link href="/" className="inline-flex items-center gap-2 mb-4">
-                  <img src="/assets/Kuba-Header-footter-Logo-for-Light-Mode.png" alt="Kuba" className="h-8 w-auto dark:hidden" />
-                  <img src="/assets/Kuba-Header-Footer-Logo-for-Dark-Mode.png" alt="Kuba" className="h-8 w-auto hidden dark:block" />
+                <Link href="/" className="inline-flex items-center gap-2">
+                  <div className="relative h-8 w-32 dark:hidden">
+                    <Image src="/assets/Kuba-Header-footter-Logo-for-Light-Mode.png" alt="Kuba" fill sizes="128px" className="object-contain" priority />
+                  </div>
+                  <div className="relative h-8 w-32 hidden dark:block">
+                    <Image src="/assets/Kuba-Header-Footer-Logo-for-Dark-Mode.png" alt="Kuba" fill sizes="128px" className="object-contain" priority />
+                  </div>
                 </Link>
                 <p className="text-gray-500 dark:text-gray-400 text-sm mb-6 leading-relaxed">
                 {getS('identity', 'footer_description', 'Connect with trusted home service professionals in your area. Quick, reliable, and secure.')}

@@ -27,6 +27,8 @@ import {
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
 import { DashboardStatusBadge } from "@/components/shared/DashboardStatusBadge";
 import { DashboardEmptyState } from "@/components/shared/DashboardEmptyState";
+import { useApiData } from "@/hooks/useApiData";
+import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { toast } from "sonner";
 import { 
   AlertDialog,
@@ -41,38 +43,19 @@ import {
 
 function AdminContactContent() {
   const { search, setSearch } = useSearchState();
-  const [messages, setMessages] = useState<ContactMessage[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [deleteId, setDeleteId] = useState<string | number | null>(null);
+  const { data: messagesData, isLoading, refetch: fetchMessages } = useApiData<any>(`/api/admin/contact?search=${search}`, { initialData: null });
+  const messages = (messagesData?.data || []) as ContactMessage[];
   const [statusUpdate, setStatusUpdate] = useState<{ id: string | number, status: string } | null>(null);
   
   // Define default values
   const viewMode = 'list';
 
-  useEffect(() => {
-    fetchMessages(search);
-  }, [search]);
-
-  const fetchMessages = async (s = "") => {
-    try {
-      setIsLoading(true);
-      const url = `/api/admin/contact?search=${s}`;
-      const res = await axiosInstance.get(url);
-      // The API returns paginated data inside res.data, so data.data is the array
-      setMessages(res.data.data || []);
-    } catch (err) {
-      console.error("Failed to fetch contact messages:", err);
-      toast.error("Failed to load messages");
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const updateStatus = async (id: string | number, status: string) => {
     try {
         await axiosInstance.patch(`/api/admin/contact/${id}/status`, { status });
         toast.success(`Message marked as ${status}`);
-        fetchMessages(search);
+        fetchMessages();
     } catch (err) {
         toast.error("Failed to update status");
     }
@@ -82,7 +65,7 @@ function AdminContactContent() {
     try {
         await axiosInstance.delete(`/api/admin/contact/${id}`);
         toast.success("Message deleted successfully");
-        fetchMessages(search);
+        fetchMessages();
     } catch (err: any) {
         toast.error(err.response?.data?.message || "Failed to delete message");
     }
@@ -92,7 +75,7 @@ function AdminContactContent() {
     if (msg.status === 'new') {
       try {
         await axiosInstance.get(`/api/admin/contact/${msg.id}`);
-        fetchMessages(search);
+        fetchMessages();
       } catch (err) {
         console.error(err);
       }
@@ -195,9 +178,16 @@ function AdminContactContent() {
                            <MessageSquare className="w-3.5 h-3.5" /> Reply to Email
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                         <DropdownMenuItem onClick={() => setDeleteId(m.id)} className="cursor-pointer text-xs font-medium text-red-500 focus:text-red-600 focus:bg-red-50 gap-2">
-                          <Trash2 className="w-3.5 h-3.5" /> Delete Message
-                        </DropdownMenuItem>
+                        <ConfirmDeleteDialog
+                            trigger={
+                                <button className="w-full text-left px-2 py-1.5 text-xs font-medium text-red-500 hover:text-red-600 hover:bg-red-50 gap-2 flex items-center rounded-md">
+                                    <Trash2 className="w-3.5 h-3.5" /> Delete Message
+                                </button>
+                            }
+                            title="Purge Message?"
+                            description="This action will permanently delete this contact inquiry. This cannot be undone."
+                            onConfirm={() => deleteMessage(m.id)}
+                        />
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -208,31 +198,6 @@ function AdminContactContent() {
         </CardContent>
       </Card>
 
-      {/* Delete Confirmation */}
-      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
-        <AlertDialogContent className="rounded-3xl border-border bg-card/95 backdrop-blur-xl max-w-sm">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-xl font-black italic tracking-tight">Delete Message?</AlertDialogTitle>
-            <AlertDialogDescription className="text-sm font-medium text-muted-foreground leading-relaxed">
-              This action will permanently delete this contact inquiry. This cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="gap-2 sm:gap-0 pt-4">
-            <AlertDialogCancel className="rounded-xl font-bold text-xs uppercase tracking-widest text-foreground">Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-                className="rounded-xl font-bold text-xs uppercase tracking-widest bg-red-600 hover:bg-red-700 text-white border-none shadow-md"
-                onClick={() => {
-                    if (deleteId) {
-                        deleteMessage(deleteId);
-                        setDeleteId(null);
-                    }
-                }}
-            >
-                Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       {/* Status Update Confirmation */}
       <AlertDialog open={!!statusUpdate} onOpenChange={(open) => !open && setStatusUpdate(null)}>

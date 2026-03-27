@@ -18,6 +18,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import axiosInstance from "@/lib/axios";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
+import { getMediaUrl } from "@/lib/utils";
 
 interface Category {
   id: number;
@@ -233,11 +235,23 @@ export function HeroSearchModal({ isOpen, onClose, initialTab }: HeroSearchModal
                         onClick={onClose}
                         className="group flex items-center gap-4 p-4 rounded-2xl bg-muted/30 dark:bg-white/5 hover:bg-muted dark:hover:bg-white/10 border border-transparent hover:border-border transition-all"
                       >
-                        <div className="w-14 h-14 rounded-xl bg-muted border border-border overflow-hidden shrink-0">
+                        <div className="w-14 h-14 rounded-xl bg-muted border border-border overflow-hidden shrink-0 relative">
                            {result.services?.[0]?.service_thumbnail_url ? (
-                             <img src={result.services[0].service_thumbnail_url} alt={result.business_name} className="w-full h-full object-cover" />
+                             <Image 
+                              src={getMediaUrl(result.services[0].service_thumbnail_url, 'service') || "/placeholders/service-light.png"} 
+                              alt={result.business_name} 
+                              fill
+                              sizes="56px"
+                              className="object-cover" 
+                             />
                            ) : result.logo ? (
-                             <img src={getLogoUrl(result.logo) || ""} alt={result.business_name} className="w-full h-full object-cover" />
+                             <Image 
+                              src={getMediaUrl(result.logo, 'avatar') || "/placeholders/kuba-placeholder.png"} 
+                              alt={result.business_name} 
+                              fill
+                              sizes="56px"
+                              className="object-cover" 
+                             />
                            ) : (
                              <div className="w-full h-full flex items-center justify-center font-bold text-lg text-muted-foreground/30">
                                {result.business_name.substring(0, 2)}

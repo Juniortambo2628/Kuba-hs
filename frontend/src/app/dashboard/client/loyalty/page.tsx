@@ -115,14 +115,14 @@ export default function LoyaltyProgram() {
    <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
     <div className="lg:col-span-2 space-y-10">
      {/* Main Points Card */}
-     <Card className="border border-border bg-primary border-none text-white overflow-hidden relative group">
-      <div className="absolute inset-0 bg-gradient-to-br from-sky-600/20 to-transparent"></div>
+     <Card className="border border-border/40 bg-card/50 backdrop-blur-md shadow-sm rounded-[2rem] overflow-hidden relative group">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent"></div>
       <CardContent className="p-12 relative z-10">
        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
         <div className="space-y-6">
           <div className="space-y-1">
-            <p className="text-[11px] font-semibold text-sky-500 uppercase tracking-[0.3em]">Total Points Engine</p>
-            <h2 className="text-6xl font-semibold tabular-nums tracking-tighter ">
+            <p className="text-[11px] font-semibold text-primary uppercase tracking-[0.3em]">Total Points Engine</p>
+            <h2 className="text-6xl font-semibold tabular-nums tracking-tighter text-foreground">
               {loyaltyData?.points || 0}
             </h2>
           </div>
@@ -140,11 +140,11 @@ export default function LoyaltyProgram() {
           </div>
         </div>
         <div className="flex justify-center md:justify-end">
-          <div className="w-48 h-48 rounded-full border-2 border-white/5 flex items-center justify-center relative">
-            <div className="absolute inset-0 border-t-2 border-sky-500 rounded-full animate-spin duration-[10s]"></div>
-            <Gift className="w-20 h-20 text-white/10 group-hover:text-sky-500/50 transition-colors duration-700" />
+          <div className="w-48 h-48 rounded-full border-2 border-border/40 flex items-center justify-center relative bg-background/50 backdrop-blur-md shadow-inner">
+            <div className="absolute inset-0 border-t-2 border-primary rounded-full animate-spin duration-[10s]"></div>
+            <Gift className="w-20 h-20 text-muted-foreground/20 group-hover:text-primary/50 transition-colors duration-700" />
             <div className="absolute inset-0 flex items-center justify-center flex-col">
-              <Star className="w-12 h-12 text-muted-foreground fill-amber-500 shadow-xl" />
+              <Star className="w-12 h-12 text-muted-foreground fill-amber-500" />
             </div>
           </div>
         </div>
@@ -160,7 +160,7 @@ export default function LoyaltyProgram() {
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {rewards.map((reward: any) => (
-          <Card key={reward.name} className="border border-border group border-none hover:translate-y-[-8px] transition-all duration-500 bg-white shadow-xl shadow-gray-100">
+          <Card key={reward.name} className="border border-border/40 bg-card/50 backdrop-blur-md shadow-sm rounded-3xl group hover:translate-y-[-8px] transition-all duration-500 hover:shadow-md">
             <CardContent className="p-8 flex flex-col h-full space-y-6">
               <div className={`w-12 h-12 rounded-2xl ${reward.bg} ${reward.color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
                 <Award className="w-6 h-6" />
@@ -192,8 +192,8 @@ export default function LoyaltyProgram() {
 
     <div className="space-y-10">
       {/* History Card */}
-      <Card className="border border-border border-none bg-white shadow-sm overflow-hidden">
-        <div className="p-8 border-b border-border flex items-center justify-between">
+      <Card className="border border-border/40 bg-card/50 backdrop-blur-md shadow-sm rounded-[2rem] overflow-hidden">
+        <div className="p-8 border-b border-border/40 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <History className="w-5 h-5 text-primary" />
             <h3 className="text-[10px] font-semibold text-foreground uppercase tracking-normal">Transaction Log</h3>
@@ -226,8 +226,8 @@ export default function LoyaltyProgram() {
       </Card>
 
       {/* Benefits Card */}
-      <Card className="border border-border border-none bg-muted relative overflow-hidden">
-        <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl"></div>
+      <Card className="border border-border/40 bg-card/50 backdrop-blur-md shadow-sm rounded-[2rem] relative overflow-hidden">
+        <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl"></div>
         <CardContent className="p-8 space-y-6 relative z-10">
           <div className="flex items-center gap-3 text-primary">
             <CheckCircle className="w-5 h-5" />

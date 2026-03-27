@@ -34,4 +34,11 @@ class InvestorInquiryController extends Controller
             'inquiry' => $investorInquiry
         ]);
     }
+
+    public function destroy(InvestorInquiry $investorInquiry)
+    {
+        $investorInquiry->delete();
+        return response()->json(['message' => 'Inquiry deleted successfully']);
+    }
 }
+

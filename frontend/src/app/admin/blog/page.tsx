@@ -12,21 +12,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Plus, FileText, ShieldCheck, Zap, PenTool, Calendar, User as UserIcon, Trash2, Edit3, Loader2, Image as ImageIcon } from "lucide-react";
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { DataToolbar } from "@/components/shared/DataToolbar";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { useApiData } from "@/hooks/useApiData";
+import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 
 interface Post {
  id: string;
@@ -41,36 +32,21 @@ interface Post {
 }
 
 export default function AdminBlog() {
- const [posts, setPosts] = useState<Post[]>([]);
- const [isLoading, setIsLoading] = useState(true);
- const [searchTerm, setSearchTerm] = useState("");
- const [viewMode, setViewMode] = useState<'grid'|'list'>('grid');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [viewMode, setViewMode] = useState<'grid'|'list'>('grid');
 
- // Dialog state
- const [isDialogOpen, setIsDialogOpen] = useState(false);
- const [selectedPost, setSelectedPost] = useState<Post | null>(null);
- const [isSubmitting, setIsSubmitting] = useState(false);
- const [form, setForm] = useState({
-  title: "",
-  content: "",
-  excerpt: "",
-  is_published: false,
- });
+  // Dialog state
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [form, setForm] = useState({
+   title: "",
+   content: "",
+   excerpt: "",
+   is_published: false,
+  });
 
- useEffect(() => {
-  fetchPosts();
- }, []);
-
- const fetchPosts = async () => {
-  try {
-   const res = await axiosInstance.get("/api/admin/blog");
-   setPosts(res.data.data || []);
-  } catch (err) {
-   console.error("Failed to fetch posts:", err);
-  } finally {
-   setIsLoading(false);
-  }
- };
+  const { data: posts, isLoading, refetch: fetchPosts } = useApiData<Post[]>("/api/admin/blog", { initialData: [] });
 
  const openCreate = () => {
   setSelectedPost(null);
@@ -118,7 +94,7 @@ export default function AdminBlog() {
   }
  };
 
- const filteredPosts = posts.filter(p => 
+ const filteredPosts = posts.filter(p =>
   p.title.toLowerCase().includes(searchTerm.toLowerCase())
  );
 
@@ -134,11 +110,11 @@ export default function AdminBlog() {
  return (
   <div className="max-w-[1400px] mx-auto space-y-10 pb-12">
    {/* Blog Header */}
-   <DashboardPageHeader 
-    title="Editorial Journal" 
+   <DashboardPageHeader
+    title="Editorial Journal"
     subtitle="Authored content and marketplace insights for the community."
    >
-    <Button 
+    <Button
      onClick={openCreate}
      className="h-12 bg-primary hover:bg-black text-white rounded-2xl font-bold px-8 shadow-md transition-all flex items-center gap-2 group"
     >
@@ -208,7 +184,7 @@ export default function AdminBlog() {
     </div>
    </div>
 
-   <DataToolbar 
+   <DataToolbar
     search={searchTerm}
     onSearchChange={setSearchTerm}
     searchPlaceholder="Search by Title or Author..."
@@ -268,30 +244,18 @@ export default function AdminBlog() {
            <button onClick={() => openEdit(post)} className="p-2.5 text-muted-foreground hover:text-primary hover:bg-red-50 rounded-xl transition-all">
              <Edit3 className="w-4 h-4" />
            </button>
-           <AlertDialog>
-             <AlertDialogTrigger asChild>
-               <button className="p-2.5 text-muted-foreground hover:text-red-600 hover:bg-red-50 rounded-xl transition-all">
-                 <Trash2 className="w-4 h-4" />
-               </button>
-             </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Purge Literary Asset?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to delete <span className="font-bold text-foreground">"{post.title}"</span>? This article will be permanently removed from the editorial manuscript registry and platform archives.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel className="rounded-xl font-bold text-xs uppercase tracking-widest text-foreground">Abort</AlertDialogCancel>
-                  <AlertDialogAction 
-                    onClick={() => handleDelete(post.id)}
-                    className="rounded-xl font-bold text-xs uppercase tracking-widest bg-red-600 hover:bg-red-700 text-white border-none shadow-md"
-                  >
-                    Confirm Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            <ConfirmDeleteDialog
+              trigger={
+                <button className="p-2.5 text-muted-foreground hover:text-red-600 hover:bg-red-50 rounded-xl transition-all">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              }
+              title="Purge Literary Asset?"
+              description={
+                <>Are you sure you want to delete <span className="font-bold text-foreground">"{post.title}"</span>? This article will be permanently removed from the editorial manuscript registry and platform archives.</>
+              }
+              onConfirm={() => handleDelete(post.id)}
+            />
           </TableCell>
          </TableRow>
         ))}
@@ -363,30 +327,18 @@ export default function AdminBlog() {
          <Button onClick={() => openEdit(post)} variant="outline" size="sm" className="w-full h-9 bg-background hover:bg-muted text-xs font-bold">
           <Edit3 className="w-3.5 h-3.5 mr-2" /> Edit
          </Button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="sm" className="w-full h-9 text-red-500 hover:text-red-600 hover:bg-red-50 text-xs font-bold">
-                <Trash2 className="w-3.5 h-3.5 mr-2" /> Delete
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Execute Deletion?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action is irreversible. The article <span className="font-bold text-foreground">"{post.title}"</span> will be purged from the Kuba registry.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel className="rounded-xl font-bold text-xs uppercase tracking-widest text-foreground">Cancel</AlertDialogCancel>
-                <AlertDialogAction 
-                  onClick={() => handleDelete(post.id)}
-                  className="rounded-xl font-bold text-xs uppercase tracking-widest bg-red-600 hover:bg-red-700 text-white border-none shadow-md"
-                >
-                  Confirm Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+           <ConfirmDeleteDialog
+             trigger={
+               <Button variant="ghost" size="sm" className="w-full h-9 text-red-500 hover:text-red-600 hover:bg-red-50 text-xs font-bold">
+                 <Trash2 className="w-3.5 h-3.5 mr-2" /> Delete
+               </Button>
+             }
+             title="Execute Deletion?"
+             description={
+               <>This action is irreversible. The article <span className="font-bold text-foreground">"{post.title}"</span> will be purged from the Kuba registry.</>
+             }
+             onConfirm={() => handleDelete(post.id)}
+           />
         </div>
        </CardContent>
       </Card>

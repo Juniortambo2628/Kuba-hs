@@ -26,25 +26,11 @@ import {
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
+import { useApiData } from "@/hooks/useApiData";
+import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 
 export default function TestimonialPage() {
-  const [items, setItems] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    fetchItems();
-  }, []);
-
-  const fetchItems = async () => {
-    try {
-      const res = await axiosInstance.get("/api/admin/testimonials");
-      setItems(res.data);
-    } catch (err) {
-      toast.error("Failed to load testimonials");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { data: items, isLoading, refetch: fetchItems, setData: setItems } = useApiData<any[]>("/api/admin/testimonials", { initialData: [] });
 
   const handleAdd = async () => {
     try {
@@ -222,13 +208,19 @@ export default function TestimonialPage() {
                             </div>
 
                             <div className="w-20 border-l border-border/10 flex flex-col">
-                              <button 
-                                onClick={() => handleDelete(item.id)}
-                                className="flex-1 flex items-center justify-center text-muted-foreground/30 hover:text-red-500 hover:bg-red-500/5 transition-all"
-                                title="Remove Endorsement"
-                              >
-                                <Trash2 className="w-5 h-5" />
-                              </button>
+                                <ConfirmDeleteDialog
+                                  trigger={
+                                    <button 
+                                      className="flex-1 flex items-center justify-center text-muted-foreground/30 hover:text-red-500 hover:bg-red-500/5 transition-all w-full h-full"
+                                      title="Remove Endorsement"
+                                    >
+                                      <Trash2 className="w-5 h-5" />
+                                    </button>
+                                  }
+                                  title="Remove Endorsement?"
+                                  description="Are you sure you want to permanently delete this client testimonial?"
+                                  onConfirm={() => handleDelete(item.id)}
+                                />
                             </div>
                           </CardContent>
                         </Card>

@@ -11,6 +11,9 @@ import { Plus, Edit, Trash2, CheckCircle, XCircle, LayoutGrid, List, MessageSqua
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
 import { DataToolbar } from "@/components/shared/DataToolbar";
 import { Badge } from "@/components/ui/badge";
+import { useApiData } from "@/hooks/useApiData";
+import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { toast } from "sonner";
 
 interface FAQ {
   id: number;
@@ -21,8 +24,8 @@ interface FAQ {
 }
 
 export default function FAQManagement() {
-  const [faqs, setFaqs] = useState<FAQ[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: faqs, isLoading, refetch: fetchFaqs, setData: setFaqs } = useApiData<FAQ[]>('/api/admin/faqs', { initialData: [] });
+  
   const [isEditing, setIsEditing] = useState<FAQ | null>(null);
   const [formData, setFormData] = useState({ question: '', answer: '', is_active: true, order: 0 });
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -30,22 +33,6 @@ export default function FAQManagement() {
   const [search, setSearch] = useState("");
   const [viewMode, setViewMode] = useState<'grid'|'list'>('list');
   const [statusFilter, setStatusFilter] = useState("");
-
-  useEffect(() => {
-    fetchFaqs();
-  }, []);
-
-  const fetchFaqs = async () => {
-    setIsLoading(true);
-    try {
-      const res = await axiosInstance.get('/api/admin/faqs');
-      setFaqs(res.data);
-    } catch (err) {
-      console.error("Failed to fetch FAQs", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,12 +52,12 @@ export default function FAQManagement() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this FAQ?")) return;
     try {
       await axiosInstance.delete(`/api/admin/faqs/${id}`);
+      toast.success("FAQ Registry Updated");
       fetchFaqs();
     } catch (err) {
-      console.error("Failed to delete FAQ", err);
+      toast.error("Deletion failed");
     }
   };
 
@@ -232,9 +219,16 @@ export default function FAQManagement() {
                           <Button variant="ghost" size="icon" onClick={() => startEdit(faq)} className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50">
                             <Edit className="w-4 h-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" onClick={() => handleDelete(faq.id)} className="h-8 w-8 text-rose-600 hover:text-rose-700 hover:bg-rose-50">
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                           <ConfirmDeleteDialog
+                             trigger={
+                               <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-600 hover:text-rose-700 hover:bg-rose-50">
+                                 <Trash2 className="w-4 h-4" />
+                               </Button>
+                             }
+                             title="Purge FAQ Entry?"
+                             description="This will permanently remove this question from the platform registry. This action cannot be undone."
+                             onConfirm={() => handleDelete(faq.id)}
+                           />
                         </div>
                       </TableCell>
                     </TableRow>
@@ -282,9 +276,16 @@ export default function FAQManagement() {
                             <Button variant="outline" size="sm" onClick={() => startEdit(faq)} className="h-8 text-[10px] font-bold px-3">
                                 Edit
                             </Button>
-                            <Button variant="ghost" size="sm" onClick={() => handleDelete(faq.id)} className="h-8 text-[10px] font-bold px-3 text-rose-500 hover:text-rose-600 hover:bg-rose-50">
-                                Remove
-                            </Button>
+                             <ConfirmDeleteDialog
+                               trigger={
+                                 <Button variant="ghost" size="sm" className="h-8 text-[10px] font-bold px-3 text-rose-500 hover:text-rose-600 hover:bg-rose-50">
+                                     Remove
+                                 </Button>
+                               }
+                               title="Remove FAQ?"
+                               description="Are you sure you want to delete this entry?"
+                               onConfirm={() => handleDelete(faq.id)}
+                             />
                         </div>
                     </CardContent>
                 </Card>

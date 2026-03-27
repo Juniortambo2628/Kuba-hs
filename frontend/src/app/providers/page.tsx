@@ -18,6 +18,9 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { getMediaUrl } from "@/lib/utils";
+import { designSystem } from "@/lib/design-system";
+import Image from "next/image";
+import { useCMS } from "@/contexts/CMSContext";
 
 const MapView = dynamic(() => import("@/components/shared/MapView"), {
   ssr: false,
@@ -43,8 +46,6 @@ interface Provider {
   };
   provider_services: any[];
 }
-
-import { useCMS } from "@/hooks/useCMS";
 
 function ProvidersContent() {
   const { getS, getImg } = useCMS();
@@ -334,18 +335,20 @@ function ProvidersContent() {
                                 <Shield className="w-3.5 h-3.5" /> Verified
                               </div>
                             )}
-                            <div className="absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity">
-                               <img src="/logo-light.png" className="w-full h-full object-cover scale-150 rotate-12" alt="" />
-                            </div>
                           </div>
                           
                           <CardContent className="p-8 relative flex-1 flex flex-col">
                             {/* Institutional Avatar (only in grid) */}
                             {view === "grid" && (
                               <div className="absolute -top-12 left-8">
-                                <div className="w-24 h-24 rounded-3xl border-8 border-white dark:border-black bg-white dark:bg-zinc-900 overflow-hidden flex items-center justify-center shadow-xl transition-all duration-500 group-hover:scale-105 group-hover:-translate-y-2">
+                                <div className="w-24 h-24 rounded-3xl border-8 border-white dark:border-black bg-white dark:bg-zinc-900 overflow-hidden flex items-center justify-center shadow-xl transition-all duration-500 group-hover:scale-105 group-hover:-translate-y-2 relative">
                                   {provider.logo ? (
-                                     <img src={getMediaUrl(provider.logo, 'avatar')} alt={provider.business_name} className="w-full h-full object-cover" />
+                                     <Image 
+                                      src={getMediaUrl(provider.logo, 'avatar')} 
+                                      alt={provider.business_name} 
+                                      fill
+                                      className="object-cover" 
+                                     />
                                   ) : (
                                      <div className="w-full h-full bg-primary/5 flex items-center justify-center font-black text-3xl text-primary/20 italic">
                                         {provider.business_name.charAt(0)}
@@ -373,9 +376,14 @@ function ProvidersContent() {
                                   </div>
                                 </div>
                                 {view === "list" && (
-                                  <div className="w-20 h-20 rounded-2xl border border-border/40 bg-slate-50 dark:bg-zinc-900 overflow-hidden flex items-center justify-center font-bold text-xl text-muted-foreground shrink-0 shadow-sm transition-all group-hover:scale-105">
+                                  <div className="w-20 h-20 rounded-2xl border border-border/40 bg-slate-50 dark:bg-zinc-900 overflow-hidden flex items-center justify-center font-bold text-xl text-muted-foreground shrink-0 shadow-sm transition-all group-hover:scale-105 relative">
                                     {provider.logo ? (
-                                      <img src={getMediaUrl(provider.logo, 'avatar')} alt="" className="w-full h-full object-cover" />
+                                      <Image 
+                                        src={getMediaUrl(provider.logo, 'avatar')} 
+                                        alt="" 
+                                        fill
+                                        className="object-cover" 
+                                      />
                                     ) : (
                                       <div className="w-full h-full bg-primary/5 flex items-center justify-center font-black text-2xl text-primary/20 italic">
                                         {provider.business_name.charAt(0)}
@@ -445,12 +453,12 @@ function ProvidersContent() {
 
 export default function ProvidersPage() {
   return (
-    <main className="min-h-screen bg-white dark:bg-[#0B0F19] flex flex-col selection:bg-blue-500/30 transition-colors duration-300">
+    <div className="min-h-screen flex flex-col">
       <Navbar />
       <Suspense fallback={<div className="flex-1 pt-32 pb-24 text-center text-muted-foreground dark:text-white">Loading providers...</div>}>
         <ProvidersContent />
       </Suspense>
       <Footer />
-    </main>
+    </div>
   );
 }

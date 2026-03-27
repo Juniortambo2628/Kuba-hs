@@ -20,28 +20,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { useApiData } from "@/hooks/useApiData";
 import { EmailTemplate } from "@/types";
 
 export default function AdminEmailTemplatesPage() {
-  const [templates, setTemplates] = useState<EmailTemplate[]>([]);
+  const { data: templates, isLoading, refetch: fetchTemplates } = useApiData<EmailTemplate[]>("/api/admin/email-templates", { initialData: [] });
   const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-
-  useEffect(() => {
-    fetchTemplates();
-  }, []);
-
-  const fetchTemplates = async () => {
-    try {
-      const { data } = await axiosInstance.get("/api/admin/email-templates");
-      setTemplates(data);
-    } catch (error) {
-      console.error("Failed to fetch templates", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleUpdate = async () => {
     if (!selectedTemplate) return;
@@ -70,8 +55,8 @@ export default function AdminEmailTemplatesPage() {
 
       <div className="flex-1 flex flex-col lg:flex-row gap-8 min-h-0">
         {/* List */}
-        <div className="w-full lg:w-1/3 bg-white rounded-3xl border border-border shadow-sm flex flex-col overflow-hidden">
-            <div className="p-6 border-b border-border bg-muted/50">
+        <div className="w-full lg:w-1/3 bg-card/50 backdrop-blur-md rounded-[2rem] border-none shadow-sm flex flex-col overflow-hidden relative">
+            <div className="p-6 border-b border-border/40 bg-muted/20">
                 <div className="relative">
                     <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
                         <Search className="w-4 h-4 text-muted-foreground" />
@@ -92,8 +77,8 @@ export default function AdminEmailTemplatesPage() {
                             onClick={() => setSelectedTemplate(t)}
                             className={`w-full text-left p-4 rounded-2xl transition-all border ${
                                 selectedTemplate?.id === t.id 
-                                ? "bg-muted border-sky-100 text-primary shadow-sm" 
-                                : "bg-white border-transparent text-gray-600 hover:bg-muted"
+                                ? "bg-muted/50 border-primary/20 text-primary shadow-sm" 
+                                : "bg-transparent border-transparent text-muted-foreground hover:bg-muted/30"
                             }`}
                         >
                             <div className="flex items-center justify-between">
@@ -115,7 +100,7 @@ export default function AdminEmailTemplatesPage() {
         </div>
 
         {/* Editor */}
-        <div className="flex-1 bg-white rounded-3xl border border-border shadow-sm flex flex-col overflow-hidden">
+        <div className="flex-1 bg-card/50 backdrop-blur-md rounded-[2rem] border-none shadow-sm flex flex-col overflow-hidden relative">
             <AnimatePresence mode="wait">
                 {selectedTemplate ? (
                     <motion.div 

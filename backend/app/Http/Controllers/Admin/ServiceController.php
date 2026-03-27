@@ -8,6 +8,16 @@ use Illuminate\Http\Request;
 
 class ServiceController extends Controller
 {
+    public function index()
+    {
+        return response()->json(Service::with('category')->get());
+    }
+
+    public function show(Service $service)
+    {
+        return response()->json($service->load('category'));
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([

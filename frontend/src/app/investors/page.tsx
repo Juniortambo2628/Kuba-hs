@@ -15,7 +15,7 @@ import {
   Rocket
 } from "lucide-react";
 import axiosInstance from "@/lib/axios";
-import { useCMS } from "@/hooks/useCMS";
+import { useCMS } from "@/contexts/CMSContext";
 import { usePageFeatures } from "@/hooks/usePageFeatures";
 import { resolveIcon } from "@/lib/icon-map";
 import { HighImpactHero } from "@/components/shared/HighImpactHero";
@@ -53,7 +53,7 @@ export default function InvestorsPage() {
   const bgImage = getImg('hero_backgrounds', 'investors_hero_image', '');
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white font-sans transition-colors duration-300">
+    <div className="min-h-screen">
       <Navbar />
 
       <HighImpactHero

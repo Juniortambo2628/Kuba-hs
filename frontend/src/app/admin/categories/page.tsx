@@ -12,17 +12,9 @@ import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { iconMap } from "@/lib/category-icons";
+import { useApiData } from "@/hooks/useApiData";
 
 interface Service {
     id: string;
@@ -41,21 +33,14 @@ interface Category {
     services: Service[];
 }
 
-const iconMap: Record<string, React.ReactNode> = {
-    car: <Car className="w-5 h-5" />,
-    home: <Home className="w-5 h-5" />,
-    heart: <Heart className="w-5 h-5" />,
-    briefcase: <Briefcase className="w-5 h-5" />,
-    building: <Building2 className="w-5 h-5" />,
-    sparkles: <Sparkles className="w-5 h-5" />,
-    droplet: <Droplet className="w-5 h-5" />,
-    bolt: <Zap className="w-5 h-5" />,
-    wrench: <Wrench className="w-5 h-5" />,
-};
+// Shared iconMap imported from @/lib/category-icons
 
 export default function AdminCategories() {
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const { data: categories, isLoading, refetch: fetchCategories } = useApiData<Category[]>("/api/admin/categories", { 
+        initialData: [],
+        extractKey: 'categories'
+    });
+    
     const [selectedCat, setSelectedCat] = useState<Category | null>(null);
     const [selectedSvc, setSelectedSvc] = useState<Service | null>(null);
     const [isCatOpen, setIsCatOpen] = useState(false);
@@ -63,16 +48,6 @@ export default function AdminCategories() {
     const [catForm, setCatForm] = useState<{name: string, description: string, iconContext: string, image: File | null}>({ name: '', description: '', iconContext: 'wrench', image: null });
     const [svcForm, setSvcForm] = useState({ name: '', description: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
-
-    useEffect(() => { fetchCategories(); }, []);
-
-    const fetchCategories = async () => {
-        try {
-            const res = await axiosInstance.get("/api/admin/categories");
-            setCategories(res.data.categories);
-        } catch (err) { toast.error("Failed to load categories"); }
-        finally { setIsLoading(false); }
-    };
 
     const handleSaveCategory = async () => {
         setIsSubmitting(true);
@@ -330,30 +305,18 @@ export default function AdminCategories() {
                                     <Button variant="ghost" size="icon" onClick={() => openEditCat(cat)} className="h-8 w-8 text-muted-foreground hover:text-foreground">
                                         <Edit className="w-4 h-4" />
                                     </Button>
-                                    <AlertDialog>
-                                        <AlertDialogTrigger asChild>
+                                    <ConfirmDeleteDialog
+                                        trigger={
                                             <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-red-500">
                                                 <Trash2 className="w-4 h-4" />
                                             </Button>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                                <AlertDialogTitle>Purge Category?</AlertDialogTitle>
-                                                <AlertDialogDescription>
-                                                    Are you sure you want to delete <span className="font-bold text-foreground">"{cat.name}"</span>? This will also permanently remove all services associated with this category.
-                                                </AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                                <AlertDialogCancel className="rounded-xl font-bold text-xs uppercase tracking-widest">Keep It</AlertDialogCancel>
-                                                <AlertDialogAction 
-                                                    onClick={() => handleDeleteCategory(cat.id)}
-                                                    className="rounded-xl font-bold text-xs uppercase tracking-widest bg-red-600 hover:bg-red-700 text-white"
-                                                >
-                                                    Confirm Deletion
-                                                </AlertDialogAction>
-                                            </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                    </AlertDialog>
+                                        }
+                                        title="Purge Category?"
+                                        description={
+                                            <>Are you sure you want to delete <span className="font-bold text-foreground">"{cat.name}"</span>? This will also permanently remove all services associated with this category.</>
+                                        }
+                                        onConfirm={() => handleDeleteCategory(cat.id)}
+                                    />
                                 </div>
                             </div>
                         </CardHeader>
@@ -392,30 +355,20 @@ export default function AdminCategories() {
                                                 <Button variant="ghost" size="icon" onClick={() => openEditService(cat, svc)} className="w-7 h-7 text-muted-foreground hover:text-primary">
                                                     <Edit className="w-3 h-3" />
                                                 </Button>
-                                                <AlertDialog>
-                                                    <AlertDialogTrigger asChild>
+                                                <ConfirmDeleteDialog
+                                                    trigger={
                                                         <Button variant="ghost" size="icon" className="w-7 h-7 text-muted-foreground hover:text-red-500">
                                                             <Trash2 className="w-3 h-3" />
                                                         </Button>
-                                                    </AlertDialogTrigger>
-                                                    <AlertDialogContent>
-                                                        <AlertDialogHeader>
-                                                            <AlertDialogTitle>Delete Service?</AlertDialogTitle>
-                                                            <AlertDialogDescription>
-                                                                Are you sure you want to remove <span className="font-bold text-foreground">"{svc.name}"</span> from the <span className="font-bold text-foreground">{cat.name}</span> category? This action cannot be undone.
-                                                            </AlertDialogDescription>
-                                                        </AlertDialogHeader>
-                                                        <AlertDialogFooter>
-                                                            <AlertDialogCancel className="rounded-xl font-bold text-xs uppercase tracking-widest">Abort</AlertDialogCancel>
-                                                            <AlertDialogAction 
-                                                                onClick={() => handleDeleteService(svc.id)}
-                                                                className="rounded-xl font-bold text-xs uppercase tracking-widest bg-red-600 hover:bg-red-700 text-white"
-                                                            >
-                                                                Delete Service
-                                                            </AlertDialogAction>
-                                                        </AlertDialogFooter>
-                                                    </AlertDialogContent>
-                                                </AlertDialog>
+                                                    }
+                                                    title="Delete Service?"
+                                                    description={
+                                                        <>Are you sure you want to remove <span className="font-bold text-foreground">"{svc.name}"</span> from the <span className="font-bold text-foreground">{cat.name}</span> category? This action cannot be undone.</>
+                                                    }
+                                                    onConfirm={() => handleDeleteService(svc.id)}
+                                                    confirmLabel="Delete Service"
+                                                    cancelLabel="Abort"
+                                                />
                                             </div>
                                         </div>
                                     ))}

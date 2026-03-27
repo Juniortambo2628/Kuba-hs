@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 use App\Models\Provider;
 use App\Models\ProviderService;
@@ -28,7 +29,9 @@ class MarketplaceController extends Controller
     public function faqs()
     {
         return FAQResource::collection(
-            FAQ::where('is_active', true)->orderBy('order', 'asc')->get()
+            Cache::remember('api_faqs_all', 86400, function () {
+                return FAQ::where('is_active', true)->orderBy('order', 'asc')->get();
+            })
         );
     }
 
@@ -38,7 +41,9 @@ class MarketplaceController extends Controller
     public function testimonials()
     {
         return TestimonialResource::collection(
-            Testimonial::where('is_active', true)->orderBy('order', 'asc')->get()
+            Cache::remember('api_testimonials_all', 86400, function () {
+                return Testimonial::where('is_active', true)->orderBy('order', 'asc')->get();
+            })
         );
     }
 
@@ -48,7 +53,9 @@ class MarketplaceController extends Controller
     public function categories()
     {
         return ServiceCategoryResource::collection(
-            ServiceCategory::with('services')->withCount('services')->orderBy('name')->get()
+            Cache::remember('api_categories_all', 86400, function () {
+                return ServiceCategory::with('services')->withCount('services')->orderBy('name')->get();
+            })
         );
     }
 
@@ -57,11 +64,13 @@ class MarketplaceController extends Controller
      */
     public function providers()
     {
-        $providers = Provider::with(['user', 'providerServices.service'])
-            ->withCount('reviews')
-            ->withAvg('reviews', 'rating')
-            ->latest()
-            ->paginate(12);
+        $providers = Cache::remember('api_providers_latest', 300, function () {
+            return Provider::with(['user', 'providerServices.service'])
+                ->withCount('reviews')
+                ->withAvg('reviews', 'rating')
+                ->latest()
+                ->paginate(12);
+        });
 
         return ProviderResource::collection($providers);
     }
@@ -71,14 +80,16 @@ class MarketplaceController extends Controller
      */
     public function featured()
     {
-        $services = ProviderService::where('is_available', true)
-            ->whereHas('service', function($q) {
-                $q->where('is_active', true);
-            })
-            ->with(['service.category', 'provider.user', 'provider.availability', 'media', 'service.media'])
-            ->latest()
-            ->take(10)
-            ->get();
+        $services = Cache::remember('api_featured_services', 86400, function () {
+            return ProviderService::where('is_available', true)
+                ->whereHas('service', function($q) {
+                    $q->where('is_active', true);
+                })
+                ->with(['service.category', 'provider.user', 'provider.availability', 'media', 'service.media'])
+                ->latest()
+                ->take(10)
+                ->get();
+        });
 
         return ProviderServiceResource::collection($services);
     }
@@ -88,13 +99,15 @@ class MarketplaceController extends Controller
      */
     public function topProviders()
     {
-        $providers = Provider::with(['user', 'providerServices.service'])
-            ->withCount('reviews')
-            ->withAvg('reviews', 'rating')
-            ->orderBy('reviews_avg_rating', 'desc')
-            ->orderBy('reviews_count', 'desc')
-            ->take(10)
-            ->get();
+        $providers = Cache::remember('api_top_providers', 86400, function () {
+            return Provider::with(['user', 'providerServices.service'])
+                ->withCount('reviews')
+                ->withAvg('reviews', 'rating')
+                ->orderBy('reviews_avg_rating', 'desc')
+                ->orderBy('reviews_count', 'desc')
+                ->take(10)
+                ->get();
+        });
 
         return ProviderResource::collection($providers);
     }
@@ -128,7 +141,9 @@ class MarketplaceController extends Controller
     public function trustPartners()
     {
         return response()->json(
-            TrustPartner::where('is_active', true)->latest()->get()
+            Cache::remember('api_trust_partners', 86400, function () {
+                return TrustPartner::where('is_active', true)->latest()->get();
+            })
         );
     }
 
@@ -160,5 +175,34 @@ class MarketplaceController extends Controller
         $providers = $searchService->search($request->all(), 12);
 
         return ProviderResource::collection($providers);
+    }
+
+    /**
+     * Validate a promo code for a given amount.
+     */
+    public function validatePromoCode(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|string',
+            'amount' => 'required|numeric'
+        ]);
+
+        $promoCode = \App\Models\PromoCode::where('code', $request->code)
+            ->where('is_active', true)
+            ->first();
+
+        if (!$promoCode) {
+            return response()->json(['message' => 'Invalid promo code.'], 404);
+        }
+
+        if (!$promoCode->isValid($request->amount)) {
+            return response()->json(['message' => 'Promo code is not applicable or has expired.'], 422);
+        }
+
+        return response()->json([
+            'valid' => true,
+            'discount_amount' => $promoCode->calculateDiscount($request->amount),
+            'promo_code' => $promoCode
+        ]);
     }
 }

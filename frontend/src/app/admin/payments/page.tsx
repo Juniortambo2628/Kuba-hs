@@ -1,68 +1,119 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import axiosInstance from "@/lib/axios";
+import { useState } from "react";
+import { Download, Banknote, Clock, CheckCircle, Zap, CreditCard, Wallet, AlertCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { 
- Banknote, 
- TrendingUp, 
- Wallet, 
- Clock, 
- CheckCircle, 
- ShieldCheck, 
- ArrowUpRight,
- Filter,
- Search,
- Zap,
- CreditCard,
- Download
-} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+
 import { useSearchState } from "@/hooks/useSearchState";
 import { useExport } from "@/hooks/useExport";
 import { toast } from "sonner";
+import { useApiData } from "@/hooks/useApiData";
 import { DataToolbar } from "@/components/shared/DataToolbar";
-
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-  DropdownMenuLabel
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
-import { MetricCard } from "@/components/dashboard/MetricCard";
-import { Payment, User, Provider } from "@/types";
+import { MetricCard } from "@/components/shared/MetricCard";
+import axiosInstance from "@/lib/axios";
 
-export default function AdminPayments() {
-  const { search, setSearch, status, setStatus } = useSearchState();
-  const [payments, setPayments] = useState<Payment[]>([]);
-  const [stats, setStats] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<'grid'|'list'>('grid');
-  const { exportToCSV } = useExport();
-  
-  useEffect(() => {
-    fetchPayments(search, status);
-  }, [search, status]);
+// --- TYPES ---
+interface Payment {
+  id: string | number;
+  transaction_id: string;
+  amount: number;
+  platform_fee: number;
+  status: string;
+  created_at: string;
+  customer?: { name: string };
+  provider?: { business_name: string };
+}
 
-  const fetchPayments = async (search = "", status = "") => {
-    try {
-      const res = await axiosInstance.get(`/api/admin/payments?search=${search}&status=${status}`);
-      setPayments(res.data.payments.data || []);
-      setStats(res.data.stats);
-    } catch (err) {
-      console.error("Failed to fetch payments:", err);
-    } finally {
-      setIsLoading(false);
-    }
+interface Payout {
+  id: string;
+  amount: number;
+  status: string;
+  payment_method: string;
+  reference_number?: string;
+  notes?: string;
+  processed_at?: string;
+  created_at: string;
+  provider?: {
+    business_name: string;
+    balance: number;
+    total_earned: number;
+    user?: { name: string, email: string, phone: string };
   };
+}
 
-  const formatKES = (val: number) => `KES ${Number(val).toLocaleString()}`;
+// --- MAIN PAGE ---
+export default function AdminPayments() {
+  const { exportToCSV } = useExport();
+
+  return (
+    <div className="max-w-[1400px] mx-auto space-y-8 pb-12">
+      <DashboardPageHeader 
+        title="Financial Ledger" 
+        subtitle="Comprehensive oversight of platform revenue, transactions, and merchant disbursements."
+      >
+        <div className="flex items-center gap-3">
+          <Button 
+            onClick={() => toast.info("Opening Payout Gateway Configuration...")}
+            size="sm"
+            className="rounded-xl font-bold px-6"
+          >
+            Gateway Settings
+          </Button>
+        </div>
+      </DashboardPageHeader>
+      
+      <Tabs defaultValue="transactions" className="w-full">
+        <TabsList className="mb-6 bg-transparent space-x-2 border-b border-border w-full justify-start rounded-none h-auto p-0 pb-1">
+          <TabsTrigger 
+            value="transactions" 
+            className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary border border-transparent data-[state=active]:border-primary/20 rounded-full px-6 py-2 transition-all font-bold"
+          >
+            Revenue & Transactions
+          </TabsTrigger>
+          <TabsTrigger 
+            value="payouts"
+            className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary border border-transparent data-[state=active]:border-primary/20 rounded-full px-6 py-2 transition-all font-bold"
+          >
+            Provider Payout Ledger
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="transactions" className="space-y-6 mt-0">
+          <TransactionsView exportToCSV={exportToCSV} formatKES={formatKES} />
+        </TabsContent>
+
+        <TabsContent value="payouts" className="space-y-6 mt-0">
+          <PayoutsView exportToCSV={exportToCSV} formatKES={formatKES} />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+// --- HELPERS ---
+const formatKES = (val: number | string) => `KES ${Number(val || 0).toLocaleString()}`;
+
+// --- TRANSACTIONS VIEW (Existing Logic) ---
+function TransactionsView({ exportToCSV, formatKES }: { exportToCSV: any, formatKES: any }) {
+  const { search, setSearch, status, setStatus } = useSearchState();
+  const [viewMode, setViewMode] = useState<'grid'|'list'>('grid');
+  const { data: paymentData, isLoading } = useApiData<any>(
+    `/api/admin/payments?search=${search}&status=${status || ''}`,
+    { initialData: null }
+  );
+
+  const payments = (paymentData?.payments?.data || []) as Payment[];
+  const stats = paymentData?.stats;
 
   const kpiStats = [
     { label: "Gross Volume", value: stats ? formatKES(stats.total_volume) : "KES 0", icon: Banknote, trend: "Total processed" },
@@ -72,48 +123,21 @@ export default function AdminPayments() {
   ];
 
   return (
-    <div className="max-w-[1400px] mx-auto space-y-10 pb-12">
-      <DashboardPageHeader 
-        title="Financial Ledger" 
-        subtitle="Comprehensive oversight of platform revenue and merchant disbursements."
-      >
-        <div className="flex items-center gap-3">
-          <Button 
-            onClick={() => exportToCSV(payments, 'payment_ledger')}
-            variant="outline" 
-            size="sm"
-            className="rounded-xl font-bold gap-2"
-          >
-            <Download className="w-4 h-4" /> Export CSV
-          </Button>
-          <Button 
-            onClick={() => toast.info("Opening Payout Gateway Configuration...")}
-            size="sm"
-            className="rounded-xl font-bold px-6"
-          >
-            Payout Settings
-          </Button>
-        </div>
-      </DashboardPageHeader>
-      
+    <div className="space-y-6 animate-in fade-in zoom-in-95 duration-300">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {kpiStats.map((stat, i) => (
-          <MetricCard 
-            key={i} 
-            label={stat.label} 
-            value={stat.value} 
-            icon={stat.icon} 
-            trend={stat.trend} 
-            isLoading={isLoading}
-          />
+          <MetricCard key={i} {...stat} isLoading={isLoading} />
         ))}
       </div>
 
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2 mt-4 px-1">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 px-1">
         <div>
-          <h2 className="text-2xl font-bold text-foreground tracking-tight">Transaction Registry</h2>
-          <p className="text-sm font-medium text-muted-foreground mt-1">Detailed audit log of all monetary movements within the ecosystem.</p>
+          <h2 className="text-xl font-black text-foreground tracking-tight">Transaction Registry</h2>
+          <p className="text-sm font-medium text-muted-foreground mt-1">Audit log of all monetary movements from clients.</p>
         </div>
+        <Button onClick={() => exportToCSV(payments, 'transactions')} variant="outline" size="sm" className="rounded-xl font-bold gap-2">
+          <Download className="w-4 h-4" /> Export
+        </Button>
       </div>
 
       <DataToolbar 
@@ -132,136 +156,352 @@ export default function AdminPayments() {
               { label: 'All Status', value: '' },
               { label: 'Completed', value: 'completed' },
               { label: 'Pending', value: 'pending' },
-              { label: 'Failed', value: 'failed' },
-              { label: 'Refunded', value: 'refunded' }
+              { label: 'Failed', value: 'failed' }
             ]
           }
         ]}
       />
 
-      {viewMode === 'list' ? (
-        <Card className="border border-border overflow-hidden border-none shadow-sm bg-card/50 backdrop-blur-md">
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow className="hover:bg-transparent border-border">
-                  <TableHead className="pl-10 h-16 text-[11px] font-bold tracking-tight text-muted-foreground">Transaction Ref</TableHead>
-                  <TableHead className="h-16 text-[11px] font-bold tracking-tight text-muted-foreground">Identity</TableHead>
-                  <TableHead className="h-16 text-[11px] font-bold tracking-tight text-muted-foreground">Gross Amount</TableHead>
-                  <TableHead className="h-16 text-[11px] font-bold tracking-tight text-muted-foreground">Status</TableHead>
-                  <TableHead className="h-16 pr-10 text-right text-[11px] font-bold tracking-tight text-muted-foreground">Settled At</TableHead>
+      <Card className="border border-border shadow-sm">
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent border-border">
+                <TableHead className="pl-6 h-14 text-xs font-bold text-muted-foreground">Transaction Ref</TableHead>
+                <TableHead className="h-14 text-xs font-bold text-muted-foreground">Identity</TableHead>
+                <TableHead className="h-14 text-xs font-bold text-muted-foreground">Gross Amount</TableHead>
+                <TableHead className="h-14 text-xs font-bold text-muted-foreground">Status</TableHead>
+                <TableHead className="h-14 pr-6 text-right text-xs font-bold text-muted-foreground">Settled At</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}><TableCell className="p-6" colSpan={5}><Skeleton className="h-4 w-full" /></TableCell></TableRow>
+                ))
+              ) : payments.map((p) => (
+                <TableRow key={p.id} className="hover:bg-muted/50 border-border">
+                  <TableCell className="pl-6 py-4">
+                    <div className="font-mono text-sm font-bold">{p.transaction_id || `KBA-TX-${p.id}`}</div>
+                  </TableCell>
+                  <TableCell className="py-4">
+                    <div className="font-bold text-sm">{p.customer?.name || "Anonymous Client"}</div>
+                    <div className="text-xs text-muted-foreground">to {p.provider?.business_name}</div>
+                  </TableCell>
+                  <TableCell className="py-4">
+                    <div className="font-black text-sm">{formatKES(p.amount)}</div>
+                    <div className="text-[10px] text-muted-foreground">{formatKES(p.platform_fee)} Platform Fee</div>
+                  </TableCell>
+                  <TableCell className="py-4">
+                    <Badge variant="outline" className="capitalize text-[10px] font-bold">{p.status}</Badge>
+                  </TableCell>
+                  <TableCell className="pr-6 py-4 text-right text-xs font-bold text-muted-foreground">
+                    {new Date(p.created_at).toLocaleDateString()}
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
-                  Array.from({ length: 5 }).map((_, i) => (
-                    <TableRow key={i} className="hover:bg-transparent border-border">
-                      <TableCell className="pl-10 py-6"><Skeleton className="h-4 w-32 rounded-lg" /></TableCell>
-                      <TableCell className="py-6"><Skeleton className="h-4 w-40 rounded-lg" /></TableCell>
-                      <TableCell className="py-6"><Skeleton className="h-4 w-20 rounded-lg" /></TableCell>
-                      <TableCell className="py-6"><Skeleton className="h-6 w-16 rounded-full" /></TableCell>
-                      <TableCell className="pr-10 py-6 text-right"><Skeleton className="h-4 w-24 rounded-lg ml-auto" /></TableCell>
-                    </TableRow>
-                  ))
-                ) : payments.map((p) => (
-                  <TableRow key={p.id} className="hover:bg-muted/50 transition-colors border-border group">
-                    <TableCell className="pl-10 py-6">
-                      <div className="flex items-center gap-3">
-                        <CreditCard className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                        <span className="text-[11px] font-bold text-foreground tracking-tight font-mono group-hover:text-primary transition-colors">
-                          {p.transaction_id || `KBA-TX-${p.id}`}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="py-6">
-                      <div className="space-y-0.5">
-                        <p className="font-bold text-foreground text-sm">{p.customer?.name || "Anonymous Client"}</p>
-                        <p className="text-[10px] font-bold text-muted-foreground">to {p.provider?.business_name || "Merchant"}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell className="py-6">
-                      <div className="space-y-0.5 font-bold text-foreground text-base tracking-tight">
-                        {formatKES(p.amount)}
-                        <p className="text-[9px] text-muted-foreground tracking-tight ">{p.platform_fee ? `${formatKES(p.platform_fee)} Platform Fee` : "Zero Fee Applied"}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell className="py-6">
-                      <Badge variant="outline" className={`rounded-full px-3 py-1 font-bold text-[9px] tracking-tight border ${p.status === 'completed' ? "bg-muted text-foreground border-border" : "bg-muted text-foreground border-border"}`}>
-                        {p.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="pr-10 py-6 text-right font-bold text-muted-foreground text-[11px]">
-                      {new Date(p.created_at).toLocaleDateString('default', { day: '2-digit', month: 'short', year: 'numeric' })}
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {payments.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={5} className="h-80 text-center">
-                      <div className="flex flex-col items-center justify-center gap-4 text-muted-foreground">
-                        <Wallet className="h-16 w-16 opacity-10" />
-                        <p className="text-[11px] font-bold tracking-tight ">No financial activity recorded</p>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {isLoading ? (
-            Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-44 rounded-xl" />)
-          ) : payments.length === 0 ? (
-            <div className="col-span-full h-80 flex flex-col items-center justify-center gap-4 text-muted-foreground border border-dashed border-border rounded-xl">
-              <Wallet className="h-16 w-16 opacity-10" />
-              <p className="text-[11px] font-bold tracking-tight ">No financial activity recorded</p>
-            </div>
-          ) : payments.map((p) => (
-            <Card key={p.id} className="border border-border bg-card hover:shadow-md transition-all group overflow-hidden flex flex-col">
-              <CardContent className="p-5 flex-1 flex flex-col">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-primary border border-border">
-                      <CreditCard className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <h3 className="text-[11px] font-bold text-primary tracking-tight font-mono group-hover:text-primary transition-colors">
-                        {p.transaction_id || `KBA-TX-${p.id}`}
-                      </h3>
-                      <p className="text-[10px] font-bold text-muted-foreground">{new Date(p.created_at).toLocaleDateString()}</p>
-                    </div>
-                  </div>
-                  <Badge variant="outline" className={`rounded-full px-2.5 py-0.5 text-[9px] font-bold tracking-tight border bg-muted text-foreground border-border`}>
-                    {p.status}
-                  </Badge>
-                </div>
-                
-                <div className="space-y-3 mb-5">
-                  <div>
-                    <p className="text-sm font-bold text-foreground truncate">{p.customer?.name || "Anonymous Client"}</p>
-                    <p className="text-xs text-muted-foreground truncate flex flex-col mt-1">
-                      <span><span className="font-bold text-foreground">Recipient:</span> {p.provider?.business_name || "Merchant"}</span>
-                    </p>
-                  </div>
-                </div>
+              ))}
+              {payments.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={5} className="h-64 text-center text-muted-foreground font-bold text-sm">No transactions found.</TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 
-                <div className="flex items-center justify-between pt-4 border-t border-border mt-auto">
-                  <div>
-                    <p className="text-lg font-bold text-foreground leading-none">{formatKES(p.amount)}</p>
-                    <p className="text-[10px] font-bold tracking-tight text-muted-foreground mt-1">Gross Amount</p>
+// --- PAYOUTS VIEW (New Phase 25 Logic) ---
+function PayoutsView({ exportToCSV, formatKES }: { exportToCSV: any, formatKES: any }) {
+  const { search, setSearch, status, setStatus } = useSearchState();
+
+  const { data: overview, isLoading: loadingOverview } = useApiData<any>('/api/admin/financials/overview');
+  const { data: payoutsData, isLoading, refetch } = useApiData<any>(
+    `/api/admin/financials/payouts?search=${search}&status=${status || 'all'}`,
+    { initialData: null }
+  );
+
+  const payouts = (payoutsData?.data || []) as Payout[];
+
+  const [selectedPayout, setSelectedPayout] = useState<Payout | null>(null);
+  const [resolveDrawerOpen, setResolveDrawerOpen] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  
+  // Form State
+  const [processStatus, setProcessStatus] = useState<'paid'|'rejected'>('paid');
+  const [reference, setReference] = useState('');
+  const [notes, setNotes] = useState('');
+
+  const kpiStats = [
+    { label: "Total Platform Revenue", value: overview ? formatKES(overview.total_revenue) : "KES 0", icon: Banknote, trend: "Lifetime Earnings" },
+    { label: "Global Provider Balance", value: overview ? formatKES(overview.global_provider_balance) : "KES 0", icon: Wallet, trend: "Held in platform" },
+    { label: "Pending Payout Amount", value: overview ? formatKES(overview.pending_payouts_amount) : "KES 0", icon: AlertCircle, trend: "Requires action" },
+    { label: "Pending Requests", value: overview ? `${overview.pending_payouts_count} Requests` : "0", icon: Clock, trend: "In queue" }
+  ];
+
+  const handleProcess = async () => {
+    if (!selectedPayout) return;
+    setIsProcessing(true);
+    try {
+      await axiosInstance.post(`/api/admin/financials/payouts/${selectedPayout.id}/process`, {
+        status: processStatus,
+        reference_number: reference,
+        notes: notes
+      });
+      toast.success(`Payout successfully marked as ${processStatus}.`);
+      setResolveDrawerOpen(false);
+      setSelectedPayout(null);
+      setReference('');
+      setNotes('');
+      refetch();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to process payout");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const openDrawer = (p: Payout) => {
+    setSelectedPayout(p);
+    setProcessStatus('paid');
+    setReference('');
+    setNotes('');
+    setResolveDrawerOpen(true);
+  };
+
+  return (
+    <div className="space-y-6 animate-in fade-in zoom-in-95 duration-300">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {kpiStats.map((stat, i) => (
+          <MetricCard key={i} {...stat} isLoading={loadingOverview} />
+        ))}
+      </div>
+
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 px-1 mt-8">
+        <div>
+          <h2 className="text-xl font-black text-foreground tracking-tight">Provider Withdrawal Requests</h2>
+          <p className="text-sm font-medium text-muted-foreground mt-1">Review, approve, and finalize payouts owed to service providers.</p>
+        </div>
+      </div>
+
+      <DataToolbar 
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search by Provider or Reference..."
+        viewMode="list"
+        onViewChange={() => {}}
+        filters={[
+          {
+            id: 'status',
+            label: 'Status',
+            value: status || 'all',
+            onChange: (val) => setStatus(val || 'all'),
+            options: [
+              { label: 'All Status', value: 'all' },
+              { label: 'Pending', value: 'pending' },
+              { label: 'Processing', value: 'processing' },
+              { label: 'Paid', value: 'paid' },
+              { label: 'Rejected', value: 'rejected' }
+            ]
+          }
+        ]}
+      />
+
+      <Card className="border border-border shadow-sm">
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent border-border">
+                <TableHead className="pl-6 h-14 text-xs font-bold text-muted-foreground">Provider</TableHead>
+                <TableHead className="h-14 text-xs font-bold text-muted-foreground">Payout Amount</TableHead>
+                <TableHead className="h-14 text-xs font-bold text-muted-foreground">Method</TableHead>
+                <TableHead className="h-14 text-xs font-bold text-muted-foreground">Status</TableHead>
+                <TableHead className="h-14 text-xs font-bold text-muted-foreground">Requested At</TableHead>
+                <TableHead className="pr-6 text-right h-14 text-xs font-bold text-muted-foreground">Action</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}><TableCell className="p-6" colSpan={6}><Skeleton className="h-4 w-full" /></TableCell></TableRow>
+                ))
+              ) : payouts.map((p) => (
+                <TableRow key={p.id} className="hover:bg-muted/50 border-border group cursor-pointer" onClick={() => p.status === 'pending' && openDrawer(p)}>
+                  <TableCell className="pl-6 py-4">
+                    <div className="font-bold text-sm tracking-tight">{p.provider?.business_name}</div>
+                    <div className="text-xs text-muted-foreground">{p.provider?.user?.email}</div>
+                  </TableCell>
+                  <TableCell className="py-4">
+                    <div className="font-black text-sm">{formatKES(p.amount)}</div>
+                    <div className="text-[10px] text-muted-foreground">Current Bal: {formatKES(p.provider?.balance || 0)}</div>
+                  </TableCell>
+                  <TableCell className="py-4">
+                    <Badge variant="outline" className="capitalize text-[10px] bg-background/50 border-border">{p.payment_method?.replace('_', ' ')}</Badge>
+                  </TableCell>
+                  <TableCell className="py-4">
+                    <Badge variant="outline" className={`capitalize text-[10px] font-bold ${
+                      p.status === 'pending' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : 
+                      p.status === 'paid' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 
+                      'bg-muted text-muted-foreground'
+                    }`}>
+                      {p.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="py-4 text-xs font-bold text-muted-foreground whitespace-nowrap">
+                    {new Date(p.created_at).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell className="pr-6 py-4 text-right">
+                    {p.status === 'pending' || p.status === 'processing' ? (
+                      <Button size="sm" onClick={(e) => { e.stopPropagation(); openDrawer(p); }} className="rounded-xl px-4 font-bold text-xs h-8">
+                        Process
+                      </Button>
+                    ) : (
+                      <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); setResolveDrawerOpen(true); setSelectedPayout(p); }} className="rounded-xl px-4 font-bold text-xs h-8">
+                        View Details
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+              {payouts.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={6} className="h-64 text-center text-muted-foreground font-bold text-sm">No payout requests found.</TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      {/* PROCESS PAYOUT DRAWER */}
+      <Sheet open={resolveDrawerOpen} onOpenChange={setResolveDrawerOpen}>
+        <SheetContent className="w-full sm:max-w-md border-l border-border bg-card p-0 flex flex-col">
+          <SheetHeader className="p-6 border-b border-border bg-muted/30">
+            <SheetTitle className="text-xl font-black tracking-tight">Process Payout</SheetTitle>
+            <SheetDescription className="text-xs font-medium">Verify provider details and finalize the bank transfer or mobile money manual disbursement.</SheetDescription>
+          </SheetHeader>
+          
+          {selectedPayout && (
+            <div className="flex-1 overflow-y-auto p-6 space-y-8">
+              <div className="space-y-4">
+                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Provider Details</h4>
+                <div className="bg-muted/50 p-4 rounded-xl border border-border space-y-3">
+                  <div className="flex justify-between items-center border-b border-border pb-2">
+                    <span className="text-xs font-bold text-muted-foreground">Business Name</span>
+                    <span className="text-sm font-black text-foreground">{selectedPayout.provider?.business_name}</span>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold text-foreground leading-none">{formatKES(p.platform_fee || 0)}</p>
-                    <p className="text-[10px] font-bold tracking-tight text-muted-foreground mt-1">Platform Fee</p>
+                  <div className="flex justify-between items-center border-b border-border pb-2">
+                    <span className="text-xs font-bold text-muted-foreground">Contact Phone</span>
+                    <span className="text-sm font-bold text-foreground">{selectedPayout.provider?.user?.phone || 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between items-center pt-1">
+                    <span className="text-xs font-bold text-muted-foreground">Requested Amount</span>
+                    <span className="text-lg font-black text-primary">{formatKES(selectedPayout.amount)}</span>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+              </div>
+
+              {(selectedPayout.status === 'pending' || selectedPayout.status === 'processing') ? (
+                <div className="space-y-6">
+                  <div className="space-y-3">
+                    <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Select Action</Label>
+                    <div className="flex gap-3">
+                      <Button 
+                        type="button"
+                        variant={processStatus === 'paid' ? 'default' : 'outline'} 
+                        className={`flex-1 rounded-xl h-12 font-bold ${processStatus === 'paid' ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-900/20' : ''}`}
+                        onClick={() => setProcessStatus('paid')}
+                      >
+                        <CheckCircle className="w-4 h-4 mr-2" /> Mark as Paid
+                      </Button>
+                      <Button 
+                        type="button"
+                        variant={processStatus === 'rejected' ? 'destructive' : 'outline'} 
+                        className={`flex-1 rounded-xl h-12 font-bold`}
+                        onClick={() => setProcessStatus('rejected')}
+                      >
+                        Reject & Refund
+                      </Button>
+                    </div>
+                  </div>
+
+                  {processStatus === 'paid' && (
+                    <div className="space-y-2 animate-in fade-in zoom-in-95 duration-200">
+                      <Label className="text-sm font-bold">Transaction Reference ID</Label>
+                      <Input 
+                        placeholder="e.g. MPESA-QWX123456" 
+                        value={reference}
+                        onChange={(e) => setReference(e.target.value)}
+                        className="rounded-xl h-12 font-mono font-bold"
+                      />
+                      <p className="text-[11px] text-muted-foreground font-medium">Please enter the actual bank/M-Pesa transaction reference for auditing.</p>
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <Label className="text-sm font-bold">Admin Notes (Optional)</Label>
+                    <Textarea 
+                      placeholder={processStatus === 'rejected' ? "Reason for rejection..." : "Any additional notes..."}
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      className="rounded-xl min-h-[100px] resize-none"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Resolution Details</h4>
+                  <div className="bg-muted/50 p-4 rounded-xl border border-border space-y-3">
+                    <div className="flex justify-between items-center border-b border-border pb-2">
+                      <span className="text-xs font-bold text-muted-foreground">Final Status</span>
+                      <Badge variant="outline" className={`capitalize text-[10px] font-bold ${
+                        selectedPayout.status === 'paid' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-red-500/10 text-red-600'
+                      }`}>
+                        {selectedPayout.status}
+                      </Badge>
+                    </div>
+                    <div className="flex justify-between items-center border-b border-border pb-2">
+                      <span className="text-xs font-bold text-muted-foreground">Reference</span>
+                      <span className="text-sm font-mono font-bold text-foreground">{selectedPayout.reference_number || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between items-center pt-1">
+                      <span className="text-xs font-bold text-muted-foreground">Processed On</span>
+                      <span className="text-sm font-bold text-foreground">
+                        {selectedPayout.processed_at ? new Date(selectedPayout.processed_at).toLocaleString() : 'N/A'}
+                      </span>
+                    </div>
+                  </div>
+                  {selectedPayout.notes && (
+                    <div className="bg-primary/5 border border-primary/20 p-4 rounded-xl">
+                      <p className="text-xs font-bold text-muted-foreground mb-1">Admin Notes:</p>
+                      <p className="text-sm text-foreground font-medium leading-relaxed">{selectedPayout.notes}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          <SheetFooter className="p-6 border-t border-border bg-background">
+            {(selectedPayout?.status === 'pending' || selectedPayout?.status === 'processing') && (
+              <Button 
+                onClick={handleProcess} 
+                disabled={isProcessing || (processStatus === 'paid' && !reference)} 
+                className="w-full rounded-xl h-12 font-black text-base"
+              >
+                {isProcessing ? "Processing..." : `Confirm ${processStatus === 'paid' ? 'Payout' : 'Rejection'}`}
+              </Button>
+            )}
+            {selectedPayout?.status !== 'pending' && selectedPayout?.status !== 'processing' && (
+              <Button onClick={() => setResolveDrawerOpen(false)} variant="outline" className="w-full rounded-xl h-12 font-bold">
+                Close
+              </Button>
+            )}
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

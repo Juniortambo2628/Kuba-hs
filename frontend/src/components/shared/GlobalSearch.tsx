@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Search, 
@@ -22,6 +23,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import axiosInstance from "@/lib/axios";
 import { cn, getMediaUrl } from "@/lib/utils";
+import Image from "next/image";
 
 interface SearchItem {
   id: string;
@@ -37,8 +39,13 @@ export function GlobalSearch() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchItem[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const staticItems: SearchItem[] = [
     { id: "home", title: "Home", url: "/", icon: <Home className="w-4 h-4" />, category: "Pages" },
@@ -111,11 +118,14 @@ export function GlobalSearch() {
           description: item.location_name || 'Verified Pro',
           url: `/providers/${item.id}`,
           icon: item.logo ? (
-            <img 
-              src={getMediaUrl(item.logo, 'avatar')} 
-              alt="" 
-              className="w-full h-full object-cover rounded shadow-inner" 
-            />
+            <div className="relative w-full h-full">
+              <Image 
+                src={getMediaUrl(item.logo, 'avatar')} 
+                alt="" 
+                fill
+                className="object-cover rounded shadow-inner" 
+              />
+            </div>
           ) : <User className="w-4 h-4" />,
           category: "Providers"
         }));
@@ -165,104 +175,107 @@ export function GlobalSearch() {
         </kbd>
       </button>
 
-      <AnimatePresence>
-        {isOpen && (
-          <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh]">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsOpen(false)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            />
-            
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: -20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: -20 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              className="relative w-full max-w-xl bg-card border border-border rounded-2xl shadow-2xl overflow-hidden overflow-y-auto max-h-[70vh] m-4"
-              onKeyDown={handleKeyDown}
-            >
-              <div className="flex items-center px-4 border-b border-border">
-                <Search className="w-5 h-5 text-muted-foreground" />
-                <input
-                  ref={inputRef}
-                  placeholder="What are you looking for?"
-                  className="flex-1 h-14 bg-transparent border-none outline-none px-4 text-sm font-semibold placeholder:text-muted-foreground"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                />
-                {isSearching && (
-                  <Loader2 className="w-4 h-4 text-primary animate-spin mr-2" />
-                )}
-                <button 
-                  onClick={() => setIsOpen(false)}
-                  className="p-1 hover:bg-muted rounded-md transition-colors"
-                >
-                  <X className="w-4 h-4 text-muted-foreground" />
-                </button>
-              </div>
+      {mounted && createPortal(
+        <AnimatePresence>
+          {isOpen && (
+            <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh]">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsOpen(false)}
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              />
+              
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: -20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: -20 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="relative w-full max-w-xl bg-card border border-border rounded-2xl shadow-2xl overflow-hidden overflow-y-auto max-h-[70vh] m-4"
+                onKeyDown={handleKeyDown}
+              >
+                <div className="flex items-center px-4 border-b border-border">
+                  <Search className="w-5 h-5 text-muted-foreground" />
+                  <input
+                    ref={inputRef}
+                    placeholder="What are you looking for?"
+                    className="flex-1 h-14 bg-transparent border-none outline-none px-4 text-sm font-semibold placeholder:text-muted-foreground"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                  />
+                  {isSearching && (
+                    <Loader2 className="w-4 h-4 text-primary animate-spin mr-2" />
+                  )}
+                  <button 
+                    onClick={() => setIsOpen(false)}
+                    className="p-1 hover:bg-muted rounded-md transition-colors"
+                  >
+                    <X className="w-4 h-4 text-muted-foreground" />
+                  </button>
+                </div>
 
-              <div className="p-2">
-                {results.length === 0 ? (
-                  <div className="py-12 text-center text-muted-foreground">
-                    <p className="text-sm font-semibold">No results found for "{query}"</p>
-                    <p className="text-xs mt-1">Try searching for services or help guides.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4 pt-2">
-                    {/* Grouping could be added here, but keep it simple for now */}
-                    {results.map((item, index) => (
-                      <div 
-                        key={item.id}
-                        onClick={() => handleSelect(item.url)}
-                        onMouseEnter={() => setSelectedIndex(index)}
-                        className={cn(
-                          "flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border border-transparent",
-                          index === selectedIndex ? "bg-primary/10 border-primary/20" : "hover:bg-muted"
-                        )}
-                      >
-                        <div className={cn(
-                          "w-10 h-10 rounded-lg flex items-center justify-center transition-colors",
-                          index === selectedIndex ? "bg-white dark:bg-sky-500/20 text-primary shadow-sm" : "bg-muted text-muted-foreground"
-                        )}>
-                          {item.icon}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className={cn(
-                            "text-sm font-black transition-colors",
-                            index === selectedIndex ? "text-primary" : "text-foreground"
+                <div className="p-2">
+                  {results.length === 0 ? (
+                    <div className="py-12 text-center text-muted-foreground">
+                      <p className="text-sm font-semibold">No results found for "{query}"</p>
+                      <p className="text-xs mt-1">Try searching for services or help guides.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4 pt-2">
+                      {/* Grouping could be added here, but keep it simple for now */}
+                      {results.map((item, index) => (
+                        <div 
+                          key={item.id}
+                          onClick={() => handleSelect(item.url)}
+                          onMouseEnter={() => setSelectedIndex(index)}
+                          className={cn(
+                            "flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border border-transparent",
+                            index === selectedIndex ? "bg-primary/10 border-primary/20" : "hover:bg-muted"
+                          )}
+                        >
+                          <div className={cn(
+                            "w-10 h-10 rounded-lg flex items-center justify-center transition-colors",
+                            index === selectedIndex ? "bg-white dark:bg-sky-500/20 text-primary shadow-sm" : "bg-muted text-muted-foreground"
                           )}>
-                            {item.title}
-                          </p>
-                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none mt-1">
-                            {item.category} {item.description && `• ${item.description}`}
-                          </p>
+                            {item.icon}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className={cn(
+                              "text-sm font-black transition-colors",
+                              index === selectedIndex ? "text-primary" : "text-foreground"
+                            )}>
+                              {item.title}
+                            </p>
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none mt-1">
+                              {item.category} {item.description && `• ${item.description}`}
+                            </p>
+                          </div>
+                          {index === selectedIndex && (
+                            <ArrowRight className="w-4 h-4 text-primary animate-in fade-in slide-in-from-left-2 duration-300" />
+                          )}
                         </div>
-                        {index === selectedIndex && (
-                          <ArrowRight className="w-4 h-4 text-primary animate-in fade-in slide-in-from-left-2 duration-300" />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
-              <div className="p-3 bg-muted/30 border-t border-border flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                <div className="flex items-center gap-4">
-                  <span className="flex items-center gap-1.5"><kbd className="px-1 border rounded bg-background">↵</kbd> Select</span>
-                  <span className="flex items-center gap-1.5"><kbd className="px-1 border rounded bg-background">↑↓</kbd> Navigate</span>
+                <div className="p-3 bg-muted/30 border-t border-border flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                  <div className="flex items-center gap-4">
+                    <span className="flex items-center gap-1.5"><kbd className="px-1 border rounded bg-background">↵</kbd> Select</span>
+                    <span className="flex items-center gap-1.5"><kbd className="px-1 border rounded bg-background">↑↓</kbd> Navigate</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="flex items-center gap-1.5 opacity-60">Powered by</span>
+                    <span className="text-foreground tracking-tighter text-sm font-black">KUBA</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="flex items-center gap-1.5 opacity-60">Powered by</span>
-                  <span className="text-foreground tracking-tighter text-sm font-black">KUBA</span>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </>
   );
 }

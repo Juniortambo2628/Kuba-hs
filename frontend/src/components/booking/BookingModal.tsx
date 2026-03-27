@@ -153,6 +153,7 @@ const bookingSchema = z.object({
   description: z.string().min(10, "Description must be at least 10 characters"),
   scheduled_date: z.string().min(1, "Date is required"),
   scheduled_time: z.string().min(1, "Time is required"),
+  promo_code: z.string().optional(),
 });
 
 type BookingValues = z.infer<typeof bookingSchema>;
@@ -169,6 +170,9 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
   const [isSuccess, setIsSuccess] = useState(false);
   const [showUppy, setShowUppy] = useState(false);
   const [addresses, setAddresses] = useState<any[]>([]);
+  const [promoDiscount, setPromoDiscount] = useState<{ amount: number; code: string } | null>(null);
+  const [promoError, setPromoError] = useState<string | null>(null);
+  const [isValidatingPromo, setIsValidatingPromo] = useState(false);
   const { user } = useAuth();
 
   React.useEffect(() => {
@@ -240,8 +244,40 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
       description: "",
       scheduled_date: "",
       scheduled_time: "",
+      promo_code: "",
     },
   });
+
+  const handleValidatePromo = async () => {
+    const code = form.getValues('promo_code');
+    if (!code) return;
+
+    setIsValidatingPromo(true);
+    setPromoError(null);
+    
+    // Estimate price for validation
+    const quantity = form.getValues('quantity');
+    const basePrice = service.base_price || 0;
+    const amount = quantity * basePrice;
+
+    try {
+      const res = await axiosInstance.post('/api/promo-codes/validate', {
+        code,
+        amount
+      });
+      
+      setPromoDiscount({
+        amount: res.data.discount_amount,
+        code: code
+      });
+      toast.success(`Promo code applied! Saved KES ${res.data.discount_amount.toLocaleString()}`);
+    } catch (err: any) {
+      setPromoError(err.response?.data?.message || "Invalid promo code");
+      setPromoDiscount(null);
+    } finally {
+      setIsValidatingPromo(false);
+    }
+  };
 
   // Update default value if config changes (e.g. category changes)
   React.useEffect(() => {
@@ -539,6 +575,53 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
                         </p>
                       </CardContent>
                     </Card>
+
+                    {/* Promo Code Section */}
+                    <div className="space-y-4 pt-4 border-t border-border/10">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                           <ShieldCheck className="w-4 h-4 text-primary" /> Promo Code
+                        </label>
+                        {promoDiscount && (
+                           <Badge className="bg-emerald-500 text-white border-none text-[10px] font-bold">
+                             -{promoDiscount.amount.toLocaleString()} KES Applied
+                           </Badge>
+                        )}
+                      </div>
+                      
+                      <div className="flex gap-3">
+                        <FormField
+                          control={form.control}
+                          name="promo_code"
+                          render={({ field }) => (
+                            <FormItem className="flex-1 space-y-0">
+                              <FormControl>
+                                <Input 
+                                  placeholder="Enter voucher code"
+                                  className={`bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10 rounded-xl h-12 focus-visible:ring-blue-500 font-bold uppercase ${promoDiscount ? 'border-emerald-500 ring-1 ring-emerald-500/20' : ''}`}
+                                  {...field}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        <Button 
+                          type="button"
+                          variant="outline"
+                          onClick={handleValidatePromo}
+                          disabled={isValidatingPromo || !form.watch('promo_code')}
+                          className="h-12 px-6 rounded-xl border-gray-200 dark:border-white/10 font-bold text-xs uppercase tracking-widest hover:bg-muted"
+                        >
+                          {isValidatingPromo ? "..." : "Apply"}
+                        </Button>
+                      </div>
+                      {promoError && <p className="text-[10px] text-red-500 font-bold italic">{promoError}</p>}
+                      {promoDiscount && (
+                        <p className="text-[10px] text-emerald-600 font-bold italic">
+                          Successful! You're saving KES {promoDiscount.amount.toLocaleString()} on this booking.
+                        </p>
+                      )}
+                    </div>
                   </div>
                 )}
 

@@ -19,17 +19,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import axiosInstance from "@/lib/axios";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BookingModal } from "@/components/booking/BookingModal";
+import Image from "next/image";
+import { getMediaUrl } from "@/lib/utils";
 
 import { Provider, User } from "@/types";
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, '') || 'http://localhost:8000';
-
-const getAvatarUrl = (path: string | null | undefined) => {
-  if (!path) return null;
-  if (path.startsWith('http')) return path;
-  if (path.startsWith('/')) return `${BACKEND_URL}${path}`;
-  return `${BACKEND_URL}/storage/${path.replace('storage/', '')}`;
-};
 
 const SERVICE_FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?q=80&w=800&auto=format&fit=crop';
 
@@ -108,15 +101,16 @@ export function ServiceDetailsModal({ isOpen, onClose, serviceId }: ServiceDetai
         ) : service ? (
           <div className="flex flex-col lg:flex-row h-[80vh] lg:h-auto overflow-y-auto lg:overflow-visible">
             {/* Left Side - Image & Hero */}
-            <div className="lg:w-2/5 relative h-64 lg:h-auto">
-              <img 
+            <div className="lg:w-2/5 relative h-64 lg:h-auto overflow-hidden">
+              <Image 
                 src={
-                  getAvatarUrl(service.image_urls?.[0]?.url)
+                  getMediaUrl(service.image_urls?.[0]?.url, 'service')
                   || SERVICE_FALLBACK_IMAGE
                 } 
-                className="w-full h-full object-cover"
+                fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover"
                 alt={service.name}
-                onError={(e) => { (e.target as HTMLImageElement).src = SERVICE_FALLBACK_IMAGE; }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
               <div className="absolute bottom-6 left-6 right-6">
@@ -131,7 +125,7 @@ export function ServiceDetailsModal({ isOpen, onClose, serviceId }: ServiceDetai
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-12 w-12 border-2 border-sky-500/20">
-                      <AvatarImage src={getAvatarUrl(service.provider.logo || service.provider.user?.avatar_url) || ""} />
+                      <AvatarImage src={getMediaUrl(service.provider.logo || service.provider.user?.avatar_url, 'avatar') || ""} />
                       <AvatarFallback className="bg-sky-500/10 text-sky-500">{service.provider.business_name[0]}</AvatarFallback>
                     </Avatar>
                     <div>
@@ -200,7 +194,7 @@ export function ServiceDetailsModal({ isOpen, onClose, serviceId }: ServiceDetai
                         <div key={p.id} className="flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 hover:border-sky-500/50 transition-all group cursor-pointer">
                           <div className="flex items-center gap-3">
                             <Avatar className="h-10 w-10">
-                              <AvatarImage src={getAvatarUrl(p.provider?.logo || p.provider?.user?.avatar_url) || ""} />
+                              <AvatarImage src={getMediaUrl(p.provider?.logo || p.provider?.user?.avatar_url, 'avatar') || ""} />
                               <AvatarFallback>{p.provider?.business_name?.[0]}</AvatarFallback>
                             </Avatar>
                             <div>

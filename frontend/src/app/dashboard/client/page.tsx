@@ -29,7 +29,7 @@ import {
 import Link from "next/link";
 import { toast } from "sonner";
 import { BookingDetailDialog } from "@/components/booking/BookingDetailDialog";
-import { MetricCard } from "@/components/dashboard/MetricCard";
+import { MetricCard } from "@/components/shared/MetricCard";
 import { BookingCard } from "@/components/shared/BookingCard";
 import { DashboardEmptyState } from "@/components/shared/DashboardEmptyState";
 
@@ -255,21 +255,7 @@ export default function ClientOverview() {
                 </CardContent>
            </Card>
 
-           <Link href="/dashboard/client/profile" className="block">
-                <Card className="border border-border bg-card/50 backdrop-blur-md border-none shadow-sm group hover:bg-muted/50 cursor-pointer transition-colors">
-                    <CardContent className="p-6 flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 bg-muted rounded-2xl flex items-center justify-center text-foreground group-hover:scale-110 transition-transform">
-                                <CreditCard className="w-4 h-4" />
-                            </div>
-                            <div>
-                                <p className="text-sm font-semibold text-foreground tracking-tight">{user?.membership_tier?.name || 'Standard Plan'}</p>
-                            </div>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-                    </CardContent>
-                </Card>
-           </Link>
+
         </div>
       </div>
       <BookingDetailDialog 

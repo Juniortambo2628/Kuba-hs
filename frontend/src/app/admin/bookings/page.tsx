@@ -44,6 +44,8 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { useApiData } from "@/hooks/useApiData";
+import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -58,30 +60,16 @@ import {
 
 function AdminBookingsContent() {
   const { search, setSearch, status, setStatus } = useSearchState();
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: bookings, isLoading, refetch: fetchBookings } = useApiData<Booking[]>(
+    `/api/admin/bookings?search=${search}&status=${status || ''}`,
+    { initialData: [] }
+  );
+
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedBookings, setSelectedBookings] = useState<string[]>([]);
   const [rescheduleData, setRescheduleData] = useState<{ id: string, date: string } | null>(null);
   const [cancelData, setCancelData] = useState<{ id: string, reason: string } | null>(null);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
   const { exportToCSV } = useExport();
-
-  useEffect(() => {
-    fetchBookings(search, status);
-  }, [search, status]);
-
-  const fetchBookings = async (s = "", stIdx = "") => {
-    try {
-      const res = await axiosInstance.get(`/api/admin/bookings?search=${s}&status=${stIdx || ''}`);
-      setBookings(res.data.data || []);
-    } catch (err) {
-      console.error("Failed to fetch bookings:", err);
-      toast.error("Failed to load bookings");
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleStatusChange = async (id: string, newStatus: string, reason?: string) => {
     try {
@@ -90,7 +78,7 @@ function AdminBookingsContent() {
         cancellation_reason: reason 
       });
       toast.success(`Booking ${newStatus} successfully`);
-      fetchBookings(search, status);
+      fetchBookings();
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to update status");
     }
@@ -104,7 +92,7 @@ function AdminBookingsContent() {
       });
       toast.success("Booking rescheduled successfully");
       setRescheduleData(null);
-      fetchBookings(search, status);
+      fetchBookings();
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to reschedule");
     }
@@ -114,7 +102,7 @@ function AdminBookingsContent() {
     try {
       await axiosInstance.delete(`/api/admin/bookings/${id}`);
       toast.success("Booking deleted");
-      fetchBookings(search, status);
+      fetchBookings();
     } catch (err: any) {
       toast.error("Failed to delete booking");
     }
@@ -250,9 +238,16 @@ function AdminBookingsContent() {
                               <XCircle className="w-4 h-4 text-amber-500" /> Cancel with Reason
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => setDeleteId(booking.id.toString())} className="rounded-lg py-2.5 font-bold text-xs gap-3 cursor-pointer text-red-500 focus:bg-red-50 focus:text-red-600">
-                              <Trash2 className="w-4 h-4" /> Purge Record
-                            </DropdownMenuItem>
+                            <ConfirmDeleteDialog
+                              trigger={
+                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="rounded-lg py-2.5 font-bold text-xs gap-3 cursor-pointer text-red-500 focus:bg-red-50 focus:text-red-600">
+                                  <Trash2 className="w-4 h-4" /> Purge Record
+                                </DropdownMenuItem>
+                              }
+                              title="Purge Registry Record?"
+                              description="This action is permanent and will remove the booking from all historical marketplace logs. This cannot be undone."
+                              onConfirm={() => handleDelete(booking.id.toString())}
+                            />
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -299,7 +294,14 @@ function AdminBookingsContent() {
                       <DropdownMenuItem onClick={() => handleStatusChange(booking.id.toString(), 'completed')} className="rounded-lg py-2.5 font-bold text-xs gap-3 cursor-pointer">Mark Completed</DropdownMenuItem>
                       <DropdownMenuSeparator />
                        <DropdownMenuItem onClick={() => setCancelData({ id: booking.id.toString(), reason: "" })} className="rounded-lg py-2.5 font-bold text-xs gap-3 cursor-pointer text-amber-600">Cancel & Notify</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setDeleteId(booking.id.toString())} className="rounded-lg py-2.5 font-bold text-xs gap-3 cursor-pointer text-red-500">Purge</DropdownMenuItem>
+                       <ConfirmDeleteDialog
+                         trigger={
+                           <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="rounded-lg py-2.5 font-bold text-xs gap-3 cursor-pointer text-red-500">Purge</DropdownMenuItem>
+                         }
+                         title="Purge Registry Record?"
+                         description="This action is permanent."
+                         onConfirm={() => handleDelete(booking.id.toString())}
+                       />
                     </DropdownMenuContent>
                   </DropdownMenu>
                 }
@@ -374,31 +376,6 @@ function AdminBookingsContent() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation */}
-      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
-        <AlertDialogContent className="rounded-[2rem] border-border bg-card/95 backdrop-blur-xl max-w-sm">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-lg font-black uppercase tracking-tight italic">Purge Registry Record?</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs font-medium text-muted-foreground leading-relaxed">
-              This action is permanent and will remove the booking from all historical marketplace logs. This cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="gap-2 sm:gap-0 pt-4">
-            <AlertDialogCancel className="rounded-xl font-bold text-xs border-none hover:bg-muted">Abort</AlertDialogCancel>
-            <AlertDialogAction 
-                className="rounded-xl font-bold text-xs bg-red-600 hover:bg-red-700 text-white border-none shadow-lg shadow-red-100"
-                onClick={() => {
-                    if (deleteId) {
-                        handleDelete(deleteId);
-                        setDeleteId(null);
-                    }
-                }}
-            >
-                Execute Purge
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

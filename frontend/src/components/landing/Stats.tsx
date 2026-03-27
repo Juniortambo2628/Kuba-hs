@@ -2,7 +2,9 @@
 
 import { motion } from "framer-motion";
 import { Users, MapPin, Clock, Heart } from "lucide-react";
-import { useCMS } from "@/hooks/useCMS";
+import { useCMS } from "@/contexts/CMSContext";
+import { designSystem } from "@/lib/design-system";
+import Image from "next/image";
 
 export function Stats() {
   const { getS, isLoading } = useCMS();
@@ -46,10 +48,11 @@ export function Stats() {
     <section className="py-20 relative overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
-        <img
-          src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop"
+        <Image
+          src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=2070&auto=format&fit=crop"
           alt=""
-          className="w-full h-full object-cover"
+          fill
+          className="object-cover"
         />
       </div>
       <div className="absolute inset-0 bg-gradient-to-r from-blue-900/90 to-purple-900/90 z-[1]" />
@@ -81,10 +84,10 @@ export function Stats() {
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.6 }}
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight">
+          <h2 className={`${designSystem.typography.section.title} text-white mb-4`}>
             Why Thousands Trust KUBA
           </h2>
-          <p className="text-white/60 text-lg max-w-xl mx-auto">
+          <p className={`${designSystem.typography.section.subtitle} text-white/60 mx-auto`}>
             We are building the largest network of trusted home service providers.
           </p>
         </motion.div>

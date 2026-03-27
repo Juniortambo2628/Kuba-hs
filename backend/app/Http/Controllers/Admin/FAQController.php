@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\FAQ;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+
 
 class FAQController extends Controller
 {
@@ -24,7 +26,9 @@ class FAQController extends Controller
         ]);
 
         $faq = FAQ::create($validated);
+        Cache::forget('api_faqs_all');
         return response()->json($faq, 201);
+
     }
 
     public function show(FAQ $faq)
@@ -43,13 +47,17 @@ class FAQController extends Controller
         ]);
 
         $faq->update($validated);
+        Cache::forget('api_faqs_all');
         return response()->json($faq);
+
     }
 
     public function destroy(FAQ $faq)
     {
         $faq->delete();
+        Cache::forget('api_faqs_all');
         return response()->json(null, 204);
+
     }
 
     public function reorder(Request $request)
@@ -64,6 +72,8 @@ class FAQController extends Controller
             FAQ::where('id', $item['id'])->update(['order' => $item['order']]);
         }
 
+        Cache::forget('api_faqs_all');
         return response()->json(['message' => 'Reordered successfully']);
+
     }
 }

@@ -52,7 +52,7 @@ export default function ProviderApplyPage() {
   };
 
   return (
-    <main className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <Navbar />
       
       <section className="pt-32 pb-24 relative overflow-hidden bg-[#0F172A] text-white">
@@ -232,6 +232,6 @@ export default function ProviderApplyPage() {
       </section>
 
       <Footer />
-    </main>
+    </div>
   );
 }

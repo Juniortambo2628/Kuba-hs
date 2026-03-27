@@ -29,6 +29,8 @@ import { DashboardStatusBadge } from "@/components/shared/DashboardStatusBadge";
 import { DashboardEmptyState } from "@/components/shared/DashboardEmptyState";
 import { toast } from "sonner";
 import { UserDialog } from "@/components/admin/UserDialog";
+import { useApiData } from "@/hooks/useApiData";
+import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -43,42 +45,25 @@ import {
 
 function AdminUsersContent() {
   const { search, setSearch } = useSearchState();
-  const [users, setUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [viewMode, setViewMode] = useState<'grid'|'list'>('grid');
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [statusId, setStatusId] = useState<{ id: string, active: boolean } | null>(null);
-  const { exportToCSV } = useExport();
-  
   const searchParams = useSearchParams();
   const userId = searchParams.get('id');
 
-  useEffect(() => {
-    fetchUsers(search, userId ?? "");
-  }, [search, userId]);
+  const { data: users, isLoading, refetch: fetchUsers } = useApiData<User[]>(
+    userId ? `/api/admin/users?id=${userId}` : `/api/admin/users?search=${search}`,
+    { initialData: [] }
+  );
 
-  const fetchUsers = async (s = "", id = "") => {
-    try {
-      setIsLoading(true);
-      const url = id 
-        ? `/api/admin/users?id=${id}` 
-        : `/api/admin/users?search=${s}`;
-      const res = await axiosInstance.get(url);
-      setUsers(res.data.data || []);
-    } catch (err) {
-      console.error("Failed to fetch users:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [viewMode, setViewMode] = useState<'grid'|'list'>('grid');
+  const [statusId, setStatusId] = useState<{ id: string, active: boolean } | null>(null);
+  const { exportToCSV } = useExport();
 
   const toggleStatus = async (id: string) => {
     try {
         await axiosInstance.patch(`/api/admin/users/${id}/toggle-status`);
         toast.success("User status updated");
-        fetchUsers(search);
+        fetchUsers();
     } catch (err) {
         toast.error("Failed to update status");
     }
@@ -93,7 +78,7 @@ function AdminUsersContent() {
         await axiosInstance.post("/api/admin/users", data);
         toast.success("User created successfully");
       }
-      fetchUsers(search);
+      fetchUsers();
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to save user");
       throw err;
@@ -104,7 +89,7 @@ function AdminUsersContent() {
     try {
         await axiosInstance.delete(`/api/admin/users/${id}`);
         toast.success("User deleted successfully");
-        fetchUsers(search);
+        fetchUsers();
     } catch (err: any) {
         toast.error(err.response?.data?.message || "Failed to delete user");
     }
@@ -143,7 +128,7 @@ function AdminUsersContent() {
       />
 
       {viewMode === 'list' ? (
-        <Card className="border border-border overflow-hidden bg-card">
+        <Card className="border border-border/40 overflow-hidden bg-card/50 backdrop-blur-md border-none shadow-sm rounded-2xl">
           <CardContent className="p-0">
             <Table>
               <TableHeader>
@@ -212,9 +197,16 @@ function AdminUsersContent() {
                             {u.is_active ? "Suspend" : "Activate"}
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                           <DropdownMenuItem onClick={() => setDeleteId(u.id)} className="cursor-pointer text-xs font-medium text-red-500 focus:text-red-600 focus:bg-red-50 gap-2">
-                            <Trash2 className="w-3.5 h-3.5" /> Permanently Delete
-                          </DropdownMenuItem>
+                          <ConfirmDeleteDialog
+                            trigger={
+                              <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="cursor-pointer text-xs font-medium text-red-500 focus:text-red-600 focus:bg-red-50 gap-2">
+                                <Trash2 className="w-3.5 h-3.5" /> Permanently Delete
+                              </DropdownMenuItem>
+                            }
+                            title="Purge User Identity?"
+                            description="This action will permanently remove this participant from the Kuba registry. This cannot be undone."
+                            onConfirm={() => deleteUser(u.id)}
+                          />
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -234,7 +226,7 @@ function AdminUsersContent() {
               className="col-span-full"
             />
           ) : users.map((u) => (
-            <Card key={u.id} className="border border-border bg-card hover:shadow-md transition-all group overflow-hidden">
+            <Card key={u.id} className="border border-border border-none bg-card/50 backdrop-blur-md rounded-2xl shadow-sm hover:shadow-md transition-all group overflow-hidden">
               <CardContent className="p-5">
                 <div className="flex justify-between items-start mb-4">
                   <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center text-primary font-bold text-xl overflow-hidden border border-border/60 shadow-inner group-hover:border-primary/20 transition-all">
@@ -252,9 +244,16 @@ function AdminUsersContent() {
                         {u.is_active ? "Suspend User" : "Activate User"}
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                       <DropdownMenuItem onClick={() => setDeleteId(u.id)} className="cursor-pointer text-xs font-medium text-red-500 focus:text-red-600 focus:bg-red-50 gap-2">
-                         <Trash2 className="w-3.5 h-3.5" /> Purge Account
-                      </DropdownMenuItem>
+                      <ConfirmDeleteDialog
+                        trigger={
+                          <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="cursor-pointer text-xs font-medium text-red-500 focus:text-red-600 focus:bg-red-50 gap-2">
+                            <Trash2 className="w-3.5 h-3.5" /> Purge Account
+                          </DropdownMenuItem>
+                        }
+                        title="Purge User Account?"
+                        description="This action is irreversible. The account will be permanently removed."
+                        onConfirm={() => deleteUser(u.id)}
+                      />
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -279,31 +278,6 @@ function AdminUsersContent() {
         user={selectedUser}
       />
 
-      {/* Delete Confirmation */}
-      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
-        <AlertDialogContent className="rounded-3xl border-border bg-card/95 backdrop-blur-xl max-w-sm">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-xl font-black italic tracking-tight">Purge User Identity?</AlertDialogTitle>
-            <AlertDialogDescription className="text-sm font-medium text-muted-foreground leading-relaxed">
-              This action will permanently remove this participant from the Kuba registry. This cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="gap-2 sm:gap-0 pt-4">
-            <AlertDialogCancel className="rounded-xl font-bold text-xs uppercase tracking-widest text-foreground">Abort</AlertDialogCancel>
-            <AlertDialogAction 
-                className="rounded-xl font-bold text-xs uppercase tracking-widest bg-red-600 hover:bg-red-700 text-white border-none shadow-md"
-                onClick={() => {
-                    if (deleteId) {
-                        deleteUser(deleteId);
-                        setDeleteId(null);
-                    }
-                }}
-            >
-                Execute Purge
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       {/* Status Toggle Confirmation */}
       <AlertDialog open={!!statusId} onOpenChange={(open) => !open && setStatusId(null)}>

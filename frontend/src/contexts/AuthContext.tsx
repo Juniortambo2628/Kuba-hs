@@ -24,42 +24,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAuth = async () => {
     try {
-      console.log("Checking auth status...");
       const response = await axiosInstance.get("/api/user");
-      console.log("Auth success:", response.data);
       setUser(response.data);
     } catch (error: any) {
-      if (error.response?.status === 401) {
-        console.log("User is not authenticated (silent check)");
-      } else {
-        console.error("Auth check failed:", error.response?.status, error.message);
-      }
       setUser(null);
-      // throw error; // Removed to avoid blocking initial load if 401
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    checkAuth().catch(() => {}); // Handle initial check silently
+    // Skip auth check if no session cookie exists (anonymous visitor)
+    const hasSession = document.cookie.includes('laravel_session') || 
+                       document.cookie.includes('XSRF-TOKEN');
+    if (hasSession) {
+      checkAuth().catch(() => {});
+    } else {
+      setIsLoading(false);
+    }
   }, []);
 
   const login = async (data: any) => {
     try {
-      // Sanctum CSRF protection initialization
-      console.log("Fetching CSRF cookie...");
       await axiosInstance.get("/sanctum/csrf-cookie");
-      
-      // Login request
-      console.log("Attempting login...");
-      const loginRes = await axiosInstance.post("/login", data);
-      console.log("Login response:", loginRes.status);
-      
-      // Fetch user details after successful login
+      await axiosInstance.post("/login", data);
       await checkAuth();
     } catch (error) {
-      console.error("Login process failed:", error);
       throw error;
     }
   };

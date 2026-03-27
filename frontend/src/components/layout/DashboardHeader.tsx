@@ -17,6 +17,7 @@ import { UserAccountDropdown } from "@/components/shared/UserAccountDropdown";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { GlobalSearch } from "@/components/shared/GlobalSearch";
 import { cn } from "@/lib/utils";
+import { Search, Command } from "lucide-react";
 
 interface DashboardHeaderProps {
   isAdmin?: boolean;
@@ -58,23 +59,36 @@ export function DashboardHeader({ isAdmin = false }: DashboardHeaderProps) {
   if (!mounted) return null;
 
   return (
-    <header className="h-14 bg-card border-b border-border flex items-center justify-between px-4 md:px-6 sticky top-0 z-10">
+    <header className="h-20 bg-white/80 dark:bg-[#0B0F19]/80 backdrop-blur-md border-b border-gray-200 dark:border-white/5 flex items-center justify-between px-4 md:px-6 sticky top-0 z-10 transition-colors duration-300">
       <div className="flex items-center gap-3">
-        <SidebarTrigger className="lg:hidden text-muted-foreground hover:text-foreground" />
+        <SidebarTrigger className="lg:hidden text-gray-500 hover:text-foreground" />
         {isAdmin && (
           <div className="hidden sm:flex items-center gap-2 text-muted-foreground">
-            <span className="text-[11px] font-bold tracking-tight">Admin Portal</span>
+            <span className="text-[11px] font-bold tracking-tight uppercase">Admin Portal</span>
             <span className="text-border">|</span>
-            <span className="text-[11px] font-bold text-primary tracking-tight">Control Center</span>
+            <span className="text-[11px] font-bold text-primary tracking-tight uppercase">Control Center</span>
           </div>
         )}
       </div>
 
       <div className="flex items-center gap-2">
-        {/* Global Search */}
-        <div className="hidden sm:block mr-2">
-          <GlobalSearch />
-        </div>
+        {/* Global Search / Command Palette */}
+        {isAdmin ? (
+          <button 
+            onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
+            className="flex items-center gap-3 px-4 py-2 rounded-xl bg-accent/50 border border-border hover:bg-accent transition-all text-muted-foreground group mr-4"
+          >
+            <Search className="w-4 h-4 group-hover:text-primary transition-colors" />
+            <span className="text-[11px] font-black uppercase tracking-tight">Quick Jump</span>
+            <kbd className="hidden sm:inline-flex h-5 select-none items-center gap-1 rounded-md border bg-muted px-2 font-mono text-[9px] font-black opacity-60">
+              <span className="text-xs">⌘</span>K
+            </kbd>
+          </button>
+        ) : (
+          <div className="hidden sm:block mr-2">
+            <GlobalSearch />
+          </div>
+        )}
 
         {/* Notifications (Client/Provider only) */}
         {!isAdmin && (
@@ -124,18 +138,14 @@ export function DashboardHeader({ isAdmin = false }: DashboardHeaderProps) {
           className={cn(isAdmin && "p-2.5 shadow-md shadow-foreground/10 border border-border")} 
         />
 
-        {/* Settings shortcut (Client/Provider only) */}
-        {!isAdmin && (
-          <button className="p-2 text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-accent hidden md:flex">
-            <Settings className="w-5 h-5" />
-          </button>
-        )}
+
 
         {/* User Dropdown */}
-        <div className="flex items-center gap-2 ml-1 pl-2 border-l border-border">
+        <div className="flex items-center gap-2 ml-1 pl-2 border-l border-gray-200 dark:border-white/5">
           <UserAccountDropdown variant="dashboard" align="end" />
         </div>
       </div>
     </header>
   );
 }
+
