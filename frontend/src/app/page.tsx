@@ -37,8 +37,6 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-export const dynamic = 'force-static';
-
 export default async function Home() {
   let heroData = null;
   try {
