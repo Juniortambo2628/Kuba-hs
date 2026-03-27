@@ -79,8 +79,18 @@ export function Footer() {
             <p className="text-gray-400 dark:text-gray-500 text-sm">
                 &copy; {new Date().getFullYear()} Kuba Platform. All rights reserved.
             </p>
-            <div className="flex gap-6 text-sm">
-                <span className="text-gray-400 dark:text-gray-500">Made with ❤️ for Home Services</span>
+            <div className="flex flex-col md:flex-row items-center gap-6 text-sm text-gray-400 dark:text-gray-500">
+                <div className="flex items-center gap-3">
+                    <span>Made with precision, care and intention by</span>
+                    <a href="https://okjtech.co.ke" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                        <div className="relative h-6 w-24 dark:hidden">
+                            <img src="/assets/branding/okj/logo-black.png" alt="OKJTechnologies" className="h-6 w-auto object-contain" />
+                        </div>
+                        <div className="relative h-6 w-24 hidden dark:block">
+                            <img src="/assets/branding/okj/logo-white.png" alt="OKJTechnologies" className="h-6 w-auto object-contain" />
+                        </div>
+                    </a>
+                </div>
             </div>
             </div>
         </div>
