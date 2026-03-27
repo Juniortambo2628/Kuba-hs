@@ -10,13 +10,15 @@ import { HeroSkeleton, CardSkeleton } from "@/components/shared/AdvancedSkeleton
 import { 
   Star, MapPin, Clock, ShieldCheck, 
   CheckCircle2, Users, ArrowRight, MessageSquare,
-  Sparkles, Shield, Zap, Heart
+  Sparkles, Shield, Zap, Heart, Search
 } from "lucide-react";
+import { PremiumEmptyState } from "@/components/shared/PremiumEmptyState";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { BookingModal } from "@/components/booking/BookingModal";
+import { toast } from "sonner";
 import { getMediaUrl } from "@/lib/utils";
 import { ProviderService, Provider } from "@/types";
 import { motion } from "framer-motion";
@@ -41,6 +43,25 @@ export default function ServiceDetailClient({ params }: { params: Promise<{ id: 
     const primaryProvider = service?.provider || (isGeneral && similarRecords.length > 0 ? similarRecords[0].provider : null);
     const featuredService = isGeneral && similarRecords.length > 0 ? similarRecords[0] : service;
 
+    const [isFavorite, setIsFavorite] = useState(false);
+    
+    const handleToggleFavorite = async () => {
+        const nextState = !isFavorite;
+        setIsFavorite(nextState);
+        
+        // Simulating API call with elite feedback
+        try {
+            await new Promise(resolve => setTimeout(resolve, 600));
+            toast.success(nextState ? "Added to your collection" : "Removed from collection", {
+                description: nextState ? "This service will be easier to find next time." : "The service was removed from your favorites.",
+                icon: nextState ? <Heart className="w-4 h-4 fill-primary text-primary" /> : <Heart className="w-4 h-4" />
+            });
+        } catch (error) {
+            setIsFavorite(!nextState); // Rollback
+            toast.error("Cloud sync failed", { description: "We couldn't update your favorites right now." });
+        }
+    };
+
     if (isLoading) {
         return (
             <div className="min-h-screen">
@@ -62,12 +83,14 @@ export default function ServiceDetailClient({ params }: { params: Promise<{ id: 
     if (!service) return (
         <div className="min-h-screen">
             <Navbar />
-            <div className="flex flex-col items-center justify-center py-32 px-6 text-center">
-                <h1 className="text-4xl font-bold mb-4 dark:text-white">Service Not Found</h1>
-                <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-md">This service may have been removed or is no longer available.</p>
-                <Button onClick={() => window.history.back()} variant="outline" className="rounded-xl">
-                    Go Back
-                </Button>
+            <div className="py-32">
+                <PremiumEmptyState 
+                    icon={Search}
+                    title="Service Experience Not Found"
+                    description="The professional infrastructure you're looking for might have been relocated or updated. Continue browsing our verified marketplace for alternatives."
+                    actionLabel="Return to Marketplace"
+                    actionHref="/services"
+                />
             </div>
             <Footer />
         </div>
@@ -89,6 +112,16 @@ export default function ServiceDetailClient({ params }: { params: Promise<{ id: 
                     { label: "Services", href: "/services" },
                     { label: service?.name || "Detail" }
                 ]}
+                actions={
+                    <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={handleToggleFavorite}
+                        className={`rounded-full h-12 w-12 border border-white/20 backdrop-blur-md transition-all ${isFavorite ? 'bg-white text-primary' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                    >
+                        <Heart className={`w-5 h-5 ${isFavorite ? 'fill-current' : ''}`} />
+                    </Button>
+                }
             />
 
             <main className="container mx-auto px-6 py-16 -mt-20 relative z-20">

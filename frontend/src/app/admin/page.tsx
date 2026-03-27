@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import axiosInstance from "@/lib/axios";
@@ -112,18 +113,36 @@ function AdminDashboardContent() {
         subtitle="Overview of your platform performance."
       >
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handleExport}>
-            <Download className="w-4 h-4 mr-1.5" />
-            Export
-          </Button>
-          <Button asChild size="sm">
-            <Link href="/admin/settings">Settings</Link>
-          </Button>
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <Button variant="outline" size="sm" onClick={handleExport}>
+              <Download className="w-4 h-4 mr-1.5" />
+              Export
+            </Button>
+          </motion.div>
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <Button asChild size="sm">
+              <Link href="/admin/settings">Settings</Link>
+            </Button>
+          </motion.div>
         </div>
       </DashboardPageHeader>
 
       {/* Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      <motion.div 
+        initial="hidden"
+        animate="show"
+        variants={{
+          hidden: { opacity: 0 },
+          show: {
+            opacity: 1,
+            transition: {
+              staggerChildren: 0.1,
+              delayChildren: 0.2
+            }
+          }
+        }}
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"
+      >
         {metricCards.map((card, i) => (
           <MetricCard 
             key={i} 
@@ -133,10 +152,15 @@ function AdminDashboardContent() {
             trend={card.trend} 
           />
         ))}
-      </div>
+      </motion.div>
 
       {/* Charts */}
-      <div className="grid gap-6 md:grid-cols-2">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.6 }}
+        className="grid gap-6 md:grid-cols-2"
+      >
         <VisualAnalytics 
           data={trends.revenue.map((d: any) => ({ name: d.date, value: d.count }))} 
           title="Revenue" 
@@ -152,7 +176,7 @@ function AdminDashboardContent() {
           categoryKey="name"
           color="#a1a1aa"
         />
-      </div>
+      </motion.div>
 
       {/* Bookings Table */}
       <Card className="border border-border overflow-hidden rounded-dashboard">

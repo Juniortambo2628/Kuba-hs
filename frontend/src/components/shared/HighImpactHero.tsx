@@ -20,6 +20,7 @@ interface HighImpactHeroProps {
   cmsKey?: string;
   cmsGroup?: string;
   breadcrumbs?: Breadcrumb[];
+  actions?: React.ReactNode;
   fullScreen?: boolean;
   children?: React.ReactNode;
   className?: string;
@@ -33,6 +34,7 @@ export function HighImpactHero({
   cmsKey,
   cmsGroup = 'hero_text',
   breadcrumbs,
+  actions,
   fullScreen = false,
   children,
   className = ""
@@ -83,11 +85,38 @@ export function HighImpactHero({
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="w-full flex flex-col items-center"
           >
-            {displayBadge && (
-              <span className={designSystem.typography.hero.badge}>
-                {displayBadge.charAt(0).toUpperCase() + displayBadge.slice(1).toLowerCase()}
-              </span>
+            {/* Breadcrumbs */}
+            {breadcrumbs && breadcrumbs.length > 0 && (
+              <nav className="flex items-center gap-2 mb-8 text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                {breadcrumbs.map((crumb, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    {i === 0 && <Home className="w-3 h-3" />}
+                    {crumb.href ? (
+                      <Link href={crumb.href} className="hover:text-primary transition-colors">
+                        {crumb.label}
+                      </Link>
+                    ) : (
+                      <span className="text-gray-900 dark:text-white">{crumb.label}</span>
+                    )}
+                    {i < breadcrumbs.length - 1 && <ChevronRight className="w-3 h-3 opacity-30" />}
+                  </div>
+                ))}
+              </nav>
             )}
+
+            <div className="flex flex-col items-center gap-6 mb-8 relative w-full">
+                {displayBadge && (
+                <span className={designSystem.typography.hero.badge}>
+                    {displayBadge.charAt(0).toUpperCase() + displayBadge.slice(1).toLowerCase()}
+                </span>
+                )}
+
+                {actions && (
+                    <div className="absolute right-0 top-0 hidden md:block">
+                        {actions}
+                    </div>
+                )}
+            </div>
             
             <h1 className={`${designSystem.typography.hero.title} text-gray-900 dark:text-white mb-8`}>
               {displayTitle}

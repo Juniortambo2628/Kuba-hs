@@ -20,6 +20,8 @@ import {
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useCMS } from "@/contexts/CMSContext";
+import { preload } from "swr";
+import { fetcher } from "@/hooks/useData";
 
 const MapView = dynamic(() => import("@/components/shared/MapView"), {
   ssr: false,
@@ -199,6 +201,10 @@ export default function ServicesPage() {
                     >
                       <Link 
                         href={`/services/${category.id}`}
+                        onMouseEnter={() => {
+                          preload(`/api/featured-services/${category.id}`, fetcher);
+                          preload(`/api/services/${category.id}`, fetcher);
+                        }}
                         className={`group block bg-white dark:bg-black border border-border/40 rounded-[2.5rem] hover:border-primary/40 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5 ${view === 'grid' ? 'p-8' : 'p-6 flex flex-row items-center gap-8'}`}
                       >
                          <div className={`shrink-0 bg-primary/5 rounded-[1.5rem] flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-500 ${view === 'grid' ? 'w-16 h-16 mb-8' : 'w-20 h-20'}`}>
