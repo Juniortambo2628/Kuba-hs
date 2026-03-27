@@ -50,7 +50,12 @@ function AdminLoginForm() {
         <div className="w-full max-w-sm space-y-8">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <img src="/logo.png" alt="KUBA" className="h-8 w-auto object-contain" />
+            <div className="relative h-8 w-32 dark:hidden">
+              <img src="/assets/branding/logo-light.png" alt="KUBA" className="h-8 w-auto object-contain" />
+            </div>
+            <div className="relative h-8 w-32 hidden dark:block">
+              <img src="/assets/branding/logo-dark.png" alt="KUBA" className="h-8 w-auto object-contain" />
+            </div>
           </Link>
 
           <div>

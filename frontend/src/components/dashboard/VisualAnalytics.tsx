@@ -35,14 +35,14 @@ export function VisualAnalytics({
 
   return (
     <Card className="border border-border overflow-hidden group shadow-sm">
-      <CardHeader className="px-6 py-5 border-b border-border">
-        <CardTitle className="text-lg font-black text-foreground tracking-tight">{title}</CardTitle>
+      <CardHeader className="px-4 sm:px-6 py-4 sm:py-5 border-b border-border">
+        <CardTitle className="text-base sm:text-lg font-black text-foreground tracking-tight">{title}</CardTitle>
       </CardHeader>
-      <CardContent className="p-6">
+      <CardContent className="p-4 sm:p-6">
         <div className="h-[300px] w-full">
-          <ResponsiveContainer width="99%" height="100%">
+          <ResponsiveContainer width="100%" height="100%">
             {type === 'area' ? (
-              <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart data={data} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                 <defs>
                   <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor={color} stopOpacity={0.25}/>
@@ -86,7 +86,7 @@ export function VisualAnalytics({
                 />
               </AreaChart>
             ) : (
-              <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} barSize={32}>
+              <BarChart data={data} margin={{ top: 10, right: 10, left: -25, bottom: 0 }} barSize={32}>
                 <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="hsl(var(--border))" opacity={0.6} />
                 <XAxis 
                   dataKey={categoryKey} 

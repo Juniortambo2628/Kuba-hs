@@ -22,6 +22,7 @@ export const metadata: Metadata = {
 
 import { CookieConsent } from "@/components/shared/CookieConsent";
 import { LegalModals } from "@/components/shared/LegalModals";
+import { DynamicFavicon } from "@/components/shared/DynamicFavicon";
 
 export default function RootLayout({
   children,
@@ -50,6 +51,7 @@ export default function RootLayout({
           </main>
           <CookieConsent />
           <LegalModals />
+          <DynamicFavicon />
         </Providers>
       </body>
     </html>

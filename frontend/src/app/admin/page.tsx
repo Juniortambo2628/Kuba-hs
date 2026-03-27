@@ -169,7 +169,7 @@ function AdminDashboardContent() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search bookings..." 
-                  className="pl-9 h-9"
+                  className="pl-10 h-9"
                 />
               </div>
               <select 

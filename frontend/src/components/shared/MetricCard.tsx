@@ -19,7 +19,7 @@ export function MetricCard({ label, value, icon: Icon, trend, isLoading }: Metri
       role="status"
       aria-label={`${label}: ${value}`}
     >
-      <CardContent className="p-6 flex items-center justify-between">
+      <CardContent className="p-4 sm:p-6 flex items-center justify-between">
         {isLoading ? (
           <div className="space-y-3 flex-1">
             <Skeleton className="h-3 w-20" />
@@ -42,8 +42,8 @@ export function MetricCard({ label, value, icon: Icon, trend, isLoading }: Metri
             </div>
           </div>
         )}
-        <div className="p-4 bg-muted/50 rounded-xl text-foreground group-hover:bg-primary group-hover:text-white transition-all duration-300">
-          <Icon className="w-5 h-5" />
+        <div className="p-3 sm:p-4 bg-muted/50 rounded-xl text-foreground group-hover:bg-primary group-hover:text-white transition-all duration-300">
+          <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
         </div>
       </CardContent>
     </Card>

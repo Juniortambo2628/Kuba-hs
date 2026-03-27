@@ -108,7 +108,7 @@ export function KubaSidebar() {
         <Link href="/" className="flex items-center gap-2.5 group transition-transform hover:scale-105 duration-300">
             <div className="relative h-8 w-32 dark:hidden">
               <Image 
-                src="/assets/Kuba-Header-footter-Logo-for-Light-Mode.png" 
+                src={getImg('identity', 'logo_light', '/assets/Kuba-Header-footter-Logo-for-Light-Mode.png')} 
                 alt="KUBA" 
                 fill
                 sizes="(max-width: 768px) 128px, 128px"
@@ -118,7 +118,7 @@ export function KubaSidebar() {
             </div>
             <div className="relative h-8 w-32 hidden dark:block">
               <Image 
-                src="/assets/Kuba-Header-Footer-Logo-for-Dark-Mode.png" 
+                src={getImg('identity', 'logo_dark', '/assets/Kuba-Header-Footer-Logo-for-Dark-Mode.png')} 
                 alt="KUBA" 
                 fill
                 sizes="(max-width: 768px) 128px, 128px"
