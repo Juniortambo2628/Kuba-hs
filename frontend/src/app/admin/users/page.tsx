@@ -130,7 +130,8 @@ function AdminUsersContent() {
       {viewMode === 'list' ? (
         <Card className="border border-border/40 overflow-hidden bg-card/50 backdrop-blur-md border-none shadow-sm rounded-2xl">
           <CardContent className="p-0">
-            <Table>
+            <div className="overflow-x-auto custom-scrollbar">
+              <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent border-border/50">
                   <TableHead className="pl-10 h-16 text-[11px] font-bold text-muted-foreground">System Identity</TableHead>
@@ -214,6 +215,7 @@ function AdminUsersContent() {
                 ))}
               </TableBody>
             </Table>
+          </div>
           </CardContent>
         </Card>
       ) : (
