@@ -182,8 +182,8 @@ export function Categories() {
                               Looking for trustworthy {service.name.toLowerCase()} professionals? We have verified experts ready to help with your project. Get guaranteed quality and transparent pricing.
                               <div className="mt-6">
                                 <Button asChild size="sm" className="rounded-full bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-500/20 font-bold border-0 shadow-none px-6">
-                                  <Link href={`/providers?service=${service.id}`}>
-                                    Find {service.name} Pros <ArrowRight className="ml-2 w-4 h-4" />
+                                  <Link href={`/services/${service.id}?type=general`}>
+                                    Service Details <ArrowRight className="ml-2 w-4 h-4" />
                                   </Link>
                                 </Button>
                               </div>

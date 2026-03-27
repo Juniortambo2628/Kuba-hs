@@ -168,6 +168,25 @@ class MarketplaceController extends Controller
     }
 
     /**
+     * Get a general service information plus providers who offer it.
+     */
+    public function showGeneralService(Service $service)
+    {
+        $service->load(['category', 'media']);
+        
+        $providerServices = ProviderService::where('service_id', $service->id)
+            ->where('is_available', true)
+            ->with(['provider.user', 'media', 'service.media'])
+            ->get();
+
+        return response()->json([
+            'service' => new ServiceResource($service),
+            'provider_services' => ProviderServiceResource::collection($providerServices),
+            'is_general' => true
+        ]);
+    }
+
+    /**
      * Search for service providers based on criteria.
      */
     public function search(Request $request, ProviderSearchService $searchService)

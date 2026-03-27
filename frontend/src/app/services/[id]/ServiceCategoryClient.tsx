@@ -119,7 +119,7 @@ export default function ServiceCategoryClient() {
                                     viewport={{ once: true }}
                                     transition={{ delay: i * 0.05 }}
                                 >
-                                    <Link href={`/providers?service=${service.id}`} className="group block h-full">
+                                    <Link href={`/services/${service.id}?type=general`} className="group block h-full">
                                         <Card className="h-full bg-white dark:bg-black border border-border/40 shadow-sm hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 rounded-[2.5rem] overflow-hidden group-hover:border-primary/30">
                                             <CardContent className="p-8 space-y-6 flex flex-col justify-between h-full">
                                                 <div className="space-y-4">

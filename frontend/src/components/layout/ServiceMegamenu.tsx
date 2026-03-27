@@ -106,7 +106,7 @@ export function ServiceMegamenu({ isOpen, onClose }: ServiceMegamenuProps) {
                         {category.services?.slice(0, 6).map((service: any) => (
                           <li key={service.id}>
                             <Link 
-                              href={`/providers?service=${service.id}`}
+                              href={`/services/${service.id}?type=general`}
                               onClick={onClose}
                               className="text-[13px] text-gray-500 dark:text-gray-400 hover:text-primary transition-colors flex items-center justify-between group/link"
                             >
@@ -118,7 +118,7 @@ export function ServiceMegamenu({ isOpen, onClose }: ServiceMegamenuProps) {
                         {category.services?.length > 6 && (
                           <li>
                             <Link 
-                              href={`/services/[id]?id=${category.id}`}
+                              href={`/services/${category.id}`}
                               onClick={onClose}
                               className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1"
                             >
