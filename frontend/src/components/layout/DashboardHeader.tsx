@@ -59,7 +59,7 @@ export function DashboardHeader({ isAdmin = false }: DashboardHeaderProps) {
   if (!mounted) return null;
 
   return (
-    <header className="h-20 bg-white/80 dark:bg-[#0B0F19]/80 backdrop-blur-md border-b border-gray-200 dark:border-white/5 flex items-center justify-between px-4 md:px-6 sticky top-0 z-10 transition-colors duration-300">
+    <header className="h-16 sm:h-20 bg-white/80 dark:bg-[#0B0F19]/80 backdrop-blur-md border-b border-gray-200 dark:border-white/5 flex items-center justify-between px-3 sm:px-4 md:px-6 sticky top-0 z-10 transition-colors duration-300">
       <div className="flex items-center gap-3">
         <SidebarTrigger className="lg:hidden text-gray-500 hover:text-foreground" />
         {isAdmin && (
@@ -71,7 +71,7 @@ export function DashboardHeader({ isAdmin = false }: DashboardHeaderProps) {
         )}
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5 sm:gap-2">
         {/* Global Search / Command Palette */}
         {isAdmin ? (
           <button 

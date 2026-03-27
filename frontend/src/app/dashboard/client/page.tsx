@@ -124,11 +124,11 @@ export default function ClientOverview() {
   }
 
   return (
-    <div className="max-w-[1400px] mx-auto space-y-10 pb-12">
+    <div className="max-w-[1400px] mx-auto space-y-6 sm:space-y-10 pb-8 sm:pb-12">
       {/* Welcome Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">Welcome back, {user?.name?.split(' ')[0]}</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">Welcome back, {user?.name?.split(' ')[0]}</h1>
             <p className="text-sm text-muted-foreground mt-1">We're helping you find the best pros for your home.</p>
         </div>
         <Link href="/services">
@@ -144,7 +144,7 @@ export default function ClientOverview() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="grid grid-cols-1 md:grid-cols-3 gap-6"
+        className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6"
       >
         {[
           { label: "Current Jobs", value: stats?.active_bookings || 0, icon: Clock, trend: "On schedule" },
@@ -161,7 +161,7 @@ export default function ClientOverview() {
         ))}
       </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-10">
         {/* Main Content: Upcoming Services */}
         <div className="lg:col-span-2 space-y-6">
           <div className="flex items-center justify-between px-2">
