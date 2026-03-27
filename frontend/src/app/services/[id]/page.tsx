@@ -1,5 +1,11 @@
+import { Suspense } from 'react';
 import ServiceDetailClient from './ServiceDetailClient';
+import { HeroSkeleton } from '@/components/shared/AdvancedSkeleton';
 
 export default function ServiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
-    return <ServiceDetailClient params={params} />;
+    return (
+        <Suspense fallback={<HeroSkeleton />}>
+            <ServiceDetailClient params={params} />
+        </Suspense>
+    );
 }

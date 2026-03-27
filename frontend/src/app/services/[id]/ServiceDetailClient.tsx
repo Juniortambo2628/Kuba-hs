@@ -1,6 +1,7 @@
 "use client";
 
 import { use, useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { HighImpactHero } from "@/components/shared/HighImpactHero";
@@ -22,13 +23,23 @@ import { motion } from "framer-motion";
 
 export default function ServiceDetailClient({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
-    const { data: service, isLoading } = useData<ProviderService>(id ? `/api/featured-services/${id}` : null);
-    const { data: similarRes } = useData<any>(id ? `/api/featured-services/${id}/similar` : null);
+    const searchParams = useSearchParams();
+    const isGeneral = searchParams.get('type') === 'general';
+
+    const { data: resData, isLoading } = useData<any>(id ? (isGeneral ? `/api/services/${id}` : `/api/featured-services/${id}`) : null);
+    
+    // Normalize data based on endpoint
+    const service = isGeneral ? resData?.service : resData;
+    const providerServices = isGeneral ? resData?.provider_services : null;
+
+    const { data: similarRes } = useData<any>(id && !isGeneral ? `/api/featured-services/${id}/similar` : null);
     
     const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
     const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
 
-    const similarRecords = similarRes?.data || [];
+    const similarRecords = isGeneral ? (providerServices || []) : (similarRes?.data || []);
+    const primaryProvider = service?.provider || (isGeneral && similarRecords.length > 0 ? similarRecords[0].provider : null);
+    const featuredService = isGeneral && similarRecords.length > 0 ? similarRecords[0] : service;
 
     if (isLoading) {
         return (
@@ -48,22 +59,35 @@ export default function ServiceDetailClient({ params }: { params: Promise<{ id: 
         );
     }
 
-    if (!service) return null;
+    if (!service) return (
+        <div className="min-h-screen">
+            <Navbar />
+            <div className="flex flex-col items-center justify-center py-32 px-6 text-center">
+                <h1 className="text-4xl font-bold mb-4 dark:text-white">Service Not Found</h1>
+                <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-md">This service may have been removed or is no longer available.</p>
+                <Button onClick={() => window.history.back()} variant="outline" className="rounded-xl">
+                    Go Back
+                </Button>
+            </div>
+            <Footer />
+        </div>
+    );
 
-    const primaryProvider = service.provider;
+    // The primaryProvider is already derived above for both general and featured views
+    // const primaryProvider = service.provider; (removed duplicate)
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-[#0B0F19]">
             <Navbar />
             
             <HighImpactHero
-                title={service.name || service.service?.name || "Service Detail"}
-                subtitle={service.category || "Professional Home Services"}
-                bgImage={getMediaUrl(service.image_urls?.[0] || service.service?.icon_url, 'service')}
+                title={service?.name || service?.service?.name || "Service Detail"}
+                subtitle={(service?.category?.name || service?.category) || service?.service?.category?.name || "Professional Home Services"}
+                bgImage={getMediaUrl(service?.image_urls?.[0]?.url || service?.thumbnail_url || service?.service?.icon_url, 'service')}
                 breadcrumbs={[
                     { label: "Home", href: "/" },
                     { label: "Services", href: "/services" },
-                    { label: service.name || "Detail" }
+                    { label: service?.name || "Detail" }
                 ]}
             />
 
@@ -129,8 +153,8 @@ export default function ServiceDetailClient({ params }: { params: Promise<{ id: 
                                 <div className="relative z-10">
                                    <p className="text-xs font-black uppercase tracking-[0.2em] mb-2 text-sky-100 opacity-80">Estimated Price</p>
                                    <div className="flex items-baseline gap-2">
-                                      <span className="text-4xl font-black">KES {Number(service.base_price).toLocaleString()}</span>
-                                      <span className="text-sky-200 text-sm font-bold">/ {service.pricing_type || 'service'}</span>
+                                      <span className="text-4xl font-black">KES {Number(featuredService?.base_price || 0).toLocaleString()}</span>
+                                      <span className="text-sky-200 text-sm font-bold">/ {featuredService?.pricing_type || 'service'}</span>
                                    </div>
                                 </div>
                                 <div className="absolute -right-8 -bottom-8 opacity-10">
@@ -189,10 +213,10 @@ export default function ServiceDetailClient({ params }: { params: Promise<{ id: 
                 {/* Similar Providers Section */}
                 {similarRecords.length > 0 && (
                    <section className="mt-24 space-y-12">
-                      <div className="flex items-end justify-between">
+                      <div className="flex items-end justify-between px-4">
                          <div>
-                            <Badge className="bg-sky-500/10 text-sky-500 border-none mb-4">Marketplace Options</Badge>
-                            <h2 className="text-4xl font-bold dark:text-white">Other Professionals for this Service</h2>
+                            <Badge className="bg-sky-500/10 text-sky-500 border-none mb-4">{isGeneral ? "Available Professionals" : "Marketplace Options"}</Badge>
+                            <h2 className="text-4xl font-bold dark:text-white">{isGeneral ? "Who provides this service?" : "Other Professionals for this Service"}</h2>
                          </div>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -245,12 +269,12 @@ export default function ServiceDetailClient({ params }: { params: Promise<{ id: 
                 )}
             </main>
 
-            {service && selectedProvider && (
+            {(featuredService || service) && selectedProvider && (
               <BookingModal 
                 isOpen={isBookingModalOpen}
                 onClose={() => setIsBookingModalOpen(false)}
                 provider={selectedProvider as any}
-                service={service as any}
+                service={(featuredService || service) as any}
               />
             )}
 

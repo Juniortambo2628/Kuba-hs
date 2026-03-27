@@ -63,14 +63,18 @@ export default function ServiceCategoryClient({ params }: { params: Promise<{ id
             <section className="py-24 max-w-7xl mx-auto px-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {category.services?.map((service) => (
-                        <Link key={service.id} href={`/providers?service=${service.id}`}>
+                        <Link key={service.id} href={`/services/${service.id}?type=general`}>
                             <Card className="rounded-[2.5rem] overflow-hidden hover:shadow-2xl transition-all border-border/50 group">
                                 <CardContent className="p-8">
                                     <h3 className="text-xl font-bold mb-4 italic group-hover:text-primary transition-colors">{service.name}</h3>
                                     <p className="text-sm text-muted-foreground italic leading-relaxed">{service.description}</p>
                                     <div className="mt-8 pt-6 border-t border-border/40 flex justify-between items-center">
-                                        <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Marketplace Entry</span>
-                                        <motion.span whileHover={{ x: 5 }} className="text-xs font-bold text-foreground">Explore Professionals →</motion.span>
+                                        <Link 
+                                            href={`/services?category=${category.id}`}
+                                            className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1"
+                                        >
+                                            <motion.span whileHover={{ x: 5 }} className="text-xs font-bold text-foreground">Explore Professionals →</motion.span>
+                                        </Link>
                                     </div>
                                 </CardContent>
                             </Card>

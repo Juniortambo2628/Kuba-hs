@@ -45,7 +45,7 @@ export function PerformanceMetrics({ stats }: PerformanceMetricsProps) {
     ];
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {metrics.map((metric, i) => (
                 <Card key={i} className="border-none bg-white dark:bg-white/5 shadow-sm rounded-3xl overflow-hidden hover:shadow-md transition-all group">
                     <CardContent className="p-6">

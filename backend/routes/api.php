@@ -18,6 +18,7 @@ Route::get('/page-features', [\App\Http\Controllers\Api\PageFeatureController::c
 Route::get('/categories', [MarketplaceController::class, 'categories']);
 Route::get('/featured-services', [MarketplaceController::class, 'featured']);
 Route::get('/featured-services/{providerService}', [MarketplaceController::class, 'showService']);
+Route::get('/services/{service}', [MarketplaceController::class, 'showGeneralService']); // New general service route
 Route::get('/top-providers', [MarketplaceController::class, 'topProviders']);
 Route::get('/featured-services/{providerService}/similar', [MarketplaceController::class, 'similarProviders']);
 Route::get('/categories/{category}', [MarketplaceController::class, 'showCategory']);
@@ -218,4 +219,3 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 Broadcast::routes(['middleware' => ['auth:sanctum']]);
-

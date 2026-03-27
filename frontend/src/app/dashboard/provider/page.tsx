@@ -118,12 +118,12 @@ export default function ProviderOverview() {
   <motion.div 
    initial={{ opacity: 0 }} 
    animate={{ opacity: 1 }} 
-   className="max-w-[1400px] mx-auto space-y-10 pb-12"
+   className="max-w-[1400px] mx-auto space-y-6 sm:space-y-10 pb-8 sm:pb-12"
   >
    {/* Provider Header */}
    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
     <div>
-      <h1 className="text-2xl font-bold text-foreground tracking-tight">Pro Dashboard</h1>
+      <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">Pro Dashboard</h1>
       <p className="text-sm text-muted-foreground mt-1">Logged in as {user?.name} — Manage your jobs and services.</p>
     </div>
     <div className="flex items-center gap-3">
@@ -151,7 +151,7 @@ export default function ProviderOverview() {
      />
    </motion.div>
 
-   <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-10">
      {/* Active Work Orders */}
      <div className="lg:col-span-2 space-y-6">
       <div className="flex items-center justify-between px-2">
