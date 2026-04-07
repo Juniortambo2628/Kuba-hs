@@ -28,7 +28,7 @@ import { toast } from "sonner";
 import { Booking } from "@/types";
 import { VirtualReceipt } from "./VirtualReceipt";
 
-type PaymentMethod = 'select' | 'paystack' | 'mpesa';
+type PaymentMethod = 'select' | 'paystack' | 'mpesa' | 'cash';
 type PaymentStep = 'select' | 'details' | 'processing' | 'success';
 
 interface CheckoutDialogProps {
