@@ -226,7 +226,7 @@ export default function ProfileSettings() {
            collection="avatars"
            onSuccess={() => {
              toast.success("Avatar updated");
-             window.location.reload();
+             checkAuth();
            }}
            label='<span class="text-white">...</span>'
           />

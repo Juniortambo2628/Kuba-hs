@@ -1,6 +1,10 @@
 <x-mail::message>
-<div style="text-align: center; margin-bottom: 20px;">
-    <img src="{{ url('/assets/branding/Kuba-Header-footter-Logo-for-Light-Mode.png') }}" alt="Kuba Logo" style="height: 60px; width: auto;">
+<div style="text-align: center; margin-bottom: 30px;">
+    @if(isset($logo_url))
+        <img src="{{ $logo_url }}" alt="{{ $app_name ?? 'Kuba' }}" style="height: 60px; max-width: 200px; object-fit: contain;">
+    @else
+        <img src="{{ url('/assets/branding/Kuba-Header-footter-Logo-for-Light-Mode.png') }}" alt="Kuba Logo" style="height: 60px; width: auto;">
+    @endif
 </div>
 
 {!! $content !!}

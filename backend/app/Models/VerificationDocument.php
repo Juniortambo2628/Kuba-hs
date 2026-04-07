@@ -23,7 +23,15 @@ class VerificationDocument extends Model
         'expires_at' => 'date',
     ];
 
-    protected $appends = ['is_expired'];
+    protected $appends = ['is_expired', 'url'];
+
+    public function getUrlAttribute(): string
+    {
+        if (!$this->file_path) {
+            return '';
+        }
+        return \Illuminate\Support\Facades\Storage::disk('public')->url($this->file_path);
+    }
 
     public function getIsExpiredAttribute(): bool
     {

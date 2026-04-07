@@ -51,7 +51,7 @@ export default function ProviderProfile() {
   const fetchProfile = async () => {
     try {
       const res = await axiosInstance.get("/api/provider/dashboard");
-      setProfile(res.data.profile || {
+      const defaultProfile = {
         business_name: "",
         bio: "",
         location_name: "",
@@ -60,7 +60,8 @@ export default function ProviderProfile() {
         longitude: null,
         experience_years: 0,
         service_radius: 10
-      });
+      };
+      setProfile({ ...defaultProfile, ...(res.data.profile || {}) });
     } catch (err) {
       toast.error("Failed to load profile");
     } finally {
@@ -74,8 +75,11 @@ export default function ProviderProfile() {
       await axiosInstance.post("/api/provider/profile", profile);
       toast.success("Merchant profile updated successfully");
       await checkAuth();
-    } catch (err) {
-      toast.error("Failed to update profile");
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.messages 
+        ? (Object.values(err.response.data.messages)[0] as string[])?.[0] 
+        : err.response?.data?.error || "Failed to update profile";
+      toast.error(errorMsg);
     } finally {
       setIsSaving(false);
     }
@@ -201,7 +205,7 @@ export default function ProviderProfile() {
                       <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                       <input 
                         type="text" 
-                        value={profile.business_name}
+                        value={profile.business_name || ""}
                         onChange={(e) => setProfile({ ...profile, business_name: e.target.value })}
                         className="w-full h-12 pl-12 pr-4 bg-muted/50 border border-border rounded-xl text-[11px] font-bold focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground outline-none shadow-sm"
                         placeholder="e.g. Acme Services Ltd"
@@ -215,7 +219,7 @@ export default function ProviderProfile() {
                       <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                       <input 
                         type="text" 
-                        value={profile.phone}
+                        value={profile.phone || ""}
                         onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
                         className="w-full h-12 pl-12 pr-4 bg-muted/50 border border-border rounded-xl text-[11px] font-bold focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground outline-none shadow-sm"
                         placeholder="+254 700 000 000"
@@ -226,7 +230,7 @@ export default function ProviderProfile() {
                   <div className="space-y-2 md:col-span-2">
                     <label className="text-[10px] font-bold text-muted-foreground tracking-wider ml-1">Professional Biography</label>
                     <textarea 
-                      value={profile.bio}
+                      value={profile.bio || ""}
                       onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
                       className="w-full min-h-[140px] p-5 bg-muted/50 border border-border rounded-xl text-[11px] font-bold focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground outline-none shadow-sm block resize-none leading-relaxed"
                       placeholder="Describe your expertise, experience, and why clients should choose you..."
@@ -239,7 +243,7 @@ export default function ProviderProfile() {
                       <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                       <input 
                         type="text" 
-                        value={profile.location_name}
+                        value={profile.location_name || ""}
                         onChange={(e) => setProfile({ ...profile, location_name: e.target.value })}
                         className="w-full h-12 pl-12 pr-4 bg-muted/50 border border-border rounded-xl text-[11px] font-bold focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground outline-none shadow-sm"
                       />

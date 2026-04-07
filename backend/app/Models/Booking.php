@@ -24,6 +24,8 @@ class Booking extends Model implements HasMedia
         'scheduled_date',
         'scheduled_time',
         'scheduled_end_date',
+        'started_at',
+        'completed_at',
         'status',
         'address_id',
         'description',
@@ -36,16 +38,20 @@ class Booking extends Model implements HasMedia
         'cancellation_reason',
         'promo_code_id',
         'discount_amount',
+        'mpesa_checkout_id',
+        'payment_method',
     ];
 
     protected $casts = [
         'scheduled_date' => 'datetime',
         'scheduled_end_date' => 'datetime',
+        'started_at' => 'datetime',
+        'completed_at' => 'datetime',
         'estimated_price' => 'decimal:2',
         'final_price' => 'decimal:2',
     ];
 
-    protected $appends = ['image_urls', 'total_price'];
+    protected $appends = ['image_urls', 'total_price', 'elapsed_seconds'];
 
     /**
      * Get the standardized total price (final or estimated).
@@ -53,6 +59,16 @@ class Booking extends Model implements HasMedia
     public function getTotalPriceAttribute(): float
     {
         return (float) ($this->final_price ?? $this->estimated_price ?? 0);
+    }
+
+    /**
+     * Get elapsed seconds since service started.
+     */
+    public function getElapsedSecondsAttribute(): ?int
+    {
+        if (!$this->started_at) return null;
+        $end = $this->completed_at ?? now();
+        return (int) $this->started_at->diffInSeconds($end);
     }
 
     public function getImageUrlsAttribute(): array

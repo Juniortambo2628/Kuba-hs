@@ -36,9 +36,9 @@ class NewReviewReceived extends Notification implements ShouldQueue
             'provider_name' => $this->review->booking->provider->user->name,
             'rating' => $this->review->rating,
             'booking_number' => $this->review->booking->booking_number,
-            'reviews_url' => route('reviews.index'),
+            'reviews_url' => url('/dashboard/reviews'),
             'comment' => $this->review->comment ?? 'No comment provided.',
-        ], $this->review->booking->provider->user));
+        ], $notifiable));
     }
 
     /**
@@ -51,7 +51,7 @@ class NewReviewReceived extends Notification implements ShouldQueue
             'booking_id' => $this->review->booking_id,
             'rating' => $this->review->rating,
             'message' => "You received a new {$this->review->rating}/5 review.",
-            'url' => route('reviews.index'),
+            'url' => url('/dashboard/reviews'),
         ];
     }
 }

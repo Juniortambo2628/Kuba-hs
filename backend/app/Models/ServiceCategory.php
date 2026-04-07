@@ -24,7 +24,12 @@ class ServiceCategory extends Model implements HasMedia
         'sort_order',
     ];
 
-    protected $appends = ['dynamic_icon_url'];
+    protected $appends = ['dynamic_icon_url', 'slug'];
+
+    public function getSlugAttribute()
+    {
+        return \Illuminate\Support\Str::slug($this->name);
+    }
 
     public function getDynamicIconUrlAttribute()
     {

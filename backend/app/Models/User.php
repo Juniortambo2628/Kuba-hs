@@ -17,6 +17,11 @@ class User extends Authenticatable implements HasMedia
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasUuids, HasRoles, InteractsWithMedia, Searchable;
 
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('avatars')->singleFile();
+    }
+
     /**
      * The attributes that should be appended to the model's array form.
      *

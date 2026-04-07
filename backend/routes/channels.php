@@ -2,13 +2,18 @@
 
 use Illuminate\Support\Facades\Broadcast;
 
-Broadcast::channel('conversation.{conversationId}', function ($user, string $conversationId) {
-    $conversation = \App\Models\Conversation::find($conversationId);
+Broadcast::channel('conversation.{id}', function ($user, string $id) {
+    $conversation = \App\Models\Conversation::where('id', $id)
+        ->orWhere('booking_id', $id)
+        ->first();
+        
     if (!$conversation) {
         return false;
     }
-    $isCustomer = $user->id === $conversation->customer_id;
-    $isProvider = $user->provider && $user->provider->id === $conversation->provider_id;
+    
+    $isCustomer = (string) $user->id === (string) $conversation->customer_id;
+    $isProvider = $user->provider && (string) $user->provider->id === (string) $conversation->provider_id;
+    
     return $isCustomer || $isProvider;
 });
 

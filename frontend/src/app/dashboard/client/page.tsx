@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import useSWR from "swr";
 import { useAuth } from "@/contexts/AuthContext";
 import axiosInstance from "@/lib/axios";
 import { Card, CardContent } from "@/components/ui/card";
@@ -45,34 +46,31 @@ interface ClientStats {
 
 export default function ClientOverview() {
   const { user, isLoading: authLoading } = useAuth();
-  const [stats, setStats] = useState<ClientStats | null>(null);
-  const [upcoming, setUpcoming] = useState<Booking[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isRedeeming, setIsRedeeming] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
 
-  useEffect(() => {
-    if (!authLoading && user) {
-      fetchDashboardData();
-    }
-  }, [authLoading, user]);
+  // Use SWR for real-time reactive updates
+  const { data, mutate: mutateDashboard, isLoading: isDashboardLoading } = useSWR(
+    user ? "/api/client/dashboard" : null,
+    (url) => axiosInstance.get(url).then(res => res.data)
+  );
+
+  const stats = data?.stats || null;
+  const upcoming = data?.upcoming_bookings || [];
+  const isLoading = authLoading || isDashboardLoading;
 
   const fetchDashboardData = async () => {
-    try {
-      const res = await axiosInstance.get("/api/client/dashboard");
-      setStats(res.data.stats);
-      setUpcoming(res.data.upcoming_bookings || []);
-    } catch (err) {
-      console.error("Failed to fetch dashboard data:", err);
-    } finally {
-      setIsLoading(false);
-    }
+    await mutateDashboard();
   };
 
   const handleUpdateStatus = async (id: number, status: string) => {
     try {
-      await axiosInstance.patch(`/api/bookings/${id}/status`, { status });
+      const payload: any = { status };
+      if (status === 'cancelled') {
+        payload.cancellation_reason = "Cancelled by user";
+      }
+      await axiosInstance.patch(`/api/bookings/${id}/status`, payload);
       toast.success(`Booking ${status}`);
       setIsDetailOpen(false);
       fetchDashboardData();
@@ -172,7 +170,7 @@ export default function ClientOverview() {
           </div>
 
           {upcoming.length > 0 ? (
-              upcoming.map((booking) => (
+              upcoming.map((booking: Booking) => (
                 <BookingCard
                   key={booking.id}
                   booking={booking}

@@ -11,9 +11,18 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import {
-  Star, MapPin, Shield, ChevronRight, LayoutGrid, List,
-  SlidersHorizontal, CheckCircle2, ArrowRight, Search, Map
+   Star, MapPin, Shield, ChevronRight, LayoutGrid, List,
+  SlidersHorizontal, CheckCircle2, ArrowRight, Search, Map, Filter
 } from "lucide-react";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuCheckboxItem,
+  DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuGroup
+} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -44,7 +53,8 @@ interface Provider {
     name: string;
     profile_photo_path: string | null;
   };
-  provider_services: any[];
+  services?: any[];
+  starting_price?: number;
 }
 
 function ProvidersContent() {
@@ -68,6 +78,9 @@ function ProvidersContent() {
   const [location, setLocation] = useState<{lat: number, lng: number} | null>(null);
   const [isLocating, setIsLocating] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [sortOrder, setSortOrder] = useState<string | null>(null); // 'asc' or 'desc'
+  const [selectedServiceIds, setSelectedServiceIds] = useState<number[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
 
   const handleNearMe = () => {
     setIsLocating(true);
@@ -88,6 +101,16 @@ function ProvidersContent() {
   };
 
   useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await axiosInstance.get("/api/categories");
+        setCategories(res.data.data);
+      } catch (err) { console.error("Filter categories fetch failed", err); }
+    };
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
     const fetchProviders = async () => {
       setIsPageLoading(true);
       try {
@@ -102,6 +125,12 @@ function ProvidersContent() {
           url += `&latitude=${location.lat}&longitude=${location.lng}`;
         }
         url += `&radius=${radius}`;
+        if (sortOrder) url += `&sort_by_price=${sortOrder}`;
+        if (selectedServiceIds.length > 0) {
+          selectedServiceIds.forEach(id => {
+            url += `&service_ids[]=${id}`;
+          });
+        }
 
         const response = await axiosInstance.get(url);
         setProviders(response.data.data);
@@ -112,7 +141,7 @@ function ProvidersContent() {
       }
     };
     fetchProviders();
-  }, [categoryId, serviceId, searchQuery, minRating, maxPrice, onlyVerified, radius, location]);
+  }, [categoryId, serviceId, searchQuery, minRating, maxPrice, onlyVerified, radius, location, sortOrder, selectedServiceIds]);
 
   return (
     <>
@@ -219,22 +248,7 @@ function ProvidersContent() {
                       </div>
                     </div>
 
-                    {/* Radius */}
-                    <div className="pt-4 border-t border-border dark:border-white/10">
-                        <div className="flex items-center justify-between mb-3 text-xs font-semibold text-muted-foreground tracking-wider">
-                            <span>Search Radius</span>
-                            <span className="text-blue-600 font-bold">{radius}km</span>
-                        </div>
-                        <input 
-                            type="range" 
-                            min="5" 
-                            max="200" 
-                            step="5"
-                            value={radius}
-                            onChange={(e) => setRadius(Number(e.target.value))}
-                            className="w-full accent-blue-600 h-1.5 bg-gray-200 dark:bg-white/10 rounded-lg appearance-none cursor-pointer"
-                        />
-                    </div>
+
                   </CardContent>
                 </Card>
               </div>
@@ -247,40 +261,95 @@ function ProvidersContent() {
                 <p className="text-body-pro text-sm text-muted-foreground">
                   Showing <span className="font-bold text-foreground">{providers.length}</span> professionals
                 </p>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setFilterOpen(!filterOpen)}
-                    className="lg:hidden text-muted-foreground dark:text-gray-400"
+                <div className="flex items-center gap-4">
+                  <select 
+                    value={sortOrder || ''} 
+                    onChange={(e) => setSortOrder(e.target.value || null)}
+                    className="h-10 bg-muted dark:bg-white/5 border border-border dark:border-white/10 rounded-lg px-4 text-xs font-bold text-muted-foreground outline-none focus:ring-1 focus:ring-primary transition-all hidden sm:block"
                   >
-                    <SlidersHorizontal className="w-5 h-5" />
-                  </Button>
-                  <div className="flex bg-gray-100 dark:bg-white/5 rounded-lg p-1 border border-border dark:border-white/10">
+                    <option value="">Default Sorting</option>
+                    <option value="asc">Price: Low to High</option>
+                    <option value="desc">Price: High to Low</option>
+                  </select>
+
+                  {/* Services Filter Dropdown */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="h-10 border-border dark:border-white/10 gap-2">
+                        <Filter className="w-4 h-4" /> 
+                        <span className="hidden sm:inline">Filter by Services</span>
+                        {selectedServiceIds.length > 0 && (
+                          <Badge variant="secondary" className="ml-1 h-5 px-1.5 rounded-sm">
+                            {selectedServiceIds.length}
+                          </Badge>
+                        )}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-64 max-h-[400px] overflow-y-auto custom-scrollbar">
+                      {categories.map((cat, index) => (
+                        <div key={cat.id}>
+                          {index > 0 && <DropdownMenuSeparator />}
+                          <DropdownMenuGroup>
+                            <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-primary/70 bg-muted/30 py-1.5">
+                              {cat.name}
+                            </DropdownMenuLabel>
+                            {cat.services?.map((svc: any) => (
+                              <DropdownMenuCheckboxItem
+                                key={svc.id}
+                                checked={selectedServiceIds.includes(svc.id)}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    setSelectedServiceIds([...selectedServiceIds, svc.id]);
+                                  } else {
+                                    setSelectedServiceIds(selectedServiceIds.filter(id => id !== svc.id));
+                                  }
+                                }}
+                                className="text-xs font-bold py-2 cursor-pointer"
+                              >
+                                {svc.name}
+                              </DropdownMenuCheckboxItem>
+                            ))}
+                          </DropdownMenuGroup>
+                        </div>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  
+                  <div className="flex items-center gap-2">
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => setView("grid")}
-                      className={`h-8 w-8 rounded-md ${view === "grid" ? "bg-white dark:bg-white/10 shadow-sm text-blue-600 dark:text-blue-400" : "text-gray-400"}`}
+                      onClick={() => setFilterOpen(!filterOpen)}
+                      className="lg:hidden text-muted-foreground dark:text-gray-400"
                     >
-                      <LayoutGrid className="w-4 h-4" />
+                      <SlidersHorizontal className="w-5 h-5" />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setView("list")}
-                      className={`h-8 w-8 rounded-md ${view === "list" ? "bg-white dark:bg-white/10 shadow-sm text-blue-600 dark:text-blue-400" : "text-gray-400"}`}
-                    >
-                      <List className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setView("map")}
-                      className={`h-8 w-8 rounded-md ${view === "map" ? "bg-white dark:bg-white/10 shadow-sm text-blue-600 dark:text-blue-400" : "text-gray-400"}`}
-                    >
-                      <Map className="w-4 h-4" />
-                    </Button>
+                    <div className="flex bg-gray-100 dark:bg-white/5 rounded-lg p-1 border border-border dark:border-white/10">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setView("grid")}
+                        className={`h-8 w-8 rounded-md ${view === "grid" ? "bg-white dark:bg-white/10 shadow-sm text-blue-600 dark:text-blue-400" : "text-gray-400"}`}
+                      >
+                        <LayoutGrid className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setView("list")}
+                        className={`h-8 w-8 rounded-md ${view === "list" ? "bg-white dark:bg-white/10 shadow-sm text-blue-600 dark:text-blue-400" : "text-gray-400"}`}
+                      >
+                        <List className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setView("map")}
+                        className={`h-8 w-8 rounded-md ${view === "map" ? "bg-white dark:bg-white/10 shadow-sm text-blue-600 dark:text-blue-400" : "text-gray-400"}`}
+                      >
+                        <Map className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -408,21 +477,15 @@ function ProvidersContent() {
                             <div className="pt-6 border-t border-border/10 flex items-center justify-between mt-auto">
                                <div className="flex flex-col">
                                  <span className="text-[9px] text-muted-foreground font-black tracking-widest capitalize leading-none mb-1.5">Baseline Pricing</span>
-                                 {provider.provider_services && provider.provider_services.length > 0 ? (
-                                   (() => {
-                                     const minService = provider.provider_services.reduce((min, s) => 
-                                       Number(s.base_price) < Number(min.base_price) ? s : min, 
-                                       provider.provider_services[0]
-                                     );
-                                     return (
-                                       <div className="flex items-baseline gap-1">
-                                         <span className="text-foreground text-2xl font-black tracking-tighter">
-                                           KES {Number(minService.base_price).toLocaleString()}
-                                         </span>
-                                         {minService.pricing_type === 'hourly' && <span className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize">/ Session</span>}
-                                       </div>
-                                     );
-                                   })()
+                                 {provider.starting_price ? (
+                                   <div className="flex items-baseline gap-1">
+                                     <span className="text-foreground text-2xl font-black tracking-tighter">
+                                       KES {Number(provider.starting_price).toLocaleString()}
+                                     </span>
+                                     {provider.services && provider.services.length > 0 && provider.services[0].pricing_type === 'hourly' && (
+                                       <span className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize">/ Session</span>
+                                     )}
+                                   </div>
                                  ) : (
                                    <span className="text-foreground text-xl font-black tracking-tighter italic">POA</span>
                                  )}

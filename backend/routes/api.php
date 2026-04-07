@@ -33,6 +33,9 @@ Route::post('/investors/inquire', [\App\Http\Controllers\Api\InvestorInquiryCont
 Route::post('/auth/register-provider', [\App\Http\Controllers\Api\ProviderApplicationController::class, 'register']);
 Route::post('/quotes', [\App\Http\Controllers\Api\QuoteController::class, 'store']);
 Route::get('/unsubscribe', [\App\Http\Controllers\Api\UnsubscribeController::class, 'unsubscribe'])->name('api.unsubscribe');
+
+// M-Pesa Callback (public, no auth - called by Safaricom)
+Route::post('/payments/mpesa/callback', [\App\Http\Controllers\Api\MpesaController::class, 'callback']);
 Route::post('/auth/complete-profile', [\App\Http\Controllers\Auth\ProfileCompletionController::class, 'store']);
 
 // Public Blog Routes
@@ -115,6 +118,22 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/payments/paystack/initialize', [\App\Http\Controllers\Api\PaystackController::class, 'initialize']);
     Route::post('/payments/paystack/verify', [\App\Http\Controllers\Api\PaystackController::class, 'verify']);
     Route::get('/payments/provider/transactions', [\App\Http\Controllers\Api\PaystackController::class, 'providerTransactions']);
+    Route::get('/payments/client/transactions', [\App\Http\Controllers\Api\PaystackController::class, 'userTransactions']);
+
+    // Payments (M-Pesa)
+    Route::post('/payments/mpesa/stk-push', [\App\Http\Controllers\Api\MpesaController::class, 'stkPush']);
+    Route::post('/payments/mpesa/check-status', [\App\Http\Controllers\Api\MpesaController::class, 'checkStatus']);
+
+
+    // Receipt
+    Route::get('/payments/receipt/{booking}', function (\App\Models\Booking $booking, Request $request) {
+        $user = $request->user();
+        if ($user->id !== $booking->customer_id && $user->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+        $booking->load(['customer', 'provider.user', 'service', 'payment', 'address']);
+        return response()->json(['booking' => $booking]);
+    });
 
     // Reviews
     Route::post('/reviews', [\App\Http\Controllers\Api\ReviewController::class, 'store']);
@@ -205,6 +224,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/financials/overview', [\App\Http\Controllers\Api\Admin\FinancialController::class, 'overview']);
         Route::get('/financials/payouts', [\App\Http\Controllers\Api\Admin\FinancialController::class, 'payouts']);
         Route::post('/financials/payouts/{payout}/process', [\App\Http\Controllers\Api\Admin\FinancialController::class, 'process']);
+
     });
 
     // Chat Routes

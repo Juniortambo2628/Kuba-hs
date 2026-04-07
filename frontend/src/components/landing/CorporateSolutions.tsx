@@ -6,9 +6,21 @@ import { designSystem } from "@/lib/design-system";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useCMS } from "@/contexts/CMSContext";
+import { usePageFeatures } from "@/hooks/usePageFeatures";
 
 export function CorporateSolutions() {
   const { getS } = useCMS();
+  const { features: cmsFeatures } = usePageFeatures('landing');
+
+  // Use CMS features if available, otherwise fallback to settings-based getS
+  const displayFeatures = cmsFeatures.length > 0 
+    ? cmsFeatures.map(f => f.title)
+    : [
+        getS('corporate', 'corp_feature_1', 'One Monthly Bill'),
+        getS('corporate', 'corp_feature_2', 'Your Own Support Contact'),
+        getS('corporate', 'corp_feature_3', 'Fastest Service'),
+        getS('corporate', 'corp_feature_4', 'Top-Rated Business Pros')
+      ];
 
   return (
     <section className="py-24 bg-primary overflow-hidden relative">
@@ -39,12 +51,7 @@ export function CorporateSolutions() {
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {[
-                getS('corporate', 'corp_feature_1', 'One Monthly Bill'),
-                getS('corporate', 'corp_feature_2', 'Your Own Support Contact'),
-                getS('corporate', 'corp_feature_3', 'Fastest Service'),
-                getS('corporate', 'corp_feature_4', 'Top-Rated Business Pros')
-              ].map((item, i) => (
+              {displayFeatures.slice(0, 6).map((item, i) => (
                 <div key={i} className="flex items-center gap-3 text-white/80">
                   <CheckCircle2 className="w-5 h-5 text-white" />
                   <span className="text-sm font-semibold">{item}</span>

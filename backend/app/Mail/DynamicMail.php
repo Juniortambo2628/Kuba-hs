@@ -26,12 +26,24 @@ class DynamicMail extends Mailable
 
         $template = \App\Models\EmailTemplate::where('key', $templateKey)->first();
         
+        // Robust lookup for keys (trying lowercase or underscores if needed)
+        if (!$template) {
+            $normalizedKey = strtolower(str_replace(' ', '_', $templateKey));
+            $template = \App\Models\EmailTemplate::where('key', $normalizedKey)->first();
+        }
+        
+        if (!$template) {
+            $upperKey = strtoupper(str_replace(' ', '_', $templateKey));
+            $template = \App\Models\EmailTemplate::where('key', $upperKey)->first();
+        }
+        
         // Global variables for all templates
-        $data['app_name'] = 'South Ring';
-        $data['logo_url'] = url('/logo.png'); // South Ring logo
+        $data['app_name'] = 'Kuba';
+        $data['logo_url'] = url('/assets/branding/Kuba-Header-footter-Logo-for-Light-Mode.png');
         $data['year'] = date('Y');
         
         if ($user) {
+            $this->to($user->email);
             $data['unsubscribe_url'] = route('api.unsubscribe', ['email' => $user->email]);
         }
 

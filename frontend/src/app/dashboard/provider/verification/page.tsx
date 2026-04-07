@@ -21,6 +21,8 @@ export default function ProviderVerification() {
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [selectedType, setSelectedType] = useState("id_card");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     fetchDocuments();
@@ -37,12 +39,36 @@ export default function ProviderVerification() {
     }
   };
 
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File is too large (max 5MB)");
+      return;
+    }
+
+    setSelectedFile(file);
+    if (file.type.startsWith('image/')) {
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+    } else {
+      setPreviewUrl(null); // Clear image preview for PDFs
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    const input = document.getElementById('doc-upload') as HTMLInputElement;
+    if (input) input.value = '';
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) return;
+
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", selectedFile);
     formData.append("document_type", selectedType);
 
     setIsUploading(true);
@@ -51,9 +77,10 @@ export default function ProviderVerification() {
         headers: { "Content-Type": "multipart/form-data" }
       });
       toast.success("Document submitted successfully");
+      clearSelection();
       fetchDocuments();
-    } catch (err) {
-      toast.error("Upload failed. Please try again.");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Upload failed. Please try again.");
     } finally {
       setIsUploading(false);
     }
@@ -149,23 +176,56 @@ export default function ProviderVerification() {
                   type="file" 
                   className="hidden" 
                   id="doc-upload"
-                  onChange={handleUpload}
+                  onChange={handleFileSelect}
                   disabled={isUploading}
+                  accept=".pdf,.jpg,.jpeg,.png"
                 />
-                <label 
-                  htmlFor="doc-upload"
-                  className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-border rounded-2xl bg-muted/20 hover:bg-muted/40 cursor-pointer transition-all hover:border-primary/50"
-                >
-                  {isUploading ? (
-                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                  ) : (
-                    <>
-                      <Upload className="w-8 h-8 text-muted-foreground mb-3 group-hover:text-primary transition-all shadow-primary/20" />
-                      <p className="text-sm font-bold text-foreground">Click to upload or drag & drop</p>
-                      <p className="text-[10px] text-muted-foreground mt-1 uppercase font-bold tracking-widest">PDF, PNG or JPG (Max 5MB)</p>
-                    </>
-                  )}
-                </label>
+                {!selectedFile ? (
+                  <label 
+                    htmlFor="doc-upload"
+                    className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-border rounded-2xl bg-muted/20 hover:bg-muted/40 cursor-pointer transition-all hover:border-primary/50"
+                  >
+                    <Upload className="w-8 h-8 text-muted-foreground mb-3 group-hover:text-primary transition-all" />
+                    <p className="text-sm font-bold text-foreground">Click to upload or drag & drop</p>
+                    <p className="text-[10px] text-muted-foreground mt-1 uppercase font-bold tracking-widest">PDF, PNG or JPG (Max 5MB)</p>
+                  </label>
+                ) : (
+                  <div className="relative w-full h-64 border border-border rounded-2xl bg-muted/20 overflow-hidden flex flex-col">
+                    <div className="flex-1 flex items-center justify-center bg-background/50">
+                      {previewUrl ? (
+                        <img src={previewUrl} className="max-h-full max-w-full object-contain" alt="Preview" />
+                      ) : (
+                        <div className="flex flex-col items-center gap-3">
+                          <FileText className="w-12 h-12 text-primary" />
+                          <p className="text-sm font-bold text-foreground">{selectedFile.name}</p>
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-4 bg-background border-t border-border flex items-center justify-between gap-4">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={clearSelection}
+                        disabled={isUploading}
+                        className="text-[10px] font-bold uppercase tracking-widest text-red-500 hover:text-red-600 hover:bg-red-50"
+                      >
+                        Change File
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        onClick={handleUpload}
+                        disabled={isUploading}
+                        className="text-[10px] font-black uppercase tracking-widest bg-primary text-white hover:bg-primary/90 min-w-32 shadow-lg shadow-primary/20"
+                      >
+                        {isUploading ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          "Submit Document"
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </CardContent>
@@ -181,8 +241,12 @@ export default function ProviderVerification() {
               {documents.map((doc) => (
                 <div key={doc.id} className="flex items-center justify-between p-4 bg-background border border-border rounded-xl">
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-muted-foreground">
-                      <FileText className="w-5 h-5" />
+                    <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center text-muted-foreground overflow-hidden border border-border">
+                      {doc.url?.match(/\.(jpg|jpeg|png|gif)$/i) ? (
+                        <img src={doc.url} className="w-full h-full object-cover" alt="Preview" />
+                      ) : (
+                        <FileText className="w-5 h-5" />
+                      )}
                     </div>
                     <div>
                       <p className="text-xs font-bold text-foreground capitalize">{doc.document_type.replace('_', ' ')}</p>

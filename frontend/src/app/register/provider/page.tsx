@@ -63,6 +63,7 @@ export default function ProviderRegisterPage() {
         first_name: first_name || "Provider", 
         last_name: last_parts.join(' ') || "User", 
         email: data.email, 
+        phone: data.phone,
         password: data.password, 
         password_confirmation: data.password_confirmation,
         role: 'provider' 

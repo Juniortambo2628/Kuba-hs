@@ -34,7 +34,8 @@ export function ChatInterface({ role }: { role: "client" | "provider" }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const echo = getEcho();
 
-  // Load conversations
+  // Load conversations on mount (dashboard pages are already auth-guarded)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchConversations();
   }, []);
@@ -59,7 +60,7 @@ export function ChatInterface({ role }: { role: "client" | "provider" }) {
       setIsLoadingMessages(true);
       try {
         const res = await axiosInstance.get(`/api/chat/conversations/${activeConversationId}`);
-        setMessages(res.data.conversation.messages || []);
+        setMessages(res.data.conversation?.messages || res.data.messages || []);
         
         // Mark as read in the conversation list to update UI
         setConversations(prev => prev.map(c => 

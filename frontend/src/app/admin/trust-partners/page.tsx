@@ -14,6 +14,7 @@ import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
 import { useApiData } from "@/hooks/useApiData";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { Switch } from "@/components/ui/switch";
+import { DashboardImageUpload } from "@/components/shared/DashboardImageUpload";
 
 interface TrustPartner {
     id: string;
@@ -102,16 +103,13 @@ export default function TrustPartnersPage() {
                                     className="h-12 bg-muted border-none rounded-xl font-bold" 
                                 />
                             </div>
-                            <div className="space-y-2">
-                                <Label className="text-xs font-bold text-muted-foreground">Logo URL / Path</Label>
-                                <Input 
-                                    value={form.logo_path} 
-                                    onChange={(e) => setForm({...form, logo_path: e.target.value})} 
-                                    placeholder="/assets/partners/logo.png"
-                                    className="h-12 bg-muted border-none rounded-xl font-bold text-[13px]" 
-                                />
-                                <p className="text-[10px] text-muted-foreground">Provide a relative path or absolute URL.</p>
-                            </div>
+                            <DashboardImageUpload 
+                                value={form.logo_path}
+                                onChange={(url) => setForm({...form, logo_path: url})}
+                                type="logo"
+                                label="Partner Brand Logo"
+                            />
+                            <p className="text-[10px] text-muted-foreground ml-1">Upload a high-quality PNG or SVG with transparency if possible.</p>
                             <div className="flex items-center justify-between py-2">
                                 <Label className="text-xs font-bold text-muted-foreground">Visibility Status</Label>
                                 <Switch 

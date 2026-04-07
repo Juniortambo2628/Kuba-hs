@@ -38,11 +38,12 @@ class ChatController extends Controller
     /**
      * Get or create a conversation for a booking.
      */
-    public function getConversation(Request $request, $bookingId)
+    public function getConversation(Request $request, $id)
     {
         $user = $request->user();
         
-        $conversation = Conversation::where('booking_id', $bookingId)
+        $conversation = Conversation::where('id', $id)
+            ->orWhere('booking_id', $id)
             ->with(['messages.sender', 'booking.customer', 'booking.provider.user'])
             ->first();
 
@@ -121,6 +122,18 @@ class ChatController extends Controller
 
         // Broadcast the message
         broadcast(new ChatMessageSent($message))->toOthers();
+
+        // Notify the recipient
+        $recipientId = ($user->id === $conversation->customer_id) 
+            ? ($conversation->provider->user_id ?? null) 
+            : $conversation->customer_id;
+            
+        if ($recipientId) {
+            $recipient = \App\Models\User::find($recipientId);
+            if ($recipient) {
+                $recipient->notify(new \App\Notifications\NewMessageReceived($message));
+            }
+        }
 
         return response()->json($message->load('sender'));
     }

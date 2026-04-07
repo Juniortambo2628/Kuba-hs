@@ -20,14 +20,15 @@ class BookingController extends Controller
         $this->authorize('update', $booking);
 
         $request->validate([
-            'status' => 'required|in:confirmed,completed,cancelled',
+            'status' => 'required|in:confirmed,in_progress,completed,cancelled',
             'cancellation_reason' => 'required_if:status,cancelled|string|nullable',
         ]);
 
-        $booking->update([
-            'status' => $request->status,
-            'cancellation_reason' => $request->cancellation_reason,
-        ]);
+        $booking = app(\App\Services\BookingService::class)->updateBookingStatus(
+            $booking, 
+            $request->user(), 
+            $request->status
+        );
 
         if ($request->status === 'completed') {
             app(\App\Services\LoyaltyService::class)->awardPointsForBooking($booking);
@@ -35,13 +36,14 @@ class BookingController extends Controller
 
         if ($request->status === 'cancelled') {
             app(\App\Services\LoyaltyService::class)->revertPointsForBooking($booking);
+            if ($request->cancellation_reason) {
+                $booking->update(['cancellation_reason' => $request->cancellation_reason]);
+            }
         }
-
-        BookingStatusUpdated::dispatch($booking);
 
         return response()->json([
             'message' => 'Booking status updated successfully.',
-            'booking' => $booking->fresh(['customer', 'provider', 'service']),
+            'booking' => $booking->fresh(['customer', 'provider.user', 'service', 'address']),
         ]);
     }
 

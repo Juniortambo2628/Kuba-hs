@@ -24,10 +24,12 @@ class StoreBookingRequest extends FormRequest
         return [
             'provider_id' => 'required|exists:providers,id',
             'service_id' => 'required|exists:services,id',
-            'scheduled_date' => 'required|date|after:now',
+            'scheduled_date' => 'required|date|after_or_equal:today',
+            'scheduled_time' => 'nullable|string',
             'description' => 'nullable|string',
             'service_type' => 'required|in:residential,commercial,large_scale',
             'quantity' => 'required|integer|min:1',
+            'quantity_label' => 'nullable|string',
             'images' => 'nullable|array',
             'images.*' => 'image|max:5120',
             'address_id' => 'nullable|exists:addresses,id',

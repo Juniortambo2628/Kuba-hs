@@ -53,24 +53,34 @@ export default function BookingActions({ booking, userEmail, onRefresh, onMessag
     };
 
     return (
-        <div className="flex items-center justify-end gap-2">
-            <Button 
-               variant="ghost" 
-               onClick={() => onMessage(booking.id)}
-               disabled={isStartingChat || isCheckoutOpen}
-               className="text-sky-600 hover:text-sky-700 hover:bg-sky-50 h-8 rounded-lg px-3 flex items-center gap-1.5 transition-colors"
-            >
-               {isStartingChat ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageSquare className="w-4 h-4" />}
-               <span className="text-[10px] font-bold tracking-widest hidden md:inline">Message</span>
-            </Button>
+        <div className="flex flex-wrap items-center justify-end gap-2 sm:flex-nowrap">
+             <Button 
+                variant="ghost" 
+                onClick={() => onMessage(booking.id)}
+                disabled={isStartingChat || isCheckoutOpen}
+                className="text-sky-600 hover:text-sky-700 hover:bg-sky-50 h-9 rounded-xl px-4 flex items-center gap-2 transition-all duration-300 border border-transparent hover:border-sky-100 shrink-0"
+             >
+                {isStartingChat ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageSquare className="w-4 h-4" />}
+                <span className="text-[11px] font-bold tracking-normal hidden xl:inline">Message</span>
+             </Button>
+
+            {booking.status === 'completed' && booking.payment_status !== 'paid' && (
+                <Button 
+                   onClick={handlePayment}
+                   className="bg-amber-500 hover:bg-amber-600 text-white h-9 rounded-xl px-5 flex items-center gap-2 shadow-lg shadow-amber-500/20 transition-all font-black text-[11px] tracking-normal border-b-2 border-amber-700 shrink-0"
+                >
+                   <CreditCard className="w-4 h-4" />
+                   <span className="hidden sm:inline">Pay Now</span>
+                </Button>
+            )}
 
             {booking.status === 'confirmed' && booking.payment_status !== 'paid' && (
                 <Button 
                    onClick={handlePayment}
-                   className="bg-emerald-600 hover:bg-emerald-700 text-white h-8 rounded-lg px-4 flex items-center gap-1.5 shadow-md shadow-emerald-500/20 transition-all font-black text-[10px] tracking-widest"
+                   className="bg-emerald-600 hover:bg-emerald-700 text-white h-9 rounded-xl px-5 flex items-center gap-2 shadow-lg shadow-emerald-500/20 transition-all font-black text-[11px] tracking-normal shrink-0"
                 >
                    <CreditCard className="w-4 h-4" />
-                   Pay Now
+                   <span className="hidden sm:inline">Pay Now</span>
                 </Button>
             )}
 
@@ -88,10 +98,10 @@ export default function BookingActions({ booking, userEmail, onRefresh, onMessag
             {booking.status === 'completed' && !booking.review && (
                 <Button 
                    onClick={handleReview}
-                   className="bg-primary hover:bg-primary/90 text-white h-8 rounded-lg px-4 flex items-center gap-1.5 shadow-md shadow-primary/20 transition-all font-black text-[10px] tracking-widest"
+                   className="bg-primary hover:bg-primary/90 text-white h-9 rounded-xl px-4 flex items-center gap-2 shadow-lg shadow-primary/20 transition-all font-black text-[11px] tracking-normal shrink-0"
                 >
                    <Star className="w-4 h-4 fill-white" />
-                   Rate Service
+                   <span className="hidden sm:inline">Rate Service</span>
                 </Button>
             )}
 

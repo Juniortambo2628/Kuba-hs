@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from "react-leaflet";
+import { Star, MapPin, ChevronRight } from "lucide-react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -80,12 +81,25 @@ export default function MapView({
                         click: () => onMarkerClick?.(provider),
                     }}
                 >
-                    <Popup>
-                        <div className="p-2 space-y-1">
-                            <h4 className="font-bold text-gray-900">{provider.business_name}</h4>
-                            <p className="text-xs text-gray-500">{provider.location_name}</p>
-                            <div className="flex items-center gap-1 text-amber-500 font-bold text-xs">
-                                <span>★ {provider.rating_avg || 'N/A'}</span>
+                    <Popup className="provider-map-popup">
+                        <div className="p-3 min-w-[200px] space-y-3">
+                            <div className="space-y-1">
+                                <h4 className="font-bold text-sm text-gray-900 leading-tight">{provider.business_name}</h4>
+                                <p className="text-[10px] text-gray-500 flex items-center gap-1">
+                                    <MapPin className="w-3 h-3" /> {provider.location_name}
+                                </p>
+                            </div>
+                            <div className="flex items-center justify-between border-t border-gray-100 pt-2">
+                                <div className="flex items-center gap-1 text-amber-500 font-bold text-xs">
+                                    <Star className="w-3.5 h-3.5 fill-amber-500" />
+                                    <span>{provider.rating || 'NEW'}</span>
+                                </div>
+                                <a 
+                                    href={`/providers/${provider.id}`}
+                                    className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline flex items-center gap-1"
+                                >
+                                    View Profile <ChevronRight className="w-3 h-3" />
+                                </a>
                             </div>
                         </div>
                     </Popup>

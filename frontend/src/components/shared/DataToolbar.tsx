@@ -82,7 +82,7 @@ export function DataToolbar({
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder={searchPlaceholder}
-            className="pl-10 bg-background border-border h-10 w-full rounded-lg"
+            className="pl-12 bg-background border-border h-10 w-full rounded-lg"
           />
         </div>
 

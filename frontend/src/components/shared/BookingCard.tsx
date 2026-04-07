@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
-import { Calendar, MapPin, Clock, User as UserIcon, Briefcase, Building2, Factory, Home, ImageIcon, ArrowUpRight, XCircle } from "lucide-react";
+import { Calendar, MapPin, Clock, User as UserIcon, Briefcase, Building2, Factory, Home, ImageIcon, ArrowUpRight, XCircle, AlertCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -159,25 +159,37 @@ export function BookingCard({
             <p className="text-xs text-muted-foreground max-w-xl line-clamp-2 italic">"{booking.description}"</p>
           )}
 
+          {/* Status Indicator for Payment */}
+          {booking.status === 'completed' && booking.payment_status !== 'paid' && (
+            <div className="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-500/5 border border-amber-100 dark:border-amber-500/10 rounded-xl">
+              <AlertCircle className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
+              <div className="flex flex-col">
+                <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest leading-none">Pending Payment</span>
+                <p className="text-[10px] text-amber-600/70 font-medium">Service completed. Please finalize your payment.</p>
+              </div>
+            </div>
+          )}
+
           {/* Footer: Price and Actions */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 pt-2 border-t border-border/50">
-            <div className="grid grid-cols-2 gap-4 flex-1 w-full md:w-auto">
-              <div className="space-y-1">
-                <p className="text-[9px] font-bold text-muted-foreground tracking-tight">Scheduled Time</p>
-                <div className="flex items-center gap-1.5 text-[10px] font-bold text-foreground capitalize">
-                  <Clock className="w-3 h-3 text-muted-foreground mb-0.5" /> 
-                  {booking.scheduled_time || 'TBD'}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-4 border-t border-border/50 mt-auto">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 flex-1">
+              <div className="space-y-1 pr-4 border-r border-border/50 last:border-0">
+                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Scheduled</p>
+                <div className="flex items-center gap-2 text-[11px] font-bold text-foreground">
+                  <Clock className="w-3.5 h-3.5 text-muted-foreground/50" /> 
+                  {booking.scheduled_time || (booking.scheduled_date ? new Date(booking.scheduled_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'TBD')}
                 </div>
               </div>
-              <div className="space-y-1 pl-4 border-l border-border">
-                <p className="text-[9px] font-bold text-muted-foreground tracking-tight">{(isProvider || isAdmin) ? 'Est. Revenue' : 'Price Est.'}</p>
-                <div className="flex items-center gap-1.5 text-sm font-bold text-foreground">
-                  KES {Number(booking.estimated_price || 0).toLocaleString()}
+              <div className="space-y-1">
+                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">{(isProvider || isAdmin) ? 'Revenue' : 'Amount'}</p>
+                <div className="flex items-center gap-1.5 text-base font-black text-foreground">
+                  <span className="text-[10px] text-muted-foreground/70">KES</span>
+                  {Number(booking.estimated_price || 0).toLocaleString()}
                 </div>
               </div>
             </div>
             
-            <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+            <div className="flex items-center gap-3 w-full sm:w-auto justify-end border-t sm:border-t-0 pt-3 sm:pt-0 border-border/30">
               {actions}
               {!actions && isProvider && (
                  <Button asChild variant="outline" className="h-9 w-9 p-0 rounded-xl border-border text-muted-foreground hover:text-primary hover:bg-muted transition-all shrink-0">

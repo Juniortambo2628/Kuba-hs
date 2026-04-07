@@ -155,8 +155,8 @@ export default function AdminCategories() {
         <div className="max-w-5xl mx-auto space-y-10 pb-12">
             {/* Standard Dashboard Header */}
             <DashboardPageHeader 
-                title="Service Architecture" 
-                subtitle="Manage platform service categories and professional offerings."
+                title="Service Categories" 
+                subtitle="Manage platform service taxonomy and professional offerings."
             >
                 <Dialog open={isCatOpen} onOpenChange={setIsCatOpen}>
                     <DialogTrigger asChild>

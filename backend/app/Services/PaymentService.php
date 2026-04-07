@@ -36,8 +36,8 @@ class PaymentService
             throw new \Exception('Unauthorized. Only the customer can pay for this booking.', 403);
         }
 
-        if ($booking->status !== 'confirmed') {
-            throw new \Exception('This booking must be confirmed before payment.', 422);
+        if (!in_array($booking->status, ['confirmed', 'completed'])) {
+            throw new \Exception('This booking must be confirmed or completed before payment.', 422);
         }
 
         if ($booking->payment_status === 'paid') {

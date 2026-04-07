@@ -46,6 +46,10 @@ class BookingController extends Controller
         
         $booking = $bookingService->createBooking($user, $request->validated(), $images);
 
+        if ($booking->provider && $booking->provider->user) {
+            $booking->provider->user->notify(new \App\Notifications\NewBookingReceived($booking));
+        }
+
         return response()->json([
             'message' => 'Booking request sent successfully!',
             'booking' => new BookingResource($booking)

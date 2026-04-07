@@ -14,7 +14,16 @@ import {
   Palette,
   Lightbulb,
   Cpu,
-  Smartphone
+  Smartphone,
+  Stethoscope,
+  GraduationCap,
+  Scale,
+  Utensils,
+  Truck,
+  Plug,
+  Droplets,
+  BookOpen,
+  Scissors
 } from "lucide-react";
 
 /**
@@ -37,14 +46,56 @@ export const iconMap: Record<string, React.ReactNode> = {
   lightbulb: <Lightbulb className="w-5 h-5" />,
   cpu: <Cpu className="w-5 h-5" />,
   smartphone: <Smartphone className="w-5 h-5" />,
+  medical: <Stethoscope className="w-5 h-5" />,
+  education: <GraduationCap className="w-5 h-5" />,
+  legal: <Scale className="w-5 h-5" />,
+  food: <Utensils className="w-5 h-5" />,
+  logistics: <Truck className="w-5 h-5" />,
+  electrical: <Plug className="w-5 h-5" />,
+  plumbing: <Droplets className="w-5 h-5" />,
+  personal: <Scissors className="w-5 h-5" />,
+};
+
+const nameToIconMap: Record<string, string> = {
+  'cleaning': 'sparkles',
+  'maintenance': 'wrench',
+  'health': 'medical',
+  'wellness': 'heart',
+  'education': 'education',
+  'training': 'education',
+  'financial': 'building',
+  'legal': 'legal',
+  'food': 'food',
+  'hospitality': 'home',
+  'logistics': 'logistics',
+  'plumbing': 'plumbing',
+  'electrical': 'electrical',
+  'home': 'home',
+  'personal': 'personal',
+  'beauty': 'sparkles',
+  'auto': 'car',
+  'tech': 'cpu'
 };
 
 /**
  * Helper to get an icon by its identifier string.
  * Falls back to a default "wrench" icon if not found.
  */
-export function getCategoryIcon(iconKey: string | null | undefined, className: string = "w-5 h-5") {
-  const icon = iconKey && iconMap[iconKey] ? iconMap[iconKey] : iconMap.wrench;
+export function getCategoryIcon(iconKey: string | null | undefined, className: string = "w-5 h-5", categoryName?: string) {
+  let matchedIconKey = iconKey;
+
+  // If no DB icon is provided and we have a category name, try to heuristically match it
+  if (!matchedIconKey && categoryName) {
+    const lowerName = categoryName.toLowerCase();
+    for (const [key, iconName] of Object.entries(nameToIconMap)) {
+      if (lowerName.includes(key)) {
+        matchedIconKey = iconName;
+        break;
+      }
+    }
+  }
+
+  const icon = matchedIconKey && iconMap[matchedIconKey] ? iconMap[matchedIconKey] : iconMap.wrench;
   
   // Clone element to apply custom className if provided
   if (React.isValidElement(icon)) {

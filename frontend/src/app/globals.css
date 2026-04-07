@@ -259,8 +259,8 @@
 .admin-content-area [data-slot="textarea"] {
   height: 2.25rem !important;
   border-radius: 0.5rem !important;
-  padding-left: 0.75rem !important;
-  padding-right: 0.75rem !important;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
   font-size: 0.875rem !important;
   font-weight: 500 !important;
   background-color: var(--background) !important;

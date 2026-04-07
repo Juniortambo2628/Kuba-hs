@@ -15,17 +15,7 @@ Route::get('/storage-test', function () {
 });
 
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-        'categories' => \App\Models\ServiceCategory::with('services')->orderBy('sort_order')->get(),
-        'featuredServices' => \App\Models\ProviderService::with(['provider.user', 'service'])
-            ->where('is_available', true)
-            ->take(6)
-            ->get(),
-    ]);
+    return redirect(config('app.frontend_url', env('FRONTEND_URL', 'https://kuba.co.ke')));
 });
 
 // Legacy Inertia routes have been removed.

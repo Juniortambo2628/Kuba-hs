@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ChevronRight, Home } from "lucide-react";
 import Link from "next/link";
@@ -41,6 +42,12 @@ export function HighImpactHero({
 }: HighImpactHeroProps) {
   const { getS, getImg } = useCMS();
 
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Resolution order: Prop > CMS > Radial Gradient Fallback
   // If we are using the default hero_text group, images should come from hero_backgrounds
   const imgGroup = cmsGroup === 'hero_text' ? 'hero_backgrounds' : cmsGroup;
@@ -53,7 +60,7 @@ export function HighImpactHero({
   return (
     <section className={`relative overflow-hidden flex items-center text-center ${fullScreen ? 'min-h-screen pt-20' : 'pt-32 pb-20 md:pb-32'} ${className}`}>
       {/* Background with Theme-aware Overlay & Fallback Gradient */}
-      {heroBackground ? (
+      {(mounted && heroBackground) ? (
         <div className="absolute inset-0 z-0 overflow-hidden">
           <motion.div 
             initial={{ scale: 1.1, opacity: 0 }}

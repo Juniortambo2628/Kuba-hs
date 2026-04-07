@@ -17,12 +17,14 @@ import {
   MessageSquare,
   Calendar,
   Layers,
-  Loader2
+  Loader2,
+  Grid3X3
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import axiosInstance from "@/lib/axios";
+import { useAuth } from "@/contexts/AuthContext";
 import { cn, getMediaUrl } from "@/lib/utils";
+import axiosInstance from "@/lib/axios";
 import Image from "next/image";
 
 interface SearchItem {
@@ -42,21 +44,45 @@ export function GlobalSearch() {
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const staticItems: SearchItem[] = [
-    { id: "home", title: "Home", url: "/", icon: <Home className="w-4 h-4" />, category: "Pages" },
-    { id: "services", title: "All Services", url: "/services", icon: <Sparkles className="w-4 h-4" />, category: "Pages" },
-    { id: "providers", title: "Find Providers", url: "/providers", icon: <User className="w-4 h-4" />, category: "Pages" },
-    { id: "about", title: "About Kuba", url: "/about", icon: <LayoutDashboard className="w-4 h-4" />, category: "Pages" },
-    { id: "dashboard", title: "My Dashboard", url: "/dashboard", icon: <LayoutDashboard className="w-4 h-4" />, category: "Quick Actions" },
-    { id: "bookings", title: "My Bookings", url: "/dashboard/client/bookings", icon: <Calendar className="w-4 h-4" />, category: "Quick Actions" },
-    { id: "messages", title: "Conversation History", url: "/dashboard/client/messages", icon: <MessageSquare className="w-4 h-4" />, category: "Quick Actions" },
-    { id: "profile", title: "Account Settings", url: "/dashboard/client/profile", icon: <Settings className="w-4 h-4" />, category: "Account" },
-  ];
+  const getStaticItems = () => {
+    const items: SearchItem[] = [
+      { id: "home", title: "Home", url: "/", icon: <Home className="w-4 h-4" />, category: "Pages" },
+      { id: "services", title: "All Services", url: "/services", icon: <Sparkles className="w-4 h-4" />, category: "Pages" },
+      { id: "providers", title: "Find Providers", url: "/providers", icon: <User className="w-4 h-4" />, category: "Pages" },
+      { id: "about", title: "About Kuba", url: "/about", icon: <LayoutDashboard className="w-4 h-4" />, category: "Pages" },
+    ];
+
+    if (user) {
+      if (user.role === 'customer') {
+        items.push(
+          { id: "dashboard", title: "My Dashboard", url: "/dashboard/client", icon: <LayoutDashboard className="w-4 h-4" />, category: "Quick Actions" },
+          { id: "bookings", title: "My Bookings", url: "/dashboard/client/bookings", icon: <Calendar className="w-4 h-4" />, category: "Quick Actions" },
+          { id: "messages", title: "Conversation History", url: "/dashboard/client/messages", icon: <MessageSquare className="w-4 h-4" />, category: "Quick Actions" },
+          { id: "profile", title: "Account Settings", url: "/dashboard/client/profile", icon: <Settings className="w-4 h-4" />, category: "Account" }
+        );
+      } else if (user.role === 'provider') {
+        items.push(
+          { id: "dashboard", title: "Pro Dashboard", url: "/dashboard/provider", icon: <LayoutDashboard className="w-4 h-4" />, category: "Quick Actions" },
+          { id: "jobs", title: "My Jobs", url: "/dashboard/provider/jobs", icon: <Briefcase className="w-4 h-4" />, category: "Quick Actions" },
+          { id: "messages", title: "Messages", url: "/dashboard/provider/messages", icon: <MessageSquare className="w-4 h-4" />, category: "Quick Actions" },
+          { id: "profile", title: "Pro Profile", url: "/dashboard/provider/profile", icon: <Settings className="w-4 h-4" />, category: "Account" }
+        );
+      } else if (user.role === 'admin') {
+        items.push(
+          { id: "dashboard", title: "Admin Portal", url: "/admin", icon: <LayoutDashboard className="w-4 h-4" />, category: "Quick Actions" },
+          { id: "services", title: "Service Categories", url: "/admin/categories", icon: <Grid3X3 className="w-4 h-4" />, category: "Quick Actions" },
+          { id: "users", title: "Manage Users", url: "/admin/users", icon: <User className="w-4 h-4" />, category: "Quick Actions" }
+        );
+      }
+    }
+    return items;
+  };
 
   const [categories, setCategories] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -103,6 +129,7 @@ export function GlobalSearch() {
 
   // Debounced server-side search
   useEffect(() => {
+    const staticItems = getStaticItems();
     if (!query || query.length < 2) {
       setResults([...staticItems, ...categories].slice(0, 8));
       return;
@@ -130,6 +157,7 @@ export function GlobalSearch() {
           category: "Providers"
         }));
 
+        const staticItems = getStaticItems();
         const filteredStatic = [...staticItems, ...categories].filter(item => 
           item.title.toLowerCase().includes(query.toLowerCase()) ||
           item.category.toLowerCase().includes(query.toLowerCase())
@@ -148,7 +176,11 @@ export function GlobalSearch() {
   }, [query, categories]);
 
   const handleSelect = (url: string) => {
-    router.push(url);
+    if ((url.startsWith('/dashboard') || url.startsWith('/admin')) && !user) {
+      router.push(`/login?redirect=${encodeURIComponent(url)}`);
+    } else {
+      router.push(url);
+    }
     setIsOpen(false);
   };
 
