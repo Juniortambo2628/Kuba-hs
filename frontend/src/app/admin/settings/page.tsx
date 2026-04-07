@@ -556,7 +556,7 @@ export default function UnifiedSettingsPage() {
                         });
 
                         // Flatten ALL settings for the Preview Modal to allow cross-tab data access (e.g. Hero + Content)
-                        const allPlatformSettings = Object.values(settings).flat();
+                        const allPlatformSettings = Object.values(settings).flat() as Setting[];
 
                         // Group them by page
                         const settingsByPage: Record<string, Setting[]> = {};
