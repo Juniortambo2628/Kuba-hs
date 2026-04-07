@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import useSWR from "swr";
 import { useAuth } from "@/contexts/AuthContext";
 import axiosInstance from "@/lib/axios";
 import { Card, CardContent } from "@/components/ui/card";
@@ -62,25 +63,19 @@ interface ProviderDashboardData {
 
 export default function ProviderOverview() {
  const { user, isLoading: authLoading } = useAuth();
- const [data, setData] = useState<ProviderDashboardData | null>(null);
- const [isLoading, setIsLoading] = useState(true);
  const [updatingId, setUpdatingId] = useState<number | null>(null);
 
- useEffect(() => {
-  if (!authLoading && user) {
-   fetchDashboard();
-  }
- }, [authLoading, user]);
+ // Use SWR for real-time reactive updates
+ const { data: dashboardData, isLoading: isDashboardLoading, mutate: mutateDashboard } = useSWR(
+  user ? "/api/provider/dashboard" : null,
+  (url) => axiosInstance.get(url).then(res => res.data)
+ );
+
+ const data = dashboardData || null;
+ const isLoading = authLoading || isDashboardLoading;
 
  const fetchDashboard = async () => {
-  try {
-   const res = await axiosInstance.get("/api/provider/dashboard");
-   setData(res.data);
-  } catch (err) {
-   console.error("Failed to fetch provider dashboard:", err);
-  } finally {
-   setIsLoading(false);
-  }
+  await mutateDashboard();
  };
 
  const handleStatusUpdate = async (bookingId: number, status: string) => {
@@ -164,7 +159,7 @@ export default function ProviderOverview() {
         </Link>
       </div>
 
-         {bookings.map((booking) => (
+         {bookings.map((booking: Booking) => (
            <BookingCard
               key={booking.id}
               booking={booking}

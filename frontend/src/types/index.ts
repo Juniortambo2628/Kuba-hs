@@ -40,6 +40,7 @@ export interface Service {
 export interface Provider {
   id: number;
   business_name: string;
+  brand_name?: string;
   bio?: string;
   experience_years?: number;
   location_name?: string;
@@ -87,8 +88,12 @@ export interface Booking {
   cancellation_reason?: string;
   scheduled_time?: string;
   scheduled_end_date?: string;
-  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
-  payment_status: 'pending' | 'paid' | 'failed' | 'refunded';
+  started_at?: string;
+  completed_at?: string;
+  elapsed_seconds?: number;
+  status: 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled';
+  payment_status: 'pending' | 'paid' | 'failed' | 'refunded' | 'pending_cash';
+  payment_method?: string;
   estimated_price: number;
   final_price: number;
   service_type?: string;

@@ -28,6 +28,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
 import { useApiData } from "@/hooks/useApiData";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { DashboardImageUpload } from "@/components/shared/DashboardImageUpload";
+import Image from "next/image";
 
 export default function TestimonialPage() {
   const { data: items, isLoading, refetch: fetchItems, setData: setItems } = useApiData<any[]>("/api/admin/testimonials", { initialData: [] });
@@ -195,13 +197,17 @@ export default function TestimonialPage() {
                                   </div>
                                 </div>
 
-                                <div className="space-y-2 flex-1">
-                                  <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Avatar Resource (URL)</label>
-                                  <Input 
-                                      defaultValue={item.image_url || ''}
-                                      onBlur={(e) => handleSave(item.id, 'image_url', e.target.value)}
-                                      placeholder="https://..."
-                                      className="h-12 bg-muted/5 border-border/40 font-medium text-foreground focus:ring-2 focus:ring-primary/10 rounded-xl"
+                                <div className="space-y-4 w-full">
+                                  <DashboardImageUpload 
+                                      value={item.image_url || ''}
+                                      onChange={(url) => {
+                                        const newItems = [...items];
+                                        newItems[index].image_url = url;
+                                        setItems(newItems);
+                                        handleSave(item.id, 'image_url', url);
+                                      }}
+                                      type="avatar"
+                                      label="Client Avatar"
                                   />
                                 </div>
                               </div>

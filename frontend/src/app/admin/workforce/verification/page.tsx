@@ -86,7 +86,7 @@ function AdminVerificationContent() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input 
             placeholder="Search by merchant or doc type..." 
-            className="pl-10 h-10 rounded-xl bg-card border-border shadow-sm text-xs font-bold"
+            className="pl-12 h-10 rounded-xl bg-card border-border shadow-sm text-xs font-bold"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />

@@ -12,36 +12,44 @@ use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\Auth\GoogleController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('guest')->group(function () {
+$frontendUrl = config('app.frontend_url', env('FRONTEND_URL', 'https://kuba.co.ke'));
+
+Route::middleware('guest')->group(function () use ($frontendUrl) {
     Route::get('auth/google', [GoogleController::class, 'redirectToGoogle'])->name('google.login');
     Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
 
-    Route::get('register', [RegisteredUserController::class, 'create'])
-        ->name('register');
+    // Redirect headless GET requests to the Next.js frontend
+    Route::get('register', function () use ($frontendUrl) {
+        return redirect($frontendUrl . '/register/provider');
+    })->name('register');
 
     Route::post('register', [RegisteredUserController::class, 'store']);
 
-    Route::get('login', [AuthenticatedSessionController::class, 'create'])
-        ->name('login');
+    Route::get('login', function () use ($frontendUrl) {
+        return redirect($frontendUrl . '/login');
+    })->name('login');
 
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
-    Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
-        ->name('password.request');
+    Route::get('forgot-password', function () use ($frontendUrl) {
+        return redirect($frontendUrl . '/login');
+    })->name('password.request');
 
     Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
         ->name('password.email');
 
-    Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])
-        ->name('password.reset');
+    Route::get('reset-password/{token}', function ($token) use ($frontendUrl) {
+        return redirect($frontendUrl . '/login');
+    })->name('password.reset');
 
     Route::post('reset-password', [NewPasswordController::class, 'store'])
         ->name('password.store');
 });
 
-Route::middleware('auth')->group(function () {
-    Route::get('verify-email', EmailVerificationPromptController::class)
-        ->name('verification.notice');
+Route::middleware('auth')->group(function () use ($frontendUrl) {
+    Route::get('verify-email', function () use ($frontendUrl) {
+        return redirect($frontendUrl . '/dashboard');
+    })->name('verification.notice');
 
     Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)
         ->middleware(['signed', 'throttle:6,1'])

@@ -29,6 +29,11 @@ export function BookingStatusBadge({ status, className }: BookingStatusBadgeProp
           icon: <AlertCircle className="w-3.5 h-3.5" />,
           styles: "bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20"
         };
+      case 'in_progress':
+        return {
+          icon: <Clock className="w-3.5 h-3.5 animate-pulse" />,
+          styles: "bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20"
+        };
       case 'cancelled':
         return {
           icon: <XCircle className="w-3.5 h-3.5" />,

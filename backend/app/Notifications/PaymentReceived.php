@@ -41,7 +41,7 @@ class PaymentReceived extends Notification implements ShouldQueue
             'booking_number' => $this->booking->booking_number,
             'service_name' => $this->booking->service->name,
             'invoice_url' => url("/invoices/{$this->booking->id}/download"),
-        ], $this->booking->customer));
+        ], $notifiable));
     }
 
     /**
@@ -53,7 +53,7 @@ class PaymentReceived extends Notification implements ShouldQueue
             'booking_id' => $this->booking->id,
             'booking_number' => $this->booking->booking_number,
             'message' => "Your payment of \$" . number_format($this->amount, 2) . " for Booking #{$this->booking->booking_number} was successful.",
-            'url' => route('dashboard'),
+            'url' => url('/dashboard'),
         ];
     }
 }

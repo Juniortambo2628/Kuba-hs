@@ -13,8 +13,8 @@ interface Service {
 
 interface Category {
   id: number;
-  name: string;
   slug: string;
+  name: string;
   services: Service[];
   icon: string | null;
 }
@@ -86,7 +86,7 @@ export function ServiceMegamenu({ isOpen, onClose }: ServiceMegamenuProps) {
                   categories.map((category) => (
                     <div key={category.id} className="space-y-6 group/cat">
                       <Link 
-                        href={`/services?category=${category.id}`}
+                        href={`/categories/${category.slug || category.id}`}
                         onClick={onClose}
                         className="flex items-center gap-2 group"
                       >
@@ -118,7 +118,7 @@ export function ServiceMegamenu({ isOpen, onClose }: ServiceMegamenuProps) {
                         {category.services?.length > 6 && (
                           <li>
                             <Link 
-                              href={`/services/${category.id}`}
+                              href={`/categories/${category.id}`}
                               onClick={onClose}
                               className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1"
                             >

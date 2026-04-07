@@ -71,4 +71,19 @@ class PaystackController extends Controller
 
         return PaymentResource::collection($payments);
     }
+
+    /**
+     * Get transaction history for the authenticated user (client).
+     */
+    public function userTransactions(Request $request)
+    {
+        $user = $request->user();
+        
+        $payments = Payment::with('booking.service')
+            ->where('customer_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
+        return PaymentResource::collection($payments);
+    }
 }

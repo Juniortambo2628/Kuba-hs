@@ -14,11 +14,14 @@ import { Badge } from "@/components/ui/badge";
 import { useApiData } from "@/hooks/useApiData";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { toast } from "sonner";
+import { DashboardImageUpload } from "@/components/shared/DashboardImageUpload";
+import Image from "next/image";
 
 interface FAQ {
   id: number;
   question: string;
   answer: string;
+  avatar?: string;
   is_active: boolean;
   order: number;
 }
@@ -27,7 +30,7 @@ export default function FAQManagement() {
   const { data: faqs, isLoading, refetch: fetchFaqs, setData: setFaqs } = useApiData<FAQ[]>('/api/admin/faqs', { initialData: [] });
   
   const [isEditing, setIsEditing] = useState<FAQ | null>(null);
-  const [formData, setFormData] = useState({ question: '', answer: '', is_active: true, order: 0 });
+  const [formData, setFormData] = useState({ question: '', answer: '', avatar: '', is_active: true, order: 0 });
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   const [search, setSearch] = useState("");
@@ -44,7 +47,7 @@ export default function FAQManagement() {
       }
       setIsModalOpen(false);
       setIsEditing(null);
-      setFormData({ question: '', answer: '', is_active: true, order: 0 });
+      setFormData({ question: '', answer: '', avatar: '', is_active: true, order: 0 });
       fetchFaqs();
     } catch (err) {
       console.error("Failed to save FAQ", err);
@@ -72,7 +75,7 @@ export default function FAQManagement() {
 
   const startEdit = (faq: FAQ) => {
     setIsEditing(faq);
-    setFormData({ question: faq.question, answer: faq.answer, is_active: faq.is_active, order: faq.order });
+    setFormData({ question: faq.question, answer: faq.answer, avatar: faq.avatar || '', is_active: faq.is_active, order: faq.order });
     setIsModalOpen(true);
   };
 
@@ -143,7 +146,7 @@ export default function FAQManagement() {
               <h2 className="text-2xl font-bold text-foreground tracking-tight">Question Registry</h2>
               <p className="text-sm font-bold text-muted-foreground mt-1">Add or modify knowledge base questions.</p>
           </div>
-          <Button onClick={() => { setIsEditing(null); setFormData({ question: '', answer: '', is_active: true, order: faqs.length }); setIsModalOpen(true); }} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl h-12 px-8 shadow-md">
+          <Button onClick={() => { setIsEditing(null); setFormData({ question: '', answer: '', avatar: '', is_active: true, order: faqs.length }); setIsModalOpen(true); }} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl h-12 px-8 shadow-md">
               <Plus className="w-4 h-4 mr-2" /> Add FAQ Entry
           </Button>
       </div>
@@ -176,6 +179,7 @@ export default function FAQManagement() {
               <TableHeader>
                 <TableRow className="hover:bg-transparent border-border/50">
                   <TableHead className="pl-10 h-16 text-[11px] font-bold text-muted-foreground w-20 text-center">Order</TableHead>
+                  <TableHead className="h-16 text-[11px] font-bold text-muted-foreground w-16">Avatar</TableHead>
                   <TableHead className="h-16 text-[11px] font-bold text-muted-foreground w-1/3">Core Question</TableHead>
                   <TableHead className="h-16 text-[11px] font-bold text-muted-foreground">Answer Block</TableHead>
                   <TableHead className="h-16 text-[11px] font-bold text-muted-foreground text-center">Status</TableHead>
@@ -200,6 +204,15 @@ export default function FAQManagement() {
                   filteredFaqs.map((faq) => (
                     <TableRow key={faq.id} className="hover:bg-muted/50 transition-colors border-border group">
                       <TableCell className="pl-10 text-center py-6 font-bold text-muted-foreground text-xs">{faq.order}</TableCell>
+                      <TableCell className="py-6">
+                        <div className="w-10 h-10 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                          {faq.avatar ? (
+                            <Image src={faq.avatar} alt="Avatar" width={40} height={40} className="object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-muted-foreground/40">N/A</div>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell className="py-6 font-bold text-foreground text-sm align-top leading-tight">
                         {faq.question}
                       </TableCell>
@@ -258,8 +271,12 @@ export default function FAQManagement() {
                         </div>
                         <div className="flex items-start justify-between mb-4 mt-2">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-primary border border-border">
-                                    <Tag className="w-4 h-4" />
+                                <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-primary border border-border overflow-hidden">
+                                    {faq.avatar ? (
+                                        <Image src={faq.avatar} alt="Avatar" width={40} height={40} className="object-cover" />
+                                    ) : (
+                                        <Tag className="w-4 h-4" />
+                                    )}
                                 </div>
                                 <div className="space-y-0.5">
                                     <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Order ID: {faq.order}</p>
@@ -303,6 +320,12 @@ export default function FAQManagement() {
                 <label className="text-xs font-bold text-muted-foreground mb-1.5 block">Question Context</label>
                 <Input required value={formData.question} onChange={e => setFormData({...formData, question: e.target.value})} placeholder="e.g. How do I book a service?" className="rounded-xl h-12 border-border/60 bg-muted/30 focus:bg-white transition-colors font-semibold" />
               </div>
+              <DashboardImageUpload 
+                value={formData.avatar}
+                onChange={(url) => setFormData({...formData, avatar: url})}
+                type="avatar"
+                label="Person Avatar (Optional)"
+              />
               <div>
                 <label className="text-xs font-bold text-muted-foreground mb-1.5 block">Detailed Resolution / Answer</label>
                 <Textarea required value={formData.answer} onChange={e => setFormData({...formData, answer: e.target.value})} placeholder="Provide the resolution block..." className="rounded-xl min-h-[160px] resize-none border-border/60 bg-muted/30 focus:bg-white transition-colors" />

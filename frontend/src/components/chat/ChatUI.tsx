@@ -150,9 +150,9 @@ export function ChatUI({ bookingId, onClose }: ChatUIProps) {
                         <h3 className="text-sm font-black text-[#1E293B] dark:text-white tracking-tight">
                             {conversation?.booking?.provider?.business_name || "Support Chat"}
                         </h3>
-                        <p className="text-[10px] font-bold text-emerald-500 tracking-widest flex items-center gap-1.5">
+                        <div className="text-[10px] font-bold text-emerald-500 tracking-widest flex items-center gap-1.5">
                             <div className="w-1 h-1 rounded-full bg-emerald-500"></div> Online
-                        </p>
+                        </div>
                     </div>
                 </div>
                 <div className="flex items-center gap-2">

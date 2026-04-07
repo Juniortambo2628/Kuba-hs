@@ -56,6 +56,13 @@ export function BookingDetailDialog({ isOpen, onClose, booking, onUpdateStatus }
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className={`sm:max-w-[500px] p-0 overflow-hidden border-none rounded-[2rem] shadow-premium transition-all duration-500 ${showChat ? "sm:max-w-[700px]" : ""}`}>
+        <DialogHeader className="sr-only">
+          <DialogTitle>Booking Details - {booking.booking_number}</DialogTitle>
+          <DialogDescription>
+            Detailed information about your service booking with reference number {booking.booking_number}.
+          </DialogDescription>
+        </DialogHeader>
+
         {showChat ? (
             <div className="p-4 bg-white dark:bg-zinc-950">
                 <div className="flex items-center justify-between mb-4 px-4">

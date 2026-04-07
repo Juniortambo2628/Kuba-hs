@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import useSWR from "swr";
 import { useAuth } from "@/contexts/AuthContext";
 import axiosInstance from "@/lib/axios";
 import { Card, CardContent } from "@/components/ui/card";
@@ -50,32 +51,23 @@ const BookingActions = dynamic(() => import("@/components/bookings/BookingAction
 export default function ClientBookings() {
  const router = useRouter();
  const { user, isLoading: authLoading } = useAuth();
- const [bookings, setBookings] = useState<Booking[]>([]);
- const [isLoading, setIsLoading] = useState(true);
  const [searchQuery, setSearchQuery] = useState("");
  const [filterStatus, setFilterStatus] = useState("");
  const [isStartingChat, setIsStartingChat] = useState<number | null>(null);
  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
- useEffect(() => {
-  if (!authLoading && user) {
-   const delayDebounceFn = setTimeout(() => {
-    fetchBookings(searchQuery, filterStatus);
-   }, 500);
+ // Use SWR for real-time reactive updates
+ const { data: bookingsData, isLoading: isBookingsLoading, mutate: mutateBookings } = useSWR(
+  user ? `/api/client/bookings?search=${searchQuery}&status=${filterStatus}` : null,
+  (url) => axiosInstance.get(url).then(res => res.data),
+  { dedupingInterval: 500 }
+ );
 
-   return () => clearTimeout(delayDebounceFn);
-  }
- }, [authLoading, user, searchQuery, filterStatus]);
+ const bookings = bookingsData?.data || [];
+ const isLoading = authLoading || isBookingsLoading;
 
- const fetchBookings = async (search = "", status = "") => {
-  try {
-   const res = await axiosInstance.get(`/api/client/bookings?search=${search}&status=${status}`);
-   setBookings(res.data.data || []);
-  } catch (err) {
-   console.error("Failed to fetch bookings:", err);
-  } finally {
-   setIsLoading(false);
-  }
+ const fetchBookings = async () => {
+  await mutateBookings();
  };
 
  const handleMessageProvider = async (bookingId: number) => {
@@ -165,7 +157,7 @@ export default function ClientBookings() {
        </TableRow>
       </TableHeader>
       <TableBody>
-       {bookings.map((booking) => (
+       {bookings.map((booking: Booking) => (
         <TableRow key={booking.id} className="hover:bg-muted/50 transition-colors border-border group">
          <TableCell className="pl-10 py-6">
           <span className="text-[10px] font-semibold text-primary uppercase tracking-normal group-hover:scale-110 transition-transform inline-block">
@@ -200,7 +192,7 @@ export default function ClientBookings() {
             <BookingActions 
               booking={booking} 
               userEmail={user?.email || ""} 
-              onRefresh={() => fetchBookings(searchQuery, filterStatus)}
+              onRefresh={() => fetchBookings()}
               onMessage={handleMessageProvider}
               isStartingChat={isStartingChat === booking.id}
             />
@@ -234,7 +226,7 @@ export default function ClientBookings() {
          title="No bookings found"
          className="col-span-full h-48"
        />
-     ) : bookings.map((booking) => (
+     ) : bookings.map((booking: Booking) => (
        <BookingCard
           key={booking.id}
           booking={booking}
@@ -243,7 +235,7 @@ export default function ClientBookings() {
             <BookingActions 
              booking={booking} 
              userEmail={user?.email || ""} 
-             onRefresh={() => fetchBookings(searchQuery, filterStatus)}
+             onRefresh={() => fetchBookings()}
              onMessage={handleMessageProvider}
              isStartingChat={isStartingChat === booking.id}
            />

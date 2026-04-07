@@ -19,14 +19,19 @@ class AddressController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'address_type' => 'nullable|string|in:home,work,other',
             'street_address' => 'required|string|max:255',
             'apartment' => 'nullable|string|max:255',
             'city' => 'required|string|max:255',
             'state' => 'nullable|string|max:255',
             'postal_code' => 'required|string|max:20',
             'country' => 'nullable|string|max:255',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
             'is_default' => 'boolean',
         ]);
+
+        $validated['address_type'] = $validated['address_type'] ?? 'home';
 
         $user = Auth::user();
 
@@ -49,12 +54,15 @@ class AddressController extends Controller
         }
 
         $validated = $request->validate([
+            'address_type' => 'nullable|string|in:home,work,other',
             'street_address' => 'string|max:255',
             'apartment' => 'nullable|string|max:255',
             'city' => 'string|max:255',
             'state' => 'nullable|string|max:255',
             'postal_code' => 'string|max:20',
             'country' => 'nullable|string|max:255',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
             'is_default' => 'boolean',
         ]);
 

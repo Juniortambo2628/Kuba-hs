@@ -18,6 +18,7 @@ import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { GlobalSearch } from "@/components/shared/GlobalSearch";
 import { cn } from "@/lib/utils";
 import { Search, Command } from "lucide-react";
+import { toast } from "sonner";
 
 interface DashboardHeaderProps {
   isAdmin?: boolean;
@@ -32,7 +33,7 @@ export function DashboardHeader({ isAdmin = false }: DashboardHeaderProps) {
 
   useEffect(() => {
     setMounted(true);
-    if (user && !isAdmin) {
+    if (user) {
       fetchNotifications();
     }
   }, [user, isAdmin]);
@@ -90,47 +91,69 @@ export function DashboardHeader({ isAdmin = false }: DashboardHeaderProps) {
           </div>
         )}
 
-        {/* Notifications (Client/Provider only) */}
-        {!isAdmin && (
-          <DropdownMenu>
-            <div className="relative">
-              <DropdownMenuTrigger asChild>
-                <button className="relative p-2 text-muted-foreground hover:text-foreground transition-colors outline-none rounded-lg hover:bg-accent">
-                  <Bell className="w-5 h-5" />
-                </button>
-              </DropdownMenuTrigger>
-              {unreadCount > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 bg-primary text-[9px] font-bold text-primary-foreground rounded-full flex items-center justify-center pointer-events-none">
-                  {unreadCount}
-                </span>
-              )}
+        {/* Notifications */}
+        <DropdownMenu>
+          <div className="relative">
+            <DropdownMenuTrigger asChild>
+              <button className="relative p-2 text-muted-foreground hover:text-foreground transition-colors outline-none rounded-lg hover:bg-accent focus:bg-accent">
+                <Bell className="w-5 h-5" />
+              </button>
+            </DropdownMenuTrigger>
+            {unreadCount > 0 && (
+              <span className="absolute top-1 right-1 w-4 h-4 bg-primary text-[9px] font-bold text-primary-foreground rounded-full flex items-center justify-center pointer-events-none">
+                {unreadCount}
+              </span>
+            )}
+          </div>
+          <DropdownMenuContent align="end" className="w-80 mt-1 border border-border shadow-xl rounded-2xl p-0 overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 bg-muted/20">
+              <span className="text-sm font-bold text-foreground tracking-tight">Notifications</span>
+              <button 
+                className="text-[10px] text-primary hover:underline font-bold uppercase tracking-widest" 
+                onClick={async () => {
+                  try {
+                    await axiosInstance.post("/api/notifications/read-all");
+                    fetchNotifications();
+                  } catch (err) {
+                    toast.error("Failed to mark migrations as read");
+                  }
+                }}
+              >
+                Mark all read
+              </button>
             </div>
-            <DropdownMenuContent align="end" className="w-80 mt-1">
-              <div className="flex items-center justify-between px-3 py-2">
-                <span className="text-sm font-semibold text-foreground tracking-tight">Notifications</span>
-                <button className="text-xs text-primary hover:underline font-semibold" onClick={async () => {
-                  await axiosInstance.post("/api/notifications/read-all");
-                  fetchNotifications();
-                }}>Mark all read</button>
-              </div>
-              <DropdownMenuSeparator />
-              <div className="max-h-64 overflow-y-auto">
-                {notifications.length === 0 ? (
-                  <p className="text-sm font-semibold text-muted-foreground text-center py-6">No notifications</p>
-                ) : notifications.map((n) => (
-                  <DropdownMenuItem key={n.id} onClick={() => markAsRead(n.id)} className={`px-3 py-2.5 cursor-pointer ${!n.read_at ? 'bg-accent' : ''}`}>
-                    <div>
-                      <p className="text-sm font-semibold text-foreground leading-snug">{n.data?.message || 'New notification'}</p>
-                      <p className="text-xs font-semibold text-muted-foreground mt-0.5">
-                        {new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            <DropdownMenuSeparator className="m-0" />
+            <div className="max-h-[400px] overflow-y-auto">
+              {notifications.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-10 px-4 text-center gap-2">
+                  <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center text-muted-foreground/30">
+                    <Bell className="w-5 h-5" />
+                  </div>
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Digital Silence</p>
+                  <p className="text-[10px] text-muted-foreground/60 font-medium">No new alerts found in your registry</p>
+                </div>
+              ) : notifications.map((n) => (
+                <DropdownMenuItem 
+                  key={n.id} 
+                  onClick={() => markAsRead(n.id)} 
+                  className={`px-4 py-4 cursor-pointer border-b border-border/50 last:border-0 transition-colors ${!n.read_at ? 'bg-primary/5 hover:bg-primary/10' : 'hover:bg-muted/50'}`}
+                >
+                  <div className="flex gap-3">
+                    <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${!n.read_at ? 'bg-primary' : 'bg-transparent'}`} />
+                    <div className="space-y-1">
+                      <p className={`text-xs leading-relaxed ${!n.read_at ? 'font-bold text-foreground' : 'font-medium text-muted-foreground'}`}>
+                        {n.data?.message || 'New notification audit entry'}
+                      </p>
+                      <p className="text-[9px] font-bold text-muted-foreground/50 uppercase tracking-tighter">
+                        {new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • System Alert
                       </p>
                     </div>
-                  </DropdownMenuItem>
-                ))}
-              </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
+                  </div>
+                </DropdownMenuItem>
+              ))}
+            </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {/* Theme Toggle */}
         <ThemeToggle 

@@ -22,6 +22,10 @@ import dynamic from "next/dynamic";
 import { useCMS } from "@/contexts/CMSContext";
 import { preload } from "swr";
 import { fetcher } from "@/hooks/useData";
+import { getCategoryIcon } from "@/lib/category-icons";
+import { usePageFeatures } from "@/hooks/usePageFeatures";
+import { FeatureCardGrid } from "@/components/shared/FeatureCardGrid";
+import { Wrench as WrenchIcon } from "lucide-react";
 
 const MapView = dynamic(() => import("@/components/shared/MapView"), {
   ssr: false,
@@ -39,17 +43,7 @@ interface Category {
   services: { id: number; name: string }[];
 }
 
-const iconMap: Record<string, React.ReactNode> = {
-  wrench: <Wrench className="w-6 h-6 text-blue-500" />,
-  sparkles: <Sparkles className="w-6 h-6 text-purple-500" />,
-  droplet: <Droplet className="w-6 h-6 text-cyan-500" />,
-  bolt: <Zap className="w-6 h-6 text-yellow-500" />,
-  car: <Car className="w-6 h-6 text-rose-500" />,
-  home: <Home className="w-6 h-6 text-blue-500" />,
-  heart: <Heart className="w-6 h-6 text-pink-500" />,
-  briefcase: <Briefcase className="w-6 h-6 text-indigo-500" />,
-  building: <Building2 className="w-6 h-6 text-emerald-500" />,
-};
+
 
 type SortOption = "name" | "services" | "default";
 
@@ -60,6 +54,7 @@ export default function ServicesPage() {
   const [view, setView] = useState<"grid" | "list" | "map">("grid");
   const [sortBy, setSortBy] = useState<SortOption>("default");
   const [filterOpen, setFilterOpen] = useState(true);
+  const { features: cmsFeatures } = usePageFeatures('services');
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -92,6 +87,28 @@ export default function ServicesPage() {
         cmsKey="services"
       />
 
+      {/* CMS Features Section */}
+      {cmsFeatures.length > 0 && (
+        <section className="py-20 bg-slate-50 dark:bg-zinc-950/20 border-b border-border/10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-2xl mb-12">
+               <h2 className="text-2xl font-bold tracking-tight mb-2">
+                 Featured Specializations
+               </h2>
+               <p className="text-sm text-muted-foreground font-medium">
+                 Hand-picked highlights from our elite professional segments.
+               </p>
+            </div>
+            <FeatureCardGrid 
+              features={cmsFeatures}
+              columns={cmsFeatures.length >= 3 ? 3 : 2}
+              accentColor="primary"
+              fallbackIcon={WrenchIcon}
+            />
+          </div>
+        </section>
+      )}
+
       <div className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row gap-12">
           
@@ -120,14 +137,14 @@ export default function ServicesPage() {
                     <label className="text-[10px] font-bold capitalize tracking-widest text-muted-foreground/60 ml-1 block mb-4">Quick Navigation</label>
                     <div className="space-y-2 max-h-80 overflow-y-auto pr-2 custom-scrollbar">
                       {categories.map((cat) => (
-                        <a
+                        <Link
                           key={cat.id}
-                          href={`#cat-${cat.id}`}
+                          href={`/categories/${cat.slug || cat.id}`}
                           className="flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold tracking-tight text-gray-500 hover:bg-white dark:hover:bg-black hover:text-primary border border-transparent hover:border-border/40 transition-all"
                         >
                           <span className="truncate">{cat.name}</span>
                           <span className="bg-primary/5 text-primary px-2 py-0.5 rounded-lg text-[10px]">{cat.services_count || 0}</span>
-                        </a>
+                        </Link>
                       ))}
                     </div>
                  </div>
@@ -185,10 +202,8 @@ export default function ServicesPage() {
                       );
                     }
 
-                    // Fallback to name-based icon map (handles slug-like strings from DB)
-                    const iconName = (dynamicUrl || category.icon || "Wrench").toLowerCase();
-                    if (iconMap[iconName]) return iconMap[iconName];
-                    return <Wrench className="w-6 h-6" />;
+                    // Fallback to the centralized category-icons helper
+                    return getCategoryIcon(category.icon, "w-6 h-6 text-blue-500 group-hover:text-white transition-colors", category.name);
                   };
                   const IconComponent = getIcon();
                   return (
@@ -200,10 +215,9 @@ export default function ServicesPage() {
                       transition={{ delay: idx * 0.05 }}
                     >
                       <Link 
-                        href={`/services/${category.id}`}
+                        href={`/categories/${category.slug || category.id}`}
                         onMouseEnter={() => {
-                          preload(`/api/featured-services/${category.id}`, fetcher);
-                          preload(`/api/services/${category.id}`, fetcher);
+                          preload(`/api/categories/${category.slug || category.id}`, fetcher);
                         }}
                         className={`group block bg-white dark:bg-black border border-border/40 rounded-[2.5rem] hover:border-primary/40 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5 ${view === 'grid' ? 'p-8' : 'p-6 flex flex-row items-center gap-8'}`}
                       >

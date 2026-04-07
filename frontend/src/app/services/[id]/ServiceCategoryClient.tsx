@@ -53,7 +53,7 @@ export default function ServiceCategoryClient() {
         fetchCategory();
     }, [id]);
 
-    const Icon = getCategoryIcon(category?.icon, "w-8 h-8 text-blue-500");
+    const Icon = getCategoryIcon(category?.icon, "w-8 h-8 text-blue-500", category?.name);
     const bgImage = (id && typeof id === 'string' && imageMap[id]) || "https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=2070";
 
     if (isLoading) {

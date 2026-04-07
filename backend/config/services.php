@@ -47,4 +47,13 @@ return [
         'merchantEmail' => env('MERCHANT_EMAIL'),
     ],
 
+    'mpesa' => [
+        'consumerKey' => env('MPESA_CONSUMER_KEY'),
+        'consumerSecret' => env('MPESA_CONSUMER_SECRET'),
+        'shortCode' => env('MPESA_SHORTCODE'),
+        'passkey' => env('MPESA_PASSKEY'),
+        'baseUrl' => env('MPESA_BASE_URL', 'https://sandbox.safaricom.co.ke'),
+        'callbackUrl' => env('MPESA_CALLBACK_URL'),
+    ],
+
 ];

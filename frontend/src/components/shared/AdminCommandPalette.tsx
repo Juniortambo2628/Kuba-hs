@@ -55,7 +55,6 @@ const adminActions: AdminCommandItem[] = [
   { id: "veri", title: "Workforce Verification", url: "/admin/workforce/verification", icon: <ShieldCheck className="w-4 h-4" />, category: "Operations" },
   { id: "comp", title: "Compliance & Audits", url: "/admin/compliance", icon: <ClipboardList className="w-4 h-4" />, category: "Operations" },
   { id: "cate", title: "Service Categories", url: "/admin/categories", icon: <Grid3X3 className="w-4 h-4" />, category: "Operations" },
-  { id: "serv", title: "Base Services", url: "/admin/services", icon: <Briefcase className="w-4 h-4" />, category: "Operations" },
   { id: "paym", title: "Payment Ledger", url: "/admin/payments", icon: <DollarSign className="w-4 h-4" />, category: "Operations" },
   { id: "loya", title: "Loyalty Architecture", url: "/admin/loyalty", icon: <Gift className="w-4 h-4" />, category: "Operations" },
   

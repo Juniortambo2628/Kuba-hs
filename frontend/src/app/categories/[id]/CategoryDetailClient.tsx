@@ -9,13 +9,14 @@ import Link from "next/link";
 import { designSystem } from "@/lib/design-system";
 import { Card } from "@/components/ui/card";
 import { useData, prefetchData } from "@/hooks/useData";
+import { HighImpactHero } from "@/components/shared/HighImpactHero";
 import { HeroSkeleton, CardSkeleton } from "@/components/shared/AdvancedSkeleton";
 
 interface Service {
   id: string;
   name: string;
   description: string;
-  base_price: string;
+  starting_price: number;
 }
 
 interface Category {
@@ -52,28 +53,23 @@ export default function CategoryDetailClient({ params }: { params: Promise<{ id:
     <div className="min-h-screen">
       <Navbar />
       
-      <section className="pt-32 pb-16 bg-muted/30">
-        <div className="container mx-auto px-6">
-          <Link href="/categories" className="inline-flex items-center gap-2 text-primary text-xs font-black uppercase tracking-widest mb-8 hover:gap-3 transition-all">
-            <ArrowLeft className="w-4 h-4" />
-            Back to All Categories
-          </Link>
-          
-          <div className="max-w-4xl space-y-6">
-            <h1 className={designSystem.typography.hero.title + " !text-foreground font-bold"}>{category.name}</h1>
-            <p className={designSystem.typography.hero.subtitle}>
-              {category.description || `Discover top-rated professionals specialized in ${category.name.toLowerCase()}.`}
-            </p>
-          </div>
-        </div>
-      </section>
+      <HighImpactHero
+        title={category.name}
+        subtitle={category.description || `Discover top-rated professionals specialized in ${category.name.toLowerCase()}.`}
+        cmsKey="category_detail"
+        breadcrumbs={[
+          { label: "Home", href: "/" },
+          { label: "Categories", href: "/categories" },
+          { label: category.name }
+        ]}
+      />
 
       <section className="py-24 container mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {category.services?.map((service) => (
             <Link 
               key={service.id} 
-              href={`/services/${service.id}`} 
+              href={`/services/${service.id}?type=general`} 
               className="group block h-full"
               onMouseEnter={() => prefetchData(`/api/services/${service.id}`)}
             >
@@ -82,7 +78,7 @@ export default function CategoryDetailClient({ params }: { params: Promise<{ id:
                   <h3 className={designSystem.typography.section.cardTitle}>{service.name}</h3>
                   <p className={designSystem.typography.section.cardText + " line-clamp-2"}>{service.description}</p>
                   <div className="pt-4 flex justify-between items-center text-xs font-bold uppercase tracking-widest text-primary">
-                      <span>Starting KES {Number(service.base_price).toLocaleString()}</span>
+                      <span>Starting KES {Number(service.starting_price || 0).toLocaleString()}</span>
                       <span className="opacity-0 group-hover:opacity-100 transition-opacity">View Detail</span>
                   </div>
                 </div>

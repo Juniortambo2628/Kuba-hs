@@ -26,7 +26,7 @@ class BookingService
                 'city' => $data['new_address']['city'],
                 'state' => $data['new_address']['state'],
                 'postal_code' => $data['new_address']['postal_code'],
-                'country' => 'USA', // default for now
+                'country' => 'Kenya', // default for now
                 'is_default' => true,
             ]);
             $addressId = $address->id;
@@ -69,6 +69,7 @@ class BookingService
             'service_id' => $data['service_id'],
             'booking_number' => 'BK-' . strtoupper(Str::random(8)),
             'scheduled_date' => $scheduledDate,
+            'scheduled_time' => $data['scheduled_time'] ?? null,
             'status' => 'pending',
             'payment_status' => 'pending',
             'address_id' => $addressId,
@@ -79,6 +80,13 @@ class BookingService
             'estimated_price' => $price,
             'promo_code_id' => $promoCode?->id,
             'discount_amount' => $discountAmount,
+        ]);
+
+        // Create conversation for chat
+        \App\Models\Conversation::create([
+            'booking_id' => $booking->id,
+            'customer_id' => $booking->customer_id,
+            'provider_id' => $booking->provider_id,
         ]);
 
         // Increment Promo Code Usage
@@ -93,13 +101,16 @@ class BookingService
             }
         }
 
-        // Notify Provider
+        // Eager load relations for notifications
+        $booking->load(['customer', 'provider.user', 'service']);
+
+        // Notify Provider (New Service Request)
         if (isset($booking->provider->user)) {
-             $booking->provider->user->notify(new \App\Notifications\BookingStatusUpdated($booking));
+             $booking->provider->user->notify(new \App\Notifications\NewBookingReceived($booking));
         }
 
         // Notify Customer (Confirmation)
-        $user->notify(new \App\Notifications\BookingStatusUpdated($booking));
+        $user->notify(new \App\Notifications\BookingConfirmation($booking));
 
         return $booking;
     }
@@ -119,11 +130,40 @@ class BookingService
             abort(403, 'Customers can only cancel bookings.');
         }
 
-        $booking->update([
-            'status' => $status,
-        ]);
+        $updateData = ['status' => $status];
 
-        // Notify the OTHER party
+        // Record started_at when service begins
+        if ($status === 'in_progress' && !$booking->started_at) {
+            $updateData['started_at'] = now();
+        }
+
+        // Record completed_at and calculate final price when service finishes
+        if ($status === 'completed') {
+            $updateData['completed_at'] = now();
+
+            // Calculate final price for hourly services based on elapsed time
+            if ($booking->started_at) {
+                $providerService = ProviderService::where('provider_id', $booking->provider_id)
+                    ->where('service_id', $booking->service_id)
+                    ->first();
+
+                if ($providerService && $providerService->pricing_type === 'hourly') {
+                    $elapsedSeconds = $booking->started_at->diffInSeconds(now());
+                    $elapsedHours = max(1, ceil($elapsedSeconds / 3600)); // Min 1 hour, round up
+                    $updateData['final_price'] = $providerService->base_price * $elapsedHours;
+                } else {
+                    // Flat-rate: final price = estimated price
+                    $updateData['final_price'] = $booking->estimated_price;
+                }
+            }
+        }
+
+        $booking->update($updateData);
+
+        // Dispatch the legacy event for backward compatibility (real-time updates in dashboard layout)
+        event(new \App\Events\BookingStatusUpdated($booking));
+
+        // Notify the OTHER party with a persisted database notification
         if ($user->id === $booking->provider_id && $booking->customer) {
             $booking->customer->notify(new \App\Notifications\BookingStatusUpdated($booking));
         } elseif ($user->id === $booking->customer_id && isset($booking->provider->user)) {

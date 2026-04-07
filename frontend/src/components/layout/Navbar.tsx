@@ -21,6 +21,7 @@ import {
 import { UserAccountDropdown } from "@/components/shared/UserAccountDropdown";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { GlobalSearch } from "@/components/shared/GlobalSearch";
+import { NotificationBadge } from "./NotificationBadge";
 import { ServiceMegamenu } from "./ServiceMegamenu";
 
 export function Navbar() {
@@ -162,7 +163,10 @@ export function Navbar() {
             <ThemeToggle />
 
             {user ? (
-              <UserAccountDropdown variant="navbar" />
+              <div className="flex items-center gap-1">
+                <NotificationBadge />
+                <UserAccountDropdown variant="navbar" />
+              </div>
             ) : (
               <>
                 <DropdownMenu>
@@ -212,7 +216,8 @@ export function Navbar() {
           />
 
           {/* Mobile Navigation */}
-          <div className="md:hidden flex items-center gap-2">
+          <div className="md:hidden flex items-center gap-1">
+            {user && <NotificationBadge />}
             <ThemeToggle />
             <Sheet>
               <SheetTrigger asChild>

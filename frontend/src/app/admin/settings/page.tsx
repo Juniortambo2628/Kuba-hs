@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { 
   Settings as SettingsIcon, 
   Save, 
@@ -48,6 +49,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
 import { useApiData } from "@/hooks/useApiData";
 import { NavigationManager } from "./components/NavigationManager";
+import { LivePreviewModal } from "./components/LivePreviewModal";
 
 registerPlugin(FilePondPluginImagePreview);
 
@@ -277,6 +279,45 @@ const GROUP_CONFIG: Record<string, { label: string, icon: any, category: string,
     'financial_config': { label: 'Fees & Payments', icon: CreditCard, category: 'system', description: 'Platform fees, currency settings, and payout thresholds.' },
 };
 
+const PAGE_MAPPINGS = [
+    { id: 'landing', label: 'Landing Page' },
+    { id: 'about', label: 'About Page' },
+    { id: 'services', label: 'Services Marketplace' },
+    { id: 'providers', label: 'Providers Portal' },
+    { id: 'commercial', label: 'Commercial Business' },
+    { id: 'cooperatives', label: 'Cooperatives & Groups' },
+    { id: 'investors', label: 'Investor Relations' },
+    { id: 'contact', label: 'Contact & Support' },
+    { id: 'blog', label: 'Kuba Journal' },
+];
+
+const getPageForKey = (key: string, group: string) => {
+    // Check group matches first
+    if (group === 'about_page' || group === 'about') return 'about';
+    if (group === 'commercial_page' || group === 'commercial') return 'commercial';
+    if (group === 'cooperative_page' || group === 'cooperatives') return 'cooperatives';
+    if (group === 'investor_page' || group === 'investors') return 'investors';
+    if (group === 'provider_page' || group === 'providers') return 'providers';
+    if (group === 'services_page' || group === 'services') return 'services';
+    if (group === 'contact_page' || group === 'contact') return 'contact';
+    if (group === 'blog_page' || group === 'blog') return 'blog';
+    if (group === 'home_hero' || group === 'site_stats' || group === 'stats' || group === 'cta' || group === 'testimonials' || group === 'sections') return 'landing';
+
+    // Fallback to key prefixes
+    if (key.startsWith('about_')) return 'about';
+    if (key.startsWith('commercial_')) return 'commercial';
+    if (key.startsWith('cooperatives_')) return 'cooperatives';
+    if (key.startsWith('investors_')) return 'investors';
+    if (key.startsWith('providers_') || key.startsWith('provider_')) return 'providers';
+    if (key.startsWith('services_') || key.startsWith('featured_')) return 'services';
+    if (key.startsWith('contact_')) return 'contact';
+    if (key.startsWith('blog_') || key.startsWith('journal_')) return 'blog';
+    if (key.startsWith('hero_') || key.startsWith('stat_') || key.startsWith('step_') || key.startsWith('test_') || key.startsWith('faq_') || key.startsWith('cta_')) return 'landing';
+    
+    // Default fallback to landing if it's general content
+    return 'landing';
+};
+
 export default function UnifiedSettingsPage() {
     const { data: settingsData, isLoading, refetch: fetchSettings, setData: setSettingsData } = useApiData<any>("/api/admin/settings");
     const settings = settingsData?.settings || {} as Record<string, Setting[]>;
@@ -442,7 +483,8 @@ export default function UnifiedSettingsPage() {
             .map(([groupId, config]) => ({
                 id: groupId,
                 ...config,
-                settings: settings[groupId] || []
+                // Filter out json settings so they don't render generically (e.g. navigation_menu)
+                settings: (settings[groupId] || []).filter(s => s.type !== 'json')
             }))
             .filter(group => group.settings.length > 0);
     };
@@ -487,10 +529,131 @@ export default function UnifiedSettingsPage() {
                     </TabsList>
                 </div>
 
-                {['brand', 'hero', 'content', 'system'].map(catId => (
-                    <TabsContent key={catId} value={catId} className="mt-0 focus:outline-none">
-                        <div className="space-y-12">
-                            {getGroupsByCategory(catId).map(group => (
+                {['brand', 'hero', 'content', 'system'].map(catId => {
+                    const isPageAccordionMode = catId === 'hero' || catId === 'content';
+                    let categoryGroups = getGroupsByCategory(catId);
+                    
+                    if (catId === 'content') {
+                        // Dynamically pull unmapped database groups into the content tab
+                        const unmappedGroups = Object.keys(settings).filter(groupId => !GROUP_CONFIG[groupId] && groupId !== 'navigation_menu' && groupId !== 'payment');
+                        const dynamicGroups = unmappedGroups.map(groupId => ({
+                            id: groupId,
+                            label: groupId,
+                            icon: Layout,
+                            category: 'content',
+                            description: '',
+                            settings: (settings[groupId] || []).filter((s: Setting) => s.type !== 'json')
+                        })).filter(g => g.settings.length > 0);
+                        
+                        categoryGroups = [...categoryGroups, ...dynamicGroups];
+                    }
+                    
+                    if (isPageAccordionMode) {
+                        // Gather all settings from this category's groups for local filtering
+                        let catIdSettings: Setting[] = [];
+                        categoryGroups.forEach(g => {
+                            catIdSettings = [...catIdSettings, ...g.settings];
+                        });
+
+                        // Flatten ALL settings for the Preview Modal to allow cross-tab data access (e.g. Hero + Content)
+                        const allPlatformSettings = Object.values(settings).flat();
+
+                        // Group them by page
+                        const settingsByPage: Record<string, Setting[]> = {};
+                        catIdSettings.forEach(s => {
+                            const page = getPageForKey(s.key, s.group);
+                            if (!settingsByPage[page]) settingsByPage[page] = [];
+                            settingsByPage[page].push(s);
+                        });
+
+                        return (
+                            <TabsContent key={catId} value={catId} className="mt-0 focus:outline-none">
+                                <Accordion type="multiple" className="space-y-4">
+                                    {PAGE_MAPPINGS.map(pageInfo => {
+                                        const pageSettings = settingsByPage[pageInfo.id] || [];
+                                        return (
+                                        <AccordionItem key={pageInfo.id} value={pageInfo.id} className="border border-border/40 bg-white dark:bg-zinc-900 rounded-2xl shadow-sm px-2">
+                                            <AccordionTrigger className="px-6 py-5 hover:no-underline group h-auto min-h-[5.5rem]">
+                                                <div className="flex items-center gap-4 text-left">
+                                                    <div className="p-3 bg-primary/5 rounded-2xl group-hover:bg-primary group-hover:text-white transition-colors duration-300">
+                                                        <Layers className="w-5 h-5 text-primary group-hover:text-white transition-colors" />
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="text-xl font-bold tracking-tight text-foreground">{pageInfo.label}</h3>
+                                                        <p className="text-sm font-medium text-muted-foreground mt-1">
+                                                            {pageSettings.length} configurations mapped
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </AccordionTrigger>
+                                            <AccordionContent className="px-6 pb-8 pt-2">
+                                                <div className="mb-8 flex items-center justify-between border-b border-border/10 pb-4">
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Manage Configuration</span>
+                                                    <LivePreviewModal sectionId={pageInfo.id} currentSettings={allPlatformSettings} />
+                                                </div>
+                                                {pageSettings.length === 0 ? (
+                                                    <div className="py-12 text-center bg-muted/10 rounded-2xl border border-dashed border-border/40">
+                                                        <p className="text-muted-foreground text-sm font-medium">No configurations currently mapped for this section.</p>
+                                                    </div>
+                                                ) : (
+                                                    <div className={`grid grid-cols-1 md:grid-cols-2 ${catId === 'hero' ? 'xl:grid-cols-3' : ''} gap-6`}>
+                                                        {pageSettings.map(setting => (
+                                                            <div key={setting.id}>
+                                                                {setting.type === 'image' ? (
+                                                                    <ImageSettingCard 
+                                                                        setting={setting}
+                                                                        pendingFile={files[setting.id]}
+                                                                        onSetFile={(file: File) => setFiles(prev => ({ ...prev, [setting.id]: file }))}
+                                                                        onRemove={() => handleRemoveImage(setting.group, setting.id)}
+                                                                        getMediaUrl={getMediaUrl}
+                                                                    />
+                                                                ) : (
+                                                                    <Card className="p-6 border border-border/40 bg-white dark:bg-zinc-900 rounded-2xl shadow-sm space-y-3 hover:border-primary/20 transition-all h-full">
+                                                                        <div className="flex items-center justify-between gap-4">
+                                                                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground truncate" title={setting.label || setting.key.replace(/_/g, ' ')}>
+                                                                                {setting.label || setting.key.replace(/_/g, ' ')}
+                                                                            </label>
+                                                                            <div className="p-1 px-2.5 bg-primary/5 rounded-lg text-[10px] font-bold text-primary/60 border border-primary/10 shrink-0">
+                                                                                {setting.key}
+                                                                            </div>
+                                                                        </div>
+                                                                        {setting.type === 'textarea' ? (
+                                                                            <textarea 
+                                                                                className="w-full min-h-[120px] bg-muted/5 border border-border/40 rounded-xl px-4 py-3 text-foreground text-sm font-semibold outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all resize-none leading-relaxed"
+                                                                                value={setting.value || ""}
+                                                                                onChange={(e) => handleValueChange(setting.group, setting.id, e.target.value)}
+                                                                            />
+                                                                        ) : (
+                                                                            <Input 
+                                                                                className="h-12 bg-muted/5 border-border/40 px-4 font-bold text-foreground focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all rounded-xl"
+                                                                                value={setting.value || ""}
+                                                                                onChange={(e) => handleValueChange(setting.group, setting.id, e.target.value)}
+                                                                            />
+                                                                        )}
+                                                                        {setting.description && (
+                                                                            <p className="text-[10px] font-medium text-muted-foreground/60 italic px-1 pt-1">
+                                                                                {setting.description}
+                                                                            </p>
+                                                                        )}
+                                                                    </Card>
+                                                                )}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </AccordionContent>
+                                        </AccordionItem>
+                                    )})}
+                                </Accordion>
+                            </TabsContent>
+                        );
+                    }
+
+                    // Strict Standard rendering for Brand and System tabs
+                    return (
+                        <TabsContent key={catId} value={catId} className="mt-0 focus:outline-none">
+                            <div className="space-y-12">
+                                {categoryGroups.map(group => (
                                 <section key={group.id} className="space-y-6">
                                     <div className="flex items-center gap-4">
                                         <div className={`p-3 rounded-2xl bg-white dark:bg-zinc-900 border border-border/40 shadow-sm text-primary`}>
@@ -550,10 +713,11 @@ export default function UnifiedSettingsPage() {
                             ))}
                         </div>
                     </TabsContent>
-                ))}
+                );
+            })}
 
                 <TabsContent value="navigation" className="mt-0 focus:outline-none">
-                    <div className="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-border/40 shadow-sm min-h-[600px]">
+                    <div className="bg-white dark:bg-zinc-900 p-8 rounded-3xl border border-border/40 shadow-sm min-h-[600px]">
                         <div className="mb-10 flex items-center gap-4">
                             <div className="p-3 bg-primary/10 text-primary rounded-2xl">
                                 <Navigation className="w-6 h-6" />

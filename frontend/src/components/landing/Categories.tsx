@@ -50,7 +50,7 @@ const getCategoryDisplayIcon = (category: Category) => {
   }
 
   // Use icon property from category with the imported helper
-  return getCategoryIcon(category.icon, "w-8 h-8 text-blue-500");
+  return getCategoryIcon(category.icon, "w-8 h-8 text-blue-500", category.name);
 };
 
 const cardVariants = {
@@ -195,7 +195,7 @@ export function Categories() {
                       <div className="text-center py-12 bg-gray-50 dark:bg-white/5 rounded-2xl">
                         <p className="text-gray-500 dark:text-gray-400 font-medium text-lg mb-4">No specific services listed yet under this category.</p>
                         <Button asChild variant="outline" className="rounded-full font-bold px-8">
-                           <Link href={`/services/${category.id}`}>Explore Category</Link>
+                           <Link href={`/categories/${category.slug || category.id}`}>Explore Category</Link>
                         </Button>
                       </div>
                     )}

@@ -26,11 +26,15 @@ class ProviderSearchService
         $lat = $filters['latitude'] ?? null;
         $lng = $filters['longitude'] ?? null;
         $radius = $filters['radius'] ?? 50; // Default 50km
+        $sortByPrice = $filters['sort_by_price'] ?? null; // 'asc' or 'desc'
+        $serviceIds = $filters['service_ids'] ?? null; // array of IDs
+        $maxPrice = $filters['max_price'] ?? null;
 
         $query = Provider::select('providers.*')
             ->with(['user', 'providerServices.service'])
             ->withCount('reviews')
-            ->withAvg('reviews', 'rating');
+            ->withAvg('reviews', 'rating')
+            ->withMin(['providerServices as starting_price'], 'base_price');
 
         if ($locationFilter) {
             $query->where('location_name', 'like', "%{$locationFilter}%");
@@ -56,6 +60,18 @@ class ProviderSearchService
             });
         }
 
+        if ($serviceIds && is_array($serviceIds)) {
+            $query->whereHas('providerServices', function($q) use ($serviceIds) {
+                $q->whereIn('service_id', $serviceIds);
+            });
+        }
+
+        if ($maxPrice) {
+            $query->whereHas('providerServices', function($q) use ($maxPrice) {
+                $q->where('base_price', '<=', $maxPrice);
+            });
+        }
+
         if ($minRating) {
             $query->having('reviews_avg_rating', '>=', $minRating);
         }
@@ -68,10 +84,19 @@ class ProviderSearchService
         if ($lat && $lng) {
             $haversine = "(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude))))";
             $query->selectRaw("$haversine AS distance", [$lat, $lng, $lat])
-                  ->whereRaw("$haversine <= ?", [$lat, $lng, $lat, $radius])
-                  ->orderBy('distance');
+                  ->whereRaw("$haversine <= ?", [$lat, $lng, $lat, $radius]);
+            
+            if ($sortByPrice) {
+                $query->orderBy('starting_price', $sortByPrice);
+            } else {
+                $query->orderBy('distance');
+            }
         } else {
-            $query->latest();
+            if ($sortByPrice) {
+                $query->orderBy('starting_price', $sortByPrice);
+            } else {
+                $query->latest();
+            }
         }
 
         return $query->paginate($perPage);

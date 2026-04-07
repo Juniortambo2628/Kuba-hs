@@ -56,6 +56,7 @@ class DashboardController extends Controller
                 'business_name' => $provider->business_name,
                 'bio' => $provider->bio,
                 'location_name' => $provider->location_name,
+                'phone' => $user->phone,
                 'experience_years' => $provider->experience_years,
                 'service_radius' => $provider->service_radius,
                 'is_verified' => $provider->is_verified,

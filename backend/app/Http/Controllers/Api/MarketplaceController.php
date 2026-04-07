@@ -54,7 +54,11 @@ class MarketplaceController extends Controller
     {
         return ServiceCategoryResource::collection(
             Cache::remember('api_categories_all', 86400, function () {
-                return ServiceCategory::with('services')->withCount('services')->orderBy('name')->get();
+                return ServiceCategory::with(['services' => function($q) {
+                    $q->withMin(['providerServices' => function($query) {
+                        $query->where('is_available', true);
+                    }], 'base_price');
+                }])->withCount('services')->orderBy('name')->get();
             })
         );
     }
@@ -130,9 +134,29 @@ class MarketplaceController extends Controller
     /**
      * Get a specific service category with its sub-services.
      */
-    public function showCategory(ServiceCategory $category)
+    public function showCategory($identifier)
     {
-        return new ServiceCategoryResource($category->load('services'));
+        $category = ServiceCategory::with(['services' => function($q) {
+            $q->withMin(['providerServices' => function($query) {
+                $query->where('is_available', true);
+            }], 'base_price');
+        }])->find($identifier);
+
+        if (!$category) {
+            $category = ServiceCategory::with(['services' => function($q) {
+                $q->withMin(['providerServices' => function($query) {
+                    $query->where('is_available', true);
+                }], 'base_price');
+            }])->get()->first(function($cat) use ($identifier) {
+                return \Illuminate\Support\Str::slug($cat->name) === $identifier;
+            });
+        }
+
+        if (!$category) {
+            abort(404);
+        }
+
+        return new ServiceCategoryResource($category);
     }
 
     /**

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
+import useSWR from "swr";
 import axiosInstance from "@/lib/axios";
 import { Card, CardContent } from "@/components/ui/card";
 import { 
@@ -32,25 +33,24 @@ import { Booking } from "@/types";
 function BookingsHistoryContent() {
   const router = useRouter();
   const { search, setSearch, status, setStatus } = useSearchState();
-  const [data, setData] = useState<any>(null);
+  // Use SWR for real-time reactive updates
+  const { data: dashboardData, isLoading: isDashboardLoading, mutate: mutateDashboard } = useSWR(
+    '/api/provider/dashboard',
+    (url) => axiosInstance.get(url).then(res => res.data)
+  );
+
   const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    if (!isDashboardLoading && dashboardData) {
+      setIsLoading(false);
+    }
+  }, [isDashboardLoading, dashboardData]);
+
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isStartingChat, setIsStartingChat] = useState<number | null>(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await axiosInstance.get('/api/provider/dashboard');
-        setData(res.data);
-      } catch (err) {
-        console.error("Failed to fetch dashboard data:", err);
-        toast.error("Failed to load booking history");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
+  const data = dashboardData;
 
   const bookings = data?.recent_bookings || [];
 

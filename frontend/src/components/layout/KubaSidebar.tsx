@@ -43,57 +43,59 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCMS } from "@/contexts/CMSContext";
+import { useActivityCounts } from "@/hooks/useActivityCounts";
 import Image from "next/image";
 
 const clientItems = [
-  { title: "Overview", url: "/dashboard/client", icon: LayoutDashboard },
-  { title: "Bookings", icon: Calendar, url: "/dashboard/client/bookings" },
-  { title: "Services", icon: Briefcase, url: "/dashboard/client/services" },
-  { title: "Messages", icon: MessageSquare, url: "/dashboard/client/messages" },
-  { title: "Loyalty", icon: Star, url: "/dashboard/client/loyalty" },
-  { title: "Profile", icon: User, url: "/dashboard/client/profile" },
+  { title: "Overview", url: "/dashboard/client", icon: LayoutDashboard, badgeKey: null },
+  { title: "Bookings", icon: Calendar, url: "/dashboard/client/bookings", badgeKey: "bookings" as const },
+  { title: "Services", icon: Briefcase, url: "/dashboard/client/services", badgeKey: null },
+  { title: "Messages", icon: MessageSquare, url: "/dashboard/client/messages", badgeKey: "messages" as const },
+  { title: "Billing", icon: DollarSign, url: "/dashboard/client/billing", badgeKey: null },
+  { title: "Loyalty", icon: Star, url: "/dashboard/client/loyalty", badgeKey: null },
+  { title: "Profile", icon: User, url: "/dashboard/client/profile", badgeKey: null },
 ];
 
 const adminItems = [
-  { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
-  { title: "Analytics", url: "/admin/analytics", icon: TrendingUp },
-  { title: "Bookings", url: "/admin/bookings", icon: CalendarCheck },
-  { title: "Quotes", url: "/admin/quotes", icon: Quote },
-  { title: "Users", url: "/admin/users", icon: Users },
-  { title: "Verification", url: "/admin/workforce/verification", icon: ShieldCheck },
-  { title: "Compliance", url: "/admin/compliance", icon: ClipboardList },
-  { title: "Categories", url: "/admin/categories", icon: Grid3X3 },
-  { title: "Base Services", url: "/admin/services", icon: Briefcase },
-  { title: "Payments", url: "/admin/payments", icon: DollarSign },
-  { title: "Loyalty", url: "/admin/loyalty", icon: Gift },
-  { title: "Promotions", url: "/admin/promotions", icon: Ticket },
-  { title: "Blog", url: "/admin/blog", icon: PenTool },
-  { title: "Investors", url: "/admin/investors", icon: Briefcase },
-  { title: "Messaging Hub", url: "/admin/messages", icon: Inbox },
-  { title: "Reports", url: "/admin/reports", icon: ClipboardList },
-  { title: "Email", url: "/admin/email-templates", icon: Mail },
-  { title: "FAQs", url: "/admin/faqs", icon: HelpCircle },
-  { title: "Testimonials", url: "/admin/testimonials", icon: Star },
-  { title: "Trust Partners", url: "/admin/trust-partners", icon: ShieldCheck },
-  { title: "Page Features", url: "/admin/page-features", icon: Monitor },
-  { title: "Platform CMS", url: "/admin/settings", icon: Settings },
+  { title: "Dashboard", url: "/admin", icon: LayoutDashboard, badgeKey: null },
+  { title: "Analytics", url: "/admin/analytics", icon: TrendingUp, badgeKey: null },
+  { title: "Bookings", url: "/admin/bookings", icon: CalendarCheck, badgeKey: "bookings" as const },
+  { title: "Quotes", url: "/admin/quotes", icon: Quote, badgeKey: "quotes" as const },
+  { title: "Users", url: "/admin/users", icon: Users, badgeKey: null },
+  { title: "Verification", url: "/admin/workforce/verification", icon: ShieldCheck, badgeKey: "verification" as const },
+  { title: "Compliance", url: "/admin/compliance", icon: ClipboardList, badgeKey: null },
+  { title: "Service Categories", url: "/admin/categories", icon: Grid3X3, badgeKey: null },
+  { title: "Payments", url: "/admin/payments", icon: DollarSign, badgeKey: "payments" as const },
+  { title: "Loyalty", url: "/admin/loyalty", icon: Gift, badgeKey: null },
+  { title: "Promotions", url: "/admin/promotions", icon: Ticket, badgeKey: null },
+  { title: "Blog", url: "/admin/blog", icon: PenTool, badgeKey: null },
+  { title: "Investors", url: "/admin/investors", icon: Briefcase, badgeKey: null },
+  { title: "Messaging Hub", url: "/admin/messages", icon: Inbox, badgeKey: "messages" as const },
+  { title: "Reports", url: "/admin/reports", icon: ClipboardList, badgeKey: null },
+  { title: "Email", url: "/admin/email-templates", icon: Mail, badgeKey: null },
+  { title: "FAQs", url: "/admin/faqs", icon: HelpCircle, badgeKey: null },
+  { title: "Testimonials", url: "/admin/testimonials", icon: Star, badgeKey: null },
+  { title: "Trust Partners", url: "/admin/trust-partners", icon: ShieldCheck, badgeKey: null },
+  { title: "Page Features", url: "/admin/page-features", icon: Monitor, badgeKey: null },
+  { title: "Platform CMS", url: "/admin/settings", icon: Settings, badgeKey: null },
 ];
 
 const providerItems = [
-  { title: "Dashboard", url: "/dashboard/provider", icon: LayoutDashboard },
-  { title: "Services", url: "/dashboard/provider/services", icon: Briefcase },
-  { title: "Activity", url: "/dashboard/provider/availability", icon: Clock },
-  { title: "Orders", url: "/dashboard/provider/bookings", icon: ClipboardList },
-  { title: "Verification", url: "/dashboard/provider/verification", icon: ShieldCheck },
-  { title: "Messages", url: "/dashboard/provider/messages", icon: MessageSquare },
-  { title: "Reviews", url: "/dashboard/provider/reviews", icon: Star },
-  { title: "Profile", url: "/dashboard/provider/profile", icon: User },
+  { title: "Dashboard", url: "/dashboard/provider", icon: LayoutDashboard, badgeKey: null },
+  { title: "Services", url: "/dashboard/provider/services", icon: Briefcase, badgeKey: null },
+  { title: "Activity", url: "/dashboard/provider/availability", icon: Clock, badgeKey: null },
+  { title: "Orders", url: "/dashboard/provider/bookings", icon: ClipboardList, badgeKey: "bookings" as const },
+  { title: "Verification", url: "/dashboard/provider/verification", icon: ShieldCheck, badgeKey: "verification" as const },
+  { title: "Messages", url: "/dashboard/provider/messages", icon: MessageSquare, badgeKey: "messages" as const },
+  { title: "Reviews", url: "/dashboard/provider/reviews", icon: Star, badgeKey: null },
+  { title: "Profile", url: "/dashboard/provider/profile", icon: User, badgeKey: null },
 ];
 
 export function KubaSidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const { getImg } = useCMS();
+  const { counts } = useActivityCounts();
   
   const items = user?.role === 'admin' 
     ? adminItems 
@@ -136,6 +138,7 @@ export function KubaSidebar() {
             <SidebarMenu className="space-y-0.5">
               {items.map((item) => {
                 const isActive = pathname === item.url;
+                const badgeCount = item.badgeKey ? counts[item.badgeKey] || 0 : 0;
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton 
@@ -150,7 +153,18 @@ export function KubaSidebar() {
                     >
                       <Link href={item.url} className="flex items-center gap-3.5">
                         <item.icon className={`h-5 w-5 shrink-0 ${isActive ? 'scale-110 text-white' : ''} transition-transform`} />
-                        <span className="text-[13px] font-bold tracking-tight">{item.title}</span>
+                        <span className="text-[13px] font-bold tracking-tight flex-1">{item.title}</span>
+                        {badgeCount > 0 && (
+                          <span className={`
+                            min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-black flex items-center justify-center shrink-0 tabular-nums
+                            ${isActive 
+                              ? 'bg-white/20 text-white' 
+                              : 'bg-primary/10 text-primary'
+                            }
+                          `}>
+                            {badgeCount > 99 ? '99+' : badgeCount}
+                          </span>
+                        )}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

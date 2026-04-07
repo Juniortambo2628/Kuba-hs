@@ -1,12 +1,11 @@
 import * as React from "react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { motion, AnimatePresence } from "framer-motion";
-import Uppy from "@uppy/core";
+import { Uppy } from "@uppy/core";
 import DashboardModal from "@uppy/react/dashboard-modal";
-import XHRUpload from "@uppy/xhr-upload";
 import ImageEditor from "@uppy/image-editor";
 import "@uppy/core/css/style.css";
 import "@uppy/dashboard/css/style.css";
@@ -32,7 +31,11 @@ import {
   ChevronRight, 
   Upload,
   MapPin,
-  ShieldCheck
+  ShieldCheck,
+  MessageSquare,
+  Briefcase,
+  MoreHorizontal,
+  Loader2
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -43,6 +46,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import axiosInstance from "@/lib/axios";
 import { useAuth } from "@/contexts/AuthContext";
+import { Skeleton } from "@/components/ui/skeleton";
+import dynamic from "next/dynamic";
+
+const LocationPicker = dynamic(() => import("@/components/map/LocationPicker"), {
+  ssr: false,
+  loading: () => <Skeleton className="w-full h-[400px] rounded-2xl" />
+});
 
 const FORM_CONFIGS: Record<string, any> = {
   'Cleaning & Maintenance': {
@@ -141,10 +151,22 @@ const FORM_CONFIGS: Record<string, any> = {
     getQuantityBadge: () => 'Units',
     descriptionLabel: "Technical Details",
     descriptionPlaceholder: "Describe the power issue or installation needs..."
+  },
+  'Home Essentials': {
+    typeLabel: "Service Type",
+    typeOptions: [
+      { id: 'residential', label: 'Residential', icon: <Home className="w-4 h-4" /> },
+      { id: 'commercial', label: 'Commercial', icon: <Building2 className="w-4 h-4" /> },
+    ],
+    quantityLabel: "Quantity / Units",
+    quantityHint: "How many items or rooms?",
+    getQuantityBadge: () => 'Units',
+    descriptionLabel: "Details",
+    descriptionPlaceholder: "Describe what you need help with..."
   }
 };
 
-const DEFAULT_CONFIG = FORM_CONFIGS['Home Essentials'];
+const DEFAULT_CONFIG = FORM_CONFIGS['Home Essentials'] || FORM_CONFIGS['Cleaning & Maintenance'];
 
 const bookingSchema = z.object({
   service_type: z.string().min(1, "Please select an option"),
@@ -156,7 +178,15 @@ const bookingSchema = z.object({
   promo_code: z.string().optional(),
 });
 
-type BookingValues = z.infer<typeof bookingSchema>;
+interface BookingValues {
+  service_type: string;
+  quantity: number;
+  address_id: string;
+  description: string;
+  scheduled_date: string;
+  scheduled_time: string;
+  promo_code?: string;
+}
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -173,6 +203,20 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
   const [promoDiscount, setPromoDiscount] = useState<{ amount: number; code: string } | null>(null);
   const [promoError, setPromoError] = useState<string | null>(null);
   const [isValidatingPromo, setIsValidatingPromo] = useState(false);
+  const [isAddingAddress, setIsAddingAddress] = useState(false);
+  const [isSavingAddress, setIsSavingAddress] = useState(false);
+  const [newAddress, setNewAddress] = useState({
+    address_type: "home" as "home" | "work" | "other",
+    street_address: "",
+    apartment: "",
+    city: "",
+    state: "",
+    postal_code: "",
+    country: "Kenya",
+    latitude: null as number | null,
+    longitude: null as number | null,
+    is_default: false
+  });
   const { user } = useAuth();
 
   React.useEffect(() => {
@@ -194,8 +238,41 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
     }
   };
 
+  const handleCreateAddress = async () => {
+    setIsSavingAddress(true);
+    try {
+      const res = await axiosInstance.post("/api/client/addresses", newAddress);
+      toast.success("Address added successfully!");
+      const createdAddress = res.data.data || res.data.address || res.data;
+      
+      setIsAddingAddress(false);
+      setNewAddress({
+        address_type: "home",
+        street_address: "",
+        apartment: "",
+        city: "",
+        state: "",
+        postal_code: "",
+        country: "Kenya",
+        latitude: null,
+        longitude: null,
+        is_default: false
+      });
+      
+      await fetchAddresses();
+      
+      if (createdAddress && createdAddress.id) {
+        form.setValue("address_id", createdAddress.id.toString());
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to save address");
+    } finally {
+      setIsSavingAddress(false);
+    }
+  };
+
   const uppy = useMemo(() => {
-    return new Uppy({
+    const u = new Uppy({
       id: 'booking-photos',
       autoProceed: false,
       restrictions: {
@@ -203,15 +280,20 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
         allowedFileTypes: ['image/*']
       }
     })
-    .use(XHRUpload, {
-      endpoint: '/api/media/upload', // Replace with actual endpoint
-      formData: true,
-      fieldName: 'file'
-    })
     .use(ImageEditor);
+
+    // Since we don't have an upload plugin, we manually handle the "Upload" intent
+    u.on('upload', () => {
+      setShowUppy(false);
+      toast.info("Images attached! Head to the next step to finish your booking.");
+    });
+
+    return u;
   }, []);
 
+
   const config = useMemo(() => {
+    console.log("Re-calculating config for service:", service?.name, service?.category);
     if (!service) return DEFAULT_CONFIG;
     
     // Specific service name overrides
@@ -237,8 +319,9 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
 
   const form = useForm<BookingValues>({
     resolver: zodResolver(bookingSchema),
+    shouldUnregister: false,
     defaultValues: {
-      service_type: config.typeOptions[0].id,
+      service_type: 'residential',
       quantity: 1,
       address_id: "",
       description: "",
@@ -247,6 +330,28 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
       promo_code: "",
     },
   });
+
+  const watchedValues = form.watch();
+
+  useEffect(() => {
+    if (Object.keys(form.formState.errors).length > 0) {
+      console.log("LIVE Form Values (watch):", watchedValues);
+      console.log("Form Validation Errors:", form.formState.errors);
+      const firstError = Object.values(form.formState.errors)[0];
+      if (firstError?.message) {
+        toast.error(firstError.message as string);
+      }
+    }
+  }, [form.formState.errors, watchedValues]);
+
+  // Update default value if config changes (e.g. category changes)
+  useEffect(() => {
+    console.log("Config Effect Triggered:", config.typeOptions?.[0]?.id);
+    if (config?.typeOptions?.[0]?.id) {
+      form.setValue('service_type', config.typeOptions[0].id, { shouldValidate: true, shouldDirty: true });
+    }
+    form.setValue('quantity', 1, { shouldValidate: true, shouldDirty: true });
+  }, [config, form]);
 
   const handleValidatePromo = async () => {
     const code = form.getValues('promo_code');
@@ -281,10 +386,58 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
 
   // Update default value if config changes (e.g. category changes)
   React.useEffect(() => {
-    form.setValue('service_type', config.typeOptions[0].id);
+    if (config?.typeOptions?.[0]?.id) {
+      form.setValue('service_type', config.typeOptions[0].id);
+    }
+    // Explicitly ensure quantity is a number
+    form.setValue('quantity', 1);
   }, [config, form]);
 
+  const compressImage = async (file: Blob): Promise<Blob> => {
+    console.log("Compressing image:", file.size);
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onerror = () => reject(new Error("Failed to read file"));
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onerror = () => reject(new Error("Failed to load image"));
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 1200;
+          const MAX_HEIGHT = 1200;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob((blob) => {
+            console.log("Compression complete. New size:", blob?.size);
+            resolve(blob || file);
+          }, 'image/jpeg', 0.8); // 80% quality
+        };
+      };
+    });
+  };
+
   const onSubmit = async (data: BookingValues) => {
+    console.log("onSubmit triggered with data:", data);
     try {
       const formData = new FormData();
       Object.entries(data).forEach(([key, value]) => {
@@ -294,13 +447,14 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
       formData.append('service_id', service.service_id || service.id);
       formData.append('quantity_label', config.getQuantityBadge(data.service_type));
 
-      // Add Uppy files
+      // Add & Compress Uppy files
       const files = uppy.getFiles();
-      files.forEach((file, i) => {
+      for (const file of files) {
         if (file.data) {
-          formData.append(`images[${i}]`, file.data as Blob);
+          const compressed = await compressImage(file.data as Blob);
+          formData.append('images[]', compressed);
         }
-      });
+      }
 
       await axiosInstance.post('/api/client/bookings', formData);
       setIsSuccess(true);
@@ -379,6 +533,12 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
           ) : (
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                {/* Always register these fields so they are never lost regardless of step */}
+                <div className="hidden">
+                  <FormField control={form.control} name="service_type" render={() => <input type="hidden" />} />
+                  <FormField control={form.control} name="quantity" render={() => <input type="hidden" />} />
+                </div>
+                
                 {/* Step indicator */}
                 <div className="flex items-center gap-4">
                   {[1, 2].map((s) => (
@@ -464,22 +624,126 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
                         <FormItem className="space-y-3">
                           <FormLabel className="text-sm font-bold text-gray-900 dark:text-white flex items-center justify-between">
                             Service Address
-                            {addresses.length === 0 && (
-                                <Link href="/dashboard/client/profile" className="text-[10px] text-sky-600 uppercase font-black">Add New Address</Link>
-                            )}
+                            <button
+                              type="button"
+                              onClick={() => setIsAddingAddress(!isAddingAddress)}
+                              className="text-[10px] text-blue-600 dark:text-blue-400 uppercase font-bold tracking-widest hover:underline"
+                            >
+                              {isAddingAddress ? "Cancel" : addresses.length === 0 ? "Add New Address" : "Add New Address"}
+                            </button>
                           </FormLabel>
                           <FormControl>
-                            <select 
-                              className="w-full h-12 px-4 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl text-xs font-bold focus:ring-2 focus:ring-blue-500 transition-all appearance-none outline-none"
-                              {...field}
-                            >
-                              <option value="">Select an address</option>
-                              {addresses.map((addr) => (
-                                <option key={addr.id} value={addr.id}>
-                                  {addr.street_address}, {addr.city}
-                                </option>
-                              ))}
-                            </select>
+                            {isAddingAddress ? (
+                              <div className="space-y-4 p-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10">
+                                <div className="space-y-2">
+                                  <label className="text-[10px] font-bold text-gray-500 uppercase">Address Type</label>
+                                  <div className="flex gap-2">
+                                    {[
+                                      { id: 'home', label: 'Home', icon: Home },
+                                      { id: 'work', label: 'Work', icon: Briefcase },
+                                      { id: 'other', label: 'Other', icon: MoreHorizontal }
+                                    ].map((type) => (
+                                      <button
+                                        key={type.id}
+                                        type="button"
+                                        onClick={() => setNewAddress({...newAddress, address_type: type.id as any})}
+                                        className={`flex-1 flex items-center justify-center gap-2 h-10 rounded-xl text-[10px] font-bold uppercase border transition-all ${
+                                          newAddress.address_type === type.id 
+                                            ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-600/20' 
+                                            : 'bg-white dark:bg-[#0B0F19] border-gray-100 dark:border-white/5 text-gray-500 hover:border-blue-200'
+                                        }`}
+                                      >
+                                        <type.icon className="w-3.5 h-3.5" />
+                                        {type.label}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div className="col-span-2 space-y-1">
+                                    <label className="text-[10px] font-bold text-gray-500 uppercase">Street Address</label>
+                                    <Input 
+                                      value={newAddress.street_address} 
+                                      onChange={e => setNewAddress({...newAddress, street_address: e.target.value})}
+                                      className="bg-white dark:bg-[#0B0F19] h-10 text-xs" 
+                                      placeholder="e.g. 123 Main St"
+                                    />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <label className="text-[10px] font-bold text-gray-500 uppercase">Apt/Suite</label>
+                                    <Input 
+                                      value={newAddress.apartment} 
+                                      onChange={e => setNewAddress({...newAddress, apartment: e.target.value})}
+                                      className="bg-white dark:bg-[#0B0F19] h-10 text-xs" 
+                                      placeholder="Optional"
+                                    />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <label className="text-[10px] font-bold text-gray-500 uppercase">City</label>
+                                    <Input 
+                                      value={newAddress.city} 
+                                      onChange={e => setNewAddress({...newAddress, city: e.target.value})}
+                                      className="bg-white dark:bg-[#0B0F19] h-10 text-xs" 
+                                      placeholder="e.g. Nairobi"
+                                    />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <label className="text-[10px] font-bold text-gray-500 uppercase">State / County</label>
+                                    <Input 
+                                      value={newAddress.state} 
+                                      onChange={e => setNewAddress({...newAddress, state: e.target.value})}
+                                      className="bg-white dark:bg-[#0B0F19] h-10 text-xs" 
+                                      placeholder="e.g. Nairobi County"
+                                    />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <label className="text-[10px] font-bold text-gray-500 uppercase">Postal Code</label>
+                                    <Input 
+                                      value={newAddress.postal_code} 
+                                      onChange={e => setNewAddress({...newAddress, postal_code: e.target.value})}
+                                      className="bg-white dark:bg-[#0B0F19] h-10 text-xs" 
+                                      placeholder="e.g. 00100"
+                                    />
+                                  </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <label className="text-[10px] font-bold text-gray-500 uppercase flex items-center justify-between">
+                                    Pin Exact Location
+                                    {newAddress.latitude && (
+                                      <span className="text-sky-500 lowercase font-medium">Coordinates Set</span>
+                                    )}
+                                  </label>
+                                  <div className="relative">
+                                    <LocationPicker 
+                                      position={newAddress.latitude && newAddress.longitude ? [newAddress.latitude, newAddress.longitude] : null}
+                                      onChange={(lat: number, lng: number) => setNewAddress({...newAddress, latitude: lat, longitude: lng})}
+                                    />
+                                  </div>
+                                </div>
+
+                                <Button 
+                                  type="button" 
+                                  onClick={handleCreateAddress}
+                                  disabled={isSavingAddress || !newAddress.street_address || !newAddress.city || !newAddress.state || !newAddress.postal_code}
+                                  className="w-full text-xs font-bold uppercase rounded-xl h-10 bg-blue-600 hover:bg-blue-700 text-white"
+                                >
+                                  {isSavingAddress ? "Saving..." : "Save Address"}
+                                </Button>
+                              </div>
+                            ) : (
+                              <select 
+                                className="w-full h-12 px-4 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl text-xs font-bold focus:ring-2 focus:ring-blue-500 transition-all appearance-none outline-none"
+                                {...field}
+                              >
+                                <option value="">Select an address</option>
+                                {addresses.map((addr) => (
+                                  <option key={addr.id} value={addr.id}>
+                                    {addr.street_address}, {addr.city}
+                                  </option>
+                                ))}
+                              </select>
+                            )}
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -523,6 +787,10 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
                         onRequestClose={() => setShowUppy(false)}
                         plugins={['ImageEditor']}
                         proudlyDisplayPoweredByUppy={false}
+                        metaFields={[]}
+                        closeAfterFinish={true}
+                        hideUploadButton={false} // Keep it but we handle it via the 'upload' event above
+                        note="Add up to 5 photos. Click 'Upload' to confirm they are ready."
                       />
                       <p className="text-[10px] text-gray-400 flex items-center gap-1 mt-2">
                         <AlertCircle className="w-3 h-3" /> Helps pros assess materials & severity
@@ -639,12 +907,23 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
                   )}
                   <Button 
                     type={step === 1 ? "button" : "submit"}
-                    onClick={() => step === 1 && setStep(2)}
+                    onClick={(e) => {
+                        if (step === 1) {
+                            e.preventDefault();
+                            setStep(2);
+                        }
+                    }}
                     disabled={form.formState.isSubmitting}
                     className="flex-[2] h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold shadow-lg shadow-blue-500/20"
                   >
-                    {form.formState.isSubmitting ? "Processing..." : step === 1 ? "Next Step" : "Confirm Booking"}
-                    {step === 1 && <ChevronRight className="ml-2 w-5 h-5" />}
+                    {form.formState.isSubmitting ? (
+                        <div className="flex items-center gap-2">
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                            <span>Sending...</span>
+                        </div>
+                    ) : step === 1 ? (
+                        <>Next Step <ChevronRight className="ml-2 w-5 h-5" /></>
+                    ) : "Confirm Booking"}
                   </Button>
                 </div>
               </form>

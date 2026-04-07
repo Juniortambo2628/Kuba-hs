@@ -9,7 +9,7 @@ use Illuminate\Notifications\Notification;
 
 use App\Models\Booking;
 
-class BookingStatusUpdated extends Notification
+class BookingStatusUpdated extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -28,11 +28,7 @@ class BookingStatusUpdated extends Notification
      */
     public function via(object $notifiable): array
     {
-        $channels = ['database', 'broadcast'];
-        if (config('mail.default') !== 'log' && config('mail.default') !== 'array') {
-            $channels[] = 'mail';
-        }
-        return $channels;
+        return ['database', 'broadcast'];
     }
 
     /**
@@ -55,7 +51,7 @@ class BookingStatusUpdated extends Notification
             'service_name' => $this->booking->service->name,
             'status' => strtoupper($this->booking->status),
             'dashboard_url' => url('/dashboard'),
-        ], $notifiable->role === 'customer' ? $this->booking->customer : $this->booking->provider->user));
+        ], $notifiable));
     }
 
     /**
@@ -65,12 +61,16 @@ class BookingStatusUpdated extends Notification
      */
     public function toArray(object $notifiable): array
     {
+        $dashboardRole = $notifiable->role === 'provider' ? 'provider' : 'client';
+
         return [
+            'type' => 'booking_status',
             'booking_id' => $this->booking->id,
             'booking_number' => $this->booking->booking_number,
             'status' => $this->booking->status,
+            'title' => 'Booking Update',
             'message' => "Booking #{$this->booking->booking_number} status updated to {$this->booking->status}",
-            'url' => route('dashboard'),
+            'url' => "/dashboard/{$dashboardRole}/bookings/{$this->booking->id}",
         ];
     }
 }
