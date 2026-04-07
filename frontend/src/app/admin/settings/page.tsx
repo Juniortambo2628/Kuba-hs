@@ -484,7 +484,7 @@ export default function UnifiedSettingsPage() {
                 id: groupId,
                 ...config,
                 // Filter out json settings so they don't render generically (e.g. navigation_menu)
-                settings: (settings[groupId] || []).filter(s => s.type !== 'json')
+                settings: ((settings[groupId] || []) as Setting[]).filter((s: Setting) => s.type !== 'json')
             }))
             .filter(group => group.settings.length > 0);
     };
