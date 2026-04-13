@@ -57,11 +57,11 @@ export function Navbar() {
         <div className="container mx-auto px-4 lg:px-8 h-full flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Link href="/" className="inline-flex items-center gap-2 mb-4">
-                  <div className="relative h-10 w-40 dark:hidden">
-                    <Image src="/assets/Kuba-Header-footter-Logo-for-Light-Mode.png" alt="Kuba" fill sizes="(max-width: 768px) 160px, 160px" className="object-contain" priority />
+                  <div className="relative h-12 w-48 dark:hidden">
+                    <Image src="/assets/Kuba-Header-footter-Logo-for-Light-Mode.png" alt="Kuba" fill sizes="(max-width: 768px) 192px, 192px" className="object-contain" priority />
                   </div>
-                  <div className="relative h-10 w-40 hidden dark:block">
-                    <Image src="/assets/Kuba-Header-Footer-Logo-for-Dark-Mode.png" alt="Kuba" fill sizes="(max-width: 768px) 160px, 160px" className="object-contain" priority />
+                  <div className="relative h-12 w-48 hidden dark:block">
+                    <Image src="/assets/Kuba-Header-Footer-Logo-for-Dark-Mode.png" alt="Kuba" fill sizes="(max-width: 768px) 192px, 192px" className="object-contain" priority />
                   </div>
                 </Link>
           </div>
@@ -79,11 +79,11 @@ export function Navbar() {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
             <Link href="/" className="inline-flex items-center gap-2 group">
-              <div className="relative h-10 w-40 dark:hidden">
-                <Image src={getImg('identity', 'logo_light', '/assets/Kuba-Header-footter-Logo-for-Light-Mode.png')} alt="Kuba" fill sizes="(max-width: 768px) 160px, 160px" className="object-contain" priority />
+              <div className="relative h-12 w-48 dark:hidden">
+                <Image src={getImg('identity', 'logo_light', '/assets/Kuba-Header-footter-Logo-for-Light-Mode.png')} alt="Kuba" fill sizes="(max-width: 768px) 192px, 192px" className="object-contain" priority />
               </div>
-              <div className="relative h-10 w-40 hidden dark:block">
-                <Image src={getImg('identity', 'logo_dark', '/assets/Kuba-Header-Footer-Logo-for-Dark-Mode.png')} alt="Kuba" fill sizes="(max-width: 768px) 160px, 160px" className="object-contain" priority />
+              <div className="relative h-12 w-48 hidden dark:block">
+                <Image src={getImg('identity', 'logo_dark', '/assets/Kuba-Header-Footer-Logo-for-Dark-Mode.png')} alt="Kuba" fill sizes="(max-width: 768px) 192px, 192px" className="object-contain" priority />
               </div>
             <span className="sr-only">KUBA</span>
           </Link>
@@ -230,11 +230,11 @@ export function Navbar() {
                   {/* Header */}
                   <div className="px-6 pt-8 pb-4 border-b border-gray-100 dark:border-white/5">
                     <Link href="/" className="inline-flex items-center gap-2">
-                      <div className="relative h-9 w-36 dark:hidden">
-                        <Image src={getImg('identity', 'logo_light', '/assets/Kuba-Header-footter-Logo-for-Light-Mode.png')} alt="Kuba" fill sizes="144px" className="object-contain" />
+                      <div className="relative h-11 w-44 dark:hidden">
+                        <Image src={getImg('identity', 'logo_light', '/assets/Kuba-Header-footter-Logo-for-Light-Mode.png')} alt="Kuba" fill sizes="176px" className="object-contain" />
                       </div>
-                      <div className="relative h-9 w-36 hidden dark:block">
-                        <Image src={getImg('identity', 'logo_dark', '/assets/Kuba-Header-Footer-Logo-for-Dark-Mode.png')} alt="Kuba" fill sizes="144px" className="object-contain" />
+                      <div className="relative h-11 w-44 hidden dark:block">
+                        <Image src={getImg('identity', 'logo_dark', '/assets/Kuba-Header-Footer-Logo-for-Dark-Mode.png')} alt="Kuba" fill sizes="176px" className="object-contain" />
                       </div>
                     </Link>
                   </div>
