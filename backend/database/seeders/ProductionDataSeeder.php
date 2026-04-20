@@ -153,6 +153,8 @@ class ProductionDataSeeder extends Seeder
                     ['name' => 'Upholstery & Carpet Cleaning', 'desc' => 'Professional steaming and stain removal.'],
                     ['name' => 'Shared Spaces Maintenance', 'desc' => 'Cleaning and upkeep of communal areas in estates.'],
                     ['name' => 'Compound Management', 'desc' => 'Landscaping, waste disposal, and general compound care.'],
+                    ['name' => 'Leak Detection & Repair', 'desc' => 'Finding and fixing hidden water leaks (Plumbing).'],
+                    ['name' => 'Drain Unblocking', 'desc' => 'Clearing clogged sinks, toilets, and floor drains (Plumbing).'],
                 ]
             ],
             'Health & Wellness' => [
@@ -162,6 +164,20 @@ class ProductionDataSeeder extends Seeder
                     ['name' => 'Mental Health Counseling', 'desc' => 'Professional therapy and emotional support sessions.'],
                     ['name' => 'Basic Health Checkups', 'desc' => 'Routine monitoring of vitals and general wellness exams.'],
                     ['name' => 'Corporate Wellness Programs', 'desc' => 'Mental health and physical wellness for employees.'],
+                    ['name' => 'Massage Therapy', 'desc' => 'Relaxing and therapeutic massage sessions at your location.'],
+                    ['name' => 'Fitness Therapy & Trainers', 'desc' => 'Personalized workout sessions with certified instructors.'],
+                    ['name' => 'Doulas', 'desc' => 'Professional birth and postpartum support.'],
+                ]
+            ],
+            'Personal & Grooming' => [
+                'icon' => 'Scissors',
+                'services' => [
+                    ['name' => 'Barbers', 'desc' => 'Professional men\'s haircuts and grooming.'],
+                    ['name' => 'Hair Stylists', 'desc' => 'Expert hair styling and treatment.'],
+                    ['name' => 'Waxing', 'desc' => 'Professional hair removal services.'],
+                    ['name' => 'Eyelashes & Eyebrows', 'desc' => 'Enhancement and shaping services.'],
+                    ['name' => 'Nails', 'desc' => 'Manicures, pedicures, and nail art.'],
+                    ['name' => 'Personal Shoppers', 'desc' => 'Dedicated shopping assistance and styling.'],
                 ]
             ],
             'Education & Training' => [
@@ -199,18 +215,60 @@ class ProductionDataSeeder extends Seeder
                     ['name' => 'Delivery & Logistics', 'desc' => 'Efficient transport and supply chain solutions.'],
                 ]
             ],
-            'Plumbing' => [
-                'icon' => 'Droplets',
-                'services' => [
-                    ['name' => 'Leak Detection & Repair', 'desc' => 'Finding and fixing hidden water leaks.'],
-                    ['name' => 'Drain Unblocking', 'desc' => 'Clearing clogged sinks, toilets, and floor drains.'],
-                ]
-            ],
             'Electrical' => [
                 'icon' => 'Zap',
                 'services' => [
                     ['name' => 'Electrical Troubleshooting', 'desc' => 'Diagnosing power surges and circuit failures.'],
                     ['name' => 'Solar Power Setup', 'desc' => 'Installation of solar panels and battery systems.'],
+                ]
+            ],
+            'Legal Services' => [
+                'icon' => 'Scale',
+                'services' => [
+                    ['name' => 'Business/Corporate Law', 'desc' => 'Corporate structuring and legal advisory.'],
+                    ['name' => 'Real Estate Law', 'desc' => 'Property transactions and dispute resolution.'],
+                    ['name' => 'Employment & Labor Law', 'desc' => 'Workplace compliance and contract advisory.'],
+                    ['name' => 'Intellectual Property (IP) Law', 'desc' => 'Trademarks, patents, and copyright protection.'],
+                ]
+            ],
+            'Financial Services' => [
+                'icon' => 'Landmark',
+                'services' => [
+                    ['name' => 'Banking', 'desc' => 'Corporate banking solutions and advisory.'],
+                    ['name' => 'Insurance', 'desc' => 'Comprehensive risk matching and coverage.'],
+                    ['name' => 'Financial Asset Management', 'desc' => 'Investment and portfolio structuring.'],
+                    ['name' => 'Wealth Management', 'desc' => 'Private wealth advisory.'],
+                ]
+            ],
+            'Commercial Real Estate' => [
+                'icon' => 'Building',
+                'services' => [
+                    ['name' => 'Corporate Property Services', 'desc' => 'Leasing and commercial property administration.'],
+                    ['name' => 'Business Brokerage', 'desc' => 'Buying and selling commercial entities.'],
+                ]
+            ],
+            'Professional Services' => [
+                'icon' => 'Briefcase',
+                'services' => [
+                    ['name' => 'Consulting', 'desc' => 'Strategic business and management consulting.'],
+                    ['name' => 'Business Support', 'desc' => 'Administrative and back-office solutions.'],
+                    ['name' => 'Corporate Services', 'desc' => 'Registration and compliance services.'],
+                ]
+            ],
+            'Technology & IT Services' => [
+                'icon' => 'Laptop',
+                'services' => [
+                    ['name' => 'Tech Support', 'desc' => 'On-demand hardware and network assistance.'],
+                    ['name' => 'IT Consulting', 'desc' => 'Systems architecture and digital transformation.'],
+                    ['name' => 'Cloud Services', 'desc' => 'Cloud migration and infrastructure management.'],
+                ]
+            ],
+            'HR Services' => [
+                'icon' => 'Users',
+                'services' => [
+                    ['name' => 'Staffing Agencies', 'desc' => 'Temporary and permanent staff placement.'],
+                    ['name' => 'Payroll Management', 'desc' => 'Outsourced payroll processing and compliance.'],
+                    ['name' => 'Recruitment Firms', 'desc' => 'Executive search and talent acquisition.'],
                 ]
             ],
         ];
