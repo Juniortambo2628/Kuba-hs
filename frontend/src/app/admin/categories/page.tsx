@@ -210,7 +210,7 @@ export default function AdminCategories() {
                                         {catForm.image ? (
                                             <img src={URL.createObjectURL(catForm.image)} alt="Preview" className="w-full h-full object-cover" />
                                         ) : selectedCat?.image_url ? (
-                                            <img src={`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, '') || 'http://localhost:8000'}/storage/${selectedCat.image_url}`} alt="Category" className="w-full h-full object-cover" />
+                                            <img src={`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, '') || 'http://localhost:8000'}/storage/${selectedCat.image_url.replace(/^\//, '').replace(/^storage\//, '')}`} alt="Category" className="w-full h-full object-cover" />
                                         ) : (
                                             <Sparkles className="w-8 h-8 text-muted-foreground/20" />
                                         )}

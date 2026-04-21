@@ -168,7 +168,7 @@ const ImageManagementDialog = ({
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="p-8 space-y-8">
+                <div className="p-8 space-y-8 max-h-[60vh] overflow-y-auto premium-scrollbar">
                     {/* Visual Comparison */}
                     <div className="grid grid-cols-1 gap-6">
                         <div className="space-y-3">
@@ -243,9 +243,14 @@ const ImageManagementDialog = ({
                     <Button 
                         size="lg"
                         className="bg-primary hover:bg-primary/90 text-white rounded-2xl text-[10px] font-black tracking-widest h-14 px-12 shadow-xl shadow-primary/20"
-                        onClick={() => onOpenChange(false)}
+                        onClick={() => {
+                            toast.info("Asset staged! Click 'Save Configuration' at the top to apply changes.", {
+                                duration: 4000,
+                            });
+                            onOpenChange(false);
+                        }}
                     >
-                        APPLY CHANGE
+                        STAGE FOR UPLOAD
                     </Button>
                 </DialogFooter>
             </DialogContent>
@@ -389,7 +394,7 @@ export default function UnifiedSettingsPage() {
             }
             return "";
         }
-        const finalUrl = url.startsWith('http') ? url : `${BACKEND_URL}${url}`;
+        const finalUrl = url.startsWith('http') ? url : `${BACKEND_URL}/${url.replace(/^\//, '')}`;
         // Only use /cms-assets/ proxy in local dev (artisan serve CORS workaround)
         if (finalUrl.includes('localhost') && finalUrl.includes('/storage/')) {
             return finalUrl.replace('/storage/', '/cms-assets/');

@@ -65,7 +65,7 @@ export function CMSProvider({ children }: { children: React.ReactNode }) {
     const setting = settings[group]?.[key];
     const url = setting?.image_url || setting?.value;
     if (!url || (setting?.type === 'image' && !url)) return fallback;
-    const finalUrl = url.startsWith('http') ? url : `${BACKEND_URL}${url}`;
+    const finalUrl = url.startsWith('http') ? url : `${BACKEND_URL}/${url.replace(/^\//, '')}`;
     
     // Local dev workaround for storage files
     if (finalUrl.includes('localhost') && finalUrl.includes('/storage/')) {

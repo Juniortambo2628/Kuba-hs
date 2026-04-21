@@ -45,9 +45,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="icon" href="/favicon.png" />
-      </head>
+      <head />
       <body
         className={`${inter.variable} ${geistMono.variable} antialiased bg-white dark:bg-[#0B0F19] text-gray-900 dark:text-white transition-colors duration-300`}
       >

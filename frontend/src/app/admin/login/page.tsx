@@ -7,10 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Lock } from "lucide-react";
+import { useCMS } from "@/contexts/CMSContext";
 import Link from "next/link";
 
 function AdminLoginForm() {
   const { login, user, isLoading: authLoading } = useAuth();
+  const { getS, getImg } = useCMS();
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get("redirect") || "";
@@ -50,11 +52,11 @@ function AdminLoginForm() {
         <div className="w-full max-w-sm space-y-8">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <div className="relative h-8 w-32 dark:hidden">
-              <img src="/assets/branding/logo-light.png" alt="KUBA" className="h-8 w-auto object-contain" />
+            <div className="relative h-12 w-48 dark:hidden">
+              <img src={getImg('identity', 'logo_light', '/assets/branding/Kuba-Logo-Login-Light-mode.png')} alt="KUBA" className="h-full w-auto object-contain" />
             </div>
-            <div className="relative h-8 w-32 hidden dark:block">
-              <img src="/assets/branding/logo-dark.png" alt="KUBA" className="h-8 w-auto object-contain" />
+            <div className="relative h-12 w-48 hidden dark:block">
+              <img src={getImg('identity', 'logo_dark', '/assets/branding/Kuba-Logo-Login-Dark-mode.png')} alt="KUBA" className="h-full w-auto object-contain" />
             </div>
           </Link>
 

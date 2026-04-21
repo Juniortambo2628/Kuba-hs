@@ -76,19 +76,71 @@ class UpdateClientCategoriesSeeder extends Seeder
                 );
             }
 
-            // 4. Ensure some specific services exist for new categories if they don't
+            // 4. Ensure specific services exist for all categories to populate the megamenu
             $extraServices = [
+                'Cleaning & Maintenance' => [
+                    ['name' => 'Standard Home Cleaning', 'desc' => 'General cleaning of all living areas.'],
+                    ['name' => 'Deep Cleaning', 'desc' => 'Intensive cleaning for move-ins or seasonal refreshes.'],
+                    ['name' => 'Post-Construction Cleaning', 'desc' => 'Debris and dust removal after renovations.'],
+                    ['name' => 'Upholstery & Carpet Cleaning', 'desc' => 'Professional steam and dry cleaning for furniture.'],
+                    ['name' => 'Shared Spaces Maintenance', 'desc' => 'Cleaning for apartment lobbies and common areas.'],
+                    ['name' => 'Compound Management', 'desc' => 'Landscaping, waste, and external maintenance.'],
+                    ['name' => 'Leak Detection & Repair', 'desc' => 'Finding and fixing plumbing leaks.'],
+                    ['name' => 'Drain Unblocking', 'desc' => 'Clearing clogged sinks, toilets, and drains.'],
+                ],
+                'Health & Wellness' => [
+                    ['name' => 'Telehealth Consultation', 'desc' => 'Virtual medical advice from licensed doctors.'],
+                    ['name' => 'Mental Health Counseling', 'desc' => 'Private sessions with certified therapists.'],
+                    ['name' => 'Basic Health Checkups', 'desc' => 'Routine screenings and wellness monitoring.'],
+                    ['name' => 'Corporate Wellness Programs', 'desc' => 'Health workshops and initiatives for employees.'],
+                ],
+                'Personal & Grooming' => [
+                    ['name' => 'Standard Haircut', 'desc' => 'Professional barber and styling services at home.'],
+                    ['name' => 'Home Manicure/Pedicure', 'desc' => 'Nail care and aesthetics delivered to your door.'],
+                    ['name' => 'Skin & Beauty Treatments', 'desc' => 'Facials and skin therapy sessions.'],
+                ],
+                'Education & Training' => [
+                    ['name' => 'Digital Skills Training', 'desc' => 'Workshops on modern software and tech tools.'],
+                    ['name' => 'Financial Literacy Workshop', 'desc' => 'Personal finance management and investment training.'],
+                    ['name' => 'Upskilling Programs', 'desc' => 'Specialized career training and certifications.'],
+                ],
+                'Food & Hospitality' => [
+                    ['name' => 'Bulk Order Delivery', 'desc' => 'Large scale food delivery for events or offices.'],
+                    ['name' => 'Catering for Groups', 'desc' => 'Professional catering services for small to large gatherings.'],
+                    ['name' => 'Short-stay Management', 'desc' => 'Host services for Airbnb and guest properties.'],
+                ],
+                'Electrical' => [
+                    ['name' => 'Electrical Troubleshooting', 'desc' => 'Diagnosing and fixing domestic power issues.'],
+                    ['name' => 'Solar Power Setup', 'desc' => 'Installation and maintenance of solar PV systems.'],
+                ],
                 'Legal Services' => [
+                    ['name' => 'Legal Documentation', 'desc' => 'Drafting and reviewing contracts and agreements.'],
                     ['name' => 'Business/Corporate Law', 'desc' => 'Corporate structuring and legal advisory.'],
                     ['name' => 'Real Estate Law', 'desc' => 'Property transactions and dispute resolution.'],
                 ],
                 'Financial Services' => [
+                    ['name' => 'SACCO Support & Advisory', 'desc' => 'Strategic guidance for cooperative societies.'],
+                    ['name' => 'Tax & Business Advisory', 'desc' => 'KRA compliance and financial planning.'],
                     ['name' => 'Banking', 'desc' => 'Corporate banking solutions and advisory.'],
                     ['name' => 'Insurance', 'desc' => 'Comprehensive risk matching and coverage.'],
+                ],
+                'Commercial Real Estate' => [
+                    ['name' => 'Property Valuation', 'desc' => 'Accurate market valuation for commercial assets.'],
+                    ['name' => 'Facility Management', 'desc' => 'Comprehensive operations for office buildings.'],
+                ],
+                'Professional Services' => [
+                    ['name' => 'Business Compliance Services', 'desc' => 'KRA, NSSF, NHIF, and Registrar of Companies filings.'],
+                ],
+                'Technology & IT Services' => [
+                    ['name' => 'IT & Tech Support', 'desc' => 'Remote and on-site technical troubleshooting.'],
+                    ['name' => 'Security Guard Services', 'desc' => 'Manned guarding and surveillance for businesses.'],
                 ],
                 'HR Services' => [
                     ['name' => 'Staffing Agencies', 'desc' => 'Temporary and permanent staff placement.'],
                     ['name' => 'Payroll Management', 'desc' => 'Outsourced payroll processing and compliance.'],
+                ],
+                'Commercial Logistics' => [
+                    ['name' => 'Delivery & Logistics', 'desc' => 'B2B courier and supply chain transport.'],
                 ],
             ];
 
