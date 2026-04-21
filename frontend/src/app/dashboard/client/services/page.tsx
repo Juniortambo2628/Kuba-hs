@@ -7,22 +7,28 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
- MapPin, 
- Plus, 
- Home, 
- Map, 
- MoreHorizontal,
- Navigation,
- CheckCircle2,
- Trash2,
- Loader2,
- AlertCircle,
- ShieldCheck,
- Zap,
- Globe,
- Compass
+  MapPin, 
+  Plus, 
+  Home, 
+  Map as MapIcon, 
+  MoreHorizontal,
+  Navigation,
+  CheckCircle2,
+  Trash2,
+  Loader2,
+  AlertCircle,
+  ShieldCheck,
+  Zap,
+  Globe,
+  Compass
 } from "lucide-react";
 import { toast } from "sonner";
+import dynamic from "next/dynamic";
+
+const LocationPicker = dynamic(() => import("@/components/map/LocationPicker"), {
+  ssr: false,
+  loading: () => <Skeleton className="w-full h-[400px] rounded-2xl" />
+});
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -49,6 +55,8 @@ export default function ServiceAddresses() {
   state: "",
   postal_code: "",
   country: "Kenya",
+  latitude: null as number | null,
+  longitude: null as number | null,
   is_default: false
  });
 
@@ -73,7 +81,12 @@ export default function ServiceAddresses() {
   e.preventDefault();
   setIsSaving(true);
   try {
-   await axiosInstance.post("/api/client/addresses", newAddress);
+   const payload = {
+     ...newAddress,
+     latitude: newAddress.latitude || -1.2921, // Nairobi default
+     longitude: newAddress.longitude || 36.8219
+   };
+   await axiosInstance.post("/api/client/addresses", payload);
    toast.success("Address registered successfully");
    setIsAddingAddress(false);
    setNewAddress({
@@ -83,6 +96,8 @@ export default function ServiceAddresses() {
     state: "",
     postal_code: "",
     country: "Kenya",
+    latitude: null,
+    longitude: null,
     is_default: false
    });
    fetchAddresses();
@@ -178,6 +193,21 @@ export default function ServiceAddresses() {
                 className="w-full h-14 px-6 bg-muted/50 border-none rounded-2xl text-[11px] font-semibold focus:ring-2 focus:ring-sky-100 transition-all" 
                 required
               />
+            </div>
+            
+            <div className="col-span-1 md:col-span-2 space-y-3">
+              <label className="text-[10px] font-semibold text-foreground uppercase tracking-normal ml-1 opacity-40 flex justify-between">
+                Pin Exact Location
+                {newAddress.latitude && (
+                  <span className="text-primary lowercase font-medium">Coordinates Captured</span>
+                )}
+              </label>
+              <div className="rounded-[2rem] overflow-hidden border border-border/50 shadow-inner">
+                <LocationPicker 
+                  position={newAddress.latitude && newAddress.longitude ? [newAddress.latitude, newAddress.longitude] : null}
+                  onChange={(lat, lng) => setNewAddress(prev => ({ ...prev, latitude: lat, longitude: lng }))}
+                />
+              </div>
             </div>
           </div>
 
