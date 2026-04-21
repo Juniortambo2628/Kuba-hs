@@ -88,8 +88,10 @@ export function useActivityCounts() {
         verification: pendingVerification,
         quotes: pendingQuotes,
       });
-    } catch (err) {
-      console.error("Failed to fetch activity counts", err);
+    } catch (err: any) {
+      if (err.response?.status !== 401) {
+        console.error("Failed to fetch activity counts", err);
+      }
     }
   }, [user]);
 
