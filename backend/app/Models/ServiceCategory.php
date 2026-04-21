@@ -17,6 +17,7 @@ class ServiceCategory extends Model implements HasMedia
 
     protected $fillable = [
         'name',
+        'type',
         'parent_category_id',
         'description',
         'icon_url',

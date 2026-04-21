@@ -35,7 +35,8 @@ import {
   MessageSquare,
   Briefcase,
   MoreHorizontal,
-  Loader2
+  Loader2,
+  Users
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -80,6 +81,18 @@ const FORM_CONFIGS: Record<string, any> = {
     descriptionLabel: "Health Concerns / Notes",
     descriptionPlaceholder: "Briefly describe your concerns or specific needs..."
   },
+  'Personal & Grooming': {
+    typeLabel: "Service Mode",
+    typeOptions: [
+      { id: 'at_home', label: 'At My Location', icon: <Home className="w-4 h-4" /> },
+      { id: 'at_salon', label: 'At Provider Salon', icon: <Building2 className="w-4 h-4" /> },
+    ],
+    quantityLabel: "Number of Persons",
+    quantityHint: "How many people need grooming?",
+    getQuantityBadge: () => 'Persons',
+    descriptionLabel: "Style / Requirement Details",
+    descriptionPlaceholder: "Describe your preferred style, hair length, or specific treatment..."
+  },
   'Education & Training': {
     typeLabel: "Session Mode",
     typeOptions: [
@@ -92,17 +105,83 @@ const FORM_CONFIGS: Record<string, any> = {
     descriptionLabel: "Learning Goals",
     descriptionPlaceholder: "Describe what you want to learn or achieve..."
   },
-  'Financial & Legal': {
-    typeLabel: "Engagement Type",
+  'Legal Services': {
+    typeLabel: "Consultation Type",
     typeOptions: [
-      { id: 'advisory', label: 'Advisory', icon: <Info className="w-4 h-4" /> },
-      { id: 'compliance', label: 'Compliance/Docs', icon: <ShieldCheck className="w-4 h-4" /> },
+      { id: 'legal_advice', label: 'Legal Advice', icon: <Info className="w-4 h-4" /> },
+      { id: 'litigation', label: 'Litigation/Court', icon: <ShieldCheck className="w-4 h-4" /> },
+      { id: 'conveyancing', label: 'Conveyancing', icon: <Building2 className="w-4 h-4" /> },
     ],
-    quantityLabel: "Estimated Scope",
-    quantityHint: "e.g. Hours or Document Count",
+    quantityLabel: "Estimated Hours",
+    quantityHint: "Initial engagement estimate",
+    getQuantityBadge: () => 'Hours',
+    descriptionLabel: "Case / Matter Details",
+    descriptionPlaceholder: "Briefly explain the legal assistance or documentation required..."
+  },
+  'Financial Services': {
+    typeLabel: "Engagement Scope",
+    typeOptions: [
+      { id: 'advisory', label: 'Advisory/Tax', icon: <Info className="w-4 h-4" /> },
+      { id: 'audit', label: 'Audit/Compliance', icon: <ShieldCheck className="w-4 h-4" /> },
+      { id: 'sacco', label: 'SACCO Setup', icon: <Building2 className="w-4 h-4" /> },
+    ],
+    quantityLabel: "Transaction Volume / Scope",
+    quantityHint: "e.g. Transaction count or staff size",
     getQuantityBadge: () => 'Units',
-    descriptionLabel: "Requirement Details",
-    descriptionPlaceholder: "Describe the financial or legal assistance needed..."
+    descriptionLabel: "Financial Requirements",
+    descriptionPlaceholder: "Detail your tax, accounting, or advisory needs..."
+  },
+  'Commercial Real Estate': {
+    typeLabel: "Facility Type",
+    typeOptions: [
+      { id: 'office', label: 'Office/Business', icon: <Building2 className="w-4 h-4" /> },
+      { id: 'retail', label: 'Retail/Mall', icon: <Home className="w-4 h-4" /> },
+      { id: 'industrial', label: 'Industrial/Warehouse', icon: <Factory className="w-4 h-4" /> },
+    ],
+    quantityLabel: "Area Size (Sqft)",
+    quantityHint: "Estimated square footage",
+    getQuantityBadge: () => 'Sqft',
+    descriptionLabel: "Property Needs",
+    descriptionPlaceholder: "Describe the property details or management requirements..."
+  },
+  'Professional Services': {
+    typeLabel: "Service Area",
+    typeOptions: [
+      { id: 'consulting', label: 'Strategy Consulting', icon: <Info className="w-4 h-4" /> },
+      { id: 'admin', label: 'Admin Support', icon: <Briefcase className="w-4 h-4" /> },
+      { id: 'compliance', label: 'Corporate Compliance', icon: <ShieldCheck className="w-4 h-4" /> },
+    ],
+    quantityLabel: "Estimated Task Scope",
+    quantityHint: "e.g. Hours or projects",
+    getQuantityBadge: () => 'Units',
+    descriptionLabel: "Project Brief",
+    descriptionPlaceholder: "Detail the professional assistance or strategy needed..."
+  },
+  'Technology & IT Services': {
+    typeLabel: "Support Tier",
+    typeOptions: [
+      { id: 'remote', label: 'Remote Support', icon: <Home className="w-4 h-4" /> },
+      { id: 'on_site', label: 'On-site Repair', icon: <Building2 className="w-4 h-4" /> },
+      { id: 'project', label: 'Project/Dev', icon: <Factory className="w-4 h-4" /> },
+    ],
+    quantityLabel: "Devices / Units",
+    quantityHint: "Number of systems involved",
+    getQuantityBadge: () => 'Units',
+    descriptionLabel: "Technical Issue Detail",
+    descriptionPlaceholder: "Describe the hardware, network, or software assistance required..."
+  },
+  'HR Services': {
+    typeLabel: "Service Focus",
+    typeOptions: [
+      { id: 'staffing', label: 'Staffing/Placement', icon: <Users className="w-4 h-4" /> },
+      { id: 'payroll', label: 'Payroll Management', icon: <ShieldCheck className="w-4 h-4" /> },
+      { id: 'recruitment', label: 'Executive Search', icon: <MoreHorizontal className="w-4 h-4" /> },
+    ],
+    quantityLabel: "Employee Count / Roles",
+    quantityHint: "Estimated headcount involved",
+    getQuantityBadge: () => 'Headcount',
+    descriptionLabel: "Human Resource Needs",
+    descriptionPlaceholder: "Detail the staffing, payroll, or recruitment assistance required..."
   },
   'Food & Hospitality': {
     typeLabel: "Service Scale",
@@ -117,28 +196,17 @@ const FORM_CONFIGS: Record<string, any> = {
     descriptionPlaceholder: "Detail any dietary requirements or specific menu items..."
   },
   'Commercial Logistics': {
-    typeLabel: "Facility Type",
+    typeLabel: "Logistics Type",
     typeOptions: [
-      { id: 'office', label: 'Office/Business', icon: <Building2 className="w-4 h-4" /> },
-      { id: 'industrial', label: 'Industrial/Warehouse', icon: <Factory className="w-4 h-4" /> },
+      { id: 'delivery', label: 'Delivery/Fleet', icon: <Building2 className="w-4 h-4" /> },
+      { id: 'security', label: 'Facility Security', icon: <ShieldCheck className="w-4 h-4" /> },
+      { id: 'operation', label: 'Facility Ops', icon: <Building2 className="w-4 h-4" /> },
     ],
-    quantityLabel: "Area Size / Units",
-    quantityHint: "e.g. Sqft or Staff Count",
+    quantityLabel: "Operating Volume",
+    quantityHint: "e.g. Shipments or guard count",
     getQuantityBadge: () => 'Units',
-    descriptionLabel: "Operational Needs",
-    descriptionPlaceholder: "Describe the tech, facility or staffing support required..."
-  },
-  'Plumbing': {
-    typeLabel: "Service Urgency",
-    typeOptions: [
-      { id: 'standard', label: 'Standard', icon: <Calendar className="w-4 h-4" /> },
-      { id: 'emergency', label: 'Emergency', icon: <AlertCircle className="w-4 h-4" /> },
-    ],
-    quantityLabel: "Points / Fixtures",
-    quantityHint: "How many areas need attention?",
-    getQuantityBadge: () => 'Points',
-    descriptionLabel: "Issue Details",
-    descriptionPlaceholder: "Describe the leak or blockage..."
+    descriptionLabel: "Operational Requirements",
+    descriptionPlaceholder: "Describe the logistical, security, or facility support required..."
   },
   'Electrical': {
     typeLabel: "Service Area",
@@ -152,21 +220,9 @@ const FORM_CONFIGS: Record<string, any> = {
     descriptionLabel: "Technical Details",
     descriptionPlaceholder: "Describe the power issue or installation needs..."
   },
-  'Home Essentials': {
-    typeLabel: "Service Type",
-    typeOptions: [
-      { id: 'residential', label: 'Residential', icon: <Home className="w-4 h-4" /> },
-      { id: 'commercial', label: 'Commercial', icon: <Building2 className="w-4 h-4" /> },
-    ],
-    quantityLabel: "Quantity / Units",
-    quantityHint: "How many items or rooms?",
-    getQuantityBadge: () => 'Units',
-    descriptionLabel: "Details",
-    descriptionPlaceholder: "Describe what you need help with..."
-  }
 };
 
-const DEFAULT_CONFIG = FORM_CONFIGS['Home Essentials'] || FORM_CONFIGS['Cleaning & Maintenance'];
+const DEFAULT_CONFIG = FORM_CONFIGS['Cleaning & Maintenance'];
 
 const bookingSchema = z.object({
   service_type: z.string().min(1, "Please select an option"),

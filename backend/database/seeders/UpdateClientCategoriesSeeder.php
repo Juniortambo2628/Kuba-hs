@@ -18,112 +18,94 @@ class UpdateClientCategoriesSeeder extends Seeder
             $plumbingCategory = ServiceCategory::where('name', 'Plumbing')->first();
 
             if ($plumbingCategory && $cleaningCategory) {
-                // Move services
                 Service::where('category_id', $plumbingCategory->id)
                     ->update(['category_id' => $cleaningCategory->id]);
-                // Delete empty plumbing category
                 $plumbingCategory->delete();
             }
 
-            // 2. Add / Update Health & Wellness
-            $healthCategory = ServiceCategory::updateOrCreate(
-                ['name' => 'Health & Wellness'],
-                ['description' => 'Professional Health & Wellness services in Kenya.', 'icon_url' => 'HeartPulse']
-            );
+            // 2. Consolidate 'Financial & Legal' into specific categories
+            $finLegalCategory = ServiceCategory::where('name', 'Financial & Legal')->first();
+            if ($finLegalCategory) {
+                $legalCat = ServiceCategory::updateOrCreate(['name' => 'Legal Services'], ['type' => 'commercial', 'icon_url' => 'Scale']);
+                $finCat = ServiceCategory::updateOrCreate(['name' => 'Financial Services'], ['type' => 'commercial', 'icon_url' => 'Landmark']);
 
-            $healthServices = [
-                ['name' => 'Massage Therapy', 'description' => 'Relaxing and therapeutic massage sessions at your location.'],
-                ['name' => 'Fitness Therapy & Trainers', 'description' => 'Personalized workout sessions with certified instructors.'],
-                ['name' => 'Doulas', 'description' => 'Professional birth and postpartum support.'],
+                // Migrate specific services
+                Service::where('category_id', $finLegalCategory->id)
+                    ->where('name', 'like', '%Legal%')
+                    ->update(['category_id' => $legalCat->id]);
+                
+                Service::where('category_id', $finLegalCategory->id)
+                    ->where('name', 'like', '%Tax%')
+                    ->orWhere('name', 'like', '%SACCO%')
+                    ->update(['category_id' => $finCat->id]);
+
+                // Default remaining to Professional Services
+                $profCat = ServiceCategory::updateOrCreate(['name' => 'Professional Services'], ['type' => 'commercial', 'icon_url' => 'Briefcase']);
+                Service::where('category_id', $finLegalCategory->id)
+                    ->update(['category_id' => $profCat->id]);
+
+                $finLegalCategory->delete();
+            }
+
+            // 3. Define the full Taxonomy with Types
+            $taxonomy = [
+                'Cleaning & Maintenance' => ['type' => 'residential', 'icon' => 'Sparkles'],
+                'Health & Wellness' => ['type' => 'residential', 'icon' => 'HeartPulse'],
+                'Personal & Grooming' => ['type' => 'residential', 'icon' => 'Scissors'],
+                'Education & Training' => ['type' => 'residential', 'icon' => 'GraduationCap'],
+                'Food & Hospitality' => ['type' => 'residential', 'icon' => 'Soup'],
+                'Electrical' => ['type' => 'residential', 'icon' => 'Zap'],
+                
+                'Legal Services' => ['type' => 'commercial', 'icon' => 'Scale'],
+                'Financial Services' => ['type' => 'commercial', 'icon' => 'Landmark'],
+                'Commercial Real Estate' => ['type' => 'commercial', 'icon' => 'Building'],
+                'Professional Services' => ['type' => 'commercial', 'icon' => 'Briefcase'],
+                'Technology & IT Services' => ['type' => 'commercial', 'icon' => 'Laptop'],
+                'HR Services' => ['type' => 'commercial', 'icon' => 'Users'],
+                'Commercial Logistics' => ['type' => 'commercial', 'icon' => 'Building2'],
             ];
 
-            foreach ($healthServices as $hs) {
-                Service::updateOrCreate(
-                    ['name' => $hs['name']],
-                    ['category_id' => $healthCategory->id, 'description' => $hs['description'], 'is_featured' => true]
+            foreach ($taxonomy as $name => $meta) {
+                ServiceCategory::updateOrCreate(
+                    ['name' => $name],
+                    [
+                        'type' => $meta['type'],
+                        'icon_url' => $meta['icon'],
+                        'description' => "Professional {$name} services in Kenya."
+                    ]
                 );
             }
 
-            // 3. New Categories to Add
-            $newCategories = [
-                'Personal & Grooming' => [
-                    'icon' => 'Scissors',
-                    'services' => [
-                        ['name' => 'Barbers', 'desc' => 'Professional men\'s haircuts and grooming.'],
-                        ['name' => 'Hair Stylists', 'desc' => 'Expert hair styling and treatment.'],
-                        ['name' => 'Waxing', 'desc' => 'Professional hair removal services.'],
-                        ['name' => 'Eyelashes & Eyebrows', 'desc' => 'Enhancement and shaping services.'],
-                        ['name' => 'Nails', 'desc' => 'Manicures, pedicures, and nail art.'],
-                        ['name' => 'Personal Shoppers', 'desc' => 'Dedicated shopping assistance and styling.'],
-                    ]
-                ],
+            // 4. Ensure some specific services exist for new categories if they don't
+            $extraServices = [
                 'Legal Services' => [
-                    'icon' => 'Scale',
-                    'services' => [
-                        ['name' => 'Business/Corporate Law', 'desc' => 'Corporate structuring and legal advisory.'],
-                        ['name' => 'Real Estate Law', 'desc' => 'Property transactions and dispute resolution.'],
-                        ['name' => 'Employment & Labor Law', 'desc' => 'Workplace compliance and contract advisory.'],
-                        ['name' => 'Intellectual Property (IP) Law', 'desc' => 'Trademarks, patents, and copyright protection.'],
-                    ]
+                    ['name' => 'Business/Corporate Law', 'desc' => 'Corporate structuring and legal advisory.'],
+                    ['name' => 'Real Estate Law', 'desc' => 'Property transactions and dispute resolution.'],
                 ],
                 'Financial Services' => [
-                    'icon' => 'Landmark',
-                    'services' => [
-                        ['name' => 'Banking', 'desc' => 'Corporate banking solutions and advisory.'],
-                        ['name' => 'Insurance', 'desc' => 'Comprehensive risk matching and coverage.'],
-                        ['name' => 'Financial Asset Management', 'desc' => 'Investment and portfolio structuring.'],
-                        ['name' => 'Wealth Management', 'desc' => 'Private wealth advisory.'],
-                    ]
-                ],
-                'Commercial Real Estate' => [
-                    'icon' => 'Building',
-                    'services' => [
-                        ['name' => 'Corporate Property Services', 'desc' => 'Leasing and commercial property administration.'],
-                        ['name' => 'Business Brokerage', 'desc' => 'Buying and selling commercial entities.'],
-                    ]
-                ],
-                'Professional Services' => [
-                    'icon' => 'Briefcase',
-                    'services' => [
-                        ['name' => 'Consulting', 'desc' => 'Strategic business and management consulting.'],
-                        ['name' => 'Business Support', 'desc' => 'Administrative and back-office solutions.'],
-                        ['name' => 'Corporate Services', 'desc' => 'Registration and compliance services.'],
-                    ]
-                ],
-                'Technology & IT Services' => [
-                    'icon' => 'Laptop',
-                    'services' => [
-                        ['name' => 'Tech Support', 'desc' => 'On-demand hardware and network assistance.'],
-                        ['name' => 'IT Consulting', 'desc' => 'Systems architecture and digital transformation.'],
-                        ['name' => 'Cloud Services', 'desc' => 'Cloud migration and infrastructure management.'],
-                    ]
+                    ['name' => 'Banking', 'desc' => 'Corporate banking solutions and advisory.'],
+                    ['name' => 'Insurance', 'desc' => 'Comprehensive risk matching and coverage.'],
                 ],
                 'HR Services' => [
-                    'icon' => 'Users',
-                    'services' => [
-                        ['name' => 'Staffing Agencies', 'desc' => 'Temporary and permanent staff placement.'],
-                        ['name' => 'Payroll Management', 'desc' => 'Outsourced payroll processing and compliance.'],
-                        ['name' => 'Recruitment Firms', 'desc' => 'Executive search and talent acquisition.'],
-                    ]
+                    ['name' => 'Staffing Agencies', 'desc' => 'Temporary and permanent staff placement.'],
+                    ['name' => 'Payroll Management', 'desc' => 'Outsourced payroll processing and compliance.'],
                 ],
             ];
 
-            foreach ($newCategories as $catName => $data) {
-                $category = ServiceCategory::updateOrCreate(
-                    ['name' => $catName],
-                    ['description' => "Professional {$catName} services in Kenya.", 'icon_url' => $data['icon']]
-                );
-
-                foreach ($data['services'] as $sData) {
-                    Service::updateOrCreate(
-                        ['name' => $sData['name']],
-                        ['category_id' => $category->id, 'description' => $sData['desc'], 'is_featured' => true]
-                    );
+            foreach ($extraServices as $catName => $services) {
+                $cat = ServiceCategory::where('name', $catName)->first();
+                if ($cat) {
+                    foreach ($services as $s) {
+                        Service::updateOrCreate(
+                            ['name' => $s['name']],
+                            ['category_id' => $cat->id, 'description' => $s['desc'], 'is_featured' => true]
+                        );
+                    }
                 }
             }
 
             DB::commit();
-            $this->command->info('Categories updated successfully without data loss.');
+            $this->command->info('Categories consolidated and types assigned successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
             $this->command->error('Error updating categories: ' . $e->getMessage());

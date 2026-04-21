@@ -53,6 +53,7 @@ export default function ServicesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [view, setView] = useState<"grid" | "list" | "map">("grid");
   const [sortBy, setSortBy] = useState<SortOption>("default");
+  const [segment, setSegment] = useState<"all" | "residential" | "commercial">("all");
   const [filterOpen, setFilterOpen] = useState(true);
   const { features: cmsFeatures } = usePageFeatures('services');
 
@@ -70,7 +71,12 @@ export default function ServicesPage() {
     fetchCategories();
   }, []);
 
-  const sorted = [...categories].sort((a, b) => {
+  const filtered = categories.filter(cat => {
+    if (segment === "all") return true;
+    return (cat as any).type === segment;
+  });
+
+  const sorted = [...filtered].sort((a, b) => {
     if (sortBy === "name") return a.name.localeCompare(b.name);
     if (sortBy === "services") return (b.services_count || 0) - (a.services_count || 0);
     return 0;
@@ -133,6 +139,31 @@ export default function ServicesPage() {
                     </select>
                  </div>
 
+                 <div className="space-y-4 pt-4 border-t border-border/10">
+                    <label className="text-[10px] font-bold capitalize tracking-widest text-muted-foreground/60 ml-1">Market Segment</label>
+                    <div className="flex flex-col gap-2">
+                      {[
+                        { id: 'all', label: 'All Segments', icon: LayoutGrid },
+                        { id: 'residential', label: 'Residential', icon: Home },
+                        { id: 'commercial', label: 'Commercial', icon: Building2 }
+                      ].map((s) => (
+                        <button
+                          key={s.id}
+                          onClick={() => setSegment(s.id as any)}
+                          className={cn(
+                            "flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all border",
+                            segment === s.id 
+                              ? "bg-primary text-white border-primary shadow-lg shadow-primary/20" 
+                              : "bg-white dark:bg-black text-muted-foreground border-border/40 hover:border-primary/40"
+                          )}
+                        >
+                          <s.icon className="w-4 h-4" />
+                          {s.label}
+                        </button>
+                      ))}
+                    </div>
+                 </div>
+
                  <div className="pt-4 border-t border-border/10">
                     <label className="text-[10px] font-bold capitalize tracking-widest text-muted-foreground/60 ml-1 block mb-4">Quick Navigation</label>
                     <div className="space-y-2 max-h-80 overflow-y-auto pr-2 custom-scrollbar">
@@ -156,7 +187,7 @@ export default function ServicesPage() {
           <div className="flex-1 space-y-12">
             <div className="flex items-center justify-between">
                <h2 className={designSystem.typography.section.title}>
-                 {categories.length} <span className="text-muted-foreground font-medium">Industry Categories Found</span>
+                 {sorted.length} <span className="text-muted-foreground font-medium">Industry Categories Found</span>
                </h2>
                <div className="flex bg-slate-50 dark:bg-zinc-900 p-1.5 rounded-2xl border border-border/40">
                   <Button

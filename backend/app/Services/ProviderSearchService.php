@@ -44,7 +44,13 @@ class ProviderSearchService
             $query->where(function($q) use ($searchTerm) {
                 $q->where('business_name', 'like', "%{$searchTerm}%")
                   ->orWhere('bio', 'like', "%{$searchTerm}%")
-                  ->orWhere('location_name', 'like', "%{$searchTerm}%");
+                  ->orWhere('location_name', 'like', "%{$searchTerm}%")
+                  ->orWhereHas('providerServices.service', function($sq) use ($searchTerm) {
+                      $sq->where('name', 'like', "%{$searchTerm}%")
+                        ->orWhereHas('category', function($cq) use ($searchTerm) {
+                            $cq->where('name', 'like', "%{$searchTerm}%");
+                        });
+                  });
             });
         }
 

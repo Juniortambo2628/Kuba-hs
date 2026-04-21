@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { 
   Search, MapPin, X, ArrowRight, 
   Map as MapIcon, Star, Clock, 
-  ChevronRight, Sparkles, Filter 
+  ChevronRight, Sparkles, Filter,
+  Navigation, Loader2
 } from "lucide-react";
 import { 
   Dialog, DialogContent, 
@@ -50,6 +51,8 @@ export function HeroSearchModal({ isOpen, onClose, initialTab }: HeroSearchModal
   const [results, setResults] = useState<ProviderResult[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [isSearching, setIsSearching] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
+  const [coords, setCoords] = useState<{lat: number, lng: number} | null>(null);
   const [activeTab, setActiveTab] = useState<"service" | "location">("service");
 
   useEffect(() => {
@@ -59,6 +62,7 @@ export function HeroSearchModal({ isOpen, onClose, initialTab }: HeroSearchModal
       setSearchTerm("");
       setLocationTerm("");
       setResults([]);
+      setCoords(null);
       setSelectedCategory(null);
       if (initialTab) {
         setActiveTab(initialTab);
@@ -68,7 +72,7 @@ export function HeroSearchModal({ isOpen, onClose, initialTab }: HeroSearchModal
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      if (searchTerm.length >= 2 || locationTerm.length >= 2 || selectedCategory) {
+      if (searchTerm.length >= 2 || locationTerm.length >= 2 || selectedCategory || coords) {
         performSearch();
       } else {
         setResults([]);
@@ -76,7 +80,7 @@ export function HeroSearchModal({ isOpen, onClose, initialTab }: HeroSearchModal
     }, 400);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm, locationTerm, selectedCategory]);
+  }, [searchTerm, locationTerm, selectedCategory, coords]);
 
   const fetchCategories = async () => {
     try {
@@ -94,6 +98,10 @@ export function HeroSearchModal({ isOpen, onClose, initialTab }: HeroSearchModal
       if (searchTerm) params.append('search', searchTerm);
       if (locationTerm) params.append('location', locationTerm);
       if (selectedCategory) params.append('category_id', selectedCategory.toString());
+      if (coords) {
+        params.append('latitude', coords.lat.toString());
+        params.append('longitude', coords.lng.toString());
+      }
       
       const { data } = await axiosInstance.get(`/api/search?${params.toString()}`);
       setResults(data.data || []);
@@ -102,6 +110,30 @@ export function HeroSearchModal({ isOpen, onClose, initialTab }: HeroSearchModal
     } finally {
       setIsSearching(false);
     }
+  };
+
+  const handleUseLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser");
+      return;
+    }
+
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setCoords({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        });
+        setLocationTerm("Current Location");
+        setIsLocating(false);
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        setIsLocating(false);
+        alert("Unable to retrieve your location");
+      }
+    );
   };
 
   const getLogoUrl = (url?: string) => {
@@ -165,15 +197,30 @@ export function HeroSearchModal({ isOpen, onClose, initialTab }: HeroSearchModal
               ) : (
                 <>
                   <MapPin className="text-primary w-5 h-5 mr-4 flex-shrink-0" />
-                  <Input 
+                   <Input 
                     autoFocus
                     value={locationTerm}
-                    onChange={(e) => setLocationTerm(e.target.value)}
+                    onChange={(e) => {
+                      setLocationTerm(e.target.value);
+                      if (coords) setCoords(null);
+                    }}
                     placeholder="Enter city or neighborhood..."
                     className="bg-transparent border-none text-foreground placeholder:text-muted-foreground focus-visible:ring-0 px-0 h-10 font-semibold text-lg flex-1"
                   />
+                  {isLocating ? (
+                    <Loader2 className="w-5 h-5 text-primary animate-spin mr-2" />
+                  ) : (
+                    <button 
+                      onClick={handleUseLocation}
+                      className="p-2 hover:bg-muted rounded-xl transition-all text-primary flex items-center gap-2 group/loc"
+                      title="Use current location"
+                    >
+                      <Navigation className="w-4 h-4 group-hover/loc:scale-110 transition-transform" />
+                      <span className="text-[10px] font-bold uppercase tracking-widest hidden sm:inline">Near Me</span>
+                    </button>
+                  )}
                   {locationTerm && (
-                    <button onClick={() => setLocationTerm("")} className="ml-2 p-1 hover:bg-muted rounded-full transition-colors text-muted-foreground">
+                    <button onClick={() => { setLocationTerm(""); setCoords(null); }} className="ml-2 p-1 hover:bg-muted rounded-full transition-colors text-muted-foreground">
                       <X className="w-4 h-4" />
                     </button>
                   )}
