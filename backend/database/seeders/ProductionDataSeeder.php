@@ -166,7 +166,9 @@ class ProductionDataSeeder extends Seeder
                     ['name' => 'Corporate Wellness Programs', 'desc' => 'Mental health and physical wellness for employees.'],
                     ['name' => 'Massage Therapy', 'desc' => 'Relaxing and therapeutic massage sessions at your location.'],
                     ['name' => 'Fitness Therapy & Trainers', 'desc' => 'Personalized workout sessions with certified instructors.'],
-                    ['name' => 'Doulas', 'desc' => 'Professional birth and postpartum support.'],
+                    ['name' => 'Doulas', 'desc' => 'Professional birth companion, labor advocacy, and postpartum support.'],
+                    ['name' => 'Nutritionists', 'desc' => 'Certified clinical nutritionists for custom meal planning and diet advice.'],
+                    ['name' => 'Pregnancy Care (massage & overall care)', 'desc' => 'Prenatal/postnatal maternal massage and general pregnancy support.'],
                 ]
             ],
             'Personal & Grooming' => [
@@ -178,6 +180,11 @@ class ProductionDataSeeder extends Seeder
                     ['name' => 'Eyelashes & Eyebrows', 'desc' => 'Enhancement and shaping services.'],
                     ['name' => 'Nails', 'desc' => 'Manicures, pedicures, and nail art.'],
                     ['name' => 'Personal Shoppers', 'desc' => 'Dedicated shopping assistance and styling.'],
+                    ['name' => 'Facials & Skincare', 'desc' => 'Premium skincare, facial scrubs, and moisturizing treatments.'],
+                    ['name' => 'Makeup Artists', 'desc' => 'Professional makeup for weddings, corporate events, and daily styles.'],
+                    ['name' => 'Hair Coloring & Styling', 'desc' => 'Full coloring, highlights, customized haircutting, and styling.'],
+                    ['name' => 'Massage & Body Scrub', 'desc' => 'Full-body relaxation massages, aromatherapy, and organic body scrubs.'],
+                    ['name' => 'Threading & Tweezing', 'desc' => 'Precise brow shaping and facial hair removal.'],
                 ]
             ],
             'Education & Training' => [
