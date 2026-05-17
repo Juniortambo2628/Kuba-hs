@@ -355,7 +355,7 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
     // Specific service name overrides
     if (service.name?.toLowerCase().includes('babysitting')) {
       return {
-        ...FORM_CONFIGS['Personal & Wellness'],
+        ...(FORM_CONFIGS['Health & Wellness'] || DEFAULT_CONFIG),
         quantityLabel: "Number of Children",
         quantityHint: "How many children need care?",
         getQuantityBadge: () => 'Children',
@@ -366,6 +366,55 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
         ],
         descriptionLabel: "Child Details & Special Needs",
         descriptionPlaceholder: "Please share children's ages, any allergies, or special requirements..."
+      };
+    }
+
+    if (service.name?.toLowerCase().includes('nutritionist')) {
+      return {
+        ...(FORM_CONFIGS['Health & Wellness'] || DEFAULT_CONFIG),
+        typeLabel: "Consultation Type",
+        typeOptions: [
+          { id: 'remote', label: 'Remote/Online', icon: <Home className="w-4 h-4" /> },
+          { id: 'in_person', label: 'In-Person', icon: <Building2 className="w-4 h-4" /> },
+        ],
+        quantityLabel: "Number of Persons",
+        quantityHint: "Who needs the dietary plan?",
+        getQuantityBadge: () => 'Persons',
+        descriptionLabel: "Dietary Goals & Health",
+        descriptionPlaceholder: "Please share your goals, allergies, and any specific dietary requirements..."
+      };
+    }
+
+    if (service.name?.toLowerCase().includes('doula') || service.name?.toLowerCase().includes('pregnancy')) {
+      return {
+        ...(FORM_CONFIGS['Health & Wellness'] || DEFAULT_CONFIG),
+        typeLabel: "Care Type",
+        typeOptions: [
+          { id: 'prenatal', label: 'Prenatal Care', icon: <Calendar className="w-4 h-4" /> },
+          { id: 'postpartum', label: 'Postpartum Support', icon: <Users className="w-4 h-4" /> },
+        ],
+        quantityLabel: "Number of Sessions",
+        quantityHint: "Estimated sessions or weeks",
+        getQuantityBadge: () => 'Sessions',
+        descriptionLabel: "Pregnancy Stage & Needs",
+        descriptionPlaceholder: "Please share your current trimester, specific concerns, or support required..."
+      };
+    }
+
+    const beautyServices = ['makeup', 'coloring', 'facial', 'skincare', 'threading', 'waxing', 'massage', 'scrub'];
+    if (beautyServices.some(s => service.name?.toLowerCase().includes(s))) {
+      return {
+        ...(FORM_CONFIGS['Personal & Grooming'] || DEFAULT_CONFIG),
+        typeLabel: "Service Location",
+        typeOptions: [
+          { id: 'at_home', label: 'At My Location', icon: <Home className="w-4 h-4" /> },
+          { id: 'at_salon', label: 'At Pro Location', icon: <Building2 className="w-4 h-4" /> },
+        ],
+        quantityLabel: "Number of Persons",
+        quantityHint: "How many people?",
+        getQuantityBadge: () => 'Persons',
+        descriptionLabel: "Style Preferences & Details",
+        descriptionPlaceholder: "Please describe your preferred look, any skin sensitivities, or style inspiration..."
       };
     }
 

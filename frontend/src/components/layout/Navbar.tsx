@@ -9,7 +9,7 @@ import { useCMS } from "@/contexts/CMSContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
-import { User, Briefcase } from "lucide-react";
+import { User, Briefcase, Home } from "lucide-react";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -90,6 +90,17 @@ export function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-1">
+            <Link 
+              href="/" 
+              className={`px-4 py-2 text-sm font-bold rounded-xl transition-all duration-300 tracking-tight flex items-center gap-1.5 h-fit ${
+                pathname === "/" 
+                  ? "bg-primary/10 text-primary" 
+                  : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5"
+              }`}
+            >
+              <Home className="w-4 h-4" />
+              <span>Home</span>
+            </Link>
             {navItems.map(item => {
               const isActive = pathname === item.url;
               const isServices = item.label.toLowerCase() === "services";
@@ -242,6 +253,18 @@ export function Navbar() {
                   {/* Navigation Links */}
                   <div className="flex-1 overflow-y-auto px-4 py-6 space-y-1">
                     <p className="px-3 mb-3 text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em]">Navigate</p>
+                    <Link 
+                      href="/" 
+                      className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-bold transition-all ${
+                        pathname === "/" 
+                          ? "bg-sky-500/10 text-sky-600 dark:text-sky-400" 
+                          : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
+                      }`}
+                    >
+                      <Home className="w-5 h-5" />
+                      Home
+                      {pathname === "/" && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-sky-500" />}
+                    </Link>
                     {navItems.filter(item => !["investors", "commercial", "cooperatives"].includes(item.label.toLowerCase())).map(item => {
                       const isActive = pathname === item.url;
                       return (
