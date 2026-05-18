@@ -29,7 +29,7 @@ class ProductionDataSeeder extends Seeder
         ProviderService::truncate();
         Booking::truncate();
         Payment::truncate();
-        SiteSetting::truncate();
+        // SiteSetting::truncate(); // REMOVED: Never truncate the CMS configurations automatically
         Review::truncate();
         Address::truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
@@ -66,80 +66,80 @@ class ProductionDataSeeder extends Seeder
 
         // 2. CMS Settings (CMS Alignment)
         $settings = [
-            // Branding
-            ['key' => 'site_name', 'value' => 'Kuba', 'group' => 'branding', 'label' => 'Site Name', 'type' => 'text'],
-            ['key' => 'site_description', 'value' => 'Kenya\'s Premier Home Services Marketplace', 'group' => 'branding', 'label' => 'Site Description', 'type' => 'textarea'],
-            ['key' => 'site_logo', 'value' => '/assets/branding/Kuba-Header-footter-Logo-for-Light-Mode.png', 'group' => 'branding', 'label' => 'Platform Logo (Standard)', 'type' => 'image'],
-            ['key' => 'site_logo_dark', 'value' => '/assets/branding/Kuba-Header-Footer-Logo-for-Dark-Mode.png', 'group' => 'branding', 'label' => 'Platform Logo (Dark Mode)', 'type' => 'image'],
-            ['key' => 'favicon', 'value' => '/assets/branding/Kuba-Favicon.png', 'group' => 'branding', 'label' => 'Site Favicon', 'type' => 'image'],
-            ['key' => 'admin_logo_light', 'value' => '/assets/branding/Kuba-Logo-Login-Light-mode.png', 'group' => 'branding', 'label' => 'Admin Sign-in Logo (Light)', 'type' => 'image'],
-            ['key' => 'admin_logo_dark', 'value' => '/assets/branding/Kuba-Logo-Login-Dark-mode.png', 'group' => 'branding', 'label' => 'Admin Sign-in Logo (Dark)', 'type' => 'image'],
+            // Brand & Identity
+            ['key' => 'site_name', 'value' => 'Kuba', 'group' => 'identity', 'label' => 'Site Name', 'type' => 'text'],
+            ['key' => 'site_description', 'value' => 'Kenya\'s Premier Home Services Marketplace', 'group' => 'identity', 'label' => 'Site Description', 'type' => 'textarea'],
+            ['key' => 'site_logo', 'value' => '/assets/branding/Kuba-Header-footter-Logo-for-Light-Mode.png', 'group' => 'identity', 'label' => 'Platform Logo (Standard)', 'type' => 'image'],
+            ['key' => 'site_logo_dark', 'value' => '/assets/branding/Kuba-Header-Footer-Logo-for-Dark-Mode.png', 'group' => 'identity', 'label' => 'Platform Logo (Dark Mode)', 'type' => 'image'],
+            ['key' => 'favicon', 'value' => '/assets/branding/Kuba-Favicon.png', 'group' => 'identity', 'label' => 'Site Favicon', 'type' => 'image'],
+            ['key' => 'admin_logo_light', 'value' => '/assets/branding/Kuba-Logo-Login-Light-mode.png', 'group' => 'identity', 'label' => 'Admin Sign-in Logo (Light)', 'type' => 'image'],
+            ['key' => 'admin_logo_dark', 'value' => '/assets/branding/Kuba-Logo-Login-Dark-mode.png', 'group' => 'identity', 'label' => 'Admin Sign-in Logo (Dark)', 'type' => 'image'],
 
-            // Hero Section (Home)
-            ['key' => 'hero_title', 'value' => 'Expert Services for Your Home, Simply Delivered', 'group' => 'hero', 'label' => 'Hero Title (Home)', 'type' => 'text'],
-            ['key' => 'hero_subtitle', 'value' => 'Find trusted professionals for cleaning, plumbing, and electrical work in Nairobi.', 'group' => 'hero', 'label' => 'Hero Subtitle (Home)', 'type' => 'textarea'],
-            ['key' => 'hero_bg_image', 'value' => '', 'group' => 'hero', 'label' => 'Hero Background Image', 'type' => 'image'],
-            ['key' => 'hero_cta_text', 'value' => 'Get Started', 'group' => 'hero', 'label' => 'Hero CTA Button', 'type' => 'text'],
-            ['key' => 'services_hero_image', 'value' => '', 'group' => 'hero', 'label' => 'Services Page Hero', 'type' => 'image'],
-            ['key' => 'providers_hero_image', 'value' => '', 'group' => 'hero', 'label' => 'Providers Page Hero', 'type' => 'image'],
+            // Hero Visuals (Backgrounds & Text)
+            ['key' => 'hero_title', 'value' => 'Expert Services for Your Home, Simply Delivered', 'group' => 'hero_text', 'label' => 'Hero Title (Home)', 'type' => 'text'],
+            ['key' => 'hero_subtitle', 'value' => 'Find trusted professionals for cleaning, plumbing, and electrical work in Nairobi.', 'group' => 'hero_text', 'label' => 'Hero Subtitle (Home)', 'type' => 'textarea'],
+            ['key' => 'hero_bg_image', 'value' => '', 'group' => 'hero_backgrounds', 'label' => 'Hero Background Image', 'type' => 'image'],
+            ['key' => 'hero_cta_text', 'value' => 'Get Started', 'group' => 'hero_text', 'label' => 'Hero CTA Button', 'type' => 'text'],
+            ['key' => 'services_hero_image', 'value' => '', 'group' => 'hero_backgrounds', 'label' => 'Services Page Hero', 'type' => 'image'],
+            ['key' => 'providers_hero_image', 'value' => '', 'group' => 'hero_backgrounds', 'label' => 'Providers Page Hero', 'type' => 'image'],
 
-            // About Page
-            ['key' => 'about_hero_title', 'value' => 'Connecting Kenyans to Quality Services', 'group' => 'about', 'label' => 'About Hero Title', 'type' => 'text'],
-            ['key' => 'about_hero_subtitle', 'value' => 'Kuba is built on trust, quality, and community. We empower local professionals.', 'group' => 'about', 'label' => 'About Hero Subtitle', 'type' => 'textarea'],
-            ['key' => 'about_hero_image', 'value' => '', 'group' => 'about', 'label' => 'About Hero Image', 'type' => 'image'],
-            ['key' => 'about_content', 'value' => 'Expanding local opportunities by connecting the best hands with the best homes.', 'group' => 'about', 'label' => 'About Main Content', 'type' => 'textarea'],
+            // Landing Content
+            ['key' => 'about_hero_title', 'value' => 'Connecting Kenyans to Quality Services', 'group' => 'about_page', 'label' => 'About Hero Title', 'type' => 'text'],
+            ['key' => 'about_hero_subtitle', 'value' => 'Kuba is built on trust, quality, and community. We empower local professionals.', 'group' => 'about_page', 'label' => 'About Hero Subtitle', 'type' => 'textarea'],
+            ['key' => 'about_hero_image', 'value' => '', 'group' => 'hero_backgrounds', 'label' => 'About Hero Image', 'type' => 'image'],
+            ['key' => 'about_content', 'value' => 'Expanding local opportunities by connecting the best hands with the best homes.', 'group' => 'about_page', 'label' => 'About Main Content', 'type' => 'textarea'],
 
-            // Contact & Support
-            ['key' => 'contact_hero_title', 'value' => 'We\'re Here to Help', 'group' => 'config', 'label' => 'Contact Hero Title', 'type' => 'text'],
-            ['key' => 'contact_hero_subtitle', 'value' => 'Have questions or need assistance? Reach out to the Kuba support team.', 'group' => 'config', 'label' => 'Contact Hero Subtitle', 'type' => 'textarea'],
-            ['key' => 'support_email', 'value' => 'hello@kuba.co.ke', 'group' => 'config', 'label' => 'Support Email', 'type' => 'text'],
-            ['key' => 'support_phone', 'value' => '+254 700 000 000', 'group' => 'config', 'label' => 'Support Phone', 'type' => 'text'],
-            ['key' => 'office_address', 'value' => 'Westlands, Nairobi, Kenya', 'group' => 'config', 'label' => 'Headquarters Address', 'type' => 'textarea'],
+            // System & Config
+            ['key' => 'contact_hero_title', 'value' => 'We\'re Here to Help', 'group' => 'support_info', 'label' => 'Contact Hero Title', 'type' => 'text'],
+            ['key' => 'contact_hero_subtitle', 'value' => 'Have questions or need assistance? Reach out to the Kuba support team.', 'group' => 'support_info', 'label' => 'Contact Hero Subtitle', 'type' => 'textarea'],
+            ['key' => 'support_email', 'value' => 'hello@kuba.co.ke', 'group' => 'support_info', 'label' => 'Support Email', 'type' => 'text'],
+            ['key' => 'support_phone', 'value' => '+254 700 000 000', 'group' => 'support_info', 'label' => 'Support Phone', 'type' => 'text'],
+            ['key' => 'office_address', 'value' => 'Westlands, Nairobi, Kenya', 'group' => 'support_info', 'label' => 'Headquarters Address', 'type' => 'textarea'],
 
-            // Investors
-            ['key' => 'investors_hero_title', 'value' => 'Invest in the Future of Service Delivery', 'group' => 'sections', 'label' => 'Investors Hero Title', 'type' => 'text'],
-            ['key' => 'investors_hero_subtitle', 'value' => 'Join us in scaling Africa\'s premier digital marketplace for essential services.', 'group' => 'sections', 'label' => 'Investors Hero Subtitle', 'type' => 'textarea'],
-            ['key' => 'investors_hero_image', 'value' => '', 'group' => 'sections', 'label' => 'Investors Hero Image', 'type' => 'image'],
+            // Sections
+            ['key' => 'investors_hero_title', 'value' => 'Invest in the Future of Service Delivery', 'group' => 'market_narratives', 'label' => 'Investors Hero Title', 'type' => 'text'],
+            ['key' => 'investors_hero_subtitle', 'value' => 'Join us in scaling Africa\'s premier digital marketplace for essential services.', 'group' => 'market_narratives', 'label' => 'Investors Hero Subtitle', 'type' => 'textarea'],
+            ['key' => 'investors_hero_image', 'value' => '', 'group' => 'hero_backgrounds', 'label' => 'Investors Hero Image', 'type' => 'image'],
 
-            // Commercial / Business
-            ['key' => 'commercial_hero_title', 'value' => 'Institutional Grade Facility Management', 'group' => 'sections', 'label' => 'Commercial Hero Title', 'type' => 'text'],
-            ['key' => 'commercial_hero_subtitle', 'value' => 'Tailored solutions for businesses, from HR support to security and maintenance.', 'group' => 'sections', 'label' => 'Commercial Hero Subtitle', 'type' => 'textarea'],
-            ['key' => 'commercial_hero_image', 'value' => '', 'group' => 'sections', 'label' => 'Commercial Hero Image', 'type' => 'image'],
-            ['key' => 'commercial_thesis_title', 'value' => 'Consolidated Excellence for Modern Enterprise', 'group' => 'sections', 'label' => 'Commercial Thesis Title', 'type' => 'text'],
-            ['key' => 'commercial_thesis_body', 'value' => 'Kuba provides a unified service infrastructure for organizations that demand quality and accountability. From daily janitorial needs to complex facility management, we scale with your business.', 'group' => 'sections', 'label' => 'Commercial Thesis Body', 'type' => 'textarea'],
+            ['key' => 'commercial_hero_title', 'value' => 'Institutional Grade Facility Management', 'group' => 'market_narratives', 'label' => 'Commercial Hero Title', 'type' => 'text'],
+            ['key' => 'commercial_hero_subtitle', 'value' => 'Tailored solutions for businesses, from HR support to security and maintenance.', 'group' => 'market_narratives', 'label' => 'Commercial Hero Subtitle', 'type' => 'textarea'],
+            ['key' => 'commercial_hero_image', 'value' => '', 'group' => 'hero_backgrounds', 'label' => 'Commercial Hero Image', 'type' => 'image'],
+            ['key' => 'commercial_thesis_title', 'value' => 'Consolidated Excellence for Modern Enterprise', 'group' => 'market_narratives', 'label' => 'Commercial Thesis Title', 'type' => 'text'],
+            ['key' => 'commercial_thesis_body', 'value' => 'Kuba provides a unified service infrastructure for organizations that demand quality and accountability. From daily janitorial needs to complex facility management, we scale with your business.', 'group' => 'market_narratives', 'label' => 'Commercial Thesis Body', 'type' => 'textarea'],
 
-            // Cooperatives
-            ['key' => 'cooperatives_hero_title', 'value' => 'Empowering SACCOs & Community Groups', 'group' => 'sections', 'label' => 'Cooperatives Hero Title', 'type' => 'text'],
-            ['key' => 'cooperatives_hero_subtitle', 'value' => 'Financial advisory and group-focused services for Kenyan community growth.', 'group' => 'sections', 'label' => 'Cooperatives Hero Subtitle', 'type' => 'textarea'],
-            ['key' => 'cooperatives_hero_image', 'value' => '', 'group' => 'sections', 'label' => 'Cooperatives Hero Image', 'type' => 'image'],
-            ['key' => 'cooperatives_thesis_title', 'value' => 'Stronger Together through Shared Services', 'group' => 'sections', 'label' => 'Cooperatives Thesis Title', 'type' => 'text'],
-            ['key' => 'cooperatives_thesis_body', 'value' => 'We help gated communities and SACCOs leverage collective bargaining power to secure premium home services at negotiated rates, managed via a single platform.', 'group' => 'sections', 'label' => 'Cooperatives Thesis Body', 'type' => 'textarea'],
+            ['key' => 'cooperatives_hero_title', 'value' => 'Empowering SACCOs & Community Groups', 'group' => 'market_narratives', 'label' => 'Cooperatives Hero Title', 'type' => 'text'],
+            ['key' => 'cooperatives_hero_subtitle', 'value' => 'Financial advisory and group-focused services for Kenyan community growth.', 'group' => 'market_narratives', 'label' => 'Cooperatives Hero Subtitle', 'type' => 'textarea'],
+            ['key' => 'cooperatives_hero_image', 'value' => '', 'group' => 'hero_backgrounds', 'label' => 'Cooperatives Hero Image', 'type' => 'image'],
+            ['key' => 'cooperatives_thesis_title', 'value' => 'Stronger Together through Shared Services', 'group' => 'market_narratives', 'label' => 'Cooperatives Thesis Title', 'type' => 'text'],
+            ['key' => 'cooperatives_thesis_body', 'value' => 'We help gated communities and SACCOs leverage collective bargaining power to secure premium home services at negotiated rates, managed via a single platform.', 'group' => 'market_narratives', 'label' => 'Cooperatives Thesis Body', 'type' => 'textarea'],
 
-            // Blog / Journal
-            ['key' => 'blog_hero_title', 'value' => 'The Kuba Journal', 'group' => 'sections', 'label' => 'Journal Hero Title', 'type' => 'text'],
-            ['key' => 'blog_hero_subtitle', 'value' => 'Insights, updates, and expert tips from the world of professional services.', 'group' => 'sections', 'label' => 'Journal Hero Subtitle', 'type' => 'textarea'],
-            ['key' => 'journal_hero_image', 'value' => '', 'group' => 'sections', 'label' => 'Journal Page Hero', 'type' => 'image'],
-            ['key' => 'journal_thesis_title', 'value' => 'Redefining Service in the Digital Age', 'group' => 'sections', 'label' => 'Journal Thesis Title', 'type' => 'text'],
-            ['key' => 'journal_thesis_body', 'value' => 'Explore our deep dives into how technology is transforming the Kenyan service economy and empowering local artisans.', 'group' => 'sections', 'label' => 'Journal Thesis Body', 'type' => 'textarea'],
+            ['key' => 'blog_hero_title', 'value' => 'The Kuba Journal', 'group' => 'market_narratives', 'label' => 'Journal Hero Title', 'type' => 'text'],
+            ['key' => 'blog_hero_subtitle', 'value' => 'Insights, updates, and expert tips from the world of professional services.', 'group' => 'market_narratives', 'label' => 'Journal Hero Subtitle', 'type' => 'textarea'],
+            ['key' => 'journal_hero_image', 'value' => '', 'group' => 'hero_backgrounds', 'label' => 'Journal Page Hero', 'type' => 'image'],
+            ['key' => 'journal_thesis_title', 'value' => 'Redefining Service in the Digital Age', 'group' => 'market_narratives', 'label' => 'Journal Thesis Title', 'type' => 'text'],
+            ['key' => 'journal_thesis_body', 'value' => 'Explore our deep dives into how technology is transforming the Kenyan service economy and empowering local artisans.', 'group' => 'market_narratives', 'label' => 'Journal Thesis Body', 'type' => 'textarea'],
 
-            // Legal URLs
-            ['key' => 'terms_of_service_url', 'value' => '/terms', 'group' => 'sections', 'label' => 'Terms of Service URL', 'type' => 'text'],
-            ['key' => 'privacy_policy_url', 'value' => '/privacy', 'group' => 'sections', 'label' => 'Privacy Policy URL', 'type' => 'text'],
+            // URLs
+            ['key' => 'terms_of_service_url', 'value' => '/terms', 'group' => 'support_info', 'label' => 'Terms of Service URL', 'type' => 'text'],
+            ['key' => 'privacy_policy_url', 'value' => '/privacy', 'group' => 'support_info', 'label' => 'Privacy Policy URL', 'type' => 'text'],
 
             // Payment & Financials
-            ['key' => 'platform_fee_percent', 'value' => '10', 'group' => 'payment', 'label' => 'Platform Fee %', 'type' => 'text'],
-            ['key' => 'currency_code', 'value' => 'KES', 'group' => 'payment', 'label' => 'Currency Code', 'type' => 'text'],
-            ['key' => 'min_payout_amount', 'value' => '1000', 'group' => 'payment', 'label' => 'Minimum Payout (KES)', 'type' => 'text'],
+            ['key' => 'platform_fee_percent', 'value' => '10', 'group' => 'financial_config', 'label' => 'Platform Fee %', 'type' => 'text'],
+            ['key' => 'currency_code', 'value' => 'KES', 'group' => 'financial_config', 'label' => 'Currency Code', 'type' => 'text'],
+            ['key' => 'min_payout_amount', 'value' => '1000', 'group' => 'financial_config', 'label' => 'Minimum Payout (KES)', 'type' => 'text'],
 
             // Social Presence
-            ['key' => 'social_facebook', 'value' => 'https://facebook.com/kubakenya', 'group' => 'social', 'label' => 'Facebook URL', 'type' => 'text'],
-            ['key' => 'social_instagram', 'value' => 'https://instagram.com/kubakenya', 'group' => 'social', 'label' => 'Instagram URL', 'type' => 'text'],
-            ['key' => 'social_twitter', 'value' => 'https://twitter.com/kubakenya', 'group' => 'social', 'label' => 'Twitter/X URL', 'type' => 'text'],
-            ['key' => 'social_linkedin', 'value' => 'https://linkedin.com/company/kuba', 'group' => 'social', 'label' => 'LinkedIn URL', 'type' => 'text'],
+            ['key' => 'social_facebook', 'value' => 'https://facebook.com/kubakenya', 'group' => 'social_links', 'label' => 'Facebook URL', 'type' => 'text'],
+            ['key' => 'social_instagram', 'value' => 'https://instagram.com/kubakenya', 'group' => 'social_links', 'label' => 'Instagram URL', 'type' => 'text'],
+            ['key' => 'social_twitter', 'value' => 'https://twitter.com/kubakenya', 'group' => 'social_links', 'label' => 'Twitter/X URL', 'type' => 'text'],
+            ['key' => 'social_linkedin', 'value' => 'https://linkedin.com/company/kuba', 'group' => 'social_links', 'label' => 'LinkedIn URL', 'type' => 'text'],
+
+            // Navigation Placeholder (To prevent error in admin)
+            ['key' => 'main_navigation', 'value' => '[]', 'group' => 'navigation_menu', 'label' => 'Main Navigation Data', 'type' => 'json'],
         ];
 
         foreach ($settings as $s) {
-            SiteSetting::create($s);
+            SiteSetting::firstOrCreate(['key' => $s['key']], $s);
         }
 
         // 3. Categories & Services (Kenyan Market)
