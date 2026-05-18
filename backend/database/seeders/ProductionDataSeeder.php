@@ -95,13 +95,13 @@ class ProductionDataSeeder extends Seeder
             ['key' => 'about_desc', 'value' => 'Getting the services you need has never been easier. Just three simple steps to connect with trusted professionals in your area.', 'group' => 'about_page', 'label' => 'About Section Description', 'type' => 'textarea'],
             ['key' => 'step_1_title', 'value' => 'Tell us what you need', 'group' => 'about_page', 'label' => 'Step 1 Title', 'type' => 'text'],
             ['key' => 'step_1_desc', 'value' => 'Tell us what you need so we can find the right pro for you.', 'group' => 'about_page', 'label' => 'Step 1 Description', 'type' => 'textarea'],
-            ['key' => 'step_1_image', 'value' => '', 'group' => 'hero_backgrounds', 'label' => 'Step 1 Image', 'type' => 'image'],
+            ['key' => 'step_1_image', 'value' => '', 'group' => 'about_page', 'label' => 'Step 1 Image', 'type' => 'image'],
             ['key' => 'step_2_title', 'value' => 'Choose a time', 'group' => 'about_page', 'label' => 'Step 2 Title', 'type' => 'text'],
             ['key' => 'step_2_desc', 'value' => 'Pick a day and time that works for you.', 'group' => 'about_page', 'label' => 'Step 2 Description', 'type' => 'textarea'],
-            ['key' => 'step_2_image', 'value' => '', 'group' => 'hero_backgrounds', 'label' => 'Step 2 Image', 'type' => 'image'],
+            ['key' => 'step_2_image', 'value' => '', 'group' => 'about_page', 'label' => 'Step 2 Image', 'type' => 'image'],
             ['key' => 'step_3_title', 'value' => 'We handle the rest', 'group' => 'about_page', 'label' => 'Step 3 Title', 'type' => 'text'],
             ['key' => 'step_3_desc', 'value' => 'Our trusted pros will show up on time and do a great job.', 'group' => 'about_page', 'label' => 'Step 3 Description', 'type' => 'textarea'],
-            ['key' => 'step_3_image', 'value' => '', 'group' => 'hero_backgrounds', 'label' => 'Step 3 Image', 'type' => 'image'],
+            ['key' => 'step_3_image', 'value' => '', 'group' => 'about_page', 'label' => 'Step 3 Image', 'type' => 'image'],
 
             // For Businesses and Offices (Corporate Section)
             ['key' => 'corp_badge', 'value' => 'For Businesses & Offices', 'group' => 'market_narratives', 'label' => 'Corporate Section Badge', 'type' => 'text'],

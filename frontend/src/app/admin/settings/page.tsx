@@ -297,6 +297,17 @@ const PAGE_MAPPINGS = [
 ];
 
 const getPageForKey = (key: string, group: string) => {
+    // Specific elements for "How We Operate" physically on the Landing Page
+    if (
+        key.startsWith('step_') || 
+        key === 'about_badge' || 
+        key === 'about_title_1' || 
+        key === 'about_title_2' || 
+        key === 'about_desc'
+    ) {
+        return 'landing';
+    }
+
     // Check group matches first
     if (group === 'about_page' || group === 'about') return 'about';
     if (group === 'commercial_page' || group === 'commercial') return 'commercial';
