@@ -10,7 +10,11 @@ import { NuqsAdapter } from 'nuqs/adapters/next/app'
 import { SWRConfig } from 'swr'
 import axiosInstance from '@/lib/axios'
 
-export function Providers({ children, ...props }: React.ComponentProps<typeof NextThemesProvider>) {
+interface ProvidersProps extends React.ComponentProps<typeof NextThemesProvider> {
+  initialSettings?: Record<string, any>;
+}
+
+export function Providers({ children, initialSettings, ...props }: ProvidersProps) {
   return (
     <NextThemesProvider {...props}>
       <NuqsAdapter>
@@ -19,7 +23,7 @@ export function Providers({ children, ...props }: React.ComponentProps<typeof Ne
           revalidateOnFocus: false,
           dedupingInterval: 5000 
         }}>
-          <CMSProvider>
+          <CMSProvider initialRawSettings={initialSettings}>
             <AuthProvider>
               {children}
               <GlobalNotificationListener />
