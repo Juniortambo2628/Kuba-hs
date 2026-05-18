@@ -83,11 +83,35 @@ class ProductionDataSeeder extends Seeder
             ['key' => 'services_hero_image', 'value' => '', 'group' => 'hero_backgrounds', 'label' => 'Services Page Hero', 'type' => 'image'],
             ['key' => 'providers_hero_image', 'value' => '', 'group' => 'hero_backgrounds', 'label' => 'Providers Page Hero', 'type' => 'image'],
 
-            // Landing Content
             ['key' => 'about_hero_title', 'value' => 'Connecting Kenyans to Quality Services', 'group' => 'hero_text', 'label' => 'About Hero Title', 'type' => 'text'],
             ['key' => 'about_hero_subtitle', 'value' => 'Kuba is built on trust, quality, and community. We empower local professionals.', 'group' => 'hero_text', 'label' => 'About Hero Subtitle', 'type' => 'textarea'],
             ['key' => 'about_hero_image', 'value' => '', 'group' => 'hero_backgrounds', 'label' => 'About Hero Image', 'type' => 'image'],
             ['key' => 'about_content', 'value' => 'Expanding local opportunities by connecting the best hands with the best homes.', 'group' => 'about_page', 'label' => 'About Main Content', 'type' => 'textarea'],
+            
+            // How We Operate (About Page Section)
+            ['key' => 'about_badge', 'value' => 'Simple Process', 'group' => 'about_page', 'label' => 'About Section Badge', 'type' => 'text'],
+            ['key' => 'about_title_1', 'value' => 'How we', 'group' => 'about_page', 'label' => 'About Title Part 1', 'type' => 'text'],
+            ['key' => 'about_title_2', 'value' => 'operate', 'group' => 'about_page', 'label' => 'About Title Part 2 (Gradient)', 'type' => 'text'],
+            ['key' => 'about_desc', 'value' => 'Getting the services you need has never been easier. Just three simple steps to connect with trusted professionals in your area.', 'group' => 'about_page', 'label' => 'About Section Description', 'type' => 'textarea'],
+            ['key' => 'step_1_title', 'value' => 'Tell us what you need', 'group' => 'about_page', 'label' => 'Step 1 Title', 'type' => 'text'],
+            ['key' => 'step_1_desc', 'value' => 'Tell us what you need so we can find the right pro for you.', 'group' => 'about_page', 'label' => 'Step 1 Description', 'type' => 'textarea'],
+            ['key' => 'step_1_image', 'value' => '', 'group' => 'hero_backgrounds', 'label' => 'Step 1 Image', 'type' => 'image'],
+            ['key' => 'step_2_title', 'value' => 'Choose a time', 'group' => 'about_page', 'label' => 'Step 2 Title', 'type' => 'text'],
+            ['key' => 'step_2_desc', 'value' => 'Pick a day and time that works for you.', 'group' => 'about_page', 'label' => 'Step 2 Description', 'type' => 'textarea'],
+            ['key' => 'step_2_image', 'value' => '', 'group' => 'hero_backgrounds', 'label' => 'Step 2 Image', 'type' => 'image'],
+            ['key' => 'step_3_title', 'value' => 'We handle the rest', 'group' => 'about_page', 'label' => 'Step 3 Title', 'type' => 'text'],
+            ['key' => 'step_3_desc', 'value' => 'Our trusted pros will show up on time and do a great job.', 'group' => 'about_page', 'label' => 'Step 3 Description', 'type' => 'textarea'],
+            ['key' => 'step_3_image', 'value' => '', 'group' => 'hero_backgrounds', 'label' => 'Step 3 Image', 'type' => 'image'],
+
+            // For Businesses and Offices (Corporate Section)
+            ['key' => 'corp_badge', 'value' => 'For Businesses & Offices', 'group' => 'market_narratives', 'label' => 'Corporate Section Badge', 'type' => 'text'],
+            ['key' => 'corp_title_1', 'value' => 'Manage Your', 'group' => 'market_narratives', 'label' => 'Corporate Title Part 1', 'type' => 'text'],
+            ['key' => 'corp_title_2', 'value' => 'Office Services Easily', 'group' => 'market_narratives', 'label' => 'Corporate Title Part 2', 'type' => 'text'],
+            ['key' => 'corp_desc', 'value' => 'Kuba provides custom service plans for businesses. From office cleaning to repairs, manage everything in one place.', 'group' => 'market_narratives', 'label' => 'Corporate Description', 'type' => 'textarea'],
+            ['key' => 'corp_feature_1', 'value' => 'One Monthly Bill', 'group' => 'market_narratives', 'label' => 'Corporate Feature 1', 'type' => 'text'],
+            ['key' => 'corp_feature_2', 'value' => 'Your Own Support Contact', 'group' => 'market_narratives', 'label' => 'Corporate Feature 2', 'type' => 'text'],
+            ['key' => 'corp_feature_3', 'value' => 'Fastest Service', 'group' => 'market_narratives', 'label' => 'Corporate Feature 3', 'type' => 'text'],
+            ['key' => 'corp_feature_4', 'value' => 'Top-Rated Business Pros', 'group' => 'market_narratives', 'label' => 'Corporate Feature 4', 'type' => 'text'],
 
             // System & Config
             ['key' => 'contact_hero_title', 'value' => 'We\'re Here to Help', 'group' => 'hero_text', 'label' => 'Contact Hero Title', 'type' => 'text'],

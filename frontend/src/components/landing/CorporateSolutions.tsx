@@ -16,10 +16,10 @@ export function CorporateSolutions() {
   const displayFeatures = cmsFeatures.length > 0 
     ? cmsFeatures.map(f => f.title)
     : [
-        getS('corporate', 'corp_feature_1', 'One Monthly Bill'),
-        getS('corporate', 'corp_feature_2', 'Your Own Support Contact'),
-        getS('corporate', 'corp_feature_3', 'Fastest Service'),
-        getS('corporate', 'corp_feature_4', 'Top-Rated Business Pros')
+        getS('market_narratives', 'corp_feature_1', 'One Monthly Bill'),
+        getS('market_narratives', 'corp_feature_2', 'Your Own Support Contact'),
+        getS('market_narratives', 'corp_feature_3', 'Fastest Service'),
+        getS('market_narratives', 'corp_feature_4', 'Top-Rated Business Pros')
       ];
 
   return (
