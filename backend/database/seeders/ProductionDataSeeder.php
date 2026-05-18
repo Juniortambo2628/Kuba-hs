@@ -84,37 +84,37 @@ class ProductionDataSeeder extends Seeder
             ['key' => 'providers_hero_image', 'value' => '', 'group' => 'hero_backgrounds', 'label' => 'Providers Page Hero', 'type' => 'image'],
 
             // Landing Content
-            ['key' => 'about_hero_title', 'value' => 'Connecting Kenyans to Quality Services', 'group' => 'about_page', 'label' => 'About Hero Title', 'type' => 'text'],
-            ['key' => 'about_hero_subtitle', 'value' => 'Kuba is built on trust, quality, and community. We empower local professionals.', 'group' => 'about_page', 'label' => 'About Hero Subtitle', 'type' => 'textarea'],
+            ['key' => 'about_hero_title', 'value' => 'Connecting Kenyans to Quality Services', 'group' => 'hero_text', 'label' => 'About Hero Title', 'type' => 'text'],
+            ['key' => 'about_hero_subtitle', 'value' => 'Kuba is built on trust, quality, and community. We empower local professionals.', 'group' => 'hero_text', 'label' => 'About Hero Subtitle', 'type' => 'textarea'],
             ['key' => 'about_hero_image', 'value' => '', 'group' => 'hero_backgrounds', 'label' => 'About Hero Image', 'type' => 'image'],
             ['key' => 'about_content', 'value' => 'Expanding local opportunities by connecting the best hands with the best homes.', 'group' => 'about_page', 'label' => 'About Main Content', 'type' => 'textarea'],
 
             // System & Config
-            ['key' => 'contact_hero_title', 'value' => 'We\'re Here to Help', 'group' => 'support_info', 'label' => 'Contact Hero Title', 'type' => 'text'],
-            ['key' => 'contact_hero_subtitle', 'value' => 'Have questions or need assistance? Reach out to the Kuba support team.', 'group' => 'support_info', 'label' => 'Contact Hero Subtitle', 'type' => 'textarea'],
+            ['key' => 'contact_hero_title', 'value' => 'We\'re Here to Help', 'group' => 'hero_text', 'label' => 'Contact Hero Title', 'type' => 'text'],
+            ['key' => 'contact_hero_subtitle', 'value' => 'Have questions or need assistance? Reach out to the Kuba support team.', 'group' => 'hero_text', 'label' => 'Contact Hero Subtitle', 'type' => 'textarea'],
             ['key' => 'support_email', 'value' => 'hello@kuba.co.ke', 'group' => 'support_info', 'label' => 'Support Email', 'type' => 'text'],
             ['key' => 'support_phone', 'value' => '+254 700 000 000', 'group' => 'support_info', 'label' => 'Support Phone', 'type' => 'text'],
             ['key' => 'office_address', 'value' => 'Westlands, Nairobi, Kenya', 'group' => 'support_info', 'label' => 'Headquarters Address', 'type' => 'textarea'],
 
             // Sections
-            ['key' => 'investors_hero_title', 'value' => 'Invest in the Future of Service Delivery', 'group' => 'market_narratives', 'label' => 'Investors Hero Title', 'type' => 'text'],
-            ['key' => 'investors_hero_subtitle', 'value' => 'Join us in scaling Africa\'s premier digital marketplace for essential services.', 'group' => 'market_narratives', 'label' => 'Investors Hero Subtitle', 'type' => 'textarea'],
+            ['key' => 'investors_hero_title', 'value' => 'Invest in the Future of Service Delivery', 'group' => 'hero_text', 'label' => 'Investors Hero Title', 'type' => 'text'],
+            ['key' => 'investors_hero_subtitle', 'value' => 'Join us in scaling Africa\'s premier digital marketplace for essential services.', 'group' => 'hero_text', 'label' => 'Investors Hero Subtitle', 'type' => 'textarea'],
             ['key' => 'investors_hero_image', 'value' => '', 'group' => 'hero_backgrounds', 'label' => 'Investors Hero Image', 'type' => 'image'],
 
-            ['key' => 'commercial_hero_title', 'value' => 'Institutional Grade Facility Management', 'group' => 'market_narratives', 'label' => 'Commercial Hero Title', 'type' => 'text'],
-            ['key' => 'commercial_hero_subtitle', 'value' => 'Tailored solutions for businesses, from HR support to security and maintenance.', 'group' => 'market_narratives', 'label' => 'Commercial Hero Subtitle', 'type' => 'textarea'],
+            ['key' => 'commercial_hero_title', 'value' => 'Institutional Grade Facility Management', 'group' => 'hero_text', 'label' => 'Commercial Hero Title', 'type' => 'text'],
+            ['key' => 'commercial_hero_subtitle', 'value' => 'Tailored solutions for businesses, from HR support to security and maintenance.', 'group' => 'hero_text', 'label' => 'Commercial Hero Subtitle', 'type' => 'textarea'],
             ['key' => 'commercial_hero_image', 'value' => '', 'group' => 'hero_backgrounds', 'label' => 'Commercial Hero Image', 'type' => 'image'],
             ['key' => 'commercial_thesis_title', 'value' => 'Consolidated Excellence for Modern Enterprise', 'group' => 'market_narratives', 'label' => 'Commercial Thesis Title', 'type' => 'text'],
             ['key' => 'commercial_thesis_body', 'value' => 'Kuba provides a unified service infrastructure for organizations that demand quality and accountability. From daily janitorial needs to complex facility management, we scale with your business.', 'group' => 'market_narratives', 'label' => 'Commercial Thesis Body', 'type' => 'textarea'],
 
-            ['key' => 'cooperatives_hero_title', 'value' => 'Empowering SACCOs & Community Groups', 'group' => 'market_narratives', 'label' => 'Cooperatives Hero Title', 'type' => 'text'],
-            ['key' => 'cooperatives_hero_subtitle', 'value' => 'Financial advisory and group-focused services for Kenyan community growth.', 'group' => 'market_narratives', 'label' => 'Cooperatives Hero Subtitle', 'type' => 'textarea'],
+            ['key' => 'cooperatives_hero_title', 'value' => 'Empowering SACCOs & Community Groups', 'group' => 'hero_text', 'label' => 'Cooperatives Hero Title', 'type' => 'text'],
+            ['key' => 'cooperatives_hero_subtitle', 'value' => 'Financial advisory and group-focused services for Kenyan community growth.', 'group' => 'hero_text', 'label' => 'Cooperatives Hero Subtitle', 'type' => 'textarea'],
             ['key' => 'cooperatives_hero_image', 'value' => '', 'group' => 'hero_backgrounds', 'label' => 'Cooperatives Hero Image', 'type' => 'image'],
             ['key' => 'cooperatives_thesis_title', 'value' => 'Stronger Together through Shared Services', 'group' => 'market_narratives', 'label' => 'Cooperatives Thesis Title', 'type' => 'text'],
             ['key' => 'cooperatives_thesis_body', 'value' => 'We help gated communities and SACCOs leverage collective bargaining power to secure premium home services at negotiated rates, managed via a single platform.', 'group' => 'market_narratives', 'label' => 'Cooperatives Thesis Body', 'type' => 'textarea'],
 
-            ['key' => 'blog_hero_title', 'value' => 'The Kuba Journal', 'group' => 'market_narratives', 'label' => 'Journal Hero Title', 'type' => 'text'],
-            ['key' => 'blog_hero_subtitle', 'value' => 'Insights, updates, and expert tips from the world of professional services.', 'group' => 'market_narratives', 'label' => 'Journal Hero Subtitle', 'type' => 'textarea'],
+            ['key' => 'blog_hero_title', 'value' => 'The Kuba Journal', 'group' => 'hero_text', 'label' => 'Journal Hero Title', 'type' => 'text'],
+            ['key' => 'blog_hero_subtitle', 'value' => 'Insights, updates, and expert tips from the world of professional services.', 'group' => 'hero_text', 'label' => 'Journal Hero Subtitle', 'type' => 'textarea'],
             ['key' => 'journal_hero_image', 'value' => '', 'group' => 'hero_backgrounds', 'label' => 'Journal Page Hero', 'type' => 'image'],
             ['key' => 'journal_thesis_title', 'value' => 'Redefining Service in the Digital Age', 'group' => 'market_narratives', 'label' => 'Journal Thesis Title', 'type' => 'text'],
             ['key' => 'journal_thesis_body', 'value' => 'Explore our deep dives into how technology is transforming the Kenyan service economy and empowering local artisans.', 'group' => 'market_narratives', 'label' => 'Journal Thesis Body', 'type' => 'textarea'],
