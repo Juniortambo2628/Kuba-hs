@@ -63,7 +63,7 @@ export function CorporateSolutions() {
               <Button asChild className="bg-white text-primary hover:bg-white/90 h-14 px-8 rounded-2xl font-bold text-sm shadow-xl transition-all hover:scale-105 active:scale-95">
                 <Link href="/contact?type=corporate">Get a Business Quote</Link>
               </Button>
-              <Button asChild variant="outline" className="border-white/20 text-white hover:bg-white/10 h-14 px-8 rounded-2xl font-bold text-sm">
+              <Button asChild variant="outline" className="border-white/20 text-primary dark:text-white hover:text-primary dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10 h-14 px-8 rounded-2xl font-bold text-sm">
                 <Link href="/about">
                   Learn More <ArrowRight className="ml-2 w-4 h-4" />
                 </Link>
