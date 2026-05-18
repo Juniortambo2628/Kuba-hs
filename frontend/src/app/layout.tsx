@@ -38,11 +38,33 @@ import { CookieConsent } from "@/components/shared/CookieConsent";
 import { LegalModals } from "@/components/shared/LegalModals";
 import { DynamicFavicon } from "@/components/shared/DynamicFavicon";
 
-export default function RootLayout({
+async function fetchGlobalSettings() {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/settings`, { 
+      signal: controller.signal,
+      next: { revalidate: 3600 } 
+    });
+    
+    clearTimeout(timeoutId);
+    
+    const data = await res.json();
+    return data.settings || {};
+  } catch (error) {
+    console.error("Failed to fetch global settings for SSR:", error);
+    return {};
+  }
+}
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const initialSettings = await fetchGlobalSettings();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
@@ -50,6 +72,7 @@ export default function RootLayout({
         className={`${inter.variable} ${geistMono.variable} antialiased bg-white dark:bg-[#0B0F19] text-gray-900 dark:text-white transition-colors duration-300`}
       >
         <Providers
+          initialSettings={initialSettings}
           attribute="class"
           defaultTheme="light"
           enableSystem

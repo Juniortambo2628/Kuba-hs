@@ -26,32 +26,40 @@ const CMSContext = createContext<CMSContextType | undefined>(undefined);
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, '') || 'http://localhost:8000';
 
-export function CMSProvider({ children }: { children: React.ReactNode }) {
-  const [settings, setSettings] = useState<Record<string, Record<string, CMSSetting>>>({});
-  const [isLoading, setIsLoading] = useState(true);
+export function CMSProvider({ children, initialRawSettings }: { children: React.ReactNode, initialRawSettings?: Record<string, CMSSetting[]> }) {
+  const formatSettings = (raw: Record<string, CMSSetting[]>) => {
+    const formatted: Record<string, Record<string, CMSSetting>> = {};
+    Object.entries(raw).forEach(([group, items]) => {
+      formatted[group] = {};
+      items.forEach((item) => {
+        formatted[group][item.key] = item;
+      });
+    });
+    return formatted;
+  };
+
+  const [settings, setSettings] = useState<Record<string, Record<string, CMSSetting>>>(() => 
+    initialRawSettings && Object.keys(initialRawSettings).length > 0 ? formatSettings(initialRawSettings) : {}
+  );
+  const [isLoading, setIsLoading] = useState(!initialRawSettings || Object.keys(initialRawSettings).length === 0);
 
   const fetchSettings = useCallback(async () => {
     try {
-      setIsLoading(true);
+      // Don't flash loading state if we already have hydrated data
+      if (Object.keys(settings).length === 0) {
+        setIsLoading(true);
+      }
       const res = await axiosInstance.get("/api/settings");
-      const formatted: Record<string, Record<string, CMSSetting>> = {};
       
       if (res.data.settings) {
-        const rawSettings = res.data.settings as Record<string, CMSSetting[]>;
-        Object.entries(rawSettings).forEach(([group, items]) => {
-          formatted[group] = {};
-          items.forEach((item) => {
-            formatted[group][item.key] = item;
-          });
-        });
+        setSettings(formatSettings(res.data.settings));
       }
-      setSettings(formatted);
     } catch (err) {
       console.error("Failed to fetch CMS settings:", err);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [settings]);
 
   useEffect(() => {
     fetchSettings();
