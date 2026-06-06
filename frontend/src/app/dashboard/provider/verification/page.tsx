@@ -197,7 +197,7 @@ export default function ProviderVerification() {
                       {formatDocumentType(doc.document_type)}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Submitted {new Date(doc.created_at).toLocaleDateString()}
+                      Submitted {doc.created_at ? new Date(doc.created_at).toLocaleDateString() : 'Unknown'}
                     </p>
                     {doc.rejection_reason && (
                       <p className="text-xs text-red-600 mt-1">{doc.rejection_reason}</p>
