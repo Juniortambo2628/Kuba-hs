@@ -53,8 +53,8 @@ export default function ServiceDetailClient({
     const row = providerServices[0] || service;
     if (!row) return null;
     const categoryName =
-      resolveServiceCategoryName(row) ||
-      resolveServiceCategoryName(service) ||
+      resolveServiceCategoryName(row as any) ||
+      resolveServiceCategoryName(service as any) ||
       (service?.category as { name?: string })?.name;
     return {
       ...row,

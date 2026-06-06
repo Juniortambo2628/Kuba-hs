@@ -22,6 +22,7 @@ export const workspaceUi = {
       good: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300",
       info: "bg-sky-100 text-sky-800 dark:bg-sky-950/50 dark:text-sky-300",
       muted: "bg-muted text-muted-foreground",
+      warning: "bg-rose-100 text-rose-800 dark:bg-rose-950/50 dark:text-rose-300",
     },
   },
   card: "rounded-[1.75rem] border border-border/60 bg-card shadow-sm",

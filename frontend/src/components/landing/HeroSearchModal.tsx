@@ -448,7 +448,7 @@ export function HeroSearchModal({ isOpen, onClose, initialTab, initialView = "li
             )}
             <MarketingViewToggle
               view={resultView}
-              onViewChange={setResultView}
+              onViewChange={setResultView as any}
               modes={["list", "map"]}
             />
           </div>

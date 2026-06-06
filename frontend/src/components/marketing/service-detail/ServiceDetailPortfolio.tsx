@@ -70,7 +70,7 @@ export function ServiceDetailPortfolio({
   const serviceName = service?.name || service?.service?.name || "Service";
   const description =
     service?.description || service?.service?.description || "";
-  const thumbnailSrc = resolveServiceThumbnailSrc(service);
+  const thumbnailSrc = resolveServiceThumbnailSrc(service as any);
 
   const primaryProvider =
     service?.provider ||
@@ -305,7 +305,7 @@ export function ServiceDetailPortfolio({
                 pricingType={
                   featuredRow?.pricing_type || service?.pricing_type || "service"
                 }
-                provider={primaryProvider}
+                provider={primaryProvider as any}
                 onBook={() => onBook(primaryProvider as Provider | null)}
               />
             </aside>

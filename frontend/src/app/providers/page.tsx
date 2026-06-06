@@ -275,8 +275,13 @@ function ProvidersContent() {
                   <MapView 
                     providers={providers.map(p => ({
                       ...p,
+                      id: String(p.id),
                       latitude: typeof p.latitude === 'string' ? parseFloat(p.latitude) : p.latitude,
                       longitude: typeof p.longitude === 'string' ? parseFloat(p.longitude) : p.longitude,
+                      user: {
+                        ...p.user,
+                        avatar_url: p.user?.profile_photo_path
+                      }
                     }))}
                     showRadius={true}
                     onMarkerClick={(p) => console.log("Clicked pro:", p.business_name)}

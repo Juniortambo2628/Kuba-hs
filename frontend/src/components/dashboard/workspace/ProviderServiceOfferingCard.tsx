@@ -28,7 +28,7 @@ export function ProviderServiceOfferingCard({
   const category = categoryDisplayName(offering);
   const thumb =
     offering.image_urls?.[0]?.url ??
-    offering.service?.thumbnail_url ??
+    (offering.service as any)?.thumbnail_url ??
     offering.service_thumbnail_url;
   const thumbSrc = thumb ? getMediaUrl(thumb, "service") : null;
   const isHourly = offering.pricing_type === "hourly";
