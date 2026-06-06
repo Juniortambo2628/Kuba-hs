@@ -314,7 +314,7 @@ function ClientBookingsContent() {
         role="client"
         isUpdating={isUpdating}
         userEmail={user?.email ?? ""}
-        onRefresh={() => mutateBookings()}
+        onRefresh={() => { mutateBookings(); }}
         onUpdateStatus={(nextStatus) =>
           selectedBooking && handleUpdateStatus(selectedBooking.id, nextStatus)
         }

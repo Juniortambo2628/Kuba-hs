@@ -60,7 +60,7 @@ export default function ClientBookingDetailPage() {
       role="client"
       isUpdating={isUpdating}
       userEmail={user?.email ?? ""}
-      onRefresh={() => refresh()}
+      onRefresh={() => { refresh(); }}
       onUpdateStatus={handleUpdateStatus}
     />
   );
