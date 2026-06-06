@@ -17,7 +17,7 @@ class BookingResource extends JsonResource
         return [
             'id' => $this->id,
             'booking_number' => $this->booking_number,
-            'scheduled_date' => $this->scheduled_date->toISOString(),
+            'scheduled_date' => $this->scheduled_date?->toISOString(),
             'scheduled_time' => $this->scheduled_time,
             'scheduled_end_date' => $this->scheduled_end_date?->toISOString(),
             'started_at' => $this->started_at?->toISOString(),
@@ -31,6 +31,8 @@ class BookingResource extends JsonResource
             'service_type' => $this->service_type,
             'quantity' => (int) $this->quantity,
             'description' => $this->description,
+            'cancellation_reason' => $this->cancellation_reason,
+            'rescheduled_at' => $this->rescheduled_at?->toISOString(),
             'image_urls' => $this->image_urls,
             'customer' => new UserResource($this->whenLoaded('customer')),
             'service' => new ServiceResource($this->whenLoaded('service')),

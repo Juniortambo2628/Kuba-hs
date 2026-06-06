@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 
 import { getEcho } from "@/lib/echo";
+import { normalizeMessage, unwrapResource, unwrapResourceList } from "@/lib/chat-utils";
 
 interface Message {
     id: string | number;
@@ -49,7 +50,7 @@ interface Conversation {
 }
 
 interface ChatUIProps {
-    bookingId: number;
+    bookingId: string | number;
     onClose?: () => void;
 }
 
@@ -85,9 +86,22 @@ export function ChatUI({ bookingId, onClose }: ChatUIProps) {
     const fetchConversation = async () => {
         try {
             const res = await axiosInstance.get(`/api/chat/conversations/${bookingId}`);
-            setConversation(res.data);
-            setMessages(res.data.messages || []);
-            markRead();
+            const conv = unwrapResource<Conversation>(res.data?.conversation ?? res.data);
+            if (!conv) {
+                throw new Error("Conversation not found");
+            }
+            setConversation(conv);
+            const rawMessages = conv.messages ?? unwrapResourceList(res.data?.messages);
+            setMessages(
+                (Array.isArray(rawMessages) ? rawMessages : []).map((m) =>
+                    normalizeMessage(m as unknown as Record<string, unknown>)
+                ) as Message[]
+            );
+            try {
+                await axiosInstance.patch(`/api/chat/conversations/${conv.id}/read`);
+            } catch {
+                /* non-fatal */
+            }
         } catch (err) {
             console.error("Failed to fetch conversation:", err);
             toast.error("Could not load chat");
@@ -115,7 +129,11 @@ export function ChatUI({ bookingId, onClose }: ChatUIProps) {
                 conversation_id: conversation.id,
                 body: newMessage
             });
-            setMessages(prev => [...prev, res.data]);
+            const sent = unwrapResource<Record<string, unknown>>(res.data) ?? res.data;
+            setMessages((prev) => [
+                ...prev,
+                normalizeMessage(sent as Record<string, unknown>) as Message,
+            ]);
             setNewMessage("");
         } catch (err) {
             toast.error("Message failed to send");
@@ -163,7 +181,7 @@ export function ChatUI({ bookingId, onClose }: ChatUIProps) {
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 p-6 overflow-y-auto space-y-6 scrollbar-hide" ref={scrollRef}>
+            <div className="flex-1 p-6 overflow-y-auto space-y-6 kuba-scroll-hidden" ref={scrollRef}>
                 {messages.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-50">
                         <div className="p-6 bg-gray-50 dark:bg-white/5 rounded-full text-gray-300">

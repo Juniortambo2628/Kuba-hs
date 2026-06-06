@@ -1,17 +1,31 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import { LandingButton } from "@/components/shared/LandingButton";
 import Link from "next/link";
 import { useCMS } from "@/contexts/CMSContext";
-import { designSystem } from "@/lib/design-system";
+import { uiPrimitives } from "@/lib/ui-primitives";
 import Image from "next/image";
+import { LandingSection } from "@/components/landing/LandingSection";
+import { LandingSectionHeader } from "@/components/shared/LandingSectionHeader";
+import {
+  landingTitleParts,
+  LandingGradientTitle,
+} from "@/lib/landing-section-header-copy";
 
 export function CTA() {
   const { getS } = useCMS();
+
+  const ctaTitle = getS(
+    "cta",
+    "cta_title",
+    getS("home_hero", "cta_title", "Ready to find a professional?")
+  );
+  const { part1: ctaTitle1, part2: ctaTitle2 } = landingTitleParts(ctaTitle, "professional?");
+
   return (
-    <section className="py-24 bg-background relative transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <LandingSection variant="default" className="relative transition-colors duration-300">
+      <div className={uiPrimitives.layout.page + " w-full"}>
         <motion.div
           className="relative rounded-[3rem] overflow-hidden shadow-2xl bg-gray-50 dark:bg-[#0f1523] border border-gray-200 dark:border-white/10"
           initial={{ opacity: 0, y: 40 }}
@@ -28,25 +42,33 @@ export function CTA() {
             
             {/* Left Content Area */}
             <div className="p-10 md:p-16 lg:p-24 flex flex-col justify-center text-left">
-              <div className={designSystem.typography.section.badge}>
-                Get Started Today
-              </div>
-              
-              <h2 className={designSystem.typography.section.title}>
-                {getS('home_hero', 'cta_title', 'Ready to find a professional?')}
-              </h2>
-              
-              <p className={designSystem.typography.section.subtitle}>
-                {getS('home_hero', 'cta_description', 'Join thousands of happy customers who have already found reliable help through KUBA. The smart way to handle home services.')}
-              </p>
-              
+              <LandingSectionHeader
+                badge={getS("cta", "cta_badge", "Get Started Today")}
+                title={<LandingGradientTitle part1={ctaTitle1} part2={ctaTitle2} />}
+                subtitle={getS(
+                  "cta",
+                  "cta_description",
+                  getS(
+                    "home_hero",
+                    "cta_description",
+                    "Join thousands of happy customers who have already found reliable help through KUBA."
+                  )
+                )}
+                align="left"
+                className="!mb-8 text-left [&_h2]:text-left [&_p]:mx-0"
+              />
+
               <div className="flex flex-col sm:flex-row gap-4 w-full max-w-xl">
-                  <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700 text-white font-bold h-16 px-10 rounded-full shadow-2xl shadow-blue-600/30 transition-transform hover:-translate-y-1 w-full sm:w-auto text-lg">
-                      <Link href="/services">Browse Services</Link>
-                  </Button>
-                  <Button asChild variant="outline" size="lg" className="bg-white dark:bg-white/5 border-2 border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-900 dark:text-white font-bold h-16 px-10 rounded-full w-full sm:w-auto text-lg transition-transform hover:-translate-y-1">
-                      <Link href="/register?role=provider">Join as a Pro</Link>
-                  </Button>
+                  <LandingButton asChild size="lg" className="w-full sm:w-auto">
+                      <Link href="/services">
+                        {getS("cta", "cta_primary_label", "Browse Services")}
+                      </Link>
+                  </LandingButton>
+                  <LandingButton asChild variant="secondary" size="lg" className="w-full sm:w-auto">
+                      <Link href="/register?role=provider">
+                        {getS("cta", "cta_secondary_label", "Join as a Pro")}
+                      </Link>
+                  </LandingButton>
               </div>
             </div>
 
@@ -74,8 +96,8 @@ export function CTA() {
                             ✓
                         </div>
                         <div>
-                            <p className="text-3xl font-black text-gray-900 dark:text-white">10k+</p>
-                            <p className="text-sm font-bold tracking-tight text-gray-500 dark:text-gray-400">Jobs Done</p>
+                            <p className="text-3xl font-black text-gray-900 dark:text-white">{getS('site_stats', 'stat_4_value', '10k+')}</p>
+                            <p className="text-sm font-bold tracking-tight text-gray-500 dark:text-gray-400">{getS('site_stats', 'stat_4_label', 'Jobs Done')}</p>
                         </div>
                     </div>
                 </motion.div>
@@ -91,8 +113,8 @@ export function CTA() {
                             ★
                         </div>
                         <div>
-                            <p className="text-3xl font-black text-gray-900 dark:text-white">4.9</p>
-                            <p className="text-sm font-bold tracking-tight text-gray-500 dark:text-gray-400">Avg Rating</p>
+                            <p className="text-3xl font-black text-gray-900 dark:text-white">{getS('about_page', 'about_stat_satisfaction', '4.9')}</p>
+                            <p className="text-sm font-bold tracking-tight text-gray-500 dark:text-gray-400">{getS('site_stats', 'stat_3_label', 'Avg Rating')}</p>
                         </div>
                     </div>
                 </motion.div>
@@ -100,6 +122,6 @@ export function CTA() {
           </div>
         </motion.div>
       </div>
-    </section>
+    </LandingSection>
   );
 }

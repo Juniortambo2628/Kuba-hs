@@ -1,5 +1,8 @@
 "use client";
 
+import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
+import { DashboardPageSkeleton } from "@/components/shared/DashboardPageSkeleton";
+
 import { useEffect, useState } from "react";
 import axiosInstance, { handleApiError } from "@/lib/axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,17 +17,6 @@ import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
 import { useApiData } from "@/hooks/useApiData";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { cn } from "@/lib/utils";
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { 
@@ -37,6 +29,8 @@ import {
 import { iconMap, resolveIcon } from "@/lib/icon-map";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Image from "next/image";
+import { DashboardImageUpload } from "@/components/shared/DashboardImageUpload";
+import { getMediaUrl } from "@/lib/utils";
 
 const PAGE_OPTIONS = [
     { label: 'Landing (Home)', value: 'landing' },
@@ -80,6 +74,7 @@ export default function PageFeaturesPage() {
         subtitle: '',
         description: '',
         icon: 'Sparkles',
+        image_url: '',
         order_index: 0,
         is_active: true
     });
@@ -118,6 +113,7 @@ export default function PageFeaturesPage() {
             subtitle: '',
             description: '',
             icon: 'Sparkles',
+            image_url: '',
             order_index: 0,
             is_active: true
         });
@@ -133,6 +129,7 @@ export default function PageFeaturesPage() {
             subtitle: feature.subtitle || '',
             description: feature.description,
             icon: feature.icon || 'Sparkles',
+            image_url: feature.image_url || '',
             order_index: feature.order_index,
             is_active: feature.is_active
         }); 
@@ -140,16 +137,11 @@ export default function PageFeaturesPage() {
     };
 
     if (isLoading) {
-        return (
-            <div className="max-w-5xl mx-auto space-y-6 animate-pulse p-6">
-                <Skeleton className="h-10 w-48 rounded-lg" />
-                <Skeleton className="h-64 rounded-xl" />
-            </div>
-        );
+        return <DashboardPageSkeleton width="narrow" metrics={0} bodyHeight="h-64" />;
     }
 
     return (
-        <div className="max-w-6xl mx-auto space-y-10 pb-12">
+        <DashboardPageContainer width="default" className="space-y-10">
             <DashboardPageHeader 
                 title="Page Feature Manager" 
                 subtitle="Configure and fine-tune dynamic content cards displayed on the website's public pages."
@@ -214,8 +206,14 @@ export default function PageFeaturesPage() {
                                 </div>
                             </div>
                             <div className="space-y-6">
+                                <DashboardImageUpload
+                                    label="Feature Image (optional)"
+                                    type="cms"
+                                    value={form.image_url}
+                                    onChange={(url) => setForm({ ...form, image_url: url })}
+                                />
                                 <div className="space-y-2">
-                                    <Label className="text-xs font-bold text-muted-foreground uppercase tracking-widest block mb-4 text-center">Visual Icon Selector</Label>
+                                    <Label className="text-xs font-bold text-muted-foreground uppercase tracking-widest block mb-4 text-center">Fallback Icon (when no image)</Label>
                                     <div className="p-4 bg-muted/30 rounded-2xl border border-dashed border-border/60">
                                         <ScrollArea className="h-[210px] pr-4">
                                             <div className="grid grid-cols-4 gap-2">
@@ -340,6 +338,6 @@ export default function PageFeaturesPage() {
                     </div>
                 )}
             </div>
-        </div>
+        </DashboardPageContainer>
     );
 }

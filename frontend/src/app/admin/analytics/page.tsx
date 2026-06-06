@@ -21,7 +21,6 @@ import {
   YAxis, 
   CartesianGrid, 
   Tooltip, 
-  ResponsiveContainer,
   BarChart as RechartsBarChart,
   Bar,
   PieChart,
@@ -32,6 +31,9 @@ import {
 import { useExport } from "@/hooks/useExport";
 import { Button } from "@/components/ui/button";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
+import { ChartContainer } from "@/components/shared/ChartContainer";
+import { DashboardPageSkeleton } from "@/components/shared/DashboardPageSkeleton";
 import { MetricCard } from "@/components/shared/MetricCard";
 import { useApiData } from "@/hooks/useApiData";
 
@@ -67,15 +69,7 @@ export default function AdminAnalytics() {
 
 
   if (isLoading) {
-    return (
-      <div className="max-w-6xl mx-auto space-y-6 animate-pulse">
-        <Skeleton className="h-10 w-48 rounded-lg" />
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-28 rounded-xl" />)}
-        </div>
-        <Skeleton className="h-80 rounded-xl" />
-      </div>
-    );
+    return <DashboardPageSkeleton width="default" metrics={4} bodyHeight="h-80" />;
   }
 
   if (!data) return null;
@@ -96,7 +90,7 @@ export default function AdminAnalytics() {
   ];
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 pb-12">
+    <DashboardPageContainer width="default">
       {/* Header */}
       <DashboardPageHeader 
         title="Analytics" 
@@ -135,8 +129,7 @@ export default function AdminAnalytics() {
           </div>
         </CardHeader>
         <CardContent className="p-6">
-          <div className="h-[350px] w-full" style={{ minWidth: 0 }}>
-            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+          <ChartContainer height={350}>
               <AreaChart data={data.trends.revenue} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
@@ -153,8 +146,7 @@ export default function AdminAnalytics() {
                 />
                 <Area type="monotone" dataKey="count" stroke="#71717a" strokeWidth={2} fillOpacity={1} fill="url(#colorRevenue)" />
               </AreaChart>
-            </ResponsiveContainer>
-          </div>
+          </ChartContainer>
         </CardContent>
       </Card>
 
@@ -172,8 +164,7 @@ export default function AdminAnalytics() {
             </div>
           </CardHeader>
           <CardContent className="p-6">
-            <div className="h-[280px] w-full" style={{ minWidth: 0 }}>
-              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+            <ChartContainer height={280}>
                 <RechartsBarChart data={data.trends.bookings} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
                   <XAxis dataKey="date" tick={{fontSize: 11}} tickLine={false} axisLine={false} stroke="var(--muted-foreground)" />
@@ -181,8 +172,7 @@ export default function AdminAnalytics() {
                   <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--foreground)', fontSize: 13 }} />
                   <Bar dataKey="count" name="Bookings" fill="#71717a" radius={[3, 3, 0, 0]} />
                 </RechartsBarChart>
-              </ResponsiveContainer>
-            </div>
+            </ChartContainer>
           </CardContent>
         </Card>
 
@@ -198,8 +188,7 @@ export default function AdminAnalytics() {
             </div>
           </CardHeader>
           <CardContent className="p-6 flex justify-center">
-            <div className="h-[280px] w-full" style={{ minWidth: 0 }}>
-              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+            <ChartContainer height={280}>
                 <PieChart>
                   <Pie data={userDistributionData} cx="50%" cy="50%" innerRadius={70} outerRadius={100} paddingAngle={3} dataKey="value" stroke="none">
                     {userDistributionData.map((entry, index) => (
@@ -209,11 +198,10 @@ export default function AdminAnalytics() {
                   <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--foreground)', fontSize: 13 }} />
                   <Legend iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
                 </PieChart>
-              </ResponsiveContainer>
-            </div>
+            </ChartContainer>
           </CardContent>
         </Card>
       </div>
-    </div>
+    </DashboardPageContainer>
   );
 }

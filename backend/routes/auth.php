@@ -1,9 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
-use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
@@ -32,14 +30,19 @@ Route::middleware('guest')->group(function () use ($frontendUrl) {
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
     Route::get('forgot-password', function () use ($frontendUrl) {
-        return redirect($frontendUrl . '/login');
+        return redirect($frontendUrl . '/forgot-password');
     })->name('password.request');
 
     Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
         ->name('password.email');
 
-    Route::get('reset-password/{token}', function ($token) use ($frontendUrl) {
-        return redirect($frontendUrl . '/login');
+    Route::get('reset-password/{token}', function (string $token) use ($frontendUrl) {
+        $query = http_build_query([
+            'token' => $token,
+            'email' => request()->query('email', ''),
+        ]);
+
+        return redirect($frontendUrl . '/reset-password?' . $query);
     })->name('password.reset');
 
     Route::post('reset-password', [NewPasswordController::class, 'store'])

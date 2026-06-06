@@ -3,6 +3,8 @@
 import * as React from "react"
 import { ThemeProvider as NextThemesProvider } from "next-themes"
 import { AuthProvider } from "@/contexts/AuthContext"
+import { AuthDialogProvider } from "@/contexts/AuthDialogContext"
+import { AuthDialog } from "@/components/auth/AuthDialog"
 import { CMSProvider } from "@/contexts/CMSContext"
 import { Toaster } from "@/components/ui/sonner"
 import { GlobalNotificationListener } from "@/components/notifications/GlobalNotificationListener"
@@ -25,9 +27,12 @@ export function Providers({ children, initialSettings, ...props }: ProvidersProp
         }}>
           <CMSProvider initialRawSettings={initialSettings}>
             <AuthProvider>
-              {children}
-              <GlobalNotificationListener />
-              <Toaster />
+              <AuthDialogProvider>
+                {children}
+                <AuthDialog />
+                <GlobalNotificationListener />
+                <Toaster />
+              </AuthDialogProvider>
             </AuthProvider>
           </CMSProvider>
         </SWRConfig>

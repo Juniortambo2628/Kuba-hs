@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Http\Request;
 
 class GoogleController extends Controller
 {
@@ -21,15 +22,26 @@ class GoogleController extends Controller
         return $driver->stateless();
     }
 
-    public function redirectToGoogle()
+    public function redirectToGoogle(Request $request)
     {
-        return $this->getGoogleDriver()->redirect();
+        $role = $request->query('role', 'customer');
+        if (! in_array($role, ['customer', 'provider'], true)) {
+            $role = 'customer';
+        }
+
+        return $this->getGoogleDriver()
+            ->with(['role' => $role])
+            ->redirect();
     }
 
-    public function handleGoogleCallback()
+    public function handleGoogleCallback(Request $request)
     {
         try {
             $googleUser = $this->getGoogleDriver()->user();
+            $oauthRole = $request->input('role', 'customer');
+            if (! in_array($oauthRole, ['customer', 'provider'], true)) {
+                $oauthRole = 'customer';
+            }
             
             $user = User::where('google_id', $googleUser->id)
                 ->orWhere('email', $googleUser->email)
@@ -44,7 +56,8 @@ class GoogleController extends Controller
                     'last_name' => $googleUser->user['family_name'] ?? '',
                     'email' => $googleUser->email,
                     'google_id' => $googleUser->id,
-                    'is_new' => true
+                    'is_new' => true,
+                    'role' => $oauthRole,
                 ]);
                 return redirect($frontendUrl . '/auth/complete-profile?' . $params);
             }
@@ -67,7 +80,11 @@ class GoogleController extends Controller
             
             // For SPA, we might need to pass a token or just rely on cookies/sessions
             // Since we are using Sanctum/web guard, session should be set in this browser context
-            return redirect($frontendUrl . '/dashboard');
+            $dashboardPath = $user->role === 'admin'
+                ? '/admin'
+                : ($user->role === 'provider' ? '/dashboard/provider' : '/dashboard/client');
+
+            return redirect($frontendUrl . $dashboardPath);
 
         } catch (\Exception $e) {
             \Log::error('Google Auth Error: ' . $e->getMessage());

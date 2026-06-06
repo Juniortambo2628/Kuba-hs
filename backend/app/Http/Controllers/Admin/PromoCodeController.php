@@ -19,6 +19,14 @@ class PromoCodeController extends Controller
     }
 
     /**
+     * Display the specified resource.
+     */
+    public function show(PromoCode $promoCode)
+    {
+        return response()->json(['data' => $promoCode]);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)

@@ -1,5 +1,13 @@
 "use client";
 
+import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
+import {
+  DashboardDataCard,
+  DashboardTableHead,
+  DashboardTableHeaderRow,
+} from "@/components/shared/DashboardTable";
+import { DashboardSuspenseFallback } from "@/components/shared/DashboardSuspenseFallback";
+
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { User } from "@/types";
@@ -15,7 +23,7 @@ import {
 } from "lucide-react";
 import { useSearchState } from "@/hooks/useSearchState";
 import { useExport } from "@/hooks/useExport";
-import { DataToolbar } from "@/components/shared/DataToolbar";
+import { DashboardListToolbar } from "@/components/shared/DashboardListToolbar";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -31,16 +39,18 @@ import { toast } from "sonner";
 import { UserDialog } from "@/components/admin/UserDialog";
 import { useApiData } from "@/hooks/useApiData";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
-import { 
+import {
+  DashboardAlertCancel,
+  DashboardAlertAction,
+} from "@/components/shared/DashboardAlertActions";
+import { dashboardUi } from "@/lib/dashboard-ui";
+import {
   AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
 function AdminUsersContent() {
@@ -106,16 +116,18 @@ function AdminUsersContent() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 pb-12">
+    <DashboardPageContainer width="default">
       <DashboardPageHeader 
         title="Personnel Registry" 
         subtitle="Manage platform participants: high-fidelity profiles for clients, providers, and executive staff."
       />
 
-      <DataToolbar 
-        search={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Search by name or email..."
+      {search && (
+        <p className="text-xs text-muted-foreground">Results for &quot;{search}&quot;</p>
+      )}
+
+      <DashboardListToolbar
+        hint="Use ⌘K Quick Jump to search users"
         viewMode={viewMode}
         onViewChange={setViewMode}
         bulkActions={[
@@ -128,18 +140,16 @@ function AdminUsersContent() {
       />
 
       {viewMode === 'list' ? (
-        <Card className="border border-border/40 overflow-hidden bg-card/50 backdrop-blur-md border-none shadow-sm rounded-2xl">
-          <CardContent className="p-0">
-            <div className="overflow-x-auto custom-scrollbar">
+        <DashboardDataCard className="overflow-x-auto kuba-scroll">
               <Table>
               <TableHeader>
-                <TableRow className="hover:bg-transparent border-border/50">
-                  <TableHead className="pl-10 h-16 text-[11px] font-bold text-muted-foreground">System Identity</TableHead>
-                  <TableHead className="h-16 text-[11px] font-bold text-muted-foreground">Access Architecture</TableHead>
-                  <TableHead className="h-16 text-[11px] font-bold text-muted-foreground">Account Status</TableHead>
-                  <TableHead className="h-16 text-[11px] font-bold text-muted-foreground">Onboarding Phase</TableHead>
-                  <TableHead className="pr-10 text-right h-16 text-[11px] font-bold text-muted-foreground">Operations</TableHead>
-                </TableRow>
+                <DashboardTableHeaderRow>
+                  <DashboardTableHead position="first" className="!pl-10 h-16">System Identity</DashboardTableHead>
+                  <DashboardTableHead className="h-16">Access Architecture</DashboardTableHead>
+                  <DashboardTableHead className="h-16">Account Status</DashboardTableHead>
+                  <DashboardTableHead className="h-16">Onboarding Phase</DashboardTableHead>
+                  <DashboardTableHead position="last" className="h-16">Operations</DashboardTableHead>
+                </DashboardTableHeaderRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
@@ -191,7 +201,7 @@ function AdminUsersContent() {
                           </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-36 rounded-xl">
-                          <DropdownMenuLabel className="text-[11px] font-bold text-muted-foreground tracking-tight">User Operations</DropdownMenuLabel>
+                          <DropdownMenuLabel className={dashboardUi.dropdown.labelAlt}>User Operations</DropdownMenuLabel>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem onClick={() => openEditDialog(u)} className="cursor-pointer text-xs font-medium text-foreground">Edit User</DropdownMenuItem>
                            <DropdownMenuItem onClick={() => setStatusId({ id: u.id, active: u.is_active })} className={`cursor-pointer text-xs font-medium ${u.is_active ? 'text-amber-500 focus:text-amber-600 focus:bg-amber-50' : 'text-emerald-500 focus:text-emerald-600 focus:bg-emerald-50'}`}>
@@ -215,11 +225,9 @@ function AdminUsersContent() {
                 ))}
               </TableBody>
             </Table>
-          </div>
-          </CardContent>
-        </Card>
+        </DashboardDataCard>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {isLoading ? (
             Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-44 rounded-xl" />)
           ) : users.length === 0 ? (
@@ -291,9 +299,9 @@ function AdminUsersContent() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-2 sm:gap-0 pt-4">
-            <AlertDialogCancel className="rounded-xl font-bold text-xs uppercase tracking-widest text-foreground">Dismiss</AlertDialogCancel>
-            <AlertDialogAction 
-                className={`rounded-xl font-bold text-xs uppercase tracking-widest text-white border-none shadow-md ${statusId?.active ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}
+            <DashboardAlertCancel>Dismiss</DashboardAlertCancel>
+            <DashboardAlertAction
+                className={statusId?.active ? "!bg-amber-600 hover:!bg-amber-700" : "!bg-emerald-600 hover:!bg-emerald-700"}
                 onClick={() => {
                     if (statusId) {
                         toggleStatus(statusId.id);
@@ -302,17 +310,17 @@ function AdminUsersContent() {
                 }}
             >
                 Confirm Mutation
-            </AlertDialogAction>
+            </DashboardAlertAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </DashboardPageContainer>
   );
 }
 
 export default function AdminUsers() {
   return (
-    <Suspense fallback={<div className="max-w-6xl mx-auto p-8"><Skeleton className="h-[600px] w-full rounded-2xl" /></div>}>
+    <Suspense fallback={<DashboardSuspenseFallback />}>
       <AdminUsersContent />
     </Suspense>
   );

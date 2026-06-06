@@ -3,12 +3,12 @@
 import { motion } from "framer-motion";
 import { Building2, CheckCircle2, BarChart3, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
 import Link from "next/link";
 import { useCMS } from "@/contexts/CMSContext";
 import { usePageFeatures } from "@/hooks/usePageFeatures";
-import { HighImpactHero } from "@/components/shared/HighImpactHero";
+import { useMarketingHero } from "@/hooks/useMarketingHero";
+import { MarketingPage } from "@/components/layout/MarketingPage";
+import { MarketingSection } from "@/components/shared/MarketingSection";
 import { FeatureCardGrid } from "@/components/shared/FeatureCardGrid";
 import { CTABanner } from "@/components/shared/CTABanner";
 import Image from "next/image";
@@ -16,20 +16,11 @@ import Image from "next/image";
 export default function CommercialPage() {
   const { getS, getImg } = useCMS();
   const { features: categories } = usePageFeatures('commercial');
+  const hero = useMarketingHero("commercial");
 
   return (
-    <div className="min-h-screen">
-      <Navbar />
-
-      <HighImpactHero
-        title={getS('hero_text', 'commercial_hero_title', 'Services for Modern Organizations')}
-        subtitle={getS('hero_text', 'commercial_hero_subtitle', 'From facility management to staff wellness, Kuba supports your business operations with verified professionals and consolidated management.')}
-        badge={getS('hero_text', 'commercial_hero_badge', 'Kuba Business Solutions')}
-        cmsKey="commercial"
-      />
-
-      {/* Thesis Section */}
-      <section className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <MarketingPage hero={hero}>
+      <MarketingSection>
         <div className="grid lg:grid-cols-2 gap-20 items-center">
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
@@ -92,11 +83,9 @@ export default function CommercialPage() {
             </div>
           </motion.div>
         </div>
-      </section>
+      </MarketingSection>
 
-      {/* Categories Grid - Styled like Journal Cards */}
-      <section className="py-24 bg-slate-50 dark:bg-zinc-950/40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <MarketingSection className="bg-slate-50 dark:bg-zinc-950/40">
           <div className="max-w-2xl mb-16">
              <h2 className="text-3xl font-bold tracking-tight mb-4">
                {getS('sections', 'commercial_categories_title', 'Commercial Service Categories')}
@@ -113,8 +102,7 @@ export default function CommercialPage() {
             fallbackIcon={Building2}
             showChecklist={true}
           />
-        </div>
-      </section>
+      </MarketingSection>
 
       <CTABanner
         title={getS('sections', 'commercial_cta_title', 'Need a customized service package?')}
@@ -124,8 +112,6 @@ export default function CommercialPage() {
         footerText={getS('sections', 'commercial_cta_contact', `or call ${getS('general', 'site_phone', '+254 700 000 000')}`)}
         bgColor="bg-primary"
       />
-
-      <Footer />
-    </div>
+    </MarketingPage>
   );
 }

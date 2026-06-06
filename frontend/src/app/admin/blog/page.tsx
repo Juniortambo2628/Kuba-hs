@@ -1,9 +1,17 @@
 "use client";
 
+import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
+import {
+  DashboardDataCard,
+  DashboardTableHead,
+  DashboardTableHeaderRow,
+} from "@/components/shared/DashboardTable";
+import { DashboardPageSkeleton } from "@/components/shared/DashboardPageSkeleton";
+
 import { useEffect, useState } from "react";
 import axiosInstance, { handleApiError } from "@/lib/axios";
 import { Card, CardContent } from "@/components/ui/card";
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
+import { Table, TableHeader, TableBody, TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +22,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Plus, FileText, ShieldCheck, Zap, PenTool, Calendar, User as UserIcon, Trash2, Edit3, Loader2, Image as ImageIcon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { DataToolbar } from "@/components/shared/DataToolbar";
+import { DashboardListToolbar } from "@/components/shared/DashboardListToolbar";
+import { useSearchState } from "@/hooks/useSearchState";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
 import { useApiData } from "@/hooks/useApiData";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
@@ -32,7 +41,7 @@ interface Post {
 }
 
 export default function AdminBlog() {
-  const [searchTerm, setSearchTerm] = useState("");
+  const { search: searchTerm } = useSearchState();
   const [viewMode, setViewMode] = useState<'grid'|'list'>('grid');
 
   // Dialog state
@@ -99,16 +108,11 @@ export default function AdminBlog() {
  );
 
  if (isLoading) {
-  return (
-   <div className="max-w-[1400px] mx-auto space-y-8 animate-pulse">
-    <Skeleton className="h-12 w-64 rounded-2xl" />
-    <Skeleton className="h-[500px] w-full rounded-[2.5rem]" />
-   </div>
-  );
+  return <DashboardPageSkeleton metrics={0} bodyHeight="h-[500px]" />;
  }
 
  return (
-  <div className="max-w-[1400px] mx-auto space-y-10 pb-12">
+  <DashboardPageContainer className="space-y-10">
    {/* Blog Header */}
    <DashboardPageHeader
     title="Editorial Journal"
@@ -177,33 +181,27 @@ export default function AdminBlog() {
     </DialogContent>
    </Dialog>
 
-   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2 mt-4 px-1">
-    <div>
-     <h2 className="text-2xl font-bold text-foreground tracking-tight">Manuscript Registry</h2>
-     <p className="text-sm font-medium text-muted-foreground mt-1">Manage your platform narratives and published literature.</p>
-    </div>
-   </div>
+   {searchTerm && (
+    <p className="text-xs text-muted-foreground">Results for &quot;{searchTerm}&quot;</p>
+   )}
 
-   <DataToolbar
-    search={searchTerm}
-    onSearchChange={setSearchTerm}
-    searchPlaceholder="Search by Title or Author..."
+   <DashboardListToolbar
+    hint="Use ⌘K Quick Jump to search articles"
     viewMode={viewMode}
     onViewChange={setViewMode}
    />
 
    {viewMode === 'list' ? (
-    <Card className="border border-border overflow-hidden border-none shadow-sm bg-card/50 backdrop-blur-md">
-     <CardContent className="p-0">
+    <DashboardDataCard>
       <Table>
        <TableHeader>
-        <TableRow className="hover:bg-transparent border-border">
-         <TableHead className="pl-10 h-16 text-[11px] font-bold tracking-tight text-muted-foreground">Article Identity</TableHead>
-         <TableHead className="h-16 text-[11px] font-bold tracking-tight text-muted-foreground">Author</TableHead>
-         <TableHead className="h-16 text-[11px] font-bold tracking-tight text-muted-foreground">Status</TableHead>
-         <TableHead className="h-16 text-[11px] font-bold tracking-tight text-muted-foreground">Publish Date</TableHead>
-         <TableHead className="h-16 pr-10 text-right text-[11px] font-bold tracking-tight text-muted-foreground">Governance</TableHead>
-        </TableRow>
+        <DashboardTableHeaderRow>
+         <DashboardTableHead position="first" className="!pl-10 h-16 tracking-tight">Article Identity</DashboardTableHead>
+         <DashboardTableHead className="h-16 tracking-tight">Author</DashboardTableHead>
+         <DashboardTableHead className="h-16 tracking-tight">Status</DashboardTableHead>
+         <DashboardTableHead className="h-16 tracking-tight">Publish Date</DashboardTableHead>
+         <DashboardTableHead position="last" className="h-16 text-right tracking-tight">Governance</DashboardTableHead>
+        </DashboardTableHeaderRow>
        </TableHeader>
        <TableBody>
         {filteredPosts.map((post) => (
@@ -271,8 +269,7 @@ export default function AdminBlog() {
         )}
        </TableBody>
       </Table>
-     </CardContent>
-    </Card>
+    </DashboardDataCard>
    ) : (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
      {filteredPosts.length === 0 ? (
@@ -365,6 +362,6 @@ export default function AdminBlog() {
        </div>
      </div>
    </div>
-  </div>
+  </DashboardPageContainer>
  );
 }

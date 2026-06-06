@@ -1,8 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -10,129 +8,144 @@ import { useCMS } from "@/contexts/CMSContext";
 import { designSystem } from "@/lib/design-system";
 import Image from "next/image";
 import { usePageFeatures } from "@/hooks/usePageFeatures";
-import { HighImpactHero } from "@/components/shared/HighImpactHero";
+import { useMarketingHero } from "@/hooks/useMarketingHero";
+import { MarketingPage } from "@/components/layout/MarketingPage";
+import { MarketingSection } from "@/components/shared/MarketingSection";
 import { FeatureCardGrid } from "@/components/shared/FeatureCardGrid";
 import { Shield } from "lucide-react";
 
 export default function AboutPage() {
   const { getS, getImg } = useCMS();
-  const { features: values } = usePageFeatures('about');
-
-
+  const { features: values } = usePageFeatures("about");
+  const hero = useMarketingHero("about");
 
   return (
-    <div className="min-h-screen">
-      <Navbar />
-
-      <HighImpactHero
-        title={getS('hero_text', 'about_hero_title', 'About KUBA')}
-        subtitle={getS('hero_text', 'about_hero_subtitle', 'Redefining how home services are delivered across the continent.')}
-        badge={getS('hero_text', 'about_hero_badge', 'Who We Are')}
-        cmsKey="about"
-      />
-
-      {/* Our Story */}
-      <section className="py-24 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            {/* Image Grid */}
-            <motion.div
-              className="flex gap-4 h-[600px]"
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.6 }}
-            >
-              <div className="flex-[3] relative rounded-2xl overflow-hidden shadow-2xl">
+    <MarketingPage hero={hero}>
+      <MarketingSection>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <motion.div
+            className="flex gap-4 h-[600px]"
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="flex-[3] relative rounded-2xl overflow-hidden shadow-2xl">
+              <Image
+                src={getImg(
+                  "about_page",
+                  "about_story_image_1",
+                  "https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=2070&auto=format&fit=crop"
+                )}
+                alt="Professional at work"
+                fill
+                className="object-cover hover:scale-105 transition-transform duration-700"
+              />
+            </div>
+            <div className="flex-[2] flex flex-col gap-4">
+              <div className="flex-1 rounded-2xl overflow-hidden shadow-xl relative">
                 <Image
-                  src={getImg('about_page', 'about_story_image_1', 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=2070&auto=format&fit=crop')}
-                  alt="Professional at work"
+                  src={getImg(
+                    "about_page",
+                    "about_story_image_2",
+                    "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?q=80&w=2070&auto=format&fit=crop"
+                  )}
+                  alt="Team collaboration"
                   fill
                   className="object-cover hover:scale-105 transition-transform duration-700"
                 />
               </div>
-              <div className="flex-[2] flex flex-col gap-4">
-                <div className="flex-1 rounded-2xl overflow-hidden shadow-xl relative">
-                  <Image
-                    src={getImg('about_page', 'about_story_image_2', 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?q=80&w=2070&auto=format&fit=crop')}
-                    alt="Team collaboration"
-                    fill
-                    className="object-cover hover:scale-105 transition-transform duration-700"
-                  />
-                </div>
-                <div className="flex-1 rounded-2xl overflow-hidden shadow-xl relative">
-                  <Image
-                    src={getImg('about_page', 'about_story_image_3', 'https://images.unsplash.com/photo-1556741533-6e6a62bd8b49?q=80&w=2070&auto=format&fit=crop')}
-                    alt="Customer service"
-                    fill
-                    className="object-cover hover:scale-105 transition-transform duration-700"
-                  />
-                </div>
+              <div className="flex-1 rounded-2xl overflow-hidden shadow-xl relative">
+                <Image
+                  src={getImg(
+                    "about_page",
+                    "about_story_image_3",
+                    "https://images.unsplash.com/photo-1556741533-6e6a62bd8b49?q=80&w=2070&auto=format&fit=crop"
+                  )}
+                  alt="Customer service"
+                  fill
+                  className="object-cover hover:scale-105 transition-transform duration-700"
+                />
               </div>
-            </motion.div>
-
-            {/* Text */}
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              <span className={designSystem.typography.section.badge}>Our Story</span>
-              <h2 className={designSystem.typography.section.title}>
-                {getS('about_page', 'about_headline', 'Redefining Home Services Excellence')}
-              </h2>
-              <p className="text-blue-600 dark:text-blue-400 text-lg italic mb-8 border-l-4 border-blue-600 dark:border-blue-400 pl-6 py-2">
-                {getS('about_page', 'about_tagline', "Born from a simple frustration: finding quality home help shouldn't be this hard.")}
-              </p>
-              <div className="space-y-6 text-gray-600 dark:text-muted-foreground leading-relaxed mb-10 text-lg">
-                <p>
-                  {getS('about_page', 'about_paragraph_1', 'KUBA was founded with a mission to connect homeowners with the best local service professionals. We believe everyone deserves access to reliable, transparent, and affordable home services.')}
-                </p>
-                <p>
-                  {getS('about_page', 'about_paragraph_2', 'Our platform rigorously vets every professional, provides upfront pricing, and ensures secure payments — so you can focus on what matters most while we handle the rest.')}
-                </p>
-              </div>
-              <div className="grid grid-cols-2 gap-8 py-8 border-y border-border dark:border-white/10">
-                <div>
-                  <h4 className="text-4xl font-semibold text-gray-900 dark:text-white mb-1">{getS('about_page', 'about_stat_providers', '5k+')}</h4>
-                  <p className="text-xs font-bold text-muted-foreground dark:text-muted-foreground tracking-widest uppercase">Active Providers</p>
-                </div>
-                <div>
-                  <h4 className="text-4xl font-semibold text-blue-600 dark:text-blue-400 mb-1">{getS('about_page', 'about_stat_satisfaction', '98%')}</h4>
-                  <p className="text-xs font-bold text-muted-foreground dark:text-muted-foreground tracking-widest uppercase">Satisfaction Rate</p>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Our Values */}
-      <section className="py-24 bg-muted dark:bg-zinc-900/50 px-4 transition-colors duration-300">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            className="text-center max-w-3xl mx-auto mb-16"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.6 }}
-          >
-            <span className={designSystem.typography.section.badge}>Our Values</span>
-            <h2 className={designSystem.typography.section.title}>The Principles That Drive Us</h2>
+            </div>
           </motion.div>
-          <FeatureCardGrid
-            features={values}
-            columns={3}
-            accentColor="blue"
-            fallbackIcon={Shield}
-            variant="centered"
-          />
-        </div>
-      </section>
 
-      {/* CTA */}
-      <section className="py-24 px-4">
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <span className={designSystem.typography.section.badge}>Our Story</span>
+            <h2 className={designSystem.typography.section.title}>
+              {getS("about_page", "about_headline", "Redefining Home Services Excellence")}
+            </h2>
+            <p className="text-blue-600 dark:text-blue-400 text-lg italic mb-8 border-l-4 border-blue-600 dark:border-blue-400 pl-6 py-2">
+              {getS(
+                "about_page",
+                "about_tagline",
+                "Born from a simple frustration: finding quality home help shouldn't be this hard."
+              )}
+            </p>
+            <div className="space-y-6 text-gray-600 dark:text-muted-foreground leading-relaxed mb-10 text-lg">
+              <p>
+                {getS(
+                  "about_page",
+                  "about_paragraph_1",
+                  "KUBA was founded with a mission to connect homeowners with the best local service professionals. We believe everyone deserves access to reliable, transparent, and affordable home services."
+                )}
+              </p>
+              <p>
+                {getS(
+                  "about_page",
+                  "about_paragraph_2",
+                  "Our platform rigorously vets every professional, provides upfront pricing, and ensures secure payments — so you can focus on what matters most while we handle the rest."
+                )}
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-8 py-8 border-y border-border dark:border-white/10">
+              <div>
+                <h4 className="text-4xl font-semibold text-gray-900 dark:text-white mb-1">
+                  {getS("about_page", "about_stat_providers", "5k+")}
+                </h4>
+                <p className="text-xs font-bold text-muted-foreground tracking-widest uppercase">
+                  Active Providers
+                </p>
+              </div>
+              <div>
+                <h4 className="text-4xl font-semibold text-blue-600 dark:text-blue-400 mb-1">
+                  {getS("about_page", "about_stat_satisfaction", "98%")}
+                </h4>
+                <p className="text-xs font-bold text-muted-foreground tracking-widest uppercase">
+                  Satisfaction Rate
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </MarketingSection>
+
+      <MarketingSection className="bg-muted dark:bg-zinc-900/50 transition-colors duration-300">
+        <motion.div
+          className="text-center max-w-3xl mx-auto mb-16"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.6 }}
+        >
+          <span className={designSystem.typography.section.badge}>Our Values</span>
+          <h2 className={designSystem.typography.section.title}>The Principles That Drive Us</h2>
+        </motion.div>
+        <FeatureCardGrid
+          features={values}
+          columns={3}
+          accentColor="blue"
+          fallbackIcon={Shield}
+          variant="centered"
+        />
+      </MarketingSection>
+
+      <MarketingSection>
         <motion.div
           className="max-w-4xl mx-auto text-center"
           initial={{ opacity: 0, y: 30 }}
@@ -142,20 +155,28 @@ export default function AboutPage() {
         >
           <h2 className={designSystem.typography.section.title}>Ready to get started?</h2>
           <p className={designSystem.typography.section.subtitle}>
-            Whether you need a quick repair or a full renovation, KUBA connects you with trusted local professionals.
+            Whether you need a quick repair or a full renovation, KUBA connects you with trusted local
+            professionals.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700 text-white font-bold h-14 px-8 rounded-full">
+            <Button
+              asChild
+              size="lg"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold h-14 px-8 rounded-full"
+            >
               <Link href="/services">Browse Services</Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="border-gray-300 dark:border-white/20 text-gray-700 dark:text-white font-bold h-14 px-8 rounded-full">
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              className="border-gray-300 dark:border-white/20 text-gray-700 dark:text-white font-bold h-14 px-8 rounded-full"
+            >
               <Link href="/providers">Find Professionals</Link>
             </Button>
           </div>
         </motion.div>
-      </section>
-
-      <Footer />
-    </div>
+      </MarketingSection>
+    </MarketingPage>
   );
 }

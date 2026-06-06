@@ -28,13 +28,21 @@ class FeedbackController extends Controller
             });
         }
 
+        $paginated = $query->latest()->paginate(15)->withQueryString();
+
         return response()->json([
-            'data' => ReviewResource::collection($query->latest()->paginate(15)->withQueryString()),
+            'data' => ReviewResource::collection($paginated->items())->resolve(),
+            'meta' => [
+                'current_page' => $paginated->currentPage(),
+                'last_page' => $paginated->lastPage(),
+                'per_page' => $paginated->perPage(),
+                'total' => $paginated->total(),
+            ],
             'stats' => [
                 'total' => Review::count(),
                 'avg' => round(Review::avg('rating') ?: 0, 1),
                 'poor_ratings' => Review::where('rating', '<=', 2)->count(),
-            ]
+            ],
         ]);
     }
 
@@ -52,6 +60,16 @@ class FeedbackController extends Controller
         return response()->json([
             'message' => 'Feedback status updated successfully',
             'data' => new ReviewResource($feedback)
+        ]);
+    }
+
+    public function destroy($id)
+    {
+        $feedback = Review::findOrFail($id);
+        $feedback->delete();
+
+        return response()->json([
+            'message' => 'Feedback deleted successfully',
         ]);
     }
 }

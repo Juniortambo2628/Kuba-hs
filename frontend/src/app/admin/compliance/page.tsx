@@ -24,6 +24,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { getMediaUrl, cn } from "@/lib/utils";
+import { ComplianceStatusBadge } from "@/components/shared/ComplianceStatusBadge";
+import { VerificationDocStatusBadge } from "@/components/shared/VerificationDocStatusBadge";
+import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { MetricCard } from "@/components/shared/MetricCard";
+import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
 
 export default function ComplianceDashboard() {
   const [activeTab, setActiveTab] = useState<"all" | "pending" | "expiring_soon" | "non_compliant">("all");
@@ -83,62 +88,23 @@ export default function ComplianceDashboard() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'compliant':
-        return <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20">Compliant</span>;
-      case 'non_compliant':
-        return <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400 border border-rose-200 dark:border-rose-500/20">Non-Compliant</span>;
-      case 'expiring_soon':
-        return <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20">Expiring Soon</span>;
-      default:
-        return <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20">Pending Review</span>;
-    }
-  };
-
-  const getDocStatusBadge = (doc: any) => {
-    if (doc.is_expired) {
-      return <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400">Expired</span>;
-    }
-    switch (doc.status) {
-      case 'approved':
-        return <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">Approved</span>;
-      case 'rejected':
-        return <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400">Rejected</span>;
-      default:
-        return <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">Pending</span>;
-    }
-  };
+  const metricCards = [
+    { label: "Pending Reviews", value: loadingOverview ? "—" : stats.pending_document_reviews, icon: Clock, trend: "Awaiting action" },
+    { label: "Non-Compliant", value: loadingOverview ? "—" : stats.providers_non_compliant, icon: XCircle, trend: "Requires follow-up" },
+    { label: "Expiring Soon", value: loadingOverview ? "—" : stats.providers_expiring_soon, icon: AlertTriangle, trend: "Renewal window" },
+    { label: "Compliant", value: loadingOverview ? "—" : stats.providers_compliant, icon: ShieldCheck, trend: "In good standing" },
+  ];
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">Compliance & Audits</h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1">Manage provider verification, documents, and quality scores.</p>
-      </div>
+    <DashboardPageContainer width="default">
+      <DashboardPageHeader
+        title="Compliance & Audits"
+        subtitle="Provider documents, verification status, and quality scores."
+      />
 
-      {/* Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { label: "Pending Reviews", value: stats.pending_document_reviews, icon: Clock, color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-500/10" },
-          { label: "Non-Compliant Pros", value: stats.providers_non_compliant, icon: XCircle, color: "text-rose-500", bg: "bg-rose-50 dark:bg-rose-500/10" },
-          { label: "Expiring Soon", value: stats.providers_expiring_soon, icon: AlertTriangle, color: "text-orange-500", bg: "bg-orange-50 dark:bg-orange-500/10" },
-          { label: "Compliant Pros", value: stats.providers_compliant, icon: ShieldCheck, color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-500/10" },
-        ].map((metric, idx) => (
-          <div key={idx} className="bg-white dark:bg-[#0B0F19] rounded-2xl p-6 border border-gray-100 dark:border-white/5 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">{metric.label}</p>
-                <div className="text-3xl font-black text-gray-900 dark:text-white mt-2">
-                  {loadingOverview ? <RefreshCw className="w-6 h-6 animate-spin text-gray-300" /> : metric.value}
-                </div>
-              </div>
-              <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center", metric.bg)}>
-                <metric.icon className={cn("w-6 h-6", metric.color)} />
-              </div>
-            </div>
-          </div>
+        {metricCards.map((metric, idx) => (
+          <MetricCard key={idx} label={metric.label} value={metric.value} icon={metric.icon} trend={metric.trend} isLoading={loadingOverview} />
         ))}
       </div>
 
@@ -146,7 +112,7 @@ export default function ComplianceDashboard() {
       <div className="bg-white dark:bg-[#0B0F19] rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden flex flex-col min-h-[500px]">
         {/* Filters */}
         <div className="p-4 border-b border-gray-100 dark:border-white/5 flex flex-col sm:flex-row gap-4 justify-between items-center bg-gray-50/50 dark:bg-white/[0.02]">
-          <div className="flex gap-2 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
+          <div className="flex gap-2 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0 kuba-scroll-hidden">
             {[
               { id: "all", label: "All Providers" },
               { id: "pending", label: "Pending" },
@@ -219,7 +185,7 @@ export default function ComplianceDashboard() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      {getStatusBadge(provider.compliance_status)}
+                      <ComplianceStatusBadge status={provider.compliance_status} />
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
@@ -313,7 +279,7 @@ export default function ComplianceDashboard() {
                   </div>
                   <div className="p-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10">
                     <p className="text-xs font-bold text-gray-400 uppercase">Current Status</p>
-                    <div className="mt-2">{getStatusBadge(selectedProvider.compliance_status)}</div>
+                    <div className="mt-2"><ComplianceStatusBadge status={selectedProvider.compliance_status} /></div>
                   </div>
                 </div>
 
@@ -337,7 +303,7 @@ export default function ComplianceDashboard() {
                               <div>
                                 <p className="font-bold text-gray-900 dark:text-white capitalize">{doc.document_type.replace('_', ' ')}</p>
                                 <div className="flex items-center gap-3 mt-1.5">
-                                  {getDocStatusBadge(doc)}
+                                  <VerificationDocStatusBadge status={doc.status} isExpired={doc.is_expired} />
                                   <span className="text-xs font-medium text-gray-400 flex items-center gap-1">
                                     <Clock className="w-3 h-3" />
                                     {format(new Date(doc.created_at), 'MMM d, yyyy')}
@@ -357,8 +323,16 @@ export default function ComplianceDashboard() {
                             </div>
                             
                             <div className="flex flex-col gap-2">
-                              {/* TODO: Implement secure view file */}
-                              <Button variant="outline" size="sm" className="rounded-xl h-8 text-xs font-bold w-full bg-white dark:bg-white/5">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="rounded-xl h-8 text-xs font-bold w-full bg-white dark:bg-white/5"
+                                disabled={!doc.url && !doc.file_path}
+                                onClick={() => {
+                                  const fileUrl = doc.url || getMediaUrl(doc.file_path);
+                                  if (fileUrl) window.open(fileUrl, '_blank', 'noopener,noreferrer');
+                                }}
+                              >
                                 <Eye className="w-3 h-3 mr-1.5" /> View File
                               </Button>
                               <Button 
@@ -491,6 +465,6 @@ export default function ComplianceDashboard() {
         )}
       </AnimatePresence>
 
-    </div>
+    </DashboardPageContainer>
   );
 }

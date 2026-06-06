@@ -16,12 +16,16 @@ function CompleteProfileForm() {
     const searchParams = useSearchParams();
     const { checkAuth } = useAuth();
 
+    const roleParam = searchParams.get("role");
+    const initialRole =
+        roleParam === "provider" || roleParam === "customer" ? roleParam : ("" as "" | "customer" | "provider");
+
     const [formData, setFormData] = useState({
         first_name: searchParams.get("first_name") || "",
         last_name: searchParams.get("last_name") || "",
         email: searchParams.get("email") || "",
         google_id: searchParams.get("google_id") || "",
-        role: "" as "customer" | "provider" | "",
+        role: initialRole,
         phone: "",
     });
 

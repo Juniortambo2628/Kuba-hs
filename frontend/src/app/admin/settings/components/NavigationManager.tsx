@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from "react";
 import axiosInstance from "@/lib/axios";
+import { useCMS } from "@/contexts/CMSContext";
 import { Button } from "@/components/ui/button";
+import { FieldLabel } from "@/components/shared/ui";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { GripVertical, Trash2, Plus, Link as LinkIcon, Save } from "lucide-react";
@@ -14,6 +16,7 @@ import {
 } from "react-beautiful-dnd";
 
 export function NavigationManager() {
+  const { refreshSettings } = useCMS();
   const [items, setItems] = useState<any[]>([]);
   const [settingId, setSettingId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -95,6 +98,7 @@ export function NavigationManager() {
           formData.append('settings[0][value]', JSON.stringify(items));
           
           await axiosInstance.post('/api/admin/settings', formData);
+          await refreshSettings();
           toast.success("Navigation saved successfully");
       } catch (err) {
           toast.error("Failed to save navigation");
@@ -153,9 +157,7 @@ export function NavigationManager() {
                         </div>
                         <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
                             <div className="space-y-1.5">
-                              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 ml-1">
-                                Navigation Label
-                              </label>
+                              <FieldLabel>Navigation Label</FieldLabel>
                               <Input 
                                   value={item.label}
                                   onChange={(e) => handleUpdate(item.id, 'label', e.target.value)}
@@ -164,10 +166,10 @@ export function NavigationManager() {
                               />
                             </div>
                             <div className="space-y-1.5">
-                              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 ml-1 flex items-center gap-1.5">
+                              <FieldLabel className="flex items-center gap-1.5">
                                 <LinkIcon className="w-3 h-3 text-primary/40" />
                                 Destination Route
-                              </label>
+                              </FieldLabel>
                               <Input 
                                   value={item.url}
                                   onChange={(e) => handleUpdate(item.id, 'url', e.target.value)}

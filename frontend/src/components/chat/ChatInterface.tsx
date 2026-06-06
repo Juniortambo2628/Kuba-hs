@@ -1,27 +1,43 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
+import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import axiosInstance from "@/lib/axios";
 import { getEcho } from "@/lib/echo";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, MessageSquare, Clock, ShieldCheck, CheckCheck } from "lucide-react";
+import { Loader2, Send, MessageSquare, ChevronLeft, CheckCheck } from "lucide-react";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { format, isToday, isYesterday } from "date-fns";
+import type { Conversation, Message } from "@/types";
+import { DashboardUserAvatar } from "@/components/dashboard/workspace/DashboardUserAvatar";
+import { workspaceUi } from "@/lib/dashboard-workspace-ui";
+import { cn } from "@/lib/utils";
+import {
+  bookingServiceLabel,
+  chatPartner,
+  normalizeConversation,
+  normalizeMessage,
+  unwrapResource,
+  unwrapResourceList,
+} from "@/lib/chat-utils";
 
-import { User, Message, Conversation } from "@/types";
+interface ChatInterfaceProps {
+  role: "client" | "provider";
+  /** Taller layout on dedicated dashboard messages pages */
+  layout?: "page" | "embedded";
+  className?: string;
+}
 
-const getAvatarUrl = (path: string | null | undefined) => {
-  if (!path) return null;
-  if (path.startsWith('http')) return path;
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-  return `${baseUrl}/storage/${path.replace('storage/', '')}`;
-};
+function formatMessageDay(date: string) {
+  const d = new Date(date);
+  if (isToday(d)) return "Today";
+  if (isYesterday(d)) return "Yesterday";
+  return format(d, "MMM d, yyyy");
+}
 
-export function ChatInterface({ role }: { role: "client" | "provider" }) {
+export function ChatInterface({ role, layout = "embedded", className }: ChatInterfaceProps) {
   const { user } = useAuth();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
@@ -30,12 +46,10 @@ export function ChatInterface({ role }: { role: "client" | "provider" }) {
   const [isLoadingConversations, setIsLoadingConversations] = useState(true);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [isSending, setIsSending] = useState(false);
-  
+
   const scrollRef = useRef<HTMLDivElement>(null);
   const echo = getEcho();
 
-  // Load conversations on mount (dashboard pages are already auth-guarded)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchConversations();
   }, []);
@@ -43,16 +57,18 @@ export function ChatInterface({ role }: { role: "client" | "provider" }) {
   const fetchConversations = async () => {
     try {
       const res = await axiosInstance.get("/api/chat/conversations");
-      setConversations(res.data.conversations);
+      const list = unwrapResourceList<Record<string, unknown>>(res.data?.conversations).map(
+        (row) => normalizeConversation(row)
+      );
+      setConversations(list);
     } catch (err) {
       console.error(err);
-      toast.error("Failed to load conversations");
+      toast.error("Could not load conversations");
     } finally {
       setIsLoadingConversations(false);
     }
   };
 
-  // Load messages when conversation is opened
   useEffect(() => {
     if (!activeConversationId) return;
 
@@ -60,15 +76,21 @@ export function ChatInterface({ role }: { role: "client" | "provider" }) {
       setIsLoadingMessages(true);
       try {
         const res = await axiosInstance.get(`/api/chat/conversations/${activeConversationId}`);
-        setMessages(res.data.conversation?.messages || res.data.messages || []);
-        
-        // Mark as read in the conversation list to update UI
-        setConversations(prev => prev.map(c => 
-          c.id === activeConversationId ? { ...c, unread_count: 0 } : c
-        ));
+        const conv = unwrapResource<Record<string, unknown>>(res.data?.conversation ?? res.data);
+        const rawMessages = Array.isArray(conv?.messages)
+          ? conv.messages
+          : Array.isArray(res.data?.messages)
+            ? res.data.messages
+            : [];
+        const normalized = (rawMessages as Record<string, unknown>[]).map(normalizeMessage);
+        setMessages(normalized);
+
+        setConversations((prev) =>
+          prev.map((c) => (c.id === activeConversationId ? { ...c, unread_count: 0 } : c))
+        );
       } catch (err) {
         console.error(err);
-        toast.error("Failed to load messages");
+        toast.error("Could not load messages");
       } finally {
         setIsLoadingMessages(false);
       }
@@ -76,34 +98,38 @@ export function ChatInterface({ role }: { role: "client" | "provider" }) {
 
     fetchMessages();
 
-    // Subscribe to Laravel Echo Reverb WebSockets
     if (echo) {
       const channel = echo.private(`conversation.${activeConversationId}`);
-      
-      channel.listen('.message.sent', (e: any) => {
-        if (e.message && e.message.sender_id !== user?.id) {
-            setMessages(prev => {
-                if (prev.find(m => m.id === e.message.id)) return prev;
-                return [...prev, e.message];
-            });
+
+      channel.listen(".message.sent", (e: { message?: Message }) => {
+        if (e.message && String(e.message.sender_id) !== String(user?.id)) {
+          setMessages((prev) => {
+            if (prev.find((m) => m.id === e.message!.id)) return prev;
+            return [...prev, normalizeMessage(e.message as unknown as Record<string, unknown>)];
+          });
         }
       });
 
-      channel.listen('.message.read', (e: any) => {
-          setMessages(prev => prev.map(m => 
-            e.message_ids.includes(m.id) ? { ...m, read_at: new Date().toISOString() } : m
-          ));
+      channel.listen(".message.read", (e: { message_ids?: string[] }) => {
+        if (e.message_ids?.length) {
+          setMessages((prev) =>
+            prev.map((m) =>
+              e.message_ids!.includes(m.id)
+                ? { ...m, read_at: new Date().toISOString() }
+                : m
+            )
+          );
+        }
       });
 
       return () => {
-        channel.stopListening('.message.sent');
-        channel.stopListening('.message.read');
+        channel.stopListening(".message.sent");
+        channel.stopListening(".message.read");
         echo.leave(`conversation.${activeConversationId}`);
       };
     }
-  }, [activeConversationId, echo]);
+  }, [activeConversationId, echo, user?.id]);
 
-  // Scroll to bottom when messages update
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -119,216 +145,351 @@ export function ChatInterface({ role }: { role: "client" | "provider" }) {
     setIsSending(true);
 
     try {
-      const res = await axiosInstance.post(`/api/chat/conversations/${activeConversationId}/messages`, {
-        body
-      });
-      // Add the new message to state immediately for responsiveness
-      const sentMsg = res.data;
-      setMessages(prev => {
-        if (prev.find(m => m.id === sentMsg.id)) return prev;
-        return [...prev, sentMsg];
-      });
-      
-      // Update last message in sidebar
-      setConversations(prev => prev.map(c => 
-        c.id === activeConversationId 
-        ? { ...c, latestMessage: sentMsg, last_message_at: sentMsg.created_at } 
-        : c
-      ).sort((a,b) => new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime()));
-      
+      const res = await axiosInstance.post(
+        `/api/chat/conversations/${activeConversationId}/messages`,
+        { body }
+      );
+      const sentRaw = unwrapResource<Record<string, unknown>>(res.data) ?? res.data;
+      const sentMsg = normalizeMessage(sentRaw as Record<string, unknown>);
+
+      setMessages((prev) => (prev.find((m) => m.id === sentMsg.id) ? prev : [...prev, sentMsg]));
+
+      setConversations((prev) =>
+        prev
+          .map((c) =>
+            c.id === activeConversationId
+              ? { ...c, latestMessage: sentMsg, last_message_at: sentMsg.created_at, unread_count: 0 }
+              : c
+          )
+          .sort(
+            (a, b) =>
+              new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime()
+          )
+      );
     } catch (err) {
       console.error(err);
-      toast.error("Failed to send message");
-      setNewMessage(body); // restore input if failed
+      toast.error("Message could not be sent");
+      setNewMessage(body);
     } finally {
       setIsSending(false);
     }
   };
 
-  const getPartnerInfo = (conv: Conversation) => {
-    if (role === 'client') {
-       return {
-          name: `${conv.provider.user.first_name} ${conv.provider.user.last_name}`,
-          avatar: getAvatarUrl(conv.provider.user.avatar_url),
-          roleLabel: 'Provider'
-       };
-    } else {
-       return {
-          name: `${conv.customer.first_name} ${conv.customer.last_name}`,
-          avatar: getAvatarUrl(conv.customer.avatar_url),
-          roleLabel: 'Client'
-       };
-    }
-  };
+  const activeConversation = conversations.find((c) => c.id === activeConversationId);
+  const activePartner = activeConversation ? chatPartner(activeConversation, role) : null;
 
-  const activeConversation = conversations.find(c => c.id === activeConversationId);
+  const totalUnread = useMemo(
+    () => conversations.reduce((n, c) => n + (c.unread_count || 0), 0),
+    [conversations]
+  );
+
+  const heightClass =
+    layout === "page" ? "h-[min(640px,calc(100vh-18rem))]" : "h-[min(520px,58vh)]";
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] rounded-2xl overflow-hidden border border-border bg-card/50 backdrop-blur-md shadow-sm font-sans relative z-10 w-full mb-8">
-      
-      {/* Sidebar - Conversations List */}
-      <div className={`w-full md:w-[320px] border-r border-border flex flex-col bg-muted/30 ${activeConversationId ? 'hidden md:flex' : 'flex'}`}>
-        <div className="p-6 border-b border-border bg-transparent">
-          <h2 className="text-lg font-bold text-foreground tracking-tight">Messages</h2>
-        </div>
-        
-        <ScrollArea className="flex-1">
+    <div
+      className={cn("flex w-full overflow-hidden bg-transparent", heightClass, className)}
+    >
+      {/* Thread list */}
+      <div
+        className={cn(
+          "flex w-full flex-col border-border/40 md:w-[280px] lg:w-[300px] md:border-r md:bg-muted/10",
+          activeConversationId ? "hidden md:flex" : "flex"
+        )}
+      >
+        <ScrollArea className="flex-1 p-3 md:p-4">
           {isLoadingConversations ? (
-             <div className="p-6 text-center text-gray-400">
-                <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
-                <p className="text-xs font-bold tracking-widest">Loading Chats...</p>
-             </div>
+            <div className="flex flex-col items-center justify-center gap-2 py-16 text-muted-foreground">
+              <Loader2 className="h-6 w-6 animate-spin" />
+              <p className="text-xs">Loading…</p>
+            </div>
           ) : conversations.length === 0 ? (
-             <div className="p-8 text-center text-gray-400">
-                <MessageSquare className="w-8 h-8 mx-auto mb-3 opacity-20" />
-                <p className="text-sm font-medium">No conversations yet.</p>
-                <p className="text-[10px] font-black tracking-widest mt-2">{role === 'client' ? 'Book a service to start chatting' : 'Clients will message you here'}</p>
-             </div>
+            <div className="px-6 py-14 text-center">
+              <MessageSquare className="mx-auto mb-3 h-10 w-10 text-muted-foreground/30" />
+              <p className="text-sm font-medium text-foreground">No messages yet</p>
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                {role === "client"
+                  ? "Messages appear here after you book a service."
+                  : "When clients book you, their threads will show up here."}
+              </p>
+              <Button variant="outline" size="sm" className="mt-6 rounded-full" asChild>
+                <Link
+                  href={
+                    role === "client"
+                      ? "/dashboard/client/bookings"
+                      : "/dashboard/provider/bookings"
+                  }
+                >
+                  {role === "client" ? "View my bookings" : "View bookings"}
+                </Link>
+              </Button>
+              {role === "client" && (
+                <Button variant="ghost" size="sm" className="mt-2 rounded-full" asChild>
+                  <Link href="/services">Browse services</Link>
+                </Button>
+              )}
+            </div>
           ) : (
-            <div className="divide-y divide-gray-100">
-              {conversations.map(conv => {
-                const partner = getPartnerInfo(conv);
+            <ul className="space-y-2">
+              {conversations.map((conv) => {
+                const partner = chatPartner(conv, role);
                 const isActive = activeConversationId === conv.id;
+                const preview = conv.latestMessage?.body ?? "No messages yet";
+                const previewTime = conv.latestMessage?.created_at ?? conv.last_message_at;
+
                 return (
-                  <button
-                    key={conv.id}
-                    onClick={() => setActiveConversationId(conv.id)}
-                    className={`w-full text-left p-4 hover:bg-muted/50 transition-all flex items-start gap-4 relative border-b border-border/50
-                      ${isActive ? 'bg-muted/80 shadow-inner' : ''}
-                    `}
-                  >
-                    <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center shrink-0 border border-border overflow-hidden group-hover:scale-105 transition-transform">
-                       {partner.avatar ? (
-                           <img src={partner.avatar} alt={partner.name} className="w-full h-full object-cover" />
-                       ) : (
-                           <span className="text-muted-foreground font-bold text-xs tracking-tighter">{partner.name.substring(0,2).toUpperCase()}</span>
-                       )}
-                    </div>
-                    <div className="flex-1 min-w-0 py-1">
-                      <div className="flex justify-between items-baseline mb-0.5">
-                        <p className="font-bold text-xs text-foreground truncate tracking-tight">{partner.name}</p>
-                        {conv.latestMessage && (
-                           <span className="text-[8px] font-bold text-muted-foreground whitespace-nowrap ml-2 uppercase">
-                             {format(new Date(conv.latestMessage.created_at), 'MMM d')}
-                           </span>
-                        )}
-                      </div>
-                      <p className="text-[9px] text-primary font-bold mb-1 truncate tracking-wide">{conv.booking?.service?.name}</p>
-                      <p className={`text-[10px] truncate ${conv.unread_count > 0 ? 'font-bold text-foreground' : 'text-muted-foreground'}`}>
-                         {conv.latestMessage?.body || "Start conversation"}
-                      </p>
-                    </div>
-                    {conv.unread_count > 0 && (
-                        <div className="w-4 h-4 rounded-full bg-primary text-white text-[8px] font-bold flex items-center justify-center absolute right-4 top-1/2 -translate-y-1/2 shadow-sm uppercase">
-                            {conv.unread_count}
+                  <li key={conv.id}>
+                    <button
+                      type="button"
+                      onClick={() => setActiveConversationId(conv.id)}
+                      className={cn(
+                        workspaceUi.frosted.inset,
+                        "flex w-full items-start gap-3 p-3 text-left transition-all hover:shadow-sm",
+                        isActive && "ring-2 ring-primary/25 bg-white/90 dark:bg-card/80 shadow-sm"
+                      )}
+                    >
+                      <DashboardUserAvatar
+                        name={partner.name}
+                        avatarUrl={partner.avatarUrl}
+                        size="md"
+                        className="shrink-0"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="truncate text-sm font-semibold text-foreground">
+                            {partner.name}
+                          </p>
+                          {previewTime && (
+                            <span className="shrink-0 text-[10px] text-muted-foreground tabular-nums">
+                              {format(new Date(previewTime), "h:mm a")}
+                            </span>
+                          )}
                         </div>
-                    )}
-                  </button>
+                        <p className="truncate text-[11px] text-muted-foreground mt-0.5">
+                          {bookingServiceLabel(conv)}
+                        </p>
+                        <div className="mt-2 flex items-center justify-between gap-2">
+                          <p
+                            className={cn(
+                              "truncate text-xs flex-1",
+                              conv.unread_count > 0
+                                ? "font-medium text-foreground"
+                                : "text-muted-foreground"
+                            )}
+                          >
+                            {preview}
+                          </p>
+                          {conv.unread_count > 0 ? (
+                            <span
+                              className={cn(
+                                workspaceUi.frosted.badge.base,
+                                workspaceUi.frosted.badge.info
+                              )}
+                            >
+                              {conv.unread_count > 9 ? "9+" : conv.unread_count} new
+                            </span>
+                          ) : (
+                            <span
+                              className={cn(
+                                workspaceUi.frosted.badge.base,
+                                workspaceUi.frosted.badge.good
+                              )}
+                            >
+                              Read
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  </li>
                 );
               })}
-            </div>
+            </ul>
           )}
         </ScrollArea>
       </div>
 
-      {/* Main Chat Area */}
-      <div className={`flex-1 flex flex-col bg-transparent ${!activeConversationId ? 'hidden md:flex' : 'flex'}`}>
+      {/* Conversation pane */}
+      <div
+        className={cn(
+          "flex min-w-0 flex-1 flex-col bg-white/50 dark:bg-card/30 backdrop-blur-sm",
+          !activeConversationId ? "hidden md:flex" : "flex"
+        )}
+      >
         {!activeConversationId ? (
-           <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground bg-muted/5">
-               <MessageSquare className="w-12 h-12 mb-4 opacity-10" />
-               <h3 className="text-sm font-bold text-muted-foreground tracking-[0.2em]">Access Encryption Secure</h3>
-           </div>
+          <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
+            <MessageSquare className="mb-4 h-12 w-12 text-muted-foreground/20" />
+            <p className="text-sm font-medium text-foreground">Select a conversation</p>
+            <p className="mt-1 max-w-xs text-xs text-muted-foreground">
+              {role === "client"
+                ? "Pick a provider thread from the list."
+                : "Pick a client thread from the list."}
+            </p>
+            {totalUnread > 0 && (
+              <span
+                className={cn(
+                  workspaceUi.frosted.badge.base,
+                  workspaceUi.frosted.badge.info,
+                  "mt-4"
+                )}
+              >
+                {totalUnread} unread
+              </span>
+            )}
+          </div>
         ) : (
-           <>
-              {/* Chat Header */}
-              <div className="h-20 border-b border-border flex items-center px-8 justify-between bg-transparent shrink-0">
-                  {activeConversation && (
-                    <div className="flex items-center gap-4">
-                       <Button 
-                         variant="ghost" 
-                         size="icon" 
-                         onClick={() => setActiveConversationId(null)}
-                         className="md:hidden mr-2 h-10 w-10 rounded-xl"
-                       >
-                           &larr;
-                       </Button>
-                       <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center shrink-0 border border-border overflow-hidden">
-                           {getPartnerInfo(activeConversation).avatar ? (
-                               <img src={getPartnerInfo(activeConversation).avatar!} alt="" className="w-full h-full object-cover" />
-                           ) : (
-                               <span className="text-muted-foreground font-bold text-xs">{getPartnerInfo(activeConversation).name.substring(0,2).toUpperCase()}</span>
-                           )}
-                       </div>
-                       <div className="space-y-0.5">
-                          <h3 className="font-bold text-sm text-foreground tracking-tight">{getPartnerInfo(activeConversation).name}</h3>
-                          <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
-                             <ShieldCheck className="w-3 h-3 text-primary" /> {getPartnerInfo(activeConversation).roleLabel} — SECURE CHANNEL
-                          </p>
-                       </div>
-                    </div>
-                  )}
-              </div>
-
-              {/* Messages Area */}
-              <div className="flex-1 overflow-y-auto p-8 bg-muted/5 scrollbar-hide" ref={scrollRef}>
-                 {isLoadingMessages ? (
-                    <div className="flex justify-center items-center h-full">
-                       <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                    </div>
-                 ) : messages.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-full text-muted-foreground opacity-30">
-                       <p className="text-xs font-bold uppercase tracking-widest">Initialization Complete</p>
-                       <p className="text-[9px] font-bold tracking-widest mt-2">Channel ready for data transmission.</p>
-                    </div>
-                 ) : (
-                    <div className="space-y-6">
-                       {messages.map((msg, i) => {
-                          const isMe = String(msg.sender_id) === String(user?.id);
-                          return (
-                             <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[85%] ${isMe ? 'ml-auto' : 'mr-auto'}`}>
-                                <div className={`px-5 py-3.5 shadow-sm text-[13px] font-medium leading-relaxed
-                                  ${isMe ? 'bg-primary text-white rounded-2xl rounded-tr-none' : 'bg-card border border-border text-foreground rounded-2xl rounded-tl-none'}
-                                `}>
-                                   <p className="whitespace-pre-wrap">{msg.body}</p>
-                                </div>
-                                <div className="flex items-center gap-2 mt-2 px-1">
-                                   <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">
-                                      {format(new Date(msg.created_at), 'h:mm a')}
-                                   </span>
-                                   {isMe && (
-                                       msg.read_at ? (
-                                           <CheckCheck className="w-3.5 h-3.5 text-primary" />
-                                       ) : (
-                                           <CheckCheck className="w-3.5 h-3.5 text-muted-foreground/30" />
-                                       )
-                                   )}
-                                </div>
-                             </div>
-                          );
-                       })}
-                    </div>
-                 )}
-              </div>
-
-              {/* Input Area */}
-              <div className="p-6 border-t border-border bg-transparent">
-                 <form onSubmit={handleSendMessage} className="flex gap-4">
-                    <input 
-                       value={newMessage}
-                       onChange={e => setNewMessage(e.target.value)}
-                       placeholder="Dispatch secure message..."
-                       className="flex-1 bg-muted/50 border border-border rounded-xl h-12 px-6 focus:ring-2 focus:ring-primary/20 transition-all font-bold text-[11px] outline-none text-foreground placeholder:text-muted-foreground/50"
-                    />
-                    <Button 
-                       type="submit" 
-                       disabled={isSending || !newMessage.trim()}
-                       className="bg-foreground text-background hover:bg-muted hover:text-foreground w-12 h-12 rounded-xl shrink-0 p-0 transition-all shadow-md"
+          <>
+            <header className="flex h-16 shrink-0 items-center gap-3 border-b border-border/30 px-4 md:px-5">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="md:hidden rounded-full"
+                onClick={() => setActiveConversationId(null)}
+                aria-label="Back to inbox"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </Button>
+              {activePartner && activeConversation && (
+                <>
+                  <DashboardUserAvatar
+                    name={activePartner.name}
+                    avatarUrl={activePartner.avatarUrl}
+                    size="md"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-foreground">
+                      {activePartner.name}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {bookingServiceLabel(activeConversation)}
+                    </p>
+                  </div>
+                  {(activeConversation.booking?.id || activeConversation.booking_id) && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="hidden rounded-full sm:inline-flex"
+                      asChild
                     >
-                       {isSending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-4 h-4" />}
+                      <Link
+                        href={
+                          role === "client"
+                            ? `/dashboard/client/bookings/${activeConversation.booking?.id ?? activeConversation.booking_id}`
+                            : `/dashboard/provider/bookings/${activeConversation.booking?.id ?? activeConversation.booking_id}`
+                        }
+                      >
+                        View booking
+                      </Link>
                     </Button>
-                 </form>
-              </div>
-           </>
+                  )}
+                </>
+              )}
+            </header>
+
+            <div
+              ref={scrollRef}
+              className="flex-1 overflow-y-auto px-4 py-5 md:px-6 kuba-scroll-hidden"
+            >
+              {isLoadingMessages ? (
+                <div className="flex h-full items-center justify-center">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : messages.length === 0 ? (
+                <div className="flex h-full flex-col items-center justify-center text-center">
+                  <p className="text-sm text-muted-foreground">No messages in this thread yet.</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Say hello to get started.</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {messages.map((msg, index) => {
+                    const isMe = String(msg.sender_id) === String(user?.id);
+                    const prev = messages[index - 1];
+                    const showDay =
+                      !prev ||
+                      formatMessageDay(prev.created_at) !== formatMessageDay(msg.created_at);
+
+                    return (
+                      <div key={msg.id}>
+                        {showDay && (
+                          <p className="mb-4 text-center text-[11px] font-medium text-muted-foreground">
+                            {formatMessageDay(msg.created_at)}
+                          </p>
+                        )}
+                        <div
+                          className={cn(
+                            "flex flex-col max-w-[85%]",
+                            isMe ? "ml-auto items-end" : "items-start"
+                          )}
+                        >
+                          <div
+                            className={cn(
+                              "px-4 py-2.5 text-[15px] leading-relaxed",
+                              isMe
+                                ? "rounded-[20px] rounded-br-md bg-foreground text-background shadow-md"
+                                : cn(
+                                    workspaceUi.frosted.inset,
+                                    "rounded-[20px] rounded-bl-md text-foreground shadow-sm"
+                                  )
+                            )}
+                          >
+                            <p className="whitespace-pre-wrap">{msg.body}</p>
+                          </div>
+                          <div className="mt-1.5 flex items-center gap-1.5 px-1">
+                            <span className="text-[10px] text-muted-foreground">
+                              {format(new Date(msg.created_at), "h:mm a")}
+                            </span>
+                            {isMe &&
+                              (msg.read_at ? (
+                                <CheckCheck className="h-3.5 w-3.5 text-primary" />
+                              ) : (
+                                <CheckCheck className="h-3.5 w-3.5 text-muted-foreground/40" />
+                              ))}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            <footer className="border-t border-border/30 p-4 md:px-5 md:pb-5">
+              <form
+                onSubmit={handleSendMessage}
+                className={cn(
+                  workspaceUi.frosted.inset,
+                  "flex items-end gap-2 p-2"
+                )}
+              >
+                <textarea
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage(e);
+                    }
+                  }}
+                  rows={1}
+                  placeholder="Message"
+                  className="max-h-32 min-h-[40px] flex-1 resize-none rounded-xl border-0 bg-transparent px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                />
+                <Button
+                  type="submit"
+                  disabled={isSending || !newMessage.trim()}
+                  size="icon"
+                  className="h-11 w-11 shrink-0 rounded-full"
+                >
+                  {isSending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                </Button>
+              </form>
+            </footer>
+          </>
         )}
       </div>
     </div>

@@ -16,6 +16,7 @@ class CustomQuote extends Model
         'email',
         'phone',
         'organization_type',
+        'source',
         'service_category',
         'estimated_volume',
         'description',

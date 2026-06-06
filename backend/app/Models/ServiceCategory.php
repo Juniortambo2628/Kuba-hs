@@ -32,9 +32,34 @@ class ServiceCategory extends Model implements HasMedia
         return \Illuminate\Support\Str::slug($this->name);
     }
 
-    public function getDynamicIconUrlAttribute()
+    public function getDynamicIconUrlAttribute(): ?string
     {
-        return $this->getFirstMediaUrl('icons') ?: ($this->icon_url ?? 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&background=random');
+        $media = $this->getFirstMediaUrl('icons');
+        if ($media) {
+            return $media;
+        }
+
+        if ($this->icon_url && self::isMediaPathOrUrl($this->icon_url)) {
+            return $this->icon_url;
+        }
+
+        return null;
+    }
+
+    public static function isMediaPathOrUrl(?string $value): bool
+    {
+        if (!$value) {
+            return false;
+        }
+        $value = trim($value);
+        if (str_starts_with($value, 'http://') || str_starts_with($value, 'https://')) {
+            return true;
+        }
+        if (str_starts_with($value, '/')) {
+            return true;
+        }
+
+        return str_contains($value, '/') || str_contains($value, '.');
     }
 
     public function parent(): BelongsTo
@@ -53,5 +78,10 @@ class ServiceCategory extends Model implements HasMedia
     public function services(): HasMany
     {
         return $this->hasMany(Service::class, 'category_id');
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('icons')->singleFile();
     }
 }

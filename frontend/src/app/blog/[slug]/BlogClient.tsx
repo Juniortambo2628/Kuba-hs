@@ -12,6 +12,7 @@ import { getMediaUrl } from "@/lib/utils";
 import Image from "next/image";
 import { useData } from "@/hooks/useData";
 import { HeroSkeleton } from "@/components/shared/AdvancedSkeleton";
+import { MarketingShell } from "@/components/layout/MarketingShell";
 
 export default function BlogClient({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
@@ -19,7 +20,11 @@ export default function BlogClient({ params }: { params: Promise<{ slug: string 
   const { data: post, isLoading, isError } = useData<Post>(slug ? `/api/blog/${slug}` : null);
 
   if (isLoading) {
-    return <HeroSkeleton />;
+    return (
+      <MarketingShell>
+        <HeroSkeleton />
+      </MarketingShell>
+    );
   }
 
   if (isError || !post) {
@@ -41,7 +46,8 @@ export default function BlogClient({ params }: { params: Promise<{ slug: string 
   });
 
   return (
-    <div className="min-h-screen bg-background pt-32 pb-24">
+    <MarketingShell>
+      <div className="min-h-screen bg-background pt-32 pb-24">
       {/* Reading Progress Bar */}
       <motion.div
         className="fixed top-0 left-0 right-0 h-1 bg-primary z-[100] origin-left"
@@ -124,5 +130,6 @@ export default function BlogClient({ params }: { params: Promise<{ slug: string 
           </div>
       </div>
     </div>
+    </MarketingShell>
   );
 }

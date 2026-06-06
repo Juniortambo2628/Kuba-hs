@@ -12,10 +12,15 @@ class ProviderManagementService
      */
     public function syncProviderService(Provider $provider, array $data): ProviderService
     {
+        $keys = ['provider_id' => $provider->id, 'service_id' => $data['service_id']];
+        if (! empty($data['id'])) {
+            $keys = ['id' => $data['id']];
+        }
+
         $providerService = $provider->providerServices()->updateOrCreate(
-            ['id' => $data['id'] ?? null],
+            $keys,
             [
-                'service_id' => $data['service_id'] ?? null,
+                'service_id' => $data['service_id'],
                 'base_price' => $data['base_price'],
                 'pricing_type' => $data['pricing_type'] ?? 'fixed',
                 'min_hours' => $data['min_hours'] ?? 1,
@@ -32,7 +37,7 @@ class ProviderManagementService
     /**
      * Update an existing Provider capability Object structure.
      */
-    public function updateProviderService(Provider $provider, array $data, int $id): ProviderService
+    public function updateProviderService(Provider $provider, array $data, string $id): ProviderService
     {
         $providerService = $provider->providerServices()->findOrFail($id);
         $providerService->update($data);

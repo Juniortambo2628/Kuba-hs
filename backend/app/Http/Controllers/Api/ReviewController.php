@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Review;
 use App\Models\Provider;
+use App\Services\ImageOptimizationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Resources\ReviewResource;
@@ -51,10 +52,11 @@ class ReviewController extends Controller
                 'comment' => $request->comment,
             ]);
 
-            // Handle Review Images (if any)
             if ($request->hasFile('images')) {
+                $images = app(ImageOptimizationService::class);
                 foreach ($request->file('images') as $image) {
-                    $review->addMedia($image)->toMediaCollection('review_images');
+                    $media = $review->addMedia($image)->toMediaCollection('review_images');
+                    $images->optimizeMedia($media, ImageOptimizationService::PRESET_REVIEW);
                 }
             }
 

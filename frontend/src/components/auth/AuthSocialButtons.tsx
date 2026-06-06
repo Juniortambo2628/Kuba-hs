@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { getBackendWebUrl } from "@/lib/api-base-url";
 
 interface AuthSocialButtonsProps {
   role?: 'client' | 'provider';
@@ -9,9 +10,9 @@ interface AuthSocialButtonsProps {
 
 export function AuthSocialButtons({ role = 'client', isLoading }: AuthSocialButtonsProps) {
   const handleGoogleLogin = () => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-    const query = role === 'provider' ? '?role=provider' : '';
-    window.location.href = `${apiUrl}/auth/google${query}`;
+    const base = getBackendWebUrl();
+    const query = role === "provider" ? "?role=provider" : "";
+    window.location.href = `${base}/auth/google${query}`;
   };
 
   return (
@@ -20,7 +21,7 @@ export function AuthSocialButtons({ role = 'client', isLoading }: AuthSocialButt
       variant="outline"
       onClick={handleGoogleLogin}
       disabled={isLoading}
-      className="w-full h-14 border-border dark:border-white/10 hover:bg-muted dark:hover:bg-white/5 rounded-2xl font-bold text-[11px] tracking-widest uppercase"
+      className="w-full h-12 border-border/70 hover:bg-muted/50 rounded-xl font-medium text-sm bg-background"
     >
       <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>

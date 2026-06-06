@@ -34,11 +34,15 @@ class DashboardController extends Controller
                 ->count(),
         ];
 
+        $upcoming = $bookings->whereIn('status', ['pending', 'confirmed', 'in_progress'])->take(3)->values();
+
         return response()->json([
             'stats' => $stats,
-            'upcoming_bookings' => BookingResource::collection($bookings->whereIn('status', ['pending', 'confirmed', 'in_progress'])->take(3)),
-            'recent_bookings' => BookingResource::collection($bookings),
-            'loyalty_history' => LoyaltyPointResource::collection($user->loyaltyPoints()->latest()->take(5)->get()),
+            'upcoming_bookings' => BookingResource::collection($upcoming)->resolve(),
+            'recent_bookings' => BookingResource::collection($bookings)->resolve(),
+            'loyalty_history' => LoyaltyPointResource::collection(
+                $user->loyaltyPoints()->latest()->take(5)->get()
+            )->resolve(),
         ]);
     }
 }

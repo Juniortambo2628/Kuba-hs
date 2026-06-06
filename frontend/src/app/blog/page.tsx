@@ -6,9 +6,9 @@ import { motion } from "framer-motion";
 import { ArrowRight, Calendar, User, Search, Loader2, BookOpen, CheckCircle2, Leaf } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
-import { HighImpactHero } from "@/components/shared/HighImpactHero";
+import { MarketingPage } from "@/components/layout/MarketingPage";
+import { MarketingSection } from "@/components/shared/MarketingSection";
+import { useMarketingHero } from "@/hooks/useMarketingHero";
 import axiosInstance from "@/lib/axios";
 import { Post } from "@/types";
 import { useCMS } from "@/contexts/CMSContext";
@@ -17,7 +17,8 @@ import { designSystem } from "@/lib/design-system";
 import Image from "next/image";
 
 export default function BlogList() {
-  const { getS, getImg, isLoading: cmsLoading } = useCMS();
+  const { getS, getImg } = useCMS();
+  const hero = useMarketingHero("blog");
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -51,18 +52,8 @@ export default function BlogList() {
 
 
   return (
-    <div className="min-h-screen">
-      <Navbar />
-
-      <HighImpactHero
-        title={getS('hero_text', 'blog_hero_title', 'The Kuba Journal')}
-        subtitle={getS('hero_text', 'blog_hero_subtitle', 'Insights, updates, and expert tips from the world of professional services.')}
-        badge={getS('hero_text', 'blog_hero_badge', "Kuba Journal")}
-        cmsKey="journal"
-      />
-
-      {/* Thesis / Featured Content Section */}
-      <section className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <MarketingPage hero={hero}>
+      <MarketingSection>
         <div className="grid lg:grid-cols-2 gap-20 items-center">
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
@@ -119,11 +110,9 @@ export default function BlogList() {
             </div>
           </motion.div>
         </div>
-      </section>
+      </MarketingSection>
 
-      {/* Blog Feed Section */}
-      <section className="py-24 bg-slate-50 dark:bg-zinc-950/40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <MarketingSection band="bg-slate-50 dark:bg-zinc-950/40">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-16">
             <h2 className={designSystem.typography.section.title}>Latest Narratives</h2>
             
@@ -214,10 +203,7 @@ export default function BlogList() {
               </Button>
             </div>
           )}
-        </div>
-      </section>
-
-      <Footer />
-    </div>
+      </MarketingSection>
+    </MarketingPage>
   );
 }

@@ -1,15 +1,10 @@
 import React from "react";
 import { designSystem } from "@/lib/design-system";
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
+import { LegalPageLayout } from "@/components/layout/LegalPageLayout";
 
 export default function TermsPage() {
   return (
-    <main className="min-h-screen bg-background">
-      <Navbar />
-      <div className="container px-6 pt-32 pb-24 mx-auto max-w-4xl">
-        <h1 className={designSystem.typography.legal.h1}>User Terms & Conditions</h1>
-        <div className="prose prose-blue dark:prose-invert max-w-none space-y-8">
+    <LegalPageLayout title="User Terms & Conditions">
           <section className="space-y-4">
             <p className={designSystem.typography.legal.meta}>Effective Date: March 18, 2026</p>
             <p className={designSystem.typography.legal.meta}>Governing Law: Republic of Kenya</p>
@@ -95,9 +90,6 @@ export default function TermsPage() {
             <h2 className="text-xl font-bold mb-4 uppercase tracking-tight text-gray-900 dark:text-white">12. ACCEPTANCE</h2>
             <p className="text-gray-600 dark:text-muted-foreground leading-relaxed font-medium">By creating an account or using the Platform, the User confirms acceptance of these Terms.</p>
           </section>
-        </div>
-      </div>
-      <Footer />
-    </main>
+    </LegalPageLayout>
   );
 }

@@ -18,6 +18,7 @@ class ReviewResource extends JsonResource
             'id' => $this->id,
             'rating' => (int) $this->rating,
             'comment' => $this->comment,
+            'status' => $this->status ?? 'published',
             'created_at' => $this->created_at->toISOString(),
             'user' => new UserResource($this->whenLoaded('customer')),
             'booking' => [

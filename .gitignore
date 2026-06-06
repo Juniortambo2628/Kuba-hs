@@ -16,4 +16,7 @@
 .vscode
 /out
 /.next/
+frontend/.next/
+frontend/node_modules/
+frontend_v2_deprecated/
 *.zip

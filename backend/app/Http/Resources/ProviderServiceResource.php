@@ -18,15 +18,18 @@ class ProviderServiceResource extends JsonResource
             'id' => $this->id,
             'service_id' => $this->service_id,
             'base_price' => (float) $this->base_price,
-            'pricing_type' => $this->pricing_type,
-            'is_available' => $this->is_available,
+            'pricing_type' => $this->pricing_type ?? 'fixed',
+            'min_hours' => (int) ($this->min_hours ?? 1),
+            'travel_fee' => (float) ($this->travel_fee ?? 0),
+            'equipment_included' => (bool) $this->equipment_included,
+            'is_available' => (bool) $this->is_available,
             'name' => $this->service?->name,
             'description' => $this->service?->description,
             'category' => $this->service?->category?->name,
             'service_thumbnail_url' => $this->service?->thumbnail_url,
-            'image_urls' => $this->image_urls,
+            'image_urls' => $this->image_urls ?? [],
             'provider' => new ProviderResource($this->whenLoaded('provider')),
-            'service' => new ServiceResource($this->whenLoaded('service')),
+            'service' => $this->whenLoaded('service', fn () => new ServiceResource($this->service)),
         ];
     }
 }

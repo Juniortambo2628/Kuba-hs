@@ -1,19 +1,18 @@
 "use client";
 
-import { 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer,
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   BarChart,
   Bar,
-  Cell
-} from 'recharts';
+} from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
+import { ChartContainer } from "@/components/shared/ChartContainer";
 
 interface AnalyticsProps {
   data: any[];
@@ -46,8 +45,7 @@ export function VisualAnalytics({
           <CardTitle className="text-base sm:text-lg font-black text-foreground tracking-tight">{title}</CardTitle>
         </CardHeader>
         <CardContent className="p-4 sm:p-6">
-          <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
+          <ChartContainer height={300}>
               {type === 'area' ? (
                 <AreaChart data={data} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                   <defs>
@@ -128,8 +126,7 @@ export function VisualAnalytics({
                   />
                 </BarChart>
               )}
-            </ResponsiveContainer>
-          </div>
+          </ChartContainer>
         </CardContent>
       </Card>
     </motion.div>

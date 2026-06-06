@@ -5,15 +5,18 @@ import { motion } from "framer-motion";
 import { ChevronRight, Home } from "lucide-react";
 import Link from "next/link";
 import { useCMS } from "@/contexts/CMSContext";
+import { AppPill } from "@/components/shared/ui/AppPill";
 import { designSystem } from "@/lib/design-system";
 import Image from "next/image";
+import { getMediaUrl } from "@/lib/utils";
+import { MarketingHeroLogoFallback } from "@/components/marketing/MarketingHeroLogoFallback";
 
 interface Breadcrumb {
   label: string;
   href?: string;
 }
 
-interface HighImpactHeroProps {
+export interface HighImpactHeroProps {
   title?: string;
   subtitle?: string;
   badge?: string;
@@ -23,6 +26,8 @@ interface HighImpactHeroProps {
   breadcrumbs?: Breadcrumb[];
   actions?: React.ReactNode;
   fullScreen?: boolean;
+  /** When true and no bg image, show theme-aware Kuba logo instead of gradient only. */
+  logoFallback?: boolean;
   children?: React.ReactNode;
   className?: string;
 }
@@ -37,6 +42,7 @@ export function HighImpactHero({
   breadcrumbs,
   actions,
   fullScreen = false,
+  logoFallback = true,
   children,
   className = ""
 }: HighImpactHeroProps) {
@@ -52,15 +58,19 @@ export function HighImpactHero({
   // If we are using the default hero_text group, images should come from hero_backgrounds
   const imgGroup = cmsGroup === 'hero_text' ? 'hero_backgrounds' : cmsGroup;
   
-  const heroBackground = propBgImage || (cmsKey ? getImg(imgGroup, `${cmsKey}_hero_image`, "") : "");
-  const displayTitle = title || (cmsKey ? getS(cmsGroup, `${cmsKey}_hero_title`, "") : "");
-  const displaySubtitle = subtitle || (cmsKey ? getS(cmsGroup, `${cmsKey}_hero_subtitle`, "") : "");
-  const displayBadge = badge || (cmsKey ? getS(cmsGroup, `${cmsKey}_hero_badge`, "") : "");
+  const rawBackground = propBgImage || (cmsKey ? getImg(imgGroup, `${cmsKey}_hero_image`, "") : "");
+  const heroBackground = rawBackground ? getMediaUrl(rawBackground, "service") : "";
+  const displayTitle =
+    title || (cmsKey ? getS(cmsGroup, `${cmsKey}_hero_title`, "Explore Kuba") : "Explore Kuba");
+  const displaySubtitle =
+    subtitle || (cmsKey ? getS(cmsGroup, `${cmsKey}_hero_subtitle`, "") : "");
+  const displayBadge =
+    badge || (cmsKey ? getS(cmsGroup, `${cmsKey}_hero_badge`, "") : "");
 
   return (
     <section className={`relative overflow-hidden flex items-center text-center ${fullScreen ? 'min-h-screen pt-20' : 'pt-32 pb-20 md:pb-32'} ${className}`}>
       {/* Background with Theme-aware Overlay & Fallback Gradient */}
-      {(mounted && heroBackground) ? (
+      {mounted && heroBackground ? (
         <div className="absolute inset-0 z-0 overflow-hidden">
           <motion.div 
             initial={{ scale: 1.1, opacity: 0 }}
@@ -76,16 +86,17 @@ export function HighImpactHero({
               className="object-cover transition-opacity duration-700" 
             />
           </motion.div>
-          {/* Theme-aware Overlay */}
           <div className="absolute inset-0 bg-white/40 dark:bg-black/75 z-[1]" />
           <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-black via-transparent to-transparent z-[1]" />
         </div>
+      ) : logoFallback ? (
+        <MarketingHeroLogoFallback />
       ) : (
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-500/10 dark:from-blue-500/20 via-transparent to-transparent -z-10" />
       )}
 
       <div className={designSystem.layouts.container + " relative z-10 flex flex-col items-center justify-center mx-auto"}>
-        <div className="max-w-4xl w-full flex flex-col items-center text-center">
+        <div className="max-w-5xl w-full flex flex-col items-center text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -113,9 +124,9 @@ export function HighImpactHero({
 
             <div className="flex flex-col items-center gap-6 mb-8 relative w-full">
                 {displayBadge && (
-                <span className={designSystem.typography.hero.badge}>
+                  <AppPill variant="hero" className="mb-6">
                     {displayBadge.charAt(0).toUpperCase() + displayBadge.slice(1).toLowerCase()}
-                </span>
+                  </AppPill>
                 )}
 
                 {actions && (

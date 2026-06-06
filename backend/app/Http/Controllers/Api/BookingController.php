@@ -58,11 +58,24 @@ class BookingController extends Controller
             'scheduled_date' => 'required|date|after:now',
         ]);
 
+        $previousDate = $booking->scheduled_date?->toIso8601String();
+
         $booking->update([
             'scheduled_date' => $request->scheduled_date,
             'rescheduled_at' => now(),
             'status' => 'pending', // Revert to pending for re-confirmation if needed
         ]);
+
+        app(\App\Services\BookingActivityLogService::class)->log(
+            $booking,
+            'rescheduled',
+            $request->user(),
+            'Booking rescheduled',
+            [
+                'from' => $previousDate,
+                'to' => $booking->scheduled_date?->toIso8601String(),
+            ]
+        );
 
         BookingStatusUpdated::dispatch($booking);
 

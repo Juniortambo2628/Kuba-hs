@@ -4,8 +4,9 @@ import { useState, useEffect, useCallback } from "react";
 import axiosInstance from "@/lib/axios";
 import { useAuth } from "@/contexts/AuthContext";
 import { getEcho } from "@/lib/echo";
+import { unwrapResourceList } from "@/lib/chat-utils";
 
-interface ActivityCounts {
+export interface ActivityCounts {
   bookings: number;
   messages: number;
   notifications: number;
@@ -40,10 +41,13 @@ export function useActivityCounts() {
       let unreadMessages = 0;
       try {
         const msgRes = await axiosInstance.get("/api/chat/conversations");
-        const conversations = msgRes.data.conversations || msgRes.data || [];
-        unreadMessages = conversations.reduce((acc: number, conv: any) => {
-          return acc + (conv.unread_count || 0);
-        }, 0);
+        const conversations = unwrapResourceList<{ unread_count?: number }>(
+          msgRes.data?.conversations
+        );
+        unreadMessages = conversations.reduce(
+          (acc, conv) => acc + (conv.unread_count || 0),
+          0
+        );
       } catch {
         // Chat may not be available
       }
@@ -58,18 +62,27 @@ export function useActivityCounts() {
         try {
           const dashRes = await axiosInstance.get("/api/admin/dashboard");
           const stats = dashRes.data;
-          pendingBookings = stats.pending_bookings || stats.pendingBookings || 0;
-          pendingPayments = stats.pending_payments || stats.pendingPayments || 0;
-          pendingVerification = stats.pending_verification || stats.pendingVerifications || 0;
-          pendingQuotes = stats.pending_quotes || stats.pendingQuotes || 0;
+          pendingBookings = stats.pending_bookings ?? stats.pendingBookings ?? 0;
+          pendingPayments = stats.pending_payments ?? stats.pendingPayments ?? 0;
+          pendingVerification = stats.pending_verification ?? stats.pendingVerifications ?? 0;
+          pendingQuotes = stats.pending_quotes ?? stats.pendingQuotes ?? 0;
         } catch {
           // Dashboard endpoint may vary
         }
       } else if (user.role === 'provider') {
         try {
           const dashRes = await axiosInstance.get("/api/provider/dashboard");
-          const stats = dashRes.data;
-          pendingBookings = stats.pending_orders || stats.pendingOrders || 0;
+          const body = dashRes.data?.data ?? dashRes.data;
+          const stats = body?.stats ?? body;
+          pendingBookings =
+            stats?.active_bookings ??
+            stats?.pending_orders ??
+            stats?.pendingOrders ??
+            0;
+          const verification = body?.verification;
+          if (verification?.needs_action) {
+            pendingVerification = 1;
+          }
         } catch {}
       } else {
         // Client - pending bookings could be ones needing payment

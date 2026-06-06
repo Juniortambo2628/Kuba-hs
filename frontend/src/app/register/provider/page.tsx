@@ -1,48 +1,48 @@
 "use client";
 
-import * as React from "react";
 import { useState } from "react";
+import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { 
-  Form, 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
 } from "@/components/ui/form";
-import { default as Link } from "next/link";
-import { Loader2, Zap, Briefcase, ChevronLeft } from "lucide-react";
-import { designSystem } from "@/lib/design-system";
+import { Mail, Lock } from "lucide-react";
+import { AuthPageShell, AuthPrimaryButton } from "@/components/auth/AuthPageShell";
+import { AuthIconInput } from "@/components/auth/AuthIconInput";
+import { useAuthPageContent } from "@/hooks/useAuthPageContent";
+import { authUi } from "@/lib/auth-ui";
+import { cn } from "@/lib/utils";
 
-const registerSchema = z.object({
-  business_name: z.string().min(2, "Business or full name must be at least 2 characters"),
-  email: z.string().email("Invalid email address"),
-  phone: z.string().min(10, "Phone number must be at least 10 characters"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-  password_confirmation: z.string(),
-}).refine((data) => data.password === data.password_confirmation, {
-  message: "Passwords don't match",
-  path: ["password_confirmation"],
-});
+const registerSchema = z
+  .object({
+    business_name: z.string().min(2, "Business or full name must be at least 2 characters"),
+    email: z.string().email("Invalid email address"),
+    phone: z.string().min(10, "Phone number must be at least 10 characters"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    password_confirmation: z.string(),
+  })
+  .refine((data) => data.password === data.password_confirmation, {
+    message: "Passwords don't match",
+    path: ["password_confirmation"],
+  });
 
 type RegisterValues = z.infer<typeof registerSchema>;
-
-import { AuthSplitLayout } from "@/components/auth/AuthSplitLayout";
-import { AuthFormHeader } from "@/components/auth/AuthFormHeader";
 
 export default function ProviderRegisterPage() {
   const { register: authRegister } = useAuth();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const { content, footerHref, showSocialProof } = useAuthPageContent("provider_register");
 
   const form = useForm<RegisterValues>({
     resolver: zodResolver(registerSchema),
@@ -58,77 +58,46 @@ export default function ProviderRegisterPage() {
   const onSubmit = async (data: RegisterValues) => {
     setIsLoading(true);
     try {
-      const [first_name, ...last_parts] = data.business_name.split(' ');
-      await authRegister({ 
-        first_name: first_name || "Provider", 
-        last_name: last_parts.join(' ') || "User", 
-        email: data.email, 
+      const [first_name, ...last_parts] = data.business_name.split(" ");
+      await authRegister({
+        first_name: first_name || "Provider",
+        last_name: last_parts.join(" ") || "User",
+        email: data.email,
         phone: data.phone,
-        password: data.password, 
+        password: data.password,
         password_confirmation: data.password_confirmation,
-        role: 'provider' 
+        role: "provider",
       });
       toast.success("Welcome aboard! Let's set up your profile.");
       router.push("/dashboard/provider/profile");
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || err.message || "Registration failed");
+    } catch (err: unknown) {
+      const message =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+        (err as Error)?.message ||
+        "Registration failed";
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <AuthSplitLayout
-      theme="emerald"
-      visualBgClass="bg-emerald-600"
-      visualContent={
-        <>
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-700/50 to-transparent" />
-          <div className="relative z-10 space-y-6 max-w-md">
-            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-white">
-              <Zap className="w-6 h-6" />
-            </div>
-            <h2 className="text-2xl font-semibold leading-snug text-white">
-              Access hundreds of daily service requests and earn more with Kuba.
-            </h2>
-            <div className="space-y-4">
-               {[
-                 { icon: <Briefcase className="w-4 h-4" />, text: "Zero listing fees for the first month" },
-                 { icon: <Zap className="w-4 h-4" />, text: "Instant payout on job completion" }
-               ].map((item, i) => (
-                 <div key={i} className="flex items-center gap-3 text-emerald-50 text-sm font-medium">
-                    <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-                      {item.icon}
-                    </div>
-                    {item.text}
-                 </div>
-               ))}
-            </div>
-          </div>
-        </>
-      }
-    >
-      <AuthFormHeader 
-        title="Grow Your Business" 
-        subtitle="Join Kuba's network of elite service professionals." 
-      />
-
+    <AuthPageShell content={content} footerHref={footerHref} showSocialProof={showSocialProof}>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
             control={form.control}
             name="business_name"
             render={({ field }) => (
-              <FormItem className="space-y-2">
-                <FormLabel className={designSystem.typography.auth.label}>Business Name / Your Name</FormLabel>
+              <FormItem>
                 <FormControl>
                   <Input
-                    placeholder="e.g. Nairobi Plumbing Experts"
-                    className={designSystem.typography.auth.input}
+                    placeholder="Business name or your name"
+                    className={cn(authUi.input, "pl-4")}
                     {...field}
                   />
                 </FormControl>
-                <FormMessage className="text-[10px] font-semibold tracking-widest uppercase ml-1" />
+                <FormMessage className="text-xs" />
               </FormItem>
             )}
           />
@@ -137,17 +106,17 @@ export default function ProviderRegisterPage() {
             control={form.control}
             name="email"
             render={({ field }) => (
-              <FormItem className="space-y-2">
-                <FormLabel className={designSystem.typography.auth.label}>Work Email</FormLabel>
+              <FormItem>
                 <FormControl>
-                  <Input
+                  <AuthIconInput
+                    icon={Mail}
                     type="email"
+                    autoComplete="email"
                     placeholder="business@example.com"
-                    className={designSystem.typography.auth.input}
                     {...field}
                   />
                 </FormControl>
-                <FormMessage className="text-[10px] font-semibold tracking-widest uppercase ml-1" />
+                <FormMessage className="text-xs" />
               </FormItem>
             )}
           />
@@ -156,16 +125,11 @@ export default function ProviderRegisterPage() {
             control={form.control}
             name="phone"
             render={({ field }) => (
-              <FormItem className="space-y-2">
-                <FormLabel className={designSystem.typography.auth.label}>Contact Phone</FormLabel>
+              <FormItem>
                 <FormControl>
-                  <Input
-                    placeholder="+254 700 000 000"
-                    className={designSystem.typography.auth.input}
-                    {...field}
-                  />
+                  <Input placeholder="+254 700 000 000" className={cn(authUi.input, "pl-4")} {...field} />
                 </FormControl>
-                <FormMessage className="text-[10px] font-semibold tracking-widest uppercase ml-1" />
+                <FormMessage className="text-xs" />
               </FormItem>
             )}
           />
@@ -174,17 +138,18 @@ export default function ProviderRegisterPage() {
             control={form.control}
             name="password"
             render={({ field }) => (
-              <FormItem className="space-y-2">
-                <FormLabel className={designSystem.typography.auth.label}>Password</FormLabel>
+              <FormItem>
                 <FormControl>
-                  <Input
+                  <AuthIconInput
+                    icon={Lock}
                     type="password"
-                    placeholder="••••••••"
-                    className={designSystem.typography.auth.input}
+                    showToggle
+                    autoComplete="new-password"
+                    placeholder="Password"
                     {...field}
                   />
                 </FormControl>
-                <FormMessage className="text-[10px] font-semibold tracking-widest uppercase ml-1" />
+                <FormMessage className="text-xs" />
               </FormItem>
             )}
           />
@@ -193,50 +158,34 @@ export default function ProviderRegisterPage() {
             control={form.control}
             name="password_confirmation"
             render={({ field }) => (
-              <FormItem className="space-y-2">
-                <FormLabel className={designSystem.typography.auth.label}>Confirm Password</FormLabel>
+              <FormItem>
                 <FormControl>
-                  <Input
+                  <AuthIconInput
+                    icon={Lock}
                     type="password"
-                    placeholder="••••••••"
-                    className={designSystem.typography.auth.input}
+                    showToggle
+                    autoComplete="new-password"
+                    placeholder="Confirm password"
                     {...field}
                   />
                 </FormControl>
-                <FormMessage className="text-[10px] font-semibold tracking-widest uppercase ml-1" />
+                <FormMessage className="text-xs" />
               </FormItem>
             )}
           />
 
-          <Button 
-              type="submit" 
-              className="w-full h-14 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl shadow-xl transition-all tracking-widest text-[11px] uppercase shadow-emerald-500/20"
-              disabled={isLoading}
-          >
-            {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin mx-auto" />
-            ) : (
-              "Start Offering Services"
-            )}
-          </Button>
+          <AuthPrimaryButton accent={content.accent} isLoading={isLoading} className="mt-2">
+            {content.submitLabel}
+          </AuthPrimaryButton>
         </form>
       </Form>
 
-      <div className="space-y-4 pt-4">
-        <p className="text-center text-[10px] font-semibold text-muted-foreground tracking-widest uppercase">
-          Already have an account?{" "}
-          <Link href="/login/provider" className="text-emerald-600 font-bold hover:underline">
-            Sign in
-          </Link>
-        </p>
-
-        <p className="text-center text-[10px] font-semibold text-muted-foreground tracking-widest uppercase border-t border-border/50 pt-4">
-          Looking for a pro?{" "}
-          <Link href="/register/client" className="text-emerald-600 font-bold hover:underline">
-            Register as client
-          </Link>
-        </p>
-      </div>
-    </AuthSplitLayout>
+      <p className="text-center text-sm text-muted-foreground mt-4 pt-4 border-t border-border/50">
+        Looking for a pro?{" "}
+        <Link href="/register/client" className="font-semibold text-emerald-600 hover:underline">
+          Register as client
+        </Link>
+      </p>
+    </AuthPageShell>
   );
 }

@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import axiosInstance from "@/lib/axios";
+import { getMediaUrl } from "@/lib/utils";
 
 export interface CMSSetting {
   id: string;
@@ -17,14 +18,12 @@ export interface CMSSetting {
 interface CMSContextType {
   settings: Record<string, Record<string, CMSSetting>>;
   isLoading: boolean;
-  getS: (group: string, key: string, fallback: string) => string;
-  getImg: (group: string, key: string, fallback: string) => string;
+  getS: (group: string, key: string, fallback?: string) => string;
+  getImg: (group: string, key: string, fallback?: string) => string;
   refreshSettings: () => Promise<void>;
 }
 
 const CMSContext = createContext<CMSContextType | undefined>(undefined);
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, '') || 'http://localhost:8000';
 
 export function CMSProvider({ children, initialRawSettings }: { children: React.ReactNode, initialRawSettings?: Record<string, CMSSetting[]> }) {
   const formatSettings = (raw: Record<string, CMSSetting[]>) => {
@@ -45,41 +44,39 @@ export function CMSProvider({ children, initialRawSettings }: { children: React.
 
   const fetchSettings = useCallback(async () => {
     try {
-      // Don't flash loading state if we already have hydrated data
       if (Object.keys(settings).length === 0) {
         setIsLoading(true);
       }
       const res = await axiosInstance.get("/api/settings");
-      
+
       if (res.data.settings) {
         setSettings(formatSettings(res.data.settings));
       }
     } catch (err) {
-      console.error("Failed to fetch CMS settings:", err);
+      console.warn(
+        "Failed to fetch CMS settings. Ensure Laravel is running (php artisan serve). Using SSR/defaults until the API is available.",
+        err
+      );
     } finally {
       setIsLoading(false);
     }
-  }, [settings]);
+  }, []);
 
   useEffect(() => {
-    fetchSettings();
-  }, [fetchSettings]);
+    if (Object.keys(settings).length === 0) {
+      fetchSettings();
+    }
+  }, [fetchSettings, settings]);
 
-  const getS = useCallback((group: string, key: string, fallback: string) => {
+  const getS = useCallback((group: string, key: string, fallback = "") => {
     return settings[group]?.[key]?.value || fallback;
   }, [settings]);
 
-  const getImg = useCallback((group: string, key: string, fallback: string) => {
+  const getImg = useCallback((group: string, key: string, fallback = "") => {
     const setting = settings[group]?.[key];
     const url = setting?.image_url || setting?.value;
-    if (!url || (setting?.type === 'image' && !url)) return fallback;
-    const finalUrl = url.startsWith('http') ? url : `${BACKEND_URL}/${url.replace(/^\//, '')}`;
-    
-    // Local dev workaround for storage files
-    if (finalUrl.includes('localhost') && finalUrl.includes('/storage/')) {
-        return finalUrl.replace('/storage/', '/cms-assets/');
-    }
-    return finalUrl;
+    if (!url || (setting?.type === "image" && !url)) return fallback;
+    return getMediaUrl(url, "service") || fallback;
   }, [settings]);
 
   const value = useMemo(() => ({ 

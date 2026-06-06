@@ -39,7 +39,7 @@ export function LivePreviewModal({ sectionId, currentSettings }: LivePreviewModa
                 return (
                     <div className="w-full flex justify-center bg-gray-100">
                         {/* Mobile/Desktop Mock Frame */}
-                        <div className="w-full max-w-[400px] md:max-w-[800px] bg-white shadow-2xl overflow-hidden overflow-y-auto h-[600px] border border-border/40 scale-95 transform origin-top custom-scrollbar">
+                        <div className="w-full max-w-[400px] md:max-w-[800px] bg-white shadow-2xl overflow-hidden overflow-y-auto h-[600px] border border-border/40 scale-95 transform origin-top kuba-scroll">
                            <div className="h-10 bg-black flex items-center px-4">
                                <div className="flex gap-1.5">
                                    <div className="w-2.5 h-2.5 rounded-full bg-red-500" />

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Booking;
 use App\Models\Payment;
+use App\Services\BookingActivityLogService;
 use App\Models\SiteSetting;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
@@ -133,6 +134,14 @@ class PaymentService
             'payment_status' => 'paid',
             'final_price' => $amount,
         ]);
+
+        app(BookingActivityLogService::class)->log(
+            $booking,
+            'payment_completed',
+            $booking->customer,
+            'Payment verified via Paystack',
+            ['reference' => $reference, 'amount' => $amount]
+        );
 
         // Notify Provider
         if (isset($booking->provider->user)) {

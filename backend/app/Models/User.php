@@ -87,11 +87,32 @@ class User extends Authenticatable implements HasMedia
     }
 
     /**
-     * Get the user's avatar URL from media library or fallback.
+     * Uploaded avatar only — no auto-generated placeholder URLs in API responses.
      */
-    public function getAvatarUrlAttribute(): string
+    public function getAvatarUrlAttribute(): ?string
     {
-        return $this->getFirstMediaUrl('avatars') ?: ($this->attributes['avatar_url'] ?? 'https://ui-avatars.com/api/?name=' . urlencode($this->name));
+        $media = $this->getFirstMediaUrl('avatars');
+        if ($media) {
+            return $media;
+        }
+
+        $stored = $this->attributes['avatar_url'] ?? null;
+        if ($stored && !self::isPlaceholderAvatarUrl($stored)) {
+            return $stored;
+        }
+
+        return null;
+    }
+
+    public static function isPlaceholderAvatarUrl(?string $url): bool
+    {
+        if (! $url) {
+            return true;
+        }
+
+        return str_contains($url, 'ui-avatars.com')
+            || str_contains($url, 'dicebear.com')
+            || str_contains($url, '/placeholders/');
     }
 
     /**
@@ -120,6 +141,31 @@ class User extends Authenticatable implements HasMedia
         return $this->hasOne(Provider::class);
     }
 
+    /**
+     * Ensure a providers row exists for provider-role users (onboarding / legacy accounts).
+     */
+    public function ensureProviderProfile(): ?Provider
+    {
+        if ($this->role !== 'provider') {
+            return null;
+        }
+
+        $existing = $this->provider()->first();
+        if ($existing) {
+            return $existing;
+        }
+
+        return Provider::create([
+            'user_id' => $this->id,
+            'business_name' => trim($this->name) !== '' ? $this->name : 'My Business',
+            'is_verified' => false,
+            'application_status' => 'pending',
+            'availability_status' => 'available',
+            'experience_years' => 0,
+            'service_radius' => 10,
+        ]);
+    }
+
     public function loyaltyPoints()
     {
         return $this->hasMany(LoyaltyPoint::class);
@@ -128,6 +174,16 @@ class User extends Authenticatable implements HasMedia
     public function addresses()
     {
         return $this->hasMany(Address::class);
+    }
+
+    public function favorites()
+    {
+        return $this->hasMany(UserFavorite::class);
+    }
+
+    public function favoriteProviders()
+    {
+        return $this->belongsToMany(Provider::class, 'user_favorites')->withTimestamps();
     }
 
     /**

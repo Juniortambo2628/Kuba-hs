@@ -1,50 +1,115 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { serviceDetailHref } from "@/lib/service-urls";
 import { motion, AnimatePresence } from "framer-motion";
 import axiosInstance from "@/lib/axios";
-import { ChevronRight, Sparkles, Wrench, Droplet, Zap, Home, Briefcase, Building2, Heart, Car } from "lucide-react";
+import {
+  ArrowRight,
+  Sparkles,
+  Wrench,
+  Droplet,
+  Zap,
+  Home,
+  Briefcase,
+  Building2,
+  Heart,
+  Car,
+} from "lucide-react";
+import { navUi } from "@/lib/nav-ui";
+import { cn } from "@/lib/utils";
 
-interface Service {
-  id: number;
+interface MegamenuService {
+  id: string;
   name: string;
+  slug?: string;
+  description?: string;
 }
 
 interface Category {
-  id: number;
+  id: string;
   slug: string;
   name: string;
-  services: Service[];
+  type?: string;
+  description?: string;
+  services: MegamenuService[];
   icon: string | null;
 }
 
 const iconMap: Record<string, React.ReactNode> = {
-  wrench: <Wrench className="w-4 h-4" />,
-  sparkles: <Sparkles className="w-4 h-4" />,
-  droplet: <Droplet className="w-4 h-4" />,
-  bolt: <Zap className="w-4 h-4" />,
-  car: <Car className="w-4 h-4" />,
-  home: <Home className="w-4 h-4" />,
-  heart: <Heart className="w-4 h-4" />,
-  briefcase: <Briefcase className="w-4 h-4" />,
-  building: <Building2 className="w-4 h-4" />,
+  wrench: <Wrench className="h-4 w-4" />,
+  sparkles: <Sparkles className="h-4 w-4" />,
+  droplet: <Droplet className="h-4 w-4" />,
+  bolt: <Zap className="h-4 w-4" />,
+  zap: <Zap className="h-4 w-4" />,
+  car: <Car className="h-4 w-4" />,
+  home: <Home className="h-4 w-4" />,
+  heart: <Heart className="h-4 w-4" />,
+  briefcase: <Briefcase className="h-4 w-4" />,
+  building: <Building2 className="h-4 w-4" />,
+  building2: <Building2 className="h-4 w-4" />,
 };
+
+function dedupeServices(services: MegamenuService[]): MegamenuService[] {
+  const seen = new Set<string>();
+  return services.filter((service) => {
+    const key = (service.slug || service.name).trim().toLowerCase();
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
 
 interface ServiceMegamenuProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
+function CategoryRow({
+  category,
+  onClose,
+  active,
+}: {
+  category: Category;
+  onClose: () => void;
+  active?: boolean;
+}) {
+  const iconKey = (category.icon || "").toLowerCase();
+  const preview = dedupeServices(category.services ?? [])[0];
+
+  return (
+    <Link
+      href={`/services?category=${category.slug}`}
+      onClick={onClose}
+      className={cn(navUi.megamenuItem, active && navUi.megamenuItemActive)}
+    >
+      <span className={navUi.megamenuIcon}>
+        {iconKey && iconMap[iconKey] ? iconMap[iconKey] : <Sparkles className="h-4 w-4" />}
+      </span>
+      <span className="min-w-0">
+        <span className={navUi.megamenuTitle}>{category.name}</span>
+        <span className={navUi.megamenuDesc}>
+          {category.description?.slice(0, 72) ||
+            (preview
+              ? `${preview.name} and more`
+              : `Browse ${category.name.toLowerCase()} services`)}
+        </span>
+      </span>
+    </Link>
+  );
+}
+
 export function ServiceMegamenu({ isOpen, onClose }: ServiceMegamenuProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const response = await axiosInstance.get("/api/categories");
-        setCategories(response.data.data);
+        setCategories(response.data.data ?? []);
       } catch (error) {
         console.error("Failed to fetch categories for megamenu:", error);
       } finally {
@@ -57,107 +122,149 @@ export function ServiceMegamenu({ isOpen, onClose }: ServiceMegamenuProps) {
     }
   }, [isOpen, categories.length]);
 
+  const { residential, commercial, featured } = useMemo(() => {
+    const res: Category[] = [];
+    const com: Category[] = [];
+    for (const cat of categories) {
+      if (cat.type === "commercial") com.push(cat);
+      else res.push(cat);
+    }
+    return {
+      residential: res,
+      commercial: com,
+      featured: res.slice(0, 5),
+    };
+  }, [categories]);
+
+  const activeCategory =
+    categories.find((c) => c.id === hoveredId) ?? featured[0] ?? categories[0];
+
+  const quickLinks = useMemo(() => {
+    const links: { label: string; href: string }[] = [
+      { label: "All services", href: "/services" },
+      { label: "Find providers", href: "/providers" },
+      { label: "Browse categories", href: "/categories" },
+    ];
+    if (activeCategory) {
+      dedupeServices(activeCategory.services ?? [])
+        .slice(0, 5)
+        .forEach((s) => {
+          links.push({
+            label: s.name,
+            href: serviceDetailHref({ ...s, category_slug: activeCategory.slug }),
+          });
+        });
+    }
+    return links;
+  }, [activeCategory]);
+
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
+        <div className={navUi.megamenuWrap}>
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            transition={{ duration: 0.2 }}
-            className="absolute top-20 left-0 w-full bg-white dark:bg-[#0B0F19] border-b border-gray-200 dark:border-white/10 shadow-2xl z-50 overflow-hidden"
+            exit={{ opacity: 0, y: 8 }}
+            transition={{ duration: 0.18 }}
+            className={navUi.megamenuPanel}
           >
-            <div className="container mx-auto px-8 py-12">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-10">
-                {isLoading ? (
-                  // Loading Skeletons
-                  Array.from({ length: 5 }).map((_, i) => (
-                    <div key={i} className="space-y-4 animate-pulse">
-                      <div className="h-4 w-24 bg-gray-200 dark:bg-white/5 rounded" />
-                      <div className="space-y-2">
-                        <div className="h-3 w-full bg-gray-100 dark:bg-white/5 rounded" />
-                        <div className="h-3 w-5/6 bg-gray-100 dark:bg-white/5 rounded" />
-                        <div className="h-3 w-4/6 bg-gray-100 dark:bg-white/5 rounded" />
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  categories.map((category) => (
-                    <div key={category.id} className="space-y-6 group/cat">
-                      <Link 
-                        href={`/categories/${category.slug || category.id}`}
-                        onClick={onClose}
-                        className="flex items-center gap-2 group"
-                      >
-                        <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5 group-hover:bg-primary/10 transition-colors">
-                          {category.icon && iconMap[category.icon] ? (
-                            <span className="text-primary">{iconMap[category.icon]}</span>
-                          ) : (
-                            <Sparkles className="w-4 h-4 text-primary" />
-                          )}
-                        </div>
-                        <h3 className="text-sm font-bold text-gray-900 dark:text-white group-hover:text-primary transition-colors capitalize tracking-tight">
-                          {category.name}
-                        </h3>
-                      </Link>
-                      
-                      <ul className="space-y-3">
-                        {category.services?.slice(0, 6).map((service: any) => (
-                          <li key={service.id}>
-                            <Link 
-                              href={`/services/${service.id}?type=general`}
-                              onClick={onClose}
-                              className="text-[13px] text-gray-500 dark:text-gray-400 hover:text-primary transition-colors flex items-center justify-between group/link"
-                            >
-                              <span className="truncate">{service.name}</span>
-                              <ChevronRight className="w-3 h-3 opacity-0 -translate-x-2 group-hover/link:opacity-100 group-hover/link:translate-x-0 transition-all" />
-                            </Link>
-                          </li>
-                        ))}
-                        {category.services?.length > 6 && (
-                          <li>
-                            <Link 
-                              href={`/categories/${category.id}`}
-                              onClick={onClose}
-                              className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1"
-                            >
-                              See all {category.name} <ChevronRight className="w-3 h-3" />
-                            </Link>
-                          </li>
-                        )}
-                      </ul>
-                    </div>
-                  ))
-                )}
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-[1.4fr_1fr] gap-8 animate-pulse">
+                <div className="space-y-3">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i} className="h-14 rounded-xl bg-muted/60" />
+                  ))}
+                </div>
+                <div className="space-y-2">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="h-9 rounded-lg bg-muted/40" />
+                  ))}
+                </div>
               </div>
-
-              {/* Footer of Megamenu */}
-              <div className="mt-12 pt-8 border-t border-gray-100 dark:border-white/5 flex items-center justify-between">
-                <div className="flex items-center gap-6">
-                  <div className="flex -space-x-2">
-                    {[1,2,3,4].map(i => (
-                      <div key={i} className="w-8 h-8 rounded-full border-2 border-white dark:border-[#0B0F19] bg-gray-200 dark:bg-white/10" />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] gap-8 md:gap-10">
+                <div>
+                  <p className={navUi.megamenuSectionLabel}>Browse services</p>
+                  <div className="space-y-0.5">
+                    {featured.map((cat) => (
+                      <div
+                        key={cat.id}
+                        onMouseEnter={() => setHoveredId(cat.id)}
+                      >
+                        <CategoryRow
+                          category={cat}
+                          onClose={onClose}
+                          active={hoveredId === cat.id || (!hoveredId && cat.id === featured[0]?.id)}
+                        />
+                      </div>
                     ))}
                   </div>
-                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                    Join <span className="text-gray-900 dark:text-white font-bold">5,000+</span> verified pros on the platform
-                  </p>
+                  {commercial.length > 0 && (
+                    <div className="mt-6 pt-6 border-t border-border/40">
+                      <p className={navUi.megamenuSectionLabel}>For business</p>
+                      <div className="space-y-0.5">
+                        {commercial.slice(0, 3).map((cat) => (
+                          <div key={cat.id} onMouseEnter={() => setHoveredId(cat.id)}>
+                            <CategoryRow category={cat} onClose={onClose} active={hoveredId === cat.id} />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <Link 
-                  href="/services" 
-                  onClick={onClose}
-                  className="flex items-center gap-2 text-sm font-bold text-primary group"
-                >
-                  Explore all categories
-                  <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <ChevronRight className="w-4 h-4" />
+
+                <div className="md:border-l md:border-border/40 md:pl-8">
+                  <p className={navUi.megamenuSectionLabel}>
+                    {activeCategory ? activeCategory.name : "Quick links"}
+                  </p>
+                  <nav className="space-y-0.5">
+                    {quickLinks.map((link, i) => (
+                      <Link
+                        key={`${link.href}-${i}`}
+                        href={link.href}
+                        onClick={onClose}
+                        className={cn(
+                          navUi.megamenuSideLink,
+                          i === 0 && navUi.megamenuSideLinkActive
+                        )}
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
+                  </nav>
+
+                  <div className="mt-8 pt-6 border-t border-border/40">
+                    <p className={navUi.megamenuSectionLabel}>Solutions</p>
+                    <div className="space-y-0.5">
+                      <Link href="/providers" onClick={onClose} className={navUi.megamenuSideLink}>
+                        Find providers
+                      </Link>
+                      <Link href="/commercial" onClick={onClose} className={navUi.megamenuSideLink}>
+                        Commercial services
+                      </Link>
+                      <Link href="/cooperatives" onClick={onClose} className={navUi.megamenuSideLink}>
+                        Cooperatives
+                      </Link>
+                      <Link href="/investors" onClick={onClose} className={navUi.megamenuSideLink}>
+                        Investors
+                      </Link>
+                    </div>
                   </div>
-                </Link>
+
+                  <Link
+                    href="/services"
+                    onClick={onClose}
+                    className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-foreground hover:text-primary transition-colors"
+                  >
+                    View all services on Kuba
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
               </div>
-            </div>
+            )}
           </motion.div>
-        </>
+        </div>
       )}
     </AnimatePresence>
   );

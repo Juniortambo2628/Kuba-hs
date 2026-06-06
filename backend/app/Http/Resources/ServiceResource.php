@@ -16,12 +16,14 @@ class ServiceResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'slug' => $this->slug,
             'name' => $this->name,
             'description' => $this->description,
             'icon_url' => $this->icon_url,
             'is_active' => $this->is_active,
             'is_featured' => $this->is_featured,
             'starting_price' => (float) ($this->provider_services_min_base_price ?? 0),
+            'providers_count' => (int) ($this->provider_services_count ?? 0),
             'thumbnail_url' => $this->thumbnail_url,
             'category' => new ServiceCategoryResource($this->whenLoaded('category')),
             'media' => $this->when($this->relationLoaded('media'), function() {

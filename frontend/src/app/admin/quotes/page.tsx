@@ -1,5 +1,14 @@
 "use client";
 
+import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
+import {
+  DashboardDataCard,
+  DashboardTableHead,
+  DashboardTableHeaderRow,
+} from "@/components/shared/DashboardTable";
+import { dashboardUi } from "@/lib/dashboard-ui";
+import { cn } from "@/lib/utils";
+
 import { useState, useEffect } from "react";
 import axiosInstance from "@/lib/axios";
 import { 
@@ -17,7 +26,12 @@ import {
   Briefcase
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import {
+  DashboardGreetingBar,
+  DashboardFrostedStatCard,
+  DashboardFrostedStatGrid,
+} from "@/components/dashboard/workspace";
+import { workspaceUi } from "@/lib/dashboard-workspace-ui";
 import { DashboardStatusBadge } from "@/components/shared/DashboardStatusBadge";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -30,25 +44,15 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
-import { DataToolbar } from "@/components/shared/DataToolbar";
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { DashboardListToolbar } from "@/components/shared/DashboardListToolbar";
+import { useSearchState } from "@/hooks/useSearchState";
 import { CustomQuote } from "@/types";
 import { useApiData } from "@/hooks/useApiData";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { toast } from "sonner";
 
 export default function AdminQuotesPage() {
-  const [searchTerm, setSearchTerm] = useState("");
+  const { search: searchTerm } = useSearchState();
   const [viewMode, setViewMode] = useState<'grid'|'list'>('grid');
   const { data: quotesData, isLoading, refetch: fetchQuotes } = useApiData<any>("/api/admin/quotes", { initialData: null });
   const quotes = (quotesData?.data || quotesData || []) as CustomQuote[];
@@ -89,33 +93,59 @@ export default function AdminQuotesPage() {
     }
   };
 
+  const pendingCount = quotes.filter((q) => q.status === "pending").length;
+
   return (
-    <div className="h-full flex flex-col space-y-10 animate-in fade-in duration-500 pb-12">
-      <DashboardPageHeader 
-          title="Enterprise Pipeline" 
-          subtitle="Manage high-volume service inquiries from commercial entities, cooperatives, and institutional partners."
+    <DashboardPageContainer width="default" className={workspaceUi.page}>
+      <DashboardGreetingBar
+        greeting="Commercial & cooperative quotes"
+        subtitle="RFP-style requests from commercial, cooperative, and institutional pages."
       />
 
-      <DataToolbar 
-        search={searchTerm}
-        onSearchChange={setSearchTerm}
-        searchPlaceholder="Search by organization, contact or email..."
+      <DashboardFrostedStatGrid columns={3}>
+        <DashboardFrostedStatCard
+          icon={Building2}
+          label="Total requests"
+          value={isLoading ? "—" : quotes.length}
+          isLoading={isLoading}
+        />
+        <DashboardFrostedStatCard
+          icon={Clock}
+          label="Pending"
+          value={isLoading ? "—" : pendingCount}
+          tone={pendingCount > 0 ? "warning" : "neutral"}
+          isLoading={isLoading}
+        />
+        <DashboardFrostedStatCard
+          icon={CheckCircle}
+          label="Contracted"
+          value={isLoading ? "—" : quotes.filter((q) => q.status === "contracted").length}
+          tone="success"
+          isLoading={isLoading}
+        />
+      </DashboardFrostedStatGrid>
+
+      {searchTerm && (
+        <p className="text-xs text-muted-foreground">Results for &quot;{searchTerm}&quot;</p>
+      )}
+
+      <DashboardListToolbar
+        hint="Use ⌘K Quick Jump to search quotes"
         viewMode={viewMode}
         onViewChange={setViewMode}
       />
 
       {viewMode === 'list' ? (
-        <Card className="border border-border/40 overflow-hidden bg-card/50 backdrop-blur-md border-none shadow-sm rounded-2xl">
-          <CardContent className="p-0">
+        <DashboardDataCard>
             <Table>
               <TableHeader>
-                <TableRow className="hover:bg-transparent">
-                  <TableHead className="text-[11px] font-bold text-muted-foreground pl-10 h-16">Organization</TableHead>
-                  <TableHead className="text-[11px] font-bold text-muted-foreground h-16">Contact Details</TableHead>
-                  <TableHead className="text-[11px] font-bold text-muted-foreground h-16">Service Goal</TableHead>
-                  <TableHead className="text-[11px] font-bold text-muted-foreground h-16">Status</TableHead>
-                  <TableHead className="text-[11px] font-bold text-muted-foreground pr-10 text-right h-16">Action</TableHead>
-                </TableRow>
+                <DashboardTableHeaderRow>
+                  <DashboardTableHead position="first" className="!pl-10 h-16">Organization</DashboardTableHead>
+                  <DashboardTableHead className="h-16">Contact Details</DashboardTableHead>
+                  <DashboardTableHead className="h-16">Service Goal</DashboardTableHead>
+                  <DashboardTableHead className="h-16">Status</DashboardTableHead>
+                  <DashboardTableHead position="last" className="h-16">Action</DashboardTableHead>
+                </DashboardTableHeaderRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
@@ -141,7 +171,10 @@ export default function AdminQuotesPage() {
                         </div>
                         <div>
                           <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{quote.organization_name}</p>
-                          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tight">{quote.organization_type}</p>
+                          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tight">
+                            {quote.organization_type}
+                            {quote.source ? ` · ${quote.source.replace(/_/g, " ")}` : ""}
+                          </p>
                         </div>
                       </div>
                     </TableCell>
@@ -181,8 +214,8 @@ export default function AdminQuotesPage() {
                                     <XCircle className="w-4 h-4" /> Delete Request
                                 </button>
                             }
-                            title="Purge Enterprise Inquiry?"
-                            description={`Are you sure you want to delete the inquiry from ${quote.organization_name}? This action will remove the lead from the enterprise pipeline permanently.`}
+                            title="Delete this quote request?"
+                            description={`Permanently remove the request from ${quote.organization_name}.`}
                             onConfirm={() => deleteQuote(quote.id)}
                           />
                         </DropdownMenuContent>
@@ -192,14 +225,13 @@ export default function AdminQuotesPage() {
                 ))}
               </TableBody>
             </Table>
-          </CardContent>
-        </Card>
+        </DashboardDataCard>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {isLoading ? (
             [1,2,3].map(i => <Skeleton key={i} className="h-64 rounded-xl" />)
           ) : filteredQuotes.length === 0 ? (
-            <div className="col-span-full py-16 text-center bg-transparent border-2 border-dashed border-border/60 rounded-[2.5rem]">
+            <div className={cn("col-span-full py-16 text-center", dashboardUi.table.emptyDashed)}>
               <FileText className="w-8 h-8 text-muted-foreground mx-auto mb-3 opacity-30" />
               <p className="text-[10px] font-bold tracking-normal text-muted-foreground">No enterprise inquiries found.</p>
             </div>
@@ -228,8 +260,8 @@ export default function AdminQuotesPage() {
                               <XCircle className="w-4 h-4" /> Delete Request
                           </button>
                       }
-                      title="Execute Deletion Protocol?"
-                      description={`Confirming this will purge the inquiry from ${quote.organization_name}. This is an irreversible removal from the Kuba enterprise registry.`}
+                      title="Delete this quote request?"
+                      description={`Permanently remove the request from ${quote.organization_name}.`}
                       onConfirm={() => deleteQuote(quote.id)}
                     />
                   </DropdownMenuContent>
@@ -280,6 +312,6 @@ export default function AdminQuotesPage() {
           ))}
         </div>
       )}
-    </div>
+    </DashboardPageContainer>
   );
 }

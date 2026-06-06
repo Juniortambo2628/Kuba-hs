@@ -1,28 +1,49 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from "react-leaflet";
-import { Star, MapPin, ChevronRight } from "lucide-react";
+import { Fragment, useEffect, useState } from "react";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  Circle,
+  useMap,
+} from "react-leaflet";
+import { ProviderMapPopup } from "@/components/marketplace";
+import { MapHoverPreviewOverlay } from "@/components/shared/MapHoverPreviewOverlay";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import type { ProviderSearchRowData } from "@/components/marketplace/ProviderSearchRow";
 
-// Fix for default marker icons in Leaflet with Next.js
-const DefaultIcon = L.icon({
+delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
 });
 
-L.Marker.prototype.options.icon = DefaultIcon;
+export type MapViewProvider = ProviderSearchRowData & {
+  latitude?: number | null;
+  longitude?: number | null;
+  rating?: number | null;
+  review_count?: number;
+  is_verified?: boolean;
+  starting_price?: number | string | null;
+  location_name?: string | null;
+  service_radius?: number | null;
+  services?: Array<{ name?: string; service?: { name?: string } | null }> | null;
+};
 
 interface MapViewProps {
   center?: [number, number];
   zoom?: number;
-  providers?: any[];
-  onMarkerClick?: (provider: any) => void;
+  providers?: MapViewProvider[];
+  onMarkerClick?: (provider: MapViewProvider) => void;
   showRadius?: boolean;
   userLocation?: [number, number];
+  className?: string;
+  minHeight?: number;
+  selectedProviderId?: string | number | null;
 }
 
 function ChangeView({ center, zoom }: { center: [number, number]; zoom: number }) {
@@ -33,88 +54,144 @@ function ChangeView({ center, zoom }: { center: [number, number]; zoom: number }
   return null;
 }
 
-export default function MapView({ 
-  center = [-1.2921, 36.8219], // Default to Nairobi, Kenya
+function MapResize() {
+  const map = useMap();
+  useEffect(() => {
+    const run = () => map.invalidateSize();
+    run();
+    const t1 = window.setTimeout(run, 100);
+    const t2 = window.setTimeout(run, 400);
+    return () => {
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+    };
+  }, [map]);
+  return null;
+}
+
+export default function MapView({
+  center = [-1.2921, 36.8219],
   zoom = 11,
   providers = [],
   onMarkerClick,
   showRadius = false,
-  userLocation
+  userLocation,
+  className,
+  minHeight = 280,
+  selectedProviderId = null,
 }: MapViewProps) {
   const [isMounted, setIsMounted] = useState(false);
+  const [hoveredProvider, setHoveredProvider] = useState<MapViewProvider | null>(null);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  if (!isMounted) return <div className="w-full h-full bg-gray-100 animate-pulse rounded-3xl" />;
+  if (!isMounted) {
+    return (
+      <div
+        className="w-full bg-muted animate-pulse rounded-3xl"
+        style={{ minHeight }}
+        aria-hidden
+      />
+    );
+  }
+
+  const mapClipClass =
+    className?.includes("rounded") === false
+      ? "absolute inset-0 overflow-hidden rounded-3xl"
+      : "absolute inset-0 overflow-hidden";
 
   return (
-    <div className="w-full h-full rounded-3xl overflow-hidden border border-gray-100 dark:border-white/5 shadow-inner relative z-10">
-      <MapContainer 
-        center={center} 
-        zoom={zoom} 
-        scrollWheelZoom={false}
-        className="w-full h-full"
-        maxBounds={[[-5.0, 33.0], [5.5, 42.0]]} // Kenya bounding box
-      >
-        <ChangeView center={center} zoom={zoom} />
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        
-        {userLocation && (
-            <Marker position={userLocation}>
-                <Popup>Your Location</Popup>
-            </Marker>
-        )}
+    <div
+      className="kuba-map-view relative w-full overflow-visible"
+      style={{ minHeight }}
+    >
+      <div className={mapClipClass}>
+        <MapContainer
+          center={center}
+          zoom={zoom}
+          scrollWheelZoom={false}
+          className="z-0 h-full w-full"
+          style={{ height: "100%", width: "100%", minHeight }}
+          maxBounds={[
+            [-5.0, 33.0],
+            [5.5, 42.0],
+          ]}
+        >
+          <ChangeView center={center} zoom={zoom} />
+          <MapResize />
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
 
-        {providers.map((provider) => {
-          if (!provider.latitude || !provider.longitude) return null;
-          
-          return (
-            <div key={provider.id}>
-                <Marker 
-                    position={[Number(provider.latitude), Number(provider.longitude)]}
-                    eventHandlers={{
-                        click: () => onMarkerClick?.(provider),
+          {userLocation && (
+            <Marker position={userLocation} zIndexOffset={900}>
+              <Popup>Your location</Popup>
+            </Marker>
+          )}
+
+          {providers.map((provider) => {
+            if (provider.latitude == null || provider.longitude == null) return null;
+
+            const position: [number, number] = [
+              Number(provider.latitude),
+              Number(provider.longitude),
+            ];
+            const isSelected =
+              selectedProviderId != null &&
+              String(provider.id) === String(selectedProviderId);
+
+            return (
+              <Fragment key={String(provider.id)}>
+                {showRadius && provider.service_radius ? (
+                  <Circle
+                    center={position}
+                    radius={provider.service_radius * 1000}
+                    pathOptions={{
+                      color: "#0ea5e9",
+                      fillColor: "#0ea5e9",
+                      fillOpacity: 0.1,
+                      interactive: false,
                     }}
+                  />
+                ) : null}
+                <Marker
+                  position={position}
+                  zIndexOffset={isSelected ? 1200 : 1000}
+                  eventHandlers={{
+                    mouseover: () => setHoveredProvider(provider),
+                    mouseout: () =>
+                      setHoveredProvider((current) =>
+                        current?.id === provider.id ? null : current
+                      ),
+                    click: (e) => {
+                      const marker = e.target as L.Marker;
+                      marker.openPopup();
+                      onMarkerClick?.(provider);
+                    },
+                  }}
                 >
-                    <Popup className="provider-map-popup">
-                        <div className="p-3 min-w-[200px] space-y-3">
-                            <div className="space-y-1">
-                                <h4 className="font-bold text-sm text-gray-900 leading-tight">{provider.business_name}</h4>
-                                <p className="text-[10px] text-gray-500 flex items-center gap-1">
-                                    <MapPin className="w-3 h-3" /> {provider.location_name}
-                                </p>
-                            </div>
-                            <div className="flex items-center justify-between border-t border-gray-100 pt-2">
-                                <div className="flex items-center gap-1 text-amber-500 font-bold text-xs">
-                                    <Star className="w-3.5 h-3.5 fill-amber-500" />
-                                    <span>{provider.rating || 'NEW'}</span>
-                                </div>
-                                <a 
-                                    href={`/providers/${provider.id}`}
-                                    className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline flex items-center gap-1"
-                                >
-                                    View Profile <ChevronRight className="w-3 h-3" />
-                                </a>
-                            </div>
-                        </div>
-                    </Popup>
+                  <Popup className="provider-map-popup" minWidth={240}>
+                    <ProviderMapPopup provider={provider} />
+                  </Popup>
                 </Marker>
-                {showRadius && provider.service_radius && (
-                    <Circle 
-                        center={[Number(provider.latitude), Number(provider.longitude)]}
-                        radius={provider.service_radius * 1000} // radius in meters
-                        pathOptions={{ color: 'skyBlue', fillColor: 'skyBlue', fillOpacity: 0.1 }}
-                    />
-                )}
-            </div>
-          );
-        })}
-      </MapContainer>
+              </Fragment>
+            );
+          })}
+
+          {hoveredProvider &&
+            hoveredProvider.latitude != null &&
+            hoveredProvider.longitude != null && (
+              <MapHoverPreviewOverlay
+                provider={hoveredProvider}
+                latitude={Number(hoveredProvider.latitude)}
+                longitude={Number(hoveredProvider.longitude)}
+              />
+            )}
+        </MapContainer>
+      </div>
     </div>
   );
 }

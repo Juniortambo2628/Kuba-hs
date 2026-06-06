@@ -57,4 +57,9 @@ class ProviderService extends Model implements \Spatie\MediaLibrary\HasMedia
     {
         return $this->belongsTo(Service::class);
     }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('services');
+    }
 }

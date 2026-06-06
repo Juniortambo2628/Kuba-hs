@@ -8,6 +8,11 @@ import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
 import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
 
 import axiosInstance from '@/lib/axios';
+import {
+    compressImageFile,
+    compressionPresetForCollection,
+    type ImageCompressionPreset,
+} from '@/lib/image-compression';
 
 // Register plugins
 registerPlugin(FilePondPluginImagePreview, FilePondPluginFileValidateType);
@@ -20,6 +25,7 @@ interface KubaFilePondProps {
     label?: string;
     allowMultiple?: boolean;
     acceptedFileTypes?: string[];
+    compressionPreset?: ImageCompressionPreset;
 }
 
 export function KubaFilePond({
@@ -30,7 +36,9 @@ export function KubaFilePond({
     label = 'Drag & Drop your image or <span class="filepond--label-action">Browse</span>',
     allowMultiple = false,
     acceptedFileTypes = ['image/*'],
+    compressionPreset,
 }: KubaFilePondProps) {
+    const preset = compressionPreset ?? compressionPresetForCollection(collection);
     const [files, setFiles] = useState<any[]>([]);
 
     return (
@@ -41,14 +49,26 @@ export function KubaFilePond({
                 allowMultiple={allowMultiple}
                 maxFiles={5}
                 server={{
-                    process: (fieldName, file, metadata, load, error, progress, abort, transfer, options) => {
+                    process: (fieldName, file, metadata, load, error, progress, abort) => {
+                        const controller = new AbortController();
+
+                        (async () => {
+                        const source =
+                            file instanceof File
+                                ? file
+                                : new File([file], (file as File).name || 'upload.jpg', {
+                                      type: file.type || 'image/jpeg',
+                                  });
+                        const uploadFile = await compressImageFile(source, { preset });
+
                         const formData = new FormData();
-                        formData.append('file', file);
+                        formData.append('file', uploadFile);
                         formData.append('model_type', modelType);
                         formData.append('model_id', modelId);
                         formData.append('collection', collection);
 
                         axiosInstance.post('/api/media/upload', formData, {
+                            signal: controller.signal,
                             onUploadProgress: (e) => {
                                 progress(true, e.loaded, e.total || 1);
                             },
@@ -60,9 +80,11 @@ export function KubaFilePond({
                         .catch((err) => {
                             error(err.message);
                         });
+                        })();
 
                         return {
                             abort: () => {
+                                controller.abort();
                                 abort();
                             },
                         };

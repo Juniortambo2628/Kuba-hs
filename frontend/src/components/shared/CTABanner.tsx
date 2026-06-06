@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { AppButton, PageContainer } from "@/components/shared/ui";
 
 interface CTABannerProps {
   title: string;
@@ -22,7 +22,7 @@ export function CTABanner({
   bgColor = "bg-primary",
 }: CTABannerProps) {
   return (
-    <section className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <PageContainer as="section" section>
       <div className={`p-12 md:p-20 ${bgColor} rounded-[3rem] text-white overflow-hidden relative`}>
         <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-white/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
         <div className="relative z-10 max-w-2xl space-y-8 text-center md:text-left">
@@ -31,12 +31,14 @@ export function CTABanner({
           </h2>
           <p className="text-lg text-white/70 font-medium">{subtitle}</p>
           <div className="flex flex-wrap items-center gap-6 justify-center md:justify-start">
-            <Button
+            <AppButton
               asChild
-              className="bg-white text-primary hover:bg-white/90 h-14 px-8 rounded-2xl font-bold tracking-tight"
+              tone="secondary"
+              scale="lg"
+              className="!bg-white !text-primary hover:!bg-white/90 h-14 border-0"
             >
               <Link href={buttonHref}>{buttonText}</Link>
-            </Button>
+            </AppButton>
             {footerText && (
               <span className="text-sm font-bold opacity-60 tracking-tight">
                 {footerText}
@@ -45,6 +47,6 @@ export function CTABanner({
           </div>
         </div>
       </div>
-    </section>
+    </PageContainer>
   );
 }

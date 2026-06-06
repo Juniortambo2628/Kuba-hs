@@ -1,20 +1,35 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
+import {
+  DashboardDataCard,
+  DashboardTableHead,
+  DashboardTableHeaderRow,
+} from "@/components/shared/DashboardTable";
+import { dashboardUi } from "@/lib/dashboard-ui";
+
+import { Suspense, useState } from "react";
+import { useSearchState } from "@/hooks/useSearchState";
+import { DashboardSuspenseFallback } from "@/components/shared/DashboardSuspenseFallback";
 import axiosInstance from "@/lib/axios";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Edit, Trash2, CheckCircle, XCircle, LayoutGrid, List, MessageSquare, Tag, Eye, EyeOff } from "lucide-react";
+import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
+import { Plus, Edit, Trash2, LayoutGrid, List, MessageSquare, Tag, Eye, EyeOff, ChevronUp, ChevronDown, GripVertical } from "lucide-react";
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  DropResult,
+} from "react-beautiful-dnd";
+import { getMediaUrl } from "@/lib/utils";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
-import { DataToolbar } from "@/components/shared/DataToolbar";
+import { DashboardListToolbar } from "@/components/shared/DashboardListToolbar";
+import { FaqFormDialog } from "@/components/admin/FaqFormDialog";
 import { Badge } from "@/components/ui/badge";
 import { useApiData } from "@/hooks/useApiData";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
 import { toast } from "sonner";
-import { DashboardImageUpload } from "@/components/shared/DashboardImageUpload";
 import Image from "next/image";
 
 interface FAQ {
@@ -26,33 +41,13 @@ interface FAQ {
   order: number;
 }
 
-export default function FAQManagement() {
+function FAQManagementContent() {
   const { data: faqs, isLoading, refetch: fetchFaqs, setData: setFaqs } = useApiData<FAQ[]>('/api/admin/faqs', { initialData: [] });
   
-  const [isEditing, setIsEditing] = useState<FAQ | null>(null);
-  const [formData, setFormData] = useState({ question: '', answer: '', avatar: '', is_active: true, order: 0 });
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  
-  const [search, setSearch] = useState("");
-  const [viewMode, setViewMode] = useState<'grid'|'list'>('list');
-  const [statusFilter, setStatusFilter] = useState("");
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      if (isEditing) {
-        await axiosInstance.put(`/api/admin/faqs/${isEditing.id}`, formData);
-      } else {
-        await axiosInstance.post('/api/admin/faqs', formData);
-      }
-      setIsModalOpen(false);
-      setIsEditing(null);
-      setFormData({ question: '', answer: '', avatar: '', is_active: true, order: 0 });
-      fetchFaqs();
-    } catch (err) {
-      console.error("Failed to save FAQ", err);
-    }
-  };
+  const [editingFaq, setEditingFaq] = useState<FAQ | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const { search, status: statusFilter, setStatus: setStatusFilter } = useSearchState();
+  const [viewMode, setViewMode] = useState<'grid'|'list'|'order'>('list');
 
   const handleDelete = async (id: number) => {
     try {
@@ -62,6 +57,37 @@ export default function FAQManagement() {
     } catch (err) {
       toast.error("Deletion failed");
     }
+  };
+
+  const reorderFaqs = async (items: { id: number; order: number }[]) => {
+    try {
+      await axiosInstance.post("/api/admin/faqs/reorder", { items });
+      toast.success("FAQ order updated");
+      fetchFaqs();
+    } catch {
+      toast.error("Failed to reorder FAQs");
+    }
+  };
+
+  const onDragEnd = async (result: DropResult) => {
+    if (!result.destination) return;
+    const sorted = [...faqs].sort((a, b) => a.order - b.order || a.id - b.id);
+    const itemsCopy = Array.from(sorted);
+    const [reordered] = itemsCopy.splice(result.source.index, 1);
+    itemsCopy.splice(result.destination.index, 0, reordered);
+    const payload = itemsCopy.map((f, i) => ({ id: f.id, order: i }));
+    setFaqs(itemsCopy.map((f, i) => ({ ...f, order: i })));
+    await reorderFaqs(payload);
+  };
+
+  const moveFaq = async (faqId: number, direction: "up" | "down") => {
+    const sorted = [...faqs].sort((a, b) => a.order - b.order || a.id - b.id);
+    const idx = sorted.findIndex((f) => f.id === faqId);
+    const target = direction === "up" ? idx - 1 : idx + 1;
+    if (target < 0 || target >= sorted.length) return;
+    const next = [...sorted];
+    [next[idx], next[target]] = [next[target], next[idx]];
+    await reorderFaqs(next.map((f, i) => ({ id: f.id, order: i })));
   };
 
   const handleToggleActive = async (faq: FAQ) => {
@@ -74,31 +100,39 @@ export default function FAQManagement() {
   };
 
   const startEdit = (faq: FAQ) => {
-    setIsEditing(faq);
-    setFormData({ question: faq.question, answer: faq.answer, avatar: faq.avatar || '', is_active: faq.is_active, order: faq.order });
-    setIsModalOpen(true);
+    setEditingFaq(faq);
+    setDialogOpen(true);
   };
 
   // derived data
-  const filteredFaqs = faqs.filter(faq => {
-      const matchesSearch = faq.question.toLowerCase().includes(search.toLowerCase()) || faq.answer.toLowerCase().includes(search.toLowerCase());
-      const matchesStatus = statusFilter === "" || (statusFilter === "active" ? faq.is_active : !faq.is_active);
+  const filteredFaqs = faqs
+    .filter((faq) => {
+      const matchesSearch =
+        faq.question.toLowerCase().includes(search.toLowerCase()) ||
+        faq.answer.toLowerCase().includes(search.toLowerCase());
+      const matchesStatus =
+        statusFilter === "" || (statusFilter === "active" ? faq.is_active : !faq.is_active);
       return matchesSearch && matchesStatus;
-  });
+    })
+    .sort((a, b) => a.order - b.order || a.id - b.id);
 
   const activeCount = faqs.filter(f => f.is_active).length;
 
   return (
-    <div className="max-w-[1400px] mx-auto space-y-10 pb-12">
+    <DashboardPageContainer className="space-y-10">
       <DashboardPageHeader 
         title="FAQ Configuration" 
         subtitle="Manage the Frequently Asked Questions displayed on the global landing page."
-      />
+      >
+        <Button onClick={() => { setEditingFaq(null); setDialogOpen(true); }} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl h-11 px-6 shadow-md">
+          <Plus className="w-4 h-4 mr-2" /> Add FAQ
+        </Button>
+      </DashboardPageHeader>
 
       {/* Top Value Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="border border-border group border-none">
-              <CardContent className="p-8 flex items-center justify-between">
+              <CardContent className="p-4 md:p-5 flex items-center justify-between">
                   <div className="space-y-3">
                       <p className="text-[10px] font-bold text-muted-foreground">Total FAQs</p>
                       <div className="flex items-center gap-2">
@@ -112,7 +146,7 @@ export default function FAQManagement() {
               </CardContent>
           </Card>
           <Card className="border border-border group border-none">
-              <CardContent className="p-8 flex items-center justify-between">
+              <CardContent className="p-4 md:p-5 flex items-center justify-between">
                   <div className="space-y-3">
                       <p className="text-[10px] font-bold text-muted-foreground">Published Active</p>
                       <div className="flex items-center gap-2">
@@ -126,7 +160,7 @@ export default function FAQManagement() {
               </CardContent>
           </Card>
           <Card className="border border-border group border-none">
-              <CardContent className="p-8 flex items-center justify-between">
+              <CardContent className="p-4 md:p-5 flex items-center justify-between">
                   <div className="space-y-3">
                       <p className="text-[10px] font-bold text-muted-foreground">Hidden Drafts</p>
                       <div className="flex items-center gap-2">
@@ -141,50 +175,94 @@ export default function FAQManagement() {
           </Card>
       </div>
 
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 px-1">
-          <div>
-              <h2 className="text-2xl font-bold text-foreground tracking-tight">Question Registry</h2>
-              <p className="text-sm font-bold text-muted-foreground mt-1">Add or modify knowledge base questions.</p>
-          </div>
-          <Button onClick={() => { setIsEditing(null); setFormData({ question: '', answer: '', avatar: '', is_active: true, order: faqs.length }); setIsModalOpen(true); }} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl h-12 px-8 shadow-md">
-              <Plus className="w-4 h-4 mr-2" /> Add FAQ Entry
-          </Button>
+      <div className="flex flex-wrap items-center gap-3">
+        <Button
+          type="button"
+          variant={viewMode === "order" ? "default" : "outline"}
+          className="rounded-xl h-10 text-xs font-bold"
+          onClick={() => setViewMode(viewMode === "order" ? "list" : "order")}
+        >
+          <GripVertical className="w-4 h-4 mr-1" />
+          {viewMode === "order" ? "Exit reorder" : "Drag to reorder"}
+        </Button>
       </div>
 
-      <DataToolbar 
-        search={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Locate questions or answers..."
-        viewMode={viewMode}
-        onViewChange={setViewMode}
-        filters={[
-          {
-            id: 'status',
-            label: 'Visibility Status',
-            value: statusFilter,
-            onChange: setStatusFilter,
-            options: [
-              { label: 'All Items', value: '' },
-              { label: 'Published Only', value: 'active' },
-              { label: 'Hidden Only', value: 'hidden' }
-            ]
-          }
-        ]}
-      />
+      {viewMode === "order" ? (
+        <DragDropContext onDragEnd={onDragEnd}>
+          <Droppable droppableId="faqs-order">
+            {(provided) => (
+              <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3">
+                {[...faqs]
+                  .sort((a, b) => a.order - b.order || a.id - b.id)
+                  .map((faq, index) => (
+                    <Draggable key={faq.id} draggableId={String(faq.id)} index={index}>
+                      {(dragProvided) => (
+                        <Card
+                          ref={dragProvided.innerRef}
+                          {...dragProvided.draggableProps}
+                          className="border border-border"
+                        >
+                          <CardContent className="p-4 flex items-center gap-4">
+                            <div
+                              {...dragProvided.dragHandleProps}
+                              className="cursor-grab text-muted-foreground p-2"
+                            >
+                              <GripVertical className="w-5 h-5" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-bold truncate">{faq.question}</p>
+                              <p className="text-xs text-muted-foreground line-clamp-1">{faq.answer}</p>
+                            </div>
+                            <span className="text-xs font-mono text-muted-foreground">#{faq.order}</span>
+                          </CardContent>
+                        </Card>
+                      )}
+                    </Draggable>
+                  ))}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
+      ) : (
+      <>
+      {search && (
+        <p className="text-xs text-muted-foreground">Results for &quot;{search}&quot;</p>
+      )}
+
+      {(viewMode === "grid" || viewMode === "list") && (
+        <DashboardListToolbar
+          hint="Use ⌘K Quick Jump to search FAQs"
+          viewMode={viewMode}
+          onViewChange={(m) => setViewMode(m as "grid" | "list")}
+          filters={[
+            {
+              id: "status",
+              label: "Visibility",
+              value: statusFilter || "all",
+              onChange: (val) => setStatusFilter(val === "all" ? "" : val),
+              options: [
+                { label: "All Items", value: "all" },
+                { label: "Published Only", value: "active" },
+                { label: "Hidden Only", value: "hidden" },
+              ],
+            },
+          ]}
+        />
+      )}
 
       {viewMode === 'list' ? (
-        <Card className="border border-border/40 overflow-hidden border-none shadow-sm bg-card/50 backdrop-blur-md">
-          <CardContent className="p-0">
+        <DashboardDataCard>
             <Table>
               <TableHeader>
-                <TableRow className="hover:bg-transparent border-border/50">
-                  <TableHead className="pl-10 h-16 text-[11px] font-bold text-muted-foreground w-20 text-center">Order</TableHead>
-                  <TableHead className="h-16 text-[11px] font-bold text-muted-foreground w-16">Avatar</TableHead>
-                  <TableHead className="h-16 text-[11px] font-bold text-muted-foreground w-1/3">Core Question</TableHead>
-                  <TableHead className="h-16 text-[11px] font-bold text-muted-foreground">Answer Block</TableHead>
-                  <TableHead className="h-16 text-[11px] font-bold text-muted-foreground text-center">Status</TableHead>
-                  <TableHead className="h-16 pr-10 text-right text-[11px] font-bold text-muted-foreground">Controls</TableHead>
-                </TableRow>
+                <DashboardTableHeaderRow>
+                  <DashboardTableHead position="first" className="!pl-10 h-16 w-20 text-center">Order</DashboardTableHead>
+                  <DashboardTableHead className="h-16 w-16">Avatar</DashboardTableHead>
+                  <DashboardTableHead className="h-16 w-1/3">Core Question</DashboardTableHead>
+                  <DashboardTableHead className="h-16">Answer Block</DashboardTableHead>
+                  <DashboardTableHead className="h-16 text-center">Status</DashboardTableHead>
+                  <DashboardTableHead position="last" className="h-16 text-right">Controls</DashboardTableHead>
+                </DashboardTableHeaderRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
@@ -203,11 +281,37 @@ export default function FAQManagement() {
                 ) : (
                   filteredFaqs.map((faq) => (
                     <TableRow key={faq.id} className="hover:bg-muted/50 transition-colors border-border group">
-                      <TableCell className="pl-10 text-center py-6 font-bold text-muted-foreground text-xs">{faq.order}</TableCell>
+                      <TableCell className="pl-10 text-center py-6">
+                        <div className="flex flex-col items-center gap-1">
+                          <span className="font-bold text-muted-foreground text-xs">{faq.order}</span>
+                          <div className="flex flex-col gap-0.5">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6"
+                              onClick={() => moveFaq(faq.id, "up")}
+                              aria-label="Move up"
+                            >
+                              <ChevronUp className="w-3.5 h-3.5" />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6"
+                              onClick={() => moveFaq(faq.id, "down")}
+                              aria-label="Move down"
+                            >
+                              <ChevronDown className="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
+                        </div>
+                      </TableCell>
                       <TableCell className="py-6">
                         <div className="w-10 h-10 rounded-lg overflow-hidden bg-muted flex-shrink-0">
                           {faq.avatar ? (
-                            <Image src={faq.avatar} alt="Avatar" width={40} height={40} className="object-cover" />
+                            <Image src={getMediaUrl(faq.avatar, "avatar")} alt="Avatar" width={40} height={40} className="object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-muted-foreground/40">N/A</div>
                           )}
@@ -249,12 +353,11 @@ export default function FAQManagement() {
                 )}
               </TableBody>
             </Table>
-          </CardContent>
-        </Card>
+        </DashboardDataCard>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredFaqs.length === 0 ? (
-                <div className="col-span-full h-80 flex flex-col items-center justify-center gap-4 text-muted-foreground border border-dashed border-border/60 rounded-[2.5rem] bg-muted/10">
+                <div className={`col-span-full h-80 ${dashboardUi.table.emptyDashed}`}>
                     <MessageSquare className="h-16 w-16 opacity-10" />
                     <p className="text-xs font-bold text-muted-foreground">No templates matching configuration</p>
                 </div>
@@ -273,7 +376,7 @@ export default function FAQManagement() {
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-primary border border-border overflow-hidden">
                                     {faq.avatar ? (
-                                        <Image src={faq.avatar} alt="Avatar" width={40} height={40} className="object-cover" />
+                                        <Image src={getMediaUrl(faq.avatar, "avatar")} alt="Avatar" width={40} height={40} className="object-cover" />
                                     ) : (
                                         <Tag className="w-4 h-4" />
                                     )}
@@ -309,52 +412,34 @@ export default function FAQManagement() {
             ))}
         </div>
       )}
-
-      {/* Entry Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
-          <div className="bg-white dark:bg-card p-8 rounded-3xl w-full max-w-2xl shadow-2xl border border-border relative animate-in fade-in zoom-in-95 duration-200">
-            <h3 className="text-xl font-bold mb-6 text-foreground tracking-tight">{isEditing ? 'Modify FAQ Entry' : 'Create New FAQ Entry'}</h3>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label className="text-xs font-bold text-muted-foreground mb-1.5 block">Question Context</label>
-                <Input required value={formData.question} onChange={e => setFormData({...formData, question: e.target.value})} placeholder="e.g. How do I book a service?" className="rounded-xl h-12 border-border/60 bg-muted/30 focus:bg-white transition-colors font-semibold" />
-              </div>
-              <DashboardImageUpload 
-                value={formData.avatar}
-                onChange={(url) => setFormData({...formData, avatar: url})}
-                type="avatar"
-                label="Person Avatar (Optional)"
-              />
-              <div>
-                <label className="text-xs font-bold text-muted-foreground mb-1.5 block">Detailed Resolution / Answer</label>
-                <Textarea required value={formData.answer} onChange={e => setFormData({...formData, answer: e.target.value})} placeholder="Provide the resolution block..." className="rounded-xl min-h-[160px] resize-none border-border/60 bg-muted/30 focus:bg-white transition-colors" />
-              </div>
-              <div className="flex flex-col sm:flex-row items-center gap-6 p-4 bg-muted/30 rounded-2xl border border-border/60">
-                <div className="w-full sm:w-1/3">
-                  <label className="text-xs font-bold text-muted-foreground mb-1.5 block">Registry Priority (Order)</label>
-                  <Input type="number" value={formData.order} onChange={e => setFormData({...formData, order: parseInt(e.target.value)})} className="rounded-xl h-11 w-full bg-white text-center font-bold" />
-                </div>
-                <div className="flex-1 w-full flex items-center gap-3 pt-6 sm:pt-[22px]">
-                  <div className="relative inline-flex items-center cursor-pointer" onClick={() => setFormData({...formData, is_active: !formData.is_active})}>
-                     <div className={`w-11 h-6 rounded-full transition-colors ${formData.is_active ? 'bg-primary' : 'bg-border'}`}>
-                         <div className={`w-4 h-4 rounded-full bg-white absolute top-1 transition-transform ${formData.is_active ? 'left-6' : 'left-1'}`} />
-                     </div>
-                  </div>
-                  <div className="flex flex-col">
-                     <span className="text-sm font-bold text-foreground leading-tight">Published Online</span>
-                     <span className="text-[10px] font-bold text-muted-foreground">Item actively visible to platform visitors</span>
-                  </div>
-                </div>
-              </div>
-              <div className="flex justify-end gap-3 pt-4 border-t border-border mt-8">
-                <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)} className="rounded-xl font-bold h-12 px-6">Cancel Action</Button>
-                <Button type="submit" className="rounded-xl font-bold px-8 h-12 shadow-lg shadow-primary/20">{isEditing ? 'Commit Changes' : 'Publish Entry'}</Button>
-              </div>
-            </form>
-          </div>
-        </div>
+      </>
       )}
-    </div>
+
+      <FaqFormDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        editingId={editingFaq?.id ?? null}
+        initial={
+          editingFaq
+            ? {
+                question: editingFaq.question,
+                answer: editingFaq.answer,
+                avatar: editingFaq.avatar || "",
+                is_active: editingFaq.is_active,
+                order: editingFaq.order,
+              }
+            : { order: faqs.length }
+        }
+        onSuccess={fetchFaqs}
+      />
+    </DashboardPageContainer>
+  );
+}
+
+export default function FAQManagement() {
+  return (
+    <Suspense fallback={<DashboardSuspenseFallback />}>
+      <FAQManagementContent />
+    </Suspense>
   );
 }

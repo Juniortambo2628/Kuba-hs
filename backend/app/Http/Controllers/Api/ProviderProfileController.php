@@ -11,7 +11,7 @@ class ProviderProfileController extends Controller
     public function update(Request $request)
     {
         $user = Auth::user();
-        $provider = $user->provider;
+        $provider = $user->ensureProviderProfile();
 
         if (!$provider) {
             return response()->json(['error' => 'Provider profile not found'], 404);
@@ -49,9 +49,12 @@ class ProviderProfileController extends Controller
             $user->update(['phone' => $request->phone]);
         }
 
+        $provider->refresh();
+        $user->refresh();
+
         return response()->json([
             'message' => 'Profile updated successfully',
-            'profile' => $provider,
+            'profile' => $provider->toProfileEditorArray($user),
         ]);
     }
 }

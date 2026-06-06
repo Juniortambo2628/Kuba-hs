@@ -38,32 +38,14 @@ import { CookieConsent } from "@/components/shared/CookieConsent";
 import { LegalModals } from "@/components/shared/LegalModals";
 import { DynamicFavicon } from "@/components/shared/DynamicFavicon";
 
-async function fetchGlobalSettings() {
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-    
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/settings`, { 
-      signal: controller.signal,
-      next: { revalidate: 3600 } 
-    });
-    
-    clearTimeout(timeoutId);
-    
-    const data = await res.json();
-    return data.settings || {};
-  } catch (error) {
-    console.error("Failed to fetch global settings for SSR:", error);
-    return {};
-  }
-}
+import { getSSRSettings } from "@/lib/ssr-settings";
 
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const initialSettings = await fetchGlobalSettings();
+  const initialSettings = await getSSRSettings();
 
   return (
     <html lang="en" suppressHydrationWarning>

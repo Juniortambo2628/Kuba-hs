@@ -41,4 +41,18 @@ class PaymentController extends Controller
             'stats' => $stats,
         ]);
     }
+
+    public function show(Payment $payment)
+    {
+        $payment->load([
+            'customer',
+            'provider.user',
+            'booking.service',
+            'booking.address',
+        ]);
+
+        return response()->json([
+            'payment' => new PaymentResource($payment),
+        ]);
+    }
 }

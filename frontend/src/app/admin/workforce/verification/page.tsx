@@ -2,8 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import axiosInstance from "@/lib/axios";
-import { Card, CardContent } from "@/components/ui/card";
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
+import { Table, TableHeader, TableBody, TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { 
   CheckCircle2, 
@@ -39,11 +38,22 @@ import {
   DialogTitle, 
   DialogFooter 
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
+import { FieldLabel } from "@/components/shared/ui/FilterControls";
 import { Button } from "@/components/ui/button";
+import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
+import {
+  DashboardDataCard,
+  DashboardTableHead,
+  DashboardTableHeaderRow,
+} from "@/components/shared/DashboardTable";
+import type { WorkforceProposal } from "@/types/admin";
+import { dashboardUi } from "@/lib/dashboard-ui";
 
 function AdminVerificationContent() {
-  const { data: proposals, isLoading, refetch: fetchProposals } = useApiData<any[]>("/api/admin/workforce/verification", { initialData: [] });
+  const { data: proposals, isLoading, refetch: fetchProposals } = useApiData<WorkforceProposal[]>(
+    "/api/admin/workforce/verification",
+    { initialData: [] }
+  );
   const [search, setSearch] = useState("");
   const [rejectionData, setRejectionData] = useState<{ id: number, reason: string } | null>(null);
 
@@ -75,7 +85,7 @@ function AdminVerificationContent() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 pb-12">
+    <DashboardPageContainer width="default">
       <DashboardPageHeader 
         title="Workforce Integrity" 
         subtitle="Review and validate provider credentials to maintain platform excellence."
@@ -98,17 +108,16 @@ function AdminVerificationContent() {
         </div>
       </div>
 
-      <Card className="border border-border overflow-hidden bg-card/50 backdrop-blur-md shadow-sm rounded-3xl">
-        <CardContent className="p-0">
+      <DashboardDataCard className="rounded-3xl">
           <Table>
             <TableHeader>
-              <TableRow className="hover:bg-transparent border-border bg-muted/20">
-                <TableHead className="pl-8 h-12 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Merchant Identity</TableHead>
-                <TableHead className="h-12 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Asset Class</TableHead>
-                <TableHead className="h-12 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Submission Date</TableHead>
-                <TableHead className="h-12 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Verification Status</TableHead>
-                <TableHead className="pr-8 text-right h-12 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Operations</TableHead>
-              </TableRow>
+              <DashboardTableHeaderRow>
+                <DashboardTableHead position="first" className="!pl-8 h-12 text-[10px] font-black uppercase tracking-widest">Merchant Identity</DashboardTableHead>
+                <DashboardTableHead className="h-12 text-[10px] font-black uppercase tracking-widest">Asset Class</DashboardTableHead>
+                <DashboardTableHead className="h-12 text-[10px] font-black uppercase tracking-widest">Submission Date</DashboardTableHead>
+                <DashboardTableHead className="h-12 text-[10px] font-black uppercase tracking-widest">Verification Status</DashboardTableHead>
+                <DashboardTableHead position="last" className="h-12 text-right text-[10px] font-black uppercase tracking-widest">Operations</DashboardTableHead>
+              </DashboardTableHeaderRow>
             </TableHeader>
             <TableBody>
               {filtered.length === 0 ? (
@@ -166,7 +175,7 @@ function AdminVerificationContent() {
                               </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-48 rounded-xl p-1.5">
-                              <DropdownMenuLabel className="text-[10px] font-black text-muted-foreground uppercase tracking-widest p-2">Review Action</DropdownMenuLabel>
+                              <DropdownMenuLabel className={dashboardUi.dropdown.label}>Review Action</DropdownMenuLabel>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem onClick={() => handleUpdateStatus(p.id, 'approved')} className="rounded-lg focus:bg-emerald-50 focus:text-emerald-600 cursor-pointer py-2.5 font-bold text-xs gap-3">
                                 <CheckCircle2 className="w-4 h-4" /> Approve Credential
@@ -183,8 +192,7 @@ function AdminVerificationContent() {
               ))}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+      </DashboardDataCard>
       
       <div className="bg-primary/5 border border-primary/10 rounded-3xl p-8 flex items-center gap-6">
           <div className="w-14 h-14 rounded-2xl bg-primary text-white flex items-center justify-center shrink-0 shadow-lg shadow-primary/20">
@@ -206,7 +214,7 @@ function AdminVerificationContent() {
           </DialogHeader>
           <div className="py-6 space-y-4">
             <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Cause for Declining Verification</Label>
+              <FieldLabel>Cause for Declining Verification</FieldLabel>
               <textarea 
                 className="w-full min-h-[100px] p-4 rounded-xl bg-muted/50 border border-border font-medium text-sm focus:ring-1 focus:ring-primary outline-none resize-none"
                 placeholder="Explain the document discrepancy..."
@@ -235,7 +243,7 @@ function AdminVerificationContent() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </DashboardPageContainer>
   );
 }
 

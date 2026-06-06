@@ -19,7 +19,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuCheckboxItem
 } from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
+import { AppBadge } from "@/components/shared/ui/AppBadge";
 
 interface FilterOption {
   label: string;
@@ -94,9 +94,9 @@ export function DataToolbar({
                 <Filter className="w-4 h-4 text-muted-foreground" />
                 <span className="hidden sm:inline">Filter</span>
                 {activeFiltersCount > 0 && (
-                  <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[10px] rounded-sm">
+                  <AppBadge semantic="count" className="ml-1">
                     {activeFiltersCount}
-                  </Badge>
+                  </AppBadge>
                 )}
               </Button>
             </DropdownMenuTrigger>

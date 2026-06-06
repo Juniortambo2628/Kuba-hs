@@ -1,6 +1,16 @@
 "use client";
 
+import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
+
 import { useState } from "react";
+import { useApiData } from "@/hooks/useApiData";
+import { extractApiList } from "@/lib/api-response";
+import {
+  DashboardDataCard,
+  DashboardTableHead,
+  DashboardTableHeaderRow,
+} from "@/components/shared/DashboardTable";
+import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { 
   FileText, 
   Download, 
@@ -8,14 +18,13 @@ import {
   Briefcase, 
   DollarSign, 
   Loader2,
-  Calendar,
-  AlertCircle,
   CheckCircle2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { AppPill } from "@/components/shared/ui";
 import axiosInstance from "@/lib/axios";
 
 const REPORT_TYPES = [
@@ -45,8 +54,21 @@ const REPORT_TYPES = [
   }
 ];
 
+interface ExportLogRow {
+  id: string;
+  report_type: string;
+  ip_address?: string;
+  created_at: string;
+  user?: { first_name?: string; last_name?: string; email?: string };
+}
+
 export default function AdminReportsPage() {
   const [downloading, setDownloading] = useState<string | null>(null);
+  const { data: historyEnvelope, isLoading: historyLoading, refetch: refetchHistory } = useApiData<unknown>(
+    "/api/admin/reports/history",
+    { preserveEnvelope: true, initialData: null }
+  );
+  const exportHistory = extractApiList<ExportLogRow>(historyEnvelope);
 
   const handleDownload = async (type: string) => {
     setDownloading(type);
@@ -65,6 +87,7 @@ export default function AdminReportsPage() {
       link.remove();
       
       toast.success(`${type.charAt(0).toUpperCase() + type.slice(1)} report downloaded.`);
+      refetchHistory();
     } catch (error) {
       console.error("Export failed", error);
       toast.error("Failed to generate report.");
@@ -74,7 +97,7 @@ export default function AdminReportsPage() {
   };
 
   return (
-    <div className="max-w-[1400px] mx-auto space-y-10 pb-12">
+    <DashboardPageContainer className="space-y-10">
       {/* Standard Dashboard Header */}
       <DashboardPageHeader 
         title="Intelligence & Data Analytics" 
@@ -116,24 +139,65 @@ export default function AdminReportsPage() {
         ))}
       </div>
 
-      {/* Audit Log / History placeholder */}
-      <Card className="border border-dashed border-border/60 bg-muted/20 rounded-[2.5rem]">
-        <CardContent className="p-12 flex flex-col items-center text-center space-y-5">
-          <div className="w-20 h-20 rounded-[2rem] bg-white flex items-center justify-center text-muted-foreground/40 border border-border shadow-inner">
-            <AlertCircle className="w-10 h-10 opacity-30" />
-          </div>
-          <div className="max-w-md space-y-2">
-            <h3 className="text-lg font-bold text-foreground tracking-tight">Export Governance & Security</h3>
-            <p className="text-[11px] font-bold text-muted-foreground leading-relaxed">
-              All high-fidelity data exports are strictly logged for enterprise security auditing. Handle downloaded datasets in accordance with institutional data privacy protocols and platform governance.
-            </p>
-          </div>
-          <div className="flex items-center gap-2 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-4 py-1.5 rounded-xl border border-emerald-100 shadow-sm">
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-bold text-foreground tracking-tight flex items-center gap-2">
+            <FileText className="w-5 h-5 text-primary" />
+            Export audit log
+          </h3>
+          <AppPill variant="accent" className="!bg-emerald-50 !text-emerald-600 !border-emerald-100">
             <CheckCircle2 className="w-4 h-4" />
-            Governance System Audited
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+            Live governance trail
+          </AppPill>
+        </div>
+        <p className="text-xs text-muted-foreground max-w-2xl">
+          Each CSV export is recorded with admin user, report type, IP address, and timestamp.
+        </p>
+        <DashboardDataCard>
+          <Table>
+            <TableHeader>
+              <DashboardTableHeaderRow>
+                <DashboardTableHead position="first">When</DashboardTableHead>
+                <DashboardTableHead>Admin</DashboardTableHead>
+                <DashboardTableHead>Report</DashboardTableHead>
+                <DashboardTableHead position="last">IP</DashboardTableHead>
+              </DashboardTableHeaderRow>
+            </TableHeader>
+            <TableBody>
+              {historyLoading ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="py-12 text-center">
+                    <Loader2 className="w-6 h-6 animate-spin mx-auto text-muted-foreground" />
+                  </TableCell>
+                </TableRow>
+              ) : exportHistory.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="py-12 text-center text-sm text-muted-foreground">
+                    No exports logged yet. Run an export above to create the first entry.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                exportHistory.map((row) => (
+                  <TableRow key={row.id}>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {new Date(row.created_at).toLocaleString()}
+                    </TableCell>
+                    <TableCell className="text-sm font-medium">
+                      {row.user
+                        ? `${row.user.first_name ?? ""} ${row.user.last_name ?? ""}`.trim() || row.user.email
+                        : "—"}
+                    </TableCell>
+                    <TableCell className="capitalize text-sm">{row.report_type}</TableCell>
+                    <TableCell className="text-xs font-mono text-muted-foreground">
+                      {row.ip_address ?? "—"}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </DashboardDataCard>
+      </div>
+    </DashboardPageContainer>
   );
 }

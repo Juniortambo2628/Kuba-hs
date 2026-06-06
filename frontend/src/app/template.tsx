@@ -5,6 +5,12 @@ import { usePathname } from "next/navigation";
 
 export default function Template({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const skipTransition =
+    pathname?.startsWith("/dashboard") || pathname?.startsWith("/admin");
+
+  if (skipTransition) {
+    return <>{children}</>;
+  }
 
   return (
     <AnimatePresence mode="wait">

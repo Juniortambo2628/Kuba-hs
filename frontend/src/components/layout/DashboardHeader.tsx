@@ -17,6 +17,8 @@ import { UserAccountDropdown } from "@/components/shared/UserAccountDropdown";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { GlobalSearch } from "@/components/shared/GlobalSearch";
 import { cn } from "@/lib/utils";
+import { dashboardUi } from "@/lib/dashboard-ui";
+import { AppBadge } from "@/components/shared/ui/AppBadge";
 import { Search, Command } from "lucide-react";
 import { toast } from "sonner";
 
@@ -65,9 +67,9 @@ export function DashboardHeader({ isAdmin = false }: DashboardHeaderProps) {
         <SidebarTrigger className="lg:hidden text-gray-500 hover:text-foreground" />
         {isAdmin && (
           <div className="hidden sm:flex items-center gap-2 text-muted-foreground">
-            <span className="text-[11px] font-bold tracking-tight uppercase">Admin Portal</span>
+            <span className={dashboardUi.chrome.portalLabel}>Admin Portal</span>
             <span className="text-border">|</span>
-            <span className="text-[11px] font-bold text-primary tracking-tight uppercase">Control Center</span>
+            <span className={dashboardUi.chrome.portalAccent}>Control Center</span>
           </div>
         )}
       </div>
@@ -80,13 +82,13 @@ export function DashboardHeader({ isAdmin = false }: DashboardHeaderProps) {
             className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 rounded-xl bg-accent/50 border border-border hover:bg-accent transition-all text-muted-foreground group"
           >
             <Search className="w-4 h-4 group-hover:text-primary transition-colors" />
-            <span className="hidden xs:inline-flex text-[10px] sm:text-[11px] font-black uppercase tracking-tight">Quick Jump</span>
+            <span className={cn("hidden xs:inline-flex", dashboardUi.chrome.quickJump)}>Quick Jump</span>
             <kbd className="hidden sm:inline-flex h-5 select-none items-center gap-1 rounded-md border bg-muted px-2 font-mono text-[9px] font-black opacity-60">
               <span className="text-xs">⌘</span>K
             </kbd>
           </button>
         ) : (
-          <div className="hidden sm:block mr-2">
+          <div className="mr-1 sm:mr-2">
             <GlobalSearch />
           </div>
         )}
@@ -100,16 +102,16 @@ export function DashboardHeader({ isAdmin = false }: DashboardHeaderProps) {
               </button>
             </DropdownMenuTrigger>
             {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 w-4 h-4 bg-primary text-[9px] font-bold text-primary-foreground rounded-full flex items-center justify-center pointer-events-none">
+              <AppBadge semantic="count" className="absolute top-1 right-1 min-w-4 h-4 px-1 flex items-center justify-center pointer-events-none rounded-full">
                 {unreadCount}
-              </span>
+              </AppBadge>
             )}
           </div>
           <DropdownMenuContent align="end" className="w-80 mt-1 border border-border shadow-xl rounded-2xl p-0 overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3 bg-muted/20">
               <span className="text-sm font-bold text-foreground tracking-tight">Notifications</span>
               <button 
-                className="text-[10px] text-primary hover:underline font-bold uppercase tracking-widest" 
+                className="text-[10px] text-primary hover:underline font-bold uppercase tracking-widest"
                 onClick={async () => {
                   try {
                     await axiosInstance.post("/api/notifications/read-all");
@@ -129,7 +131,7 @@ export function DashboardHeader({ isAdmin = false }: DashboardHeaderProps) {
                   <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center text-muted-foreground/30">
                     <Bell className="w-5 h-5" />
                   </div>
-                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Digital Silence</p>
+                  <p className={dashboardUi.table.emptyCaps}>Digital Silence</p>
                   <p className="text-[10px] text-muted-foreground/60 font-medium">No new alerts found in your registry</p>
                 </div>
               ) : notifications.map((n) => (

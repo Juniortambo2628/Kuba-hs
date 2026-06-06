@@ -25,6 +25,7 @@ class PaymentResource extends JsonResource
             'provider_amount' => $this->provider_amount,
             'status' => $this->status,
             'payment_method' => $this->payment_method,
+            'payment_gateway' => $this->payment_gateway,
             'transaction_id' => $this->transaction_id,
             'customer' => new UserResource($this->whenLoaded('customer')),
             'provider' => new ProviderResource($this->whenLoaded('provider')),

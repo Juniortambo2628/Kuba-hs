@@ -40,11 +40,14 @@ class Booking extends Model implements HasMedia
         'discount_amount',
         'mpesa_checkout_id',
         'payment_method',
+        'location_name',
+        'rescheduled_at',
     ];
 
     protected $casts = [
         'scheduled_date' => 'datetime',
         'scheduled_end_date' => 'datetime',
+        'rescheduled_at' => 'datetime',
         'started_at' => 'datetime',
         'completed_at' => 'datetime',
         'estimated_price' => 'decimal:2',
@@ -112,6 +115,11 @@ class Booking extends Model implements HasMedia
     public function promoCode(): BelongsTo
     {
         return $this->belongsTo(PromoCode::class);
+    }
+
+    public function activityLogs(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(BookingActivityLog::class);
     }
 
     /**

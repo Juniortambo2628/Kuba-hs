@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\VerificationDocument;
 use App\Models\Provider;
+use App\Services\ImageOptimizationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -17,42 +18,63 @@ class VerificationController extends Controller
             return VerificationDocument::with('provider.user')->latest()->get();
         }
 
-        if (!$user->provider) {
+        $provider = $user->ensureProviderProfile();
+        if (!$provider) {
             return response()->json(['message' => 'Not a provider'], 403);
         }
 
-        return $user->provider->verificationDocuments;
+        return \App\Http\Resources\VerificationDocumentResource::collection(
+            $provider->verificationDocuments()->latest()->get()
+        );
     }
 
     public function store(Request $request)
     {
         $user = $request->user();
-        if (!$user->provider) {
+        $provider = $user->ensureProviderProfile();
+        if (!$provider) {
             return response()->json(['message' => 'Not a provider'], 403);
         }
 
-        $request->validate([
-            'document_type' => 'required|string',
+        $validated = $request->validate([
+            'document_type' => 'required|string|in:id_card,business_license,certification',
             'file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
+        ], [
+            'file.required' => 'Please choose a file to upload.',
+            'file.mimes' => 'Use PDF, JPG, or PNG (max 5MB).',
+            'file.max' => 'File must be 5MB or smaller.',
+            'document_type.in' => 'Invalid document type selected.',
         ]);
 
-        $path = $request->file('file')->store('verification_docs', 'public');
+        $file = $request->file('file');
+        $optimizer = app(ImageOptimizationService::class);
+
+        if (str_starts_with($file->getMimeType() ?? '', 'image/')) {
+            $path = $optimizer->storeAndOptimize(
+                $file,
+                'verification_docs',
+                'public',
+                ImageOptimizationService::PRESET_DOCUMENT
+            );
+        } else {
+            $path = $file->store('verification_docs', 'public');
+        }
 
         $doc = VerificationDocument::create([
-            'provider_id' => $user->provider->id,
-            'document_type' => $request->document_type,
+            'provider_id' => $provider->id,
+            'document_type' => $validated['document_type'],
             'file_path' => $path,
             'status' => 'pending',
         ]);
 
         // Update provider application status to reviewed if it was rejected previously
-        if ($user->provider->application_status === 'rejected') {
-            $user->provider->update(['application_status' => 'pending']);
+        if ($provider->application_status === 'rejected') {
+            $provider->update(['application_status' => 'pending']);
         }
 
         return response()->json([
             'message' => 'Document submitted for verification',
-            'document' => $doc
+            'document' => new \App\Http\Resources\VerificationDocumentResource($doc),
         ], 201);
     }
 
