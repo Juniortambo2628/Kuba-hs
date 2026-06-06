@@ -3,7 +3,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import axiosInstance from "@/lib/axios";
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
-import { ProviderCard } from "@/components/marketplace";
+import { ProviderCard, type ProviderCardData } from "@/components/marketplace";
 import { FavoritesProvider } from "@/contexts/FavoritesContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Heart, Search } from "lucide-react";
@@ -62,13 +62,10 @@ export default function ClientFavoritesPage() {
 
         {favorites.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {favorites.map((provider: Record<string, unknown>) => (
+            {favorites.map((provider: ProviderCardData) => (
               <ProviderCard
                 key={String(provider.id)}
-                provider={{
-                  ...provider,
-                  id: String(provider.id),
-                }}
+                provider={provider}
                 href={providerHref(provider)}
               />
             ))}
