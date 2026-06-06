@@ -239,9 +239,11 @@ export default function ClientOverview() {
         isUpdating={false}
         userEmail={user?.email ?? ""}
         onRefresh={() => fetchDashboardData()}
-        onUpdateStatus={(status) =>
-          selectedBooking && handleUpdateStatus(selectedBooking.id, status)
-        }
+        onUpdateStatus={(status) => {
+          if (selectedBooking) {
+            handleUpdateStatus(selectedBooking.id, status);
+          }
+        }}
       />
     </DashboardPageContainer>
   );

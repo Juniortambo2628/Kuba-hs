@@ -93,7 +93,7 @@ function BookingsHistoryContent() {
       const updated = list.find((b) => b.id === bookingId);
       if (updated) setSelectedBooking(updated);
       else if (selectedBooking?.id === bookingId) {
-        setSelectedBooking({ ...selectedBooking, status: nextStatus });
+        setSelectedBooking({ ...selectedBooking, status: nextStatus as Booking["status"] });
       }
       if (nextStatus === "completed" || nextStatus === "cancelled") {
         setIsDetailOpen(false);
@@ -272,9 +272,11 @@ function BookingsHistoryContent() {
         booking={selectedBooking}
         role="provider"
         isUpdating={isUpdating}
-        onUpdateStatus={(nextStatus) =>
-          selectedBooking && handleUpdateStatus(selectedBooking.id, nextStatus)
-        }
+        onUpdateStatus={(nextStatus) => {
+          if (selectedBooking) {
+            handleUpdateStatus(selectedBooking.id, nextStatus);
+          }
+        }}
       />
     </DashboardPageContainer>
   );
