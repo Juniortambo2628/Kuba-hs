@@ -272,7 +272,7 @@ export default function MessagingHubPage() {
                 <p className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">
                   {selectedMessage.content}
                 </p>
-                {selectedMessage.type === "quote" && selectedMessage.meta?.contact && (
+                {selectedMessage.type === "quote" && !!selectedMessage.meta?.contact && (
                   <p className="mt-4 text-sm text-muted-foreground">
                     Contact: {String(selectedMessage.meta.contact)}
                   </p>
