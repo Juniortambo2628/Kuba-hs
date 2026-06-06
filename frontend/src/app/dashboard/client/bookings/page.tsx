@@ -315,9 +315,11 @@ function ClientBookingsContent() {
         isUpdating={isUpdating}
         userEmail={user?.email ?? ""}
         onRefresh={() => { mutateBookings(); }}
-        onUpdateStatus={(nextStatus) =>
-          selectedBooking && handleUpdateStatus(selectedBooking.id, nextStatus as Booking["status"])
-        }
+        onUpdateStatus={(nextStatus) => {
+          if (selectedBooking) {
+            handleUpdateStatus(selectedBooking.id, nextStatus as Booking["status"]);
+          }
+        }}
       />
     </DashboardPageContainer>
   );
