@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { getApiBaseUrl } from '@/lib/api-base-url';
 
 const axiosInstance = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL,
+    baseURL: getApiBaseUrl(),
     headers: {
         'X-Requested-With': 'XMLHttpRequest',
         'Accept': 'application/json',

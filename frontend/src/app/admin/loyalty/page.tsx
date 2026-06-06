@@ -1,12 +1,23 @@
 "use client";
 
+import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
+import { DashboardPageSkeleton } from "@/components/shared/DashboardPageSkeleton";
+
 import { useEffect, useState } from "react";
 import axiosInstance from "@/lib/axios";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trophy, History, Plus, ShieldCheck, Zap, Star, TrendingUp, ChevronRight, Gift, Loader2 } from "lucide-react";
+import { Trophy, Plus, Zap, TrendingUp, ChevronRight, Gift, Loader2, Trash2, Sparkles } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
@@ -14,6 +25,10 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { DashboardDataCard } from "@/components/shared/DashboardTable";
+import { dashboardUi } from "@/lib/dashboard-ui";
+import { uiPrimitives } from "@/lib/ui-primitives";
+import { cn } from "@/lib/utils";
 import { useApiData } from "@/hooks/useApiData";
 
 interface Tier {
@@ -36,7 +51,14 @@ interface Transaction {
 export default function AdminLoyalty() {
   const [ledgerPage, setLedgerPage] = useState(1);
   const { data: tiers, isLoading: tiersLoading, refetch: fetchTiers } = useApiData<Tier[]>("/api/admin/loyalty/tiers", { initialData: [] });
-  const { data: transData, isLoading: transLoading } = useApiData<any>(`/api/admin/loyalty/transactions?page=${ledgerPage}`, { initialData: null });
+  const { data: transData, isLoading: transLoading, refetch: refetchTransactions } = useApiData<any>(
+    `/api/admin/loyalty/transactions?page=${ledgerPage}`,
+    { initialData: null, preserveEnvelope: true }
+  );
+  const { data: clientUsers } = useApiData<{ id: string; name: string; email: string }[]>(
+    "/api/admin/users?role=client&per_page=100",
+    { initialData: [] }
+  );
   
   const transactions = (transData?.data || []) as Transaction[];
   const totalPages = transData?.meta?.last_page || 1;
@@ -46,6 +68,14 @@ export default function AdminLoyalty() {
   const [currentTier, setCurrentTier] = useState<Partial<Tier>>({});
   const [isSaving, setIsSaving] = useState(false);
   const [isLedgerOpen, setIsLedgerOpen] = useState(false);
+  const [isAwardOpen, setIsAwardOpen] = useState(false);
+  const [isAwarding, setIsAwarding] = useState(false);
+  const [awardForm, setAwardForm] = useState({
+    user_id: "",
+    points: 100,
+    description: "",
+    type: "earn" as "earn" | "redeem",
+  });
 
  const fetchData = () => {
     fetchTiers();
@@ -79,34 +109,70 @@ export default function AdminLoyalty() {
   }
  };
 
+ const handleAwardPoints = async () => {
+  if (!awardForm.user_id || !awardForm.description.trim()) {
+   toast.error("Select a client and enter a description");
+   return;
+  }
+  setIsAwarding(true);
+  try {
+   await axiosInstance.post("/api/admin/loyalty/reward", {
+    user_id: awardForm.user_id,
+    points: Number(awardForm.points),
+    description: awardForm.description.trim(),
+    type: awardForm.type,
+   });
+   toast.success(awardForm.type === "earn" ? "Points awarded" : "Points redeemed");
+   setIsAwardOpen(false);
+   setAwardForm({ user_id: "", points: 100, description: "", type: "earn" });
+   refetchTransactions();
+  } catch {
+   toast.error("Failed to update points");
+  } finally {
+   setIsAwarding(false);
+  }
+ };
+
+ const handleDeleteTier = async (tierId: number) => {
+  if (!confirm("Delete this reward tier? Users on this tier will not be reassigned automatically.")) return;
+  try {
+   await axiosInstance.delete(`/api/admin/loyalty/tiers/${tierId}`);
+   toast.success("Tier deleted");
+   if (currentTier.id === tierId) setIsSheetOpen(false);
+   fetchData();
+  } catch {
+   toast.error("Failed to delete tier");
+  }
+ };
+
  if (isLoading) {
-  return (
-   <div className="max-w-[1400px] mx-auto space-y-8 animate-pulse">
-    <Skeleton className="h-12 w-64 rounded-2xl" />
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-      <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-        {[1,2,3,4].map(i => <Skeleton key={i} className="h-48 rounded-[2rem]" />)}
-      </div>
-      <Skeleton className="h-[600px] rounded-[2rem]" />
-    </div>
-   </div>
-  );
+  return <DashboardPageSkeleton metrics={2} bodyHeight="h-[600px]" />;
  }
 
  return (
-    <div className="max-w-[1400px] mx-auto space-y-10 pb-12">
+    <DashboardPageContainer className="space-y-10">
         {/* Standard Dashboard Header */}
         <DashboardPageHeader 
             title="Loyalty Architecture" 
             subtitle="Configure platform reward tiers, benefit structures, and track point velocity."
         >
-            <Button 
-                onClick={() => handleOpenSheet()} 
-                className="h-12 bg-primary hover:bg-black text-white rounded-2xl font-bold px-8 shadow-md transition-all flex items-center gap-2 group"
-            >
-                <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
-                Define Reward Tier
-            </Button>
+            <div className="flex flex-wrap gap-3">
+                <Button
+                    variant="outline"
+                    onClick={() => setIsAwardOpen(true)}
+                    className="h-12 rounded-2xl font-bold px-6 border-primary/30 text-primary hover:bg-primary/5"
+                >
+                    <Sparkles className="w-5 h-5 mr-2" />
+                    Award Points
+                </Button>
+                <Button 
+                    onClick={() => handleOpenSheet()} 
+                    className="h-12 bg-primary hover:bg-black text-white rounded-2xl font-bold px-8 shadow-md transition-all flex items-center gap-2 group"
+                >
+                    <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
+                    Define Reward Tier
+                </Button>
+            </div>
         </DashboardPageHeader>
 
    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
@@ -122,10 +188,10 @@ export default function AdminLoyalty() {
                     </div>
                 </div>
 
-     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+     <div className={uiPrimitives.layout.grid3}>
       {tiers.map((tier) => (
        <Card key={tier.id} className="border border-border group border-none overflow-hidden hover:bg-muted/5 transition-all duration-700">
-        <CardContent className="p-10 space-y-8">
+        <CardContent className={cn(dashboardUi.card.padding, "space-y-6")}>
                                     <div className="flex justify-between items-start">
                                         <div className="space-y-1.5">
                                             <h3 className="text-2xl font-bold text-foreground group-hover:text-primary transition-colors tracking-tight">{tier.name}</h3>
@@ -155,19 +221,29 @@ export default function AdminLoyalty() {
           ))}
          </div>
 
-                                    <Button 
-                                        onClick={() => handleOpenSheet(tier)} 
-                                        variant="outline" 
-                                        className="w-full h-12 border-border/60 text-foreground hover:text-white hover:bg-black hover:border-black rounded-xl font-bold text-xs transition-all shadow-sm"
-                                    >
-                                        Modify Tier Architecture
-                                    </Button>
+                                    <div className="flex gap-2">
+                                        <Button 
+                                            onClick={() => handleOpenSheet(tier)} 
+                                            variant="outline" 
+                                            className="flex-1 h-12 border-border/60 text-foreground hover:text-white hover:bg-black hover:border-black rounded-xl font-bold text-xs transition-all shadow-sm"
+                                        >
+                                            Modify Tier Architecture
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            onClick={() => handleDeleteTier(tier.id)}
+                                            className="h-12 px-4 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl"
+                                            aria-label="Delete tier"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </Button>
+                                    </div>
         </CardContent>
        </Card>
       ))}
-                    <Card className="border border-dashed border-border p-20 flex flex-col items-center justify-center col-span-2 text-muted-foreground bg-muted/10 rounded-[2.5rem]">
-                        <Trophy className="w-16 h-16 mb-4 opacity-10" />
-                        <p className="text-xs font-bold text-muted-foreground">No reward architectures in the registry</p>
+                    <Card className={cn(dashboardUi.table.emptyDashed, "p-12 col-span-full lg:col-span-3")}>
+                        <Trophy className="w-16 h-16 opacity-10" />
+                        <p className={dashboardUi.table.emptyCaps}>No reward architectures in the registry</p>
                     </Card>
      </div>
     </div>
@@ -184,7 +260,7 @@ export default function AdminLoyalty() {
                         </div>
                     </div>
 
-     <Card className="border border-border/40 bg-card/50 backdrop-blur-md border-none overflow-hidden shadow-sm rounded-2xl">
+     <DashboardDataCard>
       <Table>
        <TableBody>
         {transactions.map((t) => (
@@ -226,7 +302,7 @@ export default function AdminLoyalty() {
                             <ChevronRight className="w-5 h-5 group-hover:translate-x-1.5 transition-transform" />
                         </button>
                     </div>
-     </Card>
+     </DashboardDataCard>
     </div>
    </div>
 
@@ -241,7 +317,7 @@ export default function AdminLoyalty() {
                         </SheetHeader>
                     </div>
      <div className="py-8 space-y-6">
-      <Card className="border border-border/40 bg-card/50 backdrop-blur-md border-none overflow-hidden shadow-sm rounded-2xl">
+      <DashboardDataCard>
        <Table>
         <TableBody>
          {transactions.map((t) => (
@@ -266,7 +342,7 @@ export default function AdminLoyalty() {
          ))}
         </TableBody>
        </Table>
-      </Card>
+      </DashboardDataCard>
 
       <div className="flex items-center justify-between px-2">
        <Button 
@@ -290,6 +366,95 @@ export default function AdminLoyalty() {
      </div>
     </SheetContent>
    </Sheet>
+
+            <Sheet open={isAwardOpen} onOpenChange={setIsAwardOpen}>
+                <SheetContent side="right" className="w-full sm:max-w-xl bg-white dark:bg-zinc-950 border-l border-border/40 p-0">
+                    <div className="p-8 border-b border-border/10">
+                        <SheetHeader className="text-left">
+                            <SheetTitle className="text-2xl font-bold text-foreground tracking-tight">
+                                Manual Point Adjustment
+                            </SheetTitle>
+                            <SheetDescription className="font-bold text-muted-foreground text-xs mt-1">
+                                Award or redeem Kuba points for a client account.
+                            </SheetDescription>
+                        </SheetHeader>
+                    </div>
+                    <div className="p-8 space-y-6">
+                        <div className="space-y-2">
+                            <Label className="text-xs font-bold text-muted-foreground">Client</Label>
+                            <Select
+                                value={awardForm.user_id}
+                                onValueChange={(v) => setAwardForm((prev) => ({ ...prev, user_id: v }))}
+                            >
+                                <SelectTrigger className="h-12 rounded-2xl">
+                                    <SelectValue placeholder="Select client" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {(clientUsers || []).map((u) => (
+                                        <SelectItem key={u.id} value={String(u.id)}>
+                                            {u.name} ({u.email})
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-xs font-bold text-muted-foreground">Type</Label>
+                            <Select
+                                value={awardForm.type}
+                                onValueChange={(v: "earn" | "redeem") =>
+                                    setAwardForm((prev) => ({ ...prev, type: v }))
+                                }
+                            >
+                                <SelectTrigger className="h-12 rounded-2xl">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="earn">Award (earn)</SelectItem>
+                                    <SelectItem value="redeem">Redeem (deduct)</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-xs font-bold text-muted-foreground">Points</Label>
+                            <Input
+                                type="number"
+                                min={1}
+                                value={awardForm.points}
+                                onChange={(e) =>
+                                    setAwardForm((prev) => ({
+                                        ...prev,
+                                        points: parseInt(e.target.value, 10) || 0,
+                                    }))
+                                }
+                                className="h-12 rounded-2xl"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-xs font-bold text-muted-foreground">Description</Label>
+                            <Textarea
+                                value={awardForm.description}
+                                onChange={(e) =>
+                                    setAwardForm((prev) => ({ ...prev, description: e.target.value }))
+                                }
+                                placeholder="e.g. Customer service goodwill credit"
+                                className="min-h-[100px] rounded-2xl"
+                            />
+                        </div>
+                        <Button
+                            onClick={handleAwardPoints}
+                            disabled={isAwarding}
+                            className="w-full h-14 bg-primary hover:bg-black text-white rounded-2xl font-bold"
+                        >
+                            {isAwarding ? (
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                            ) : (
+                                "Apply adjustment"
+                            )}
+                        </Button>
+                    </div>
+                </SheetContent>
+            </Sheet>
 
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
                 <SheetContent side="right" className="w-full sm:max-w-xl bg-white dark:bg-zinc-950 border-l border-border/40 p-0">
@@ -365,6 +530,6 @@ export default function AdminLoyalty() {
                         </div>
                     </SheetContent>
                 </Sheet>
-            </div>
+            </DashboardPageContainer>
     );
 }

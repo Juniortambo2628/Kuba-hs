@@ -2,16 +2,17 @@
  * Centralized Design System Manifest
  * Yardstick: Investors Page (/investors)
  */
+import { uiPrimitives } from "@/lib/ui-primitives";
 
 export const designSystem = {
   typography: {
     hero: {
-      badge: "inline-block px-4 py-1.5 mb-6 text-xs font-semibold tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 rounded-full",
-      title: "text-4xl md:text-7xl font-bold tracking-tight mb-8 leading-tight",
-      subtitle: "max-w-2xl mx-auto text-lg text-gray-600 dark:text-muted-foreground mb-10 leading-relaxed",
+      badge: `inline-block mb-6 ${uiPrimitives.pill.hero}`,
+      title: "text-3xl md:text-6xl font-bold tracking-tight mb-6 leading-tight",
+      subtitle: "max-w-3xl mx-auto text-base md:text-lg text-gray-600 dark:text-muted-foreground mb-8 leading-normal",
     },
     section: {
-      badge: "inline-block px-4 py-1.5 mb-6 text-xs font-semibold tracking-tight text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 rounded-full",
+      badge: `inline-block mb-6 ${uiPrimitives.pill.section}`,
       title: "text-3xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6 tracking-tight",
       subtitle: "max-w-2xl mx-auto text-lg text-gray-600 dark:text-muted-foreground leading-relaxed font-medium",
       paragraph: "text-gray-600 dark:text-muted-foreground leading-relaxed font-medium",
@@ -33,8 +34,8 @@ export const designSystem = {
     }
   },
   layouts: {
-    container: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
-    section: "py-24",
-    grid: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8",
-  }
+    container: uiPrimitives.layout.page,
+    section: uiPrimitives.layout.section,
+    grid: uiPrimitives.layout.grid3,
+  },
 };

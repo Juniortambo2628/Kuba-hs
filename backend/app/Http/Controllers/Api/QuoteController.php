@@ -19,6 +19,7 @@ class QuoteController extends Controller
             'organization_type' => 'required|string|in:commercial,cooperative,other',
             'service_category' => 'required|string',
             'description' => 'required|string|min:20',
+            'source' => 'nullable|string|max:64',
         ]);
 
         if ($validator->fails()) {

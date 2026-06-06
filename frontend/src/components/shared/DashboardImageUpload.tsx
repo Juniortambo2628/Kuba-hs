@@ -1,43 +1,39 @@
 "use client";
 
-import { FilePond, registerPlugin } from 'react-filepond';
-import 'filepond/dist/filepond.min.css';
-import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
+import { FilePond, registerPlugin } from "react-filepond";
+import "filepond/dist/filepond.min.css";
+import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css";
 
-import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
-import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
+import FilePondPluginImagePreview from "filepond-plugin-image-preview";
+import FilePondPluginFileValidateType from "filepond-plugin-file-validate-type";
 
-import { useState, useEffect } from 'react';
-import { cn } from '@/lib/utils';
-import { Image as ImageIcon, X } from 'lucide-react';
+import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { Image as ImageIcon, X } from "lucide-react";
+import axiosInstance, { handleApiError } from "@/lib/axios";
+import {
+  compressImageFile,
+  compressionPresetForAdminType,
+} from "@/lib/image-compression";
 
-// Register plugins
 registerPlugin(FilePondPluginImagePreview, FilePondPluginFileValidateType);
 
 interface DashboardImageUploadProps {
   value: string;
   onChange: (url: string) => void;
-  type: 'avatar' | 'logo' | 'cms';
+  type: "avatar" | "logo" | "cms" | "category_thumbnail";
   label?: string;
   className?: string;
 }
 
-export function DashboardImageUpload({ 
-  value, 
-  onChange, 
-  type, 
+export function DashboardImageUpload({
+  value,
+  onChange,
+  type,
   label = "Upload Image",
-  className 
+  className,
 }: DashboardImageUploadProps) {
   const [files, setFiles] = useState<any[]>([]);
-
-  // Sync initial value if it exists but files is empty
-  useEffect(() => {
-    if (value && files.length === 0) {
-      // In a real app, we might want to show the current file in FilePond
-      // But for simplicity, we'll show a preview separately if value exists
-    }
-  }, [value]);
 
   const handleProcessFile = (error: any, file: any) => {
     if (!error && file.serverId) {
@@ -46,10 +42,16 @@ export function DashboardImageUpload({
   };
 
   const getFullUrl = (url: string) => {
-    if (!url) return '';
-    if (url.startsWith('http') || url.startsWith('blob:')) return url;
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-    return `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
+    if (!url) return "";
+    if (url.startsWith("http") || url.startsWith("blob:")) return url;
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
+    const origin =
+      baseUrl && typeof window !== "undefined"
+        ? baseUrl.replace(/\/api\/?$/, "")
+        : typeof window !== "undefined"
+          ? window.location.origin
+          : "http://127.0.0.1:8000";
+    return `${origin}${url.startsWith("/") ? "" : "/"}${url}`;
   };
 
   return (
@@ -59,9 +61,9 @@ export function DashboardImageUpload({
           {label}
         </label>
         {value && (
-          <button 
+          <button
             type="button"
-            onClick={() => onChange('')}
+            onClick={() => onChange("")}
             className="text-[9px] font-bold text-red-500 uppercase flex items-center gap-1 hover:underline"
           >
             <X className="w-3 h-3" /> Clear
@@ -70,30 +72,32 @@ export function DashboardImageUpload({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-start">
-        {/* Preview Area */}
         <div className="md:col-span-1">
-          <div className={cn(
-            "relative aspect-square rounded-2xl overflow-hidden border-2 border-dashed border-border/40 bg-muted/30 flex items-center justify-center group transition-all",
-            value ? "border-primary/20 bg-primary/5" : "hover:border-primary/20"
-          )}>
+          <div
+            className={cn(
+              "relative aspect-square rounded-2xl overflow-hidden border-2 border-dashed border-border/40 bg-muted/30 flex items-center justify-center group transition-all",
+              value ? "border-primary/20 bg-primary/5" : "hover:border-primary/20"
+            )}
+          >
             {value ? (
-              <img 
-                src={getFullUrl(value)} 
-                alt="Upload Preview" 
+              <img
+                src={getFullUrl(value)}
+                alt="Upload Preview"
                 className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500"
               />
             ) : (
               <div className="text-center p-4">
                 <ImageIcon className="w-6 h-6 mx-auto mb-2 text-muted-foreground/40" />
                 <p className="text-[8px] font-black uppercase tracking-tighter text-muted-foreground/40 leading-tight">
-                  No Image<br/>Selected
+                  No Image
+                  <br />
+                  Selected
                 </p>
               </div>
             )}
           </div>
         </div>
 
-        {/* Upload Area */}
         <div className="md:col-span-3">
           <FilePond
             files={files}
@@ -101,21 +105,84 @@ export function DashboardImageUpload({
             allowMultiple={false}
             maxFiles={1}
             server={{
-              process: {
-                url: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/media/upload`,
-                withCredentials: true,
-                ondata: (formData) => {
-                  formData.append('type', type);
-                  return formData;
-                },
-                onload: (response) => response.toString(),
+              process: (
+                _fieldName,
+                file,
+                _metadata,
+                load,
+                error,
+                progress,
+                abort
+              ) => {
+                const controller = new AbortController();
+
+                (async () => {
+                  try {
+                    await axiosInstance.get("/sanctum/csrf-cookie");
+                    const source =
+                      file instanceof File
+                        ? file
+                        : new File([file], "upload.jpg", {
+                            type: file.type || "image/jpeg",
+                          });
+                    const optimized = await compressImageFile(source, {
+                      preset: compressionPresetForAdminType(type),
+                    });
+                    const formData = new FormData();
+                    formData.append("file", optimized);
+                    formData.append("type", type);
+
+                    const res = await axiosInstance.post(
+                      "/api/admin/media/upload",
+                      formData,
+                      {
+                        responseType: "text",
+                        signal: controller.signal,
+                        onUploadProgress: (e) => {
+                          progress(true, e.loaded, e.total || 1);
+                        },
+                      }
+                    );
+
+                    const path =
+                      typeof res.data === "string"
+                        ? res.data.trim()
+                        : String(res.data);
+                    load(path);
+                  } catch (err) {
+                    error(handleApiError(err));
+                  }
+                })();
+
+                return {
+                  abort: () => {
+                    controller.abort();
+                    abort();
+                  },
+                };
               },
-              revert: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/admin/media/revert`,
+              revert: (uniqueFileId, load, error) => {
+                (async () => {
+                  try {
+                    await axiosInstance.get("/sanctum/csrf-cookie");
+                    const path = String(uniqueFileId).replace(/^\/storage\//, "");
+                    if (path) {
+                      await axiosInstance.delete("/api/admin/media/revert", {
+                        data: path,
+                        headers: { "Content-Type": "text/plain" },
+                      });
+                    }
+                    load();
+                  } catch (err) {
+                    error(handleApiError(err));
+                  }
+                })();
+              },
             }}
             onprocessfile={handleProcessFile}
             name="file"
             labelIdle='Drag & Drop or <span class="filepond--label-action">Browse</span>'
-            acceptedFileTypes={['image/*']}
+            acceptedFileTypes={["image/*"]}
             imagePreviewHeight={100}
             className="filepond-premium-custom"
           />
@@ -126,7 +193,7 @@ export function DashboardImageUpload({
         .filepond-premium-custom .filepond--panel-root {
           background-color: transparent;
           border-radius: 1.25rem;
-          border: 1px dashed rgba(0,0,0,0.1);
+          border: 1px dashed rgba(0, 0, 0, 0.1);
         }
         .filepond-premium-custom .filepond--drop-label {
           color: #64748b;
@@ -140,7 +207,7 @@ export function DashboardImageUpload({
           color: #2563eb;
         }
         .dark .filepond-premium-custom .filepond--panel-root {
-          border-color: rgba(255,255,255,0.05);
+          border-color: rgba(255, 255, 255, 0.05);
         }
       `}</style>
     </div>

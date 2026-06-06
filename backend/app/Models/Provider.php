@@ -26,7 +26,6 @@ class Provider extends Model implements \Spatie\MediaLibrary\HasMedia
         'review_count',
         'is_verified',
         'application_status',
-        'verification_documents',
         'availability_status',
         'specialized_skills',
         'quality_score',
@@ -37,7 +36,6 @@ class Provider extends Model implements \Spatie\MediaLibrary\HasMedia
 
     protected $casts = [
         'is_verified' => 'boolean',
-        'verification_documents' => 'json',
         'latitude' => 'decimal:8',
         'longitude' => 'decimal:8',
         'specialized_skills' => 'json',
@@ -45,6 +43,22 @@ class Provider extends Model implements \Spatie\MediaLibrary\HasMedia
         'balance' => 'decimal:2',
         'total_earned' => 'decimal:2',
     ];
+
+    public function getSlugAttribute(): string
+    {
+        return \Illuminate\Support\Str::slug($this->business_name ?? '');
+    }
+
+    public function resolveRouteBinding($value, $field = null)
+    {
+        if (\Illuminate\Support\Str::isUuid($value)) {
+            return $this->where($this->getRouteKeyName(), $value)->first();
+        }
+
+        return static::query()
+            ->get()
+            ->first(fn (self $provider) => $provider->slug === $value);
+    }
 
     public function user(): BelongsTo
     {
@@ -79,6 +93,38 @@ class Provider extends Model implements \Spatie\MediaLibrary\HasMedia
     public function payouts(): HasMany
     {
         return $this->hasMany(Payout::class);
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('logos')->singleFile();
+        $this->addMediaCollection('banners')->singleFile();
+    }
+
+    /**
+     * Provider dashboard / profile editor payload (keeps API shape in one place).
+     *
+     * @return array<string, mixed>
+     */
+    public function toProfileEditorArray(?User $user = null): array
+    {
+        $user = $user ?? $this->user;
+
+        return [
+            'id' => $this->id,
+            'business_name' => $this->business_name,
+            'bio' => $this->bio,
+            'location_name' => $this->location_name,
+            'phone' => $user?->phone,
+            'experience_years' => (int) ($this->experience_years ?? 0),
+            'service_radius' => (int) ($this->service_radius ?? 10),
+            'is_verified' => (bool) $this->is_verified,
+            'latitude' => $this->latitude !== null ? (float) $this->latitude : null,
+            'longitude' => $this->longitude !== null ? (float) $this->longitude : null,
+            'specialized_skills' => $this->specialized_skills ?? [],
+            'logo' => $this->getFirstMediaUrl('logos') ?: null,
+            'banner' => $this->getFirstMediaUrl('banners') ?: null,
+        ];
     }
 
     /**

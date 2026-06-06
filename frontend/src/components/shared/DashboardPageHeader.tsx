@@ -1,19 +1,27 @@
 "use client";
 
 import { ReactNode } from "react";
+import { workspaceUi } from "@/lib/dashboard-workspace-ui";
+import { cn } from "@/lib/utils";
 
 interface DashboardPageHeaderProps {
   title: string;
   subtitle?: string;
   children?: ReactNode;
+  className?: string;
 }
 
-export function DashboardPageHeader({ title, subtitle, children }: DashboardPageHeaderProps) {
+export function DashboardPageHeader({ title, subtitle, children, className }: DashboardPageHeaderProps) {
   return (
-    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+    <div
+      className={cn(
+        "flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8",
+        className
+      )}
+    >
       <div>
-        <h1 className="text-2xl font-bold text-foreground tracking-tight">{title}</h1>
-        {subtitle && <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>}
+        <h1 className={workspaceUi.greeting.title}>{title}</h1>
+        {subtitle && <p className={workspaceUi.greeting.subtitle}>{subtitle}</p>}
       </div>
       {children}
     </div>

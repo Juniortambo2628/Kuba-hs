@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\SiteSetting;
 use App\Http\Resources\SiteSettingResource;
+use App\Services\ImageOptimizationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class SettingsController extends Controller
@@ -48,13 +50,19 @@ class SettingsController extends Controller
                     
                     if ($setting->type === 'image' && isset($item['file'])) {
                         $setting->clearMediaCollection('site_settings');
-                        $setting->addMedia($item['file'])->toMediaCollection('site_settings');
+                        $media = $setting->addMedia($item['file'])->toMediaCollection('site_settings');
+                        app(ImageOptimizationService::class)->optimizeMedia(
+                            $media,
+                            ImageOptimizationService::PRESET_CMS
+                        );
                         $setting->update(['value' => $item['value'] ?? $setting->value]);
                     } else {
                         $setting->update(['value' => $item['value'] ?? '']);
                     }
                 }
             });
+
+            Cache::forget('cms_settings_global');
 
             return response()->json([
                 'success' => true,

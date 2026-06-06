@@ -3,56 +3,35 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import axiosInstance from "@/lib/axios";
-import { 
-  Carousel, 
-  CarouselContent, 
-  CarouselItem, 
-  CarouselNext, 
-  CarouselPrevious 
-} from "@/components/ui/carousel";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, Star, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
-import { getMediaUrl } from "@/lib/utils";
 import { LandingSectionHeader } from "@/components/shared/LandingSectionHeader";
-import Image from "next/image";
+import { LandingButton } from "@/components/shared/LandingButton";
+import { LandingSection } from "@/components/landing/LandingSection";
+import { uiPrimitives } from "@/lib/ui-primitives";
+import { ServiceCard, type ServiceCardData } from "@/components/marketplace";
+import { serviceDetailHref } from "@/lib/service-urls";
+import { useCMS } from "@/contexts/CMSContext";
+import {
+  landingTitleParts,
+  LandingGradientTitle,
+} from "@/lib/landing-section-header-copy";
 
-
-interface Service {
-  id: string;
-  name: string;
-  description: string;
-  base_price: number;
-  pricing_type: string;
-  category: string;
-  image_urls: { url: string }[];
-  service_thumbnail_url?: string;
-  provider: {
-    id: string;
-    business_name: string;
-    rating: number;
-    review_count: number;
-    is_verified: boolean;
-    logo: string;
-    user?: {
-      avatar_url?: string;
-    };
-  };
-}
+const PREVIEW_LIMIT = 3;
 
 export function FeaturedServices() {
-  const [services, setServices] = useState<Service[]>([]);
+  const { getS } = useCMS();
+  const [services, setServices] = useState<ServiceCardData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const servicesTitle = getS("landing_sections", "services_title", "Just Added");
+  const { part1: svcTitle1, part2: svcTitle2 } = landingTitleParts(servicesTitle, "Added");
 
   useEffect(() => {
     const fetchFeatured = async () => {
       try {
-        const response = await axiosInstance.get('/api/featured-services');
+        const response = await axiosInstance.get("/api/featured-services");
         setServices(response.data.data);
       } catch (error) {
         console.error("Failed to fetch featured services:", error);
@@ -63,155 +42,53 @@ export function FeaturedServices() {
     fetchFeatured();
   }, []);
 
-
-
   if (!isLoading && services.length === 0) return null;
 
-  return (
-    <section className="py-12 sm:py-24 bg-muted/50 overflow-hidden">
-      <div className="container px-4 mx-auto">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-12 gap-4 sm:gap-6">
-          <LandingSectionHeader 
-            badge="New Services"
-            title={<>Just <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-500 to-indigo-500">Added</span></>}
-            subtitle="Check out these new services from our top-rated pros."
-            align="left"
-            className="mb-0"
-          />
+  const preview = services.slice(0, PREVIEW_LIMIT);
 
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <Link 
-              href="/providers"
-              className="group flex items-center gap-3 px-6 sm:px-8 py-3 sm:py-4 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl text-xs sm:text-sm font-bold text-gray-900 dark:text-white hover:border-sky-500/50 transition-all shadow-sm hover:shadow-xl"
-            >
-              See All Services
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform text-sky-500" />
-            </Link>
-          </motion.div>
+  return (
+    <LandingSection variant="default">
+        <LandingSectionHeader
+          badge={getS("landing_sections", "services_badge", "New Services")}
+          title={<LandingGradientTitle part1={svcTitle1} part2={svcTitle2} />}
+          subtitle={getS(
+            "landing_sections",
+            "services_subtitle",
+            "Check out these new services from our top-rated pros."
+          )}
+          align="center"
+        />
+
+        <div className={uiPrimitives.layout.grid3}>
+          {isLoading
+            ? Array.from({ length: PREVIEW_LIMIT }).map((_, i) => (
+                <div key={i} className="space-y-3">
+                  <Skeleton className="aspect-[4/5] w-full min-h-[16rem] rounded-2xl" />
+                  <Skeleton className="h-5 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
+              ))
+            : preview.map((service, i) => (
+                <motion.div
+                  key={service.id}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: i * 0.08 }}
+                >
+                  <ServiceCard service={service} href={serviceDetailHref(service)} className="h-full" />
+                </motion.div>
+              ))}
         </div>
 
-        {services.length > 0 && (
-          <Tabs defaultValue="All" className="w-full">
-            <div className="flex justify-start md:justify-center mb-8 sm:mb-10 overflow-x-auto pb-2 hide-scrollbar -mx-4 px-4">
-              <TabsList className="bg-white/80 dark:bg-white/5 backdrop-blur-md border border-gray-200/80 dark:border-white/10 rounded-full h-auto p-1 sm:p-1.5 inline-flex gap-1 shadow-sm">
-                {["All", ...Array.from(new Set(services.map(s => s.category)))].map(cat => (
-                  <TabsTrigger 
-                    key={cat} 
-                    value={cat}
-                    className="rounded-full px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-gray-500 dark:text-gray-400 data-[state=active]:bg-gradient-to-r data-[state=active]:from-sky-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-sky-500/20 transition-all whitespace-nowrap"
-                  >
-                    {cat}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </div>
-
-            {["All", ...Array.from(new Set(services.map(s => s.category)))].map(category => {
-              const catServices = category === "All" ? services : services.filter(s => s.category === category);
-              
-              return (
-                <TabsContent key={category} value={category} className="mt-0 outline-none focus-visible:outline-none">
-                  <Carousel
-                    opts={{
-                      align: "start",
-                      loop: true,
-                    }}
-                    className="w-full"
-                  >
-                    <CarouselContent className="-ml-4 md:-ml-6">
-                      {isLoading ? (
-                        Array.from({ length: 4 }).map((_, i) => (
-                          <CarouselItem key={i} className="pl-4 md:pl-6 md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
-                            <div className="space-y-4">
-                              <Skeleton className="h-64 w-full rounded-[32px]" />
-                              <Skeleton className="h-6 w-3/4" />
-                              <Skeleton className="h-4 w-1/2" />
-                            </div>
-                          </CarouselItem>
-                        ))
-                      ) : (
-                        catServices.map((service, i) => (
-                          <CarouselItem key={service.id} className="pl-4 md:pl-6 md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
-                            <motion.div
-                              initial={{ opacity: 0, y: 20 }}
-                              whileInView={{ opacity: 1, y: 0 }}
-                              viewport={{ once: true }}
-                              transition={{ duration: 0.5, delay: i * 0.1 }}
-                            >
-                              <Link href={`/services/${service.id}`} className="block h-full group">
-                                <Card className="relative h-[450px] bg-white dark:bg-white/5 border-gray-100 dark:border-white/10 rounded-[32px] overflow-hidden hover:shadow-2xl hover:shadow-sky-500/10 transition-all duration-500">
-                                {/* Image Header */}
-                                <div className="relative h-56 overflow-hidden">
-                                   <Image 
-                                     src={getMediaUrl(service.image_urls?.[0]?.url || service.service_thumbnail_url, 'service') || "/placeholders/service-light.png"} 
-                                     alt={service.name}
-                                     fill
-                                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                     className="object-cover group-hover:scale-110 transition-transform duration-700"
-                                   />
-                                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-                                  <div className="absolute top-4 right-4">
-                                     <Badge className="bg-white/20 backdrop-blur-md border-0 text-white font-bold">{service.category}</Badge>
-                                  </div>
-                                  <div className="absolute bottom-4 left-4 flex items-center gap-2">
-                                     <div className="flex items-center gap-1 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
-                                        <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-                                        <span className="text-[10px] font-bold text-white tracking-tight">{service.provider.rating || 'NEW'}</span>
-                                     </div>
-                                  </div>
-                                </div>
-          
-                                {/* Content */}
-                                <CardContent className="p-8">
-                                   <div className="flex items-center gap-2 mb-3">
-                                      <Avatar className="h-6 w-6 border border-sky-500/20">
-                                         <AvatarImage src={getMediaUrl(service.provider.logo || service.provider.user?.avatar_url, 'avatar') || ""} />
-                                         <AvatarFallback>{service.provider.business_name[0]}</AvatarFallback>
-                                      </Avatar>
-                                     <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 tracking-tight">{service.provider.business_name}</span>
-                                  </div>
-                                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-sky-500 transition-colors line-clamp-1">
-                                    {service.name}
-                                  </h3>
-                                  <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-6">
-                                    {service.description}
-                                  </p>
-                                  
-                                  <div className="flex items-center justify-between pt-6 border-t border-gray-100 dark:border-white/10">
-                                     <div className="flex items-center gap-2 text-gray-400">
-                                        <MapPin className="w-4 h-4 text-sky-500" />
-                                        <span className="text-xs font-bold tracking-tight">Available Now</span>
-                                     </div>
-                                     <div className="text-lg font-bold text-gray-900 dark:text-white">
-                                        <span className="text-xs font-medium text-gray-400 mr-1">from</span>
-                                        KES {service.base_price}
-                                     </div>
-                                  </div>
-                                </CardContent>
-                              </Card>
-                             </Link>
-                            </motion.div>
-                          </CarouselItem>
-                        ))
-                      )}
-                    </CarouselContent>
-                    <div className="flex justify-center mt-12 gap-4">
-                      <CarouselPrevious className="static translate-y-0 h-14 w-14 rounded-2xl bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 hover:bg-sky-500 hover:text-white transition-all shadow-lg" />
-                      <CarouselNext className="static translate-y-0 h-14 w-14 rounded-2xl bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 hover:bg-sky-500 hover:text-white transition-all shadow-lg" />
-                    </div>
-                  </Carousel>
-                </TabsContent>
-              )
-            })}
-          </Tabs>
-        )}
-      </div>
-
-    </section>
+        <div className="mt-12 flex justify-center">
+          <LandingButton asChild size="md">
+            <Link href="/services">
+              See all services
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </LandingButton>
+        </div>
+    </LandingSection>
   );
 }

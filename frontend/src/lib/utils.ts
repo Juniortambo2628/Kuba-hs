@@ -15,6 +15,17 @@ export function getMediaUrl(path: string | null | undefined, fallbackType: 'avat
   }
   
   if (path.startsWith('http')) {
+    try {
+      const url = new URL(path);
+      if (
+        (url.hostname === '127.0.0.1' || url.hostname === 'localhost') &&
+        url.pathname.includes('/storage/')
+      ) {
+        return url.pathname.replace('/storage/', '/cms-assets/');
+      }
+    } catch {
+      /* fall through */
+    }
     if (path.includes('ui-avatars.com')) {
       try {
         const url = new URL(path);
@@ -32,8 +43,26 @@ export function getMediaUrl(path: string | null | undefined, fallbackType: 'avat
   }
   
   const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, '') || 'http://localhost:8000';
-  
   const cleanPath = path.replace(/^\//, '').replace(/^storage\//, '');
-  
-  return `${baseUrl}/storage/${cleanPath}`;
+  const finalUrl = path.startsWith('/storage/')
+    ? `${baseUrl}${path}`
+    : `${baseUrl}/storage/${cleanPath}`;
+
+  // Local dev: proxy storage through Next.js cms-assets rewrite (CORS workaround)
+  if (/localhost|127\.0\.0\.1/.test(baseUrl) && finalUrl.includes('/storage/')) {
+    return finalUrl.replace('/storage/', '/cms-assets/');
+  }
+
+  return finalUrl;
+}
+
+/** CMS / admin settings images — normalizes object URLs and proxies via getMediaUrl */
+export function resolveMediaUrl(url: unknown): string {
+  if (!url || typeof url !== "string") {
+    if (url && typeof url === "object") {
+      console.warn("resolveMediaUrl received an object instead of string:", url);
+    }
+    return "";
+  }
+  return getMediaUrl(url, "service");
 }

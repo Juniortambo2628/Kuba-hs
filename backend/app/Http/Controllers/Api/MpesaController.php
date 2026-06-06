@@ -123,6 +123,14 @@ class MpesaController extends Controller
                 'final_price' => $serviceAmount,
             ]);
 
+            app(\App\Services\BookingActivityLogService::class)->log(
+                $booking,
+                'payment_completed',
+                $booking->customer,
+                'Payment verified via M-Pesa',
+                ['transaction_id' => $transactionId, 'amount' => $serviceAmount]
+            );
+
             // Notifications
             $booking->load(['customer', 'provider.user']);
 

@@ -1,39 +1,45 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
+import { DashboardPageSkeleton } from "@/components/shared/DashboardPageSkeleton";
+
+import { useState } from "react";
 import axiosInstance, { handleApiError } from "@/lib/axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Loader2, Plus, Wrench, Trash2, Edit, Car, Home, Heart, Briefcase, Building2, Sparkles, Droplet, Zap } from "lucide-react";
+import { Plus, Trash2, Edit, Sparkles, ImageIcon } from "lucide-react";
 import { toast } from "sonner";
-import { Textarea } from "@/components/ui/textarea";
-import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
-import { iconMap } from "@/lib/category-icons";
 import { useApiData } from "@/hooks/useApiData";
+import { uiPrimitives } from "@/lib/ui-primitives";
+import { getMediaUrl } from "@/lib/utils";
+import { CategoryFormDialog } from "@/components/admin/CategoryFormDialog";
+import { ServiceFormDialog } from "@/components/admin/ServiceFormDialog";
 
 interface Service {
     id: string;
     name: string;
     description: string;
-    category_id: number;
+    category_id: string;
     thumbnail_url?: string;
 }
 
 interface Category {
-    id: number;
+    id: string;
     name: string;
     description: string;
-    icon: string | null;
+    icon_url?: string | null;
     image_url: string | null;
     services: Service[];
 }
 
-// Shared iconMap imported from @/lib/category-icons
+function categoryImagePath(cat: Category): string {
+    if (!cat.image_url) return "";
+    return cat.image_url.startsWith("/storage/")
+        ? cat.image_url
+        : `/storage/${cat.image_url.replace(/^\//, "").replace(/^storage\//, "")}`;
+}
 
 export default function AdminCategories() {
     const { data: categories, isLoading, refetch: fetchCategories } = useApiData<Category[]>("/api/admin/categories", { 
@@ -45,256 +51,109 @@ export default function AdminCategories() {
     const [selectedSvc, setSelectedSvc] = useState<Service | null>(null);
     const [isCatOpen, setIsCatOpen] = useState(false);
     const [isSvcOpen, setIsSvcOpen] = useState(false);
-    const [catForm, setCatForm] = useState<{name: string, description: string, iconContext: string, image: File | null}>({ name: '', description: '', iconContext: 'wrench', image: null });
-    const [svcForm, setSvcForm] = useState({ name: '', description: '' });
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [catInitial, setCatInitial] = useState<{ name: string; description: string; image_url: string }>({
+        name: '',
+        description: '',
+        image_url: '',
+    });
+    const [svcInitial, setSvcInitial] = useState({ name: '', description: '' });
 
-    const handleSaveCategory = async () => {
-        setIsSubmitting(true);
-        try {
-            const formData = new FormData();
-            formData.append('name', catForm.name);
-            formData.append('description', catForm.description);
-            formData.append('icon_url', catForm.iconContext);
-            if (catForm.image) {
-                formData.append('image', catForm.image);
-            }
-
-            if (selectedCat) {
-                formData.append('_method', 'PUT');
-                await axiosInstance.post(`/api/admin/categories/${selectedCat.id}`, formData, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
-                });
-                toast.success("Category updated");
-            } else {
-                await axiosInstance.post("/api/admin/categories", formData, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
-                });
-                toast.success("Category created");
-            }
-            fetchCategories();
-            setIsCatOpen(false);
-            setCatForm({ name: '', description: '', iconContext: 'wrench', image: null });
-            setSelectedCat(null);
-        } catch (err: any) { toast.error(handleApiError(err)); }
-        finally { setIsSubmitting(false); }
-    };
-
-    const handleDeleteCategory = async (id: number) => {
+    const handleDeleteCategory = async (id: string) => {
         try { await axiosInstance.delete(`/api/admin/categories/${id}`); toast.success("Category deleted"); fetchCategories(); }
-        catch (err: any) { toast.error(handleApiError(err)); }
-    };
-
-    const handleSaveService = async () => {
-        if (!selectedCat) return;
-        setIsSubmitting(true);
-        try {
-            if (selectedSvc) {
-                await axiosInstance.put(`/api/admin/services/${selectedSvc.id}`, svcForm);
-                toast.success("Service updated");
-            } else {
-                await axiosInstance.post("/api/admin/services", { ...svcForm, category_id: selectedCat.id });
-                toast.success("Service added");
-            }
-            fetchCategories();
-            setIsSvcOpen(false);
-            setSvcForm({ name: '', description: '' });
-            setSelectedSvc(null);
-        } catch (err: any) { toast.error(handleApiError(err)); }
-        finally { setIsSubmitting(false); }
+        catch (err: unknown) { toast.error(handleApiError(err)); }
     };
 
     const handleDeleteService = async (id: string | number) => {
         try { await axiosInstance.delete(`/api/admin/services/${id}`); toast.success("Service deleted"); fetchCategories(); }
-        catch (err: any) { toast.error(err.response?.data?.message || "Delete failed"); }
+        catch (err: unknown) { toast.error(handleApiError(err)); }
     };
 
-    const openEditCat = (cat: Category) => { setSelectedCat(cat); setCatForm({ name: cat.name, description: cat.description, iconContext: cat.icon || 'wrench', image: null }); setIsCatOpen(true); };
-    const openAddService = (cat: Category) => { setSelectedCat(cat); setSelectedSvc(null); setSvcForm({ name: '', description: '' }); setIsSvcOpen(true); };
-    const openEditService = (cat: Category, svc: Service) => { setSelectedCat(cat); setSelectedSvc(svc); setSvcForm({ name: svc.name, description: svc.description }); setIsSvcOpen(true); };
+    const openAddCat = () => {
+        setSelectedCat(null);
+        setCatInitial({ name: '', description: '', image_url: '' });
+        setIsCatOpen(true);
+    };
 
-    const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (!e.target.files?.[0] || !selectedSvc) return;
-        
-        const file = e.target.files[0];
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('collection', 'thumbnail');
-        formData.append('model_type', 'service');
-        if (selectedSvc) {
-            formData.append('model_id', selectedSvc.id);
-        }
-        setIsSubmitting(true);
-        try {
-            const res = await axiosInstance.post('/api/media/upload', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
-            toast.success("Thumbnail uploaded");
-            fetchCategories();
-            // Update local state to show the new image
-            if (selectedSvc) {
-                setSelectedSvc({ ...selectedSvc, thumbnail_url: res.data.url });
-            }
-        } catch (err: any) {
-            toast.error(handleApiError(err));
-        } finally {
-            setIsSubmitting(false);
-        }
+    const openEditCat = (cat: Category) => {
+        setSelectedCat(cat);
+        setCatInitial({
+            name: cat.name,
+            description: cat.description,
+            image_url: categoryImagePath(cat),
+        });
+        setIsCatOpen(true);
+    };
+
+    const openAddService = (cat: Category) => {
+        setSelectedCat(cat);
+        setSelectedSvc(null);
+        setSvcInitial({ name: '', description: '' });
+        setIsSvcOpen(true);
+    };
+
+    const openEditService = (cat: Category, svc: Service) => {
+        setSelectedCat(cat);
+        setSelectedSvc(svc);
+        setSvcInitial({ name: svc.name, description: svc.description });
+        setIsSvcOpen(true);
     };
 
     if (isLoading) {
-        return (
-            <div className="max-w-5xl mx-auto space-y-6 animate-pulse">
-                <Skeleton className="h-10 w-48 rounded-lg" />
-                <Skeleton className="h-64 rounded-xl" />
-            </div>
-        );
+        return <DashboardPageSkeleton width="narrow" metrics={0} bodyHeight="h-64" />;
     }
 
     return (
-        <div className="max-w-5xl mx-auto space-y-10 pb-12">
-            {/* Standard Dashboard Header */}
+        <DashboardPageContainer width="narrow" className="space-y-10">
             <DashboardPageHeader 
                 title="Service Categories" 
                 subtitle="Manage platform service taxonomy and professional offerings."
             >
-                <Dialog open={isCatOpen} onOpenChange={setIsCatOpen}>
-                    <DialogTrigger asChild>
-                        <Button 
-                            onClick={() => { setSelectedCat(null); setCatForm({ name: '', description: '', iconContext: 'wrench', image: null }); }} 
-                            className="h-12 bg-primary hover:bg-black text-white rounded-2xl font-bold px-8 shadow-md transition-all flex items-center gap-2 group"
-                        >
-                            <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
-                            Create Category
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle className="text-xl font-bold text-foreground">
-                                {selectedCat ? "Edit Category" : "New Category"}
-                            </DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4 py-2">
-                            <div className="space-y-2">
-                                <Label className="text-xs font-bold text-muted-foreground">Category Identity</Label>
-                                <Input 
-                                    value={catForm.name} 
-                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCatForm({...catForm, name: e.target.value})} 
-                                    placeholder="e.g. Home Cleaning"
-                                    className="h-14 bg-muted border-none rounded-2xl font-bold" 
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-xs font-bold text-muted-foreground">Brief Narrative</Label>
-                                <Textarea 
-                                    value={catForm.description} 
-                                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCatForm({...catForm, description: e.target.value})} 
-                                    placeholder="Describe the category scope..."
-                                    className="min-h-[100px] bg-muted border-none rounded-2xl font-bold pt-4" 
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Icon</Label>
-                                <div className="grid grid-cols-5 gap-2">
-                                    {Object.entries(iconMap).map(([id, icon]) => (
-                                        <button key={id} type="button" onClick={() => setCatForm({...catForm, iconContext: id})}
-                                            className={`p-2.5 rounded-lg border flex items-center justify-center transition-all ${catForm.iconContext === id ? "bg-muted border-primary text-primary" : "bg-muted border-border text-muted-foreground hover:bg-accent"}`}
-                                        >{icon}</button>
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Thumbail Image</Label>
-                                <div className="flex items-center gap-4">
-                                    <div className="w-20 h-20 rounded-lg bg-muted border border-border overflow-hidden flex items-center justify-center">
-                                        {catForm.image ? (
-                                            <img src={URL.createObjectURL(catForm.image)} alt="Preview" className="w-full h-full object-cover" />
-                                        ) : selectedCat?.image_url ? (
-                                            <img src={`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, '') || 'http://localhost:8000'}/storage/${selectedCat.image_url.replace(/^\//, '').replace(/^storage\//, '')}`} alt="Category" className="w-full h-full object-cover" />
-                                        ) : (
-                                            <Sparkles className="w-8 h-8 text-muted-foreground/20" />
-                                        )}
-                                    </div>
-                                    <div className="flex-1">
-                                        <Input type="file" onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCatForm({...catForm, image: e.target.files?.[0] || null})} accept="image/*" className="h-9" />
-                                        <p className="text-[10px] text-muted-foreground mt-1">Recommended size: 800x600px</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <Button 
-                                onClick={handleSaveCategory} 
-                                disabled={isSubmitting || !catForm.name} 
-                                className="w-full h-14 bg-primary hover:bg-black text-white font-bold rounded-2xl mt-4"
-                            >
-                                {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Save Category Architecture"}
-                            </Button>
-                        </div>
-                    </DialogContent>
-                </Dialog>
+                <Button 
+                    onClick={openAddCat}
+                    className="h-12 bg-primary hover:bg-black text-white rounded-2xl font-bold px-8 shadow-md transition-all flex items-center gap-2 group"
+                >
+                    <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
+                    Create Category
+                </Button>
             </DashboardPageHeader>
 
-            {/* Service Dialog */}
-            <Dialog open={isSvcOpen} onOpenChange={setIsSvcOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle className="text-xl font-bold text-foreground">
-                            {selectedSvc ? `Edit ${selectedSvc?.name}` : `Add Service to ${selectedCat?.name}`}
-                        </DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4 py-2">
-                        <div className="space-y-2">
-                            <Label className="text-xs font-bold text-muted-foreground">Service Name</Label>
-                            <Input 
-                                value={svcForm.name} 
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSvcForm({...svcForm, name: e.target.value})} 
-                                placeholder="e.g. Deep Carpet Cleaning"
-                                className="h-14 bg-muted border-none rounded-2xl font-bold" 
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label className="text-xs font-bold text-muted-foreground">Service Narrative</Label>
-                            <Textarea 
-                                value={svcForm.description} 
-                                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setSvcForm({...svcForm, description: e.target.value})} 
-                                placeholder="Detail the specific service offering..."
-                                className="min-h-[100px] bg-muted border-none rounded-2xl font-bold pt-4" 
-                            />
-                        </div>
-                        
-                        {selectedSvc && (
-                            <div className="space-y-2">
-                                <Label>Thumbnail</Label>
-                                <div className="flex items-center gap-4">
-                                    <div className="w-20 h-20 rounded-lg bg-muted border border-border overflow-hidden flex items-center justify-center">
-                                        {selectedSvc?.thumbnail_url ? (
-                                            <img src={selectedSvc.thumbnail_url} alt="Service" className="w-full h-full object-cover" />
-                                        ) : (
-                                            <Sparkles className="w-8 h-8 text-muted-foreground/20" />
-                                        )}
-                                    </div>
-                                    <div className="flex-1">
-                                        <Input type="file" onChange={handleThumbnailUpload} accept="image/*" className="h-9" />
-                                        <p className="text-[10px] text-muted-foreground mt-1">Recommended size: 800x600px</p>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                        <Button onClick={handleSaveService} disabled={isSubmitting || !svcForm.name} className="w-full h-10 mt-2">
-                            {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Service"}
-                        </Button>
-                    </div>
-                </DialogContent>
-            </Dialog>
+            <CategoryFormDialog
+                open={isCatOpen}
+                onOpenChange={setIsCatOpen}
+                categoryId={selectedCat?.id ?? null}
+                initial={catInitial}
+                onSuccess={fetchCategories}
+            />
 
-            {/* Category List */}
+            {selectedCat && (
+                <ServiceFormDialog
+                    open={isSvcOpen}
+                    onOpenChange={setIsSvcOpen}
+                    categoryId={selectedCat.id}
+                    categoryName={selectedCat.name}
+                    serviceId={selectedSvc?.id ?? null}
+                    thumbnailUrl={selectedSvc?.thumbnail_url}
+                    initial={svcInitial}
+                    onSuccess={fetchCategories}
+                />
+            )}
+
             <div className="space-y-4">
                 {categories.map((cat) => (
                     <Card key={cat.id} className="border border-border">
                         <CardHeader className="px-6 py-4 border-b border-border">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-primary">
-                                        {iconMap[cat.icon || 'wrench']}
+                                    <div className="w-10 h-10 rounded-lg bg-muted border border-border overflow-hidden flex items-center justify-center shrink-0">
+                                        {cat.image_url ? (
+                                            <img
+                                                src={getMediaUrl(cat.image_url, "service")}
+                                                alt={cat.name}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <ImageIcon className="w-4 h-4 text-muted-foreground/40" />
+                                        )}
                                     </div>
                                     <div>
                                         <CardTitle className="text-base font-semibold text-foreground">{cat.name}</CardTitle>
@@ -313,7 +172,7 @@ export default function AdminCategories() {
                                         }
                                         title="Purge Category?"
                                         description={
-                                            <>Are you sure you want to delete <span className="font-bold text-foreground">"{cat.name}"</span>? This will also permanently remove all services associated with this category.</>
+                                            <>Are you sure you want to delete <span className="font-bold text-foreground">&quot;{cat.name}&quot;</span>? This will also permanently remove all services associated with this category.</>
                                         }
                                         onConfirm={() => handleDeleteCategory(cat.id)}
                                     />
@@ -322,7 +181,7 @@ export default function AdminCategories() {
                         </CardHeader>
                         <CardContent className="p-6">
                             <div className="flex items-center justify-between mb-6">
-                                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Service Registry</h4>
+                                <h4 className={uiPrimitives.label.caps}>Service Registry</h4>
                                 <Button 
                                     variant="ghost" 
                                     size="sm" 
@@ -363,7 +222,7 @@ export default function AdminCategories() {
                                                     }
                                                     title="Delete Service?"
                                                     description={
-                                                        <>Are you sure you want to remove <span className="font-bold text-foreground">"{svc.name}"</span> from the <span className="font-bold text-foreground">{cat.name}</span> category? This action cannot be undone.</>
+                                                        <>Are you sure you want to remove <span className="font-bold text-foreground">&quot;{svc.name}&quot;</span> from the <span className="font-bold text-foreground">{cat.name}</span> category? This action cannot be undone.</>
                                                     }
                                                     onConfirm={() => handleDeleteService(svc.id)}
                                                     confirmLabel="Delete Service"
@@ -382,6 +241,6 @@ export default function AdminCategories() {
                     </Card>
                 ))}
             </div>
-        </div>
+        </DashboardPageContainer>
     );
 }

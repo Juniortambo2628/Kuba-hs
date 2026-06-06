@@ -112,6 +112,15 @@ class ProductionDataSeeder extends Seeder
             ['key' => 'corp_feature_2', 'value' => 'Your Own Support Contact', 'group' => 'market_narratives', 'label' => 'Corporate Feature 2', 'type' => 'text'],
             ['key' => 'corp_feature_3', 'value' => 'Fastest Service', 'group' => 'market_narratives', 'label' => 'Corporate Feature 3', 'type' => 'text'],
             ['key' => 'corp_feature_4', 'value' => 'Top-Rated Business Pros', 'group' => 'market_narratives', 'label' => 'Corporate Feature 4', 'type' => 'text'],
+            ['key' => 'corp_banner_headline', 'value' => 'One platform for every service your business needs', 'group' => 'market_narratives', 'label' => 'Landing — Businesses banner headline', 'type' => 'text'],
+            ['key' => 'corp_banner_body', 'value' => 'Consolidated billing, dedicated account support, and vetted professionals for offices, retail, and multi-site teams.', 'group' => 'market_narratives', 'label' => 'Landing — Businesses banner description', 'type' => 'textarea'],
+            ['key' => 'corp_cta_primary', 'value' => 'Request quote', 'group' => 'market_narratives', 'label' => 'Landing — Businesses request quote CTA', 'type' => 'text'],
+            ['key' => 'corp_cta_secondary', 'value' => 'Read more', 'group' => 'market_narratives', 'label' => 'Landing — Businesses read more CTA', 'type' => 'text'],
+            ['key' => 'corp_read_more_href', 'value' => '/commercial', 'group' => 'market_narratives', 'label' => 'Landing — Businesses read more URL', 'type' => 'text'],
+            ['key' => 'corp_video_label', 'value' => 'Read more', 'group' => 'market_narratives', 'label' => 'Landing — Businesses read more CTA (legacy key)', 'type' => 'text'],
+            ['key' => 'corp_video_href', 'value' => '/commercial', 'group' => 'market_narratives', 'label' => 'Landing — Businesses read more URL (legacy key)', 'type' => 'text'],
+            ['key' => 'corp_request_modal_title', 'value' => 'Request a business plan', 'group' => 'market_narratives', 'label' => 'Landing — Businesses request modal title', 'type' => 'text'],
+            ['key' => 'corp_request_modal_desc', 'value' => 'Tell us about your organization and we will design a service package with consolidated billing and dedicated support.', 'group' => 'market_narratives', 'label' => 'Landing — Businesses request modal description', 'type' => 'textarea'],
 
             // System & Config
             ['key' => 'contact_hero_title', 'value' => 'We\'re Here to Help', 'group' => 'hero_text', 'label' => 'Contact Hero Title', 'type' => 'text'],

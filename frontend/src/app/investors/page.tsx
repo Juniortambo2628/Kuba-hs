@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
+import { MarketingPage } from "@/components/layout/MarketingPage";
+import { MarketingSection } from "@/components/shared/MarketingSection";
+import { useMarketingHero } from "@/hooks/useMarketingHero";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,8 +19,6 @@ import axiosInstance from "@/lib/axios";
 import { useCMS } from "@/contexts/CMSContext";
 import { usePageFeatures } from "@/hooks/usePageFeatures";
 import { resolveIcon } from "@/lib/icon-map";
-import { HighImpactHero } from "@/components/shared/HighImpactHero";
-
 export default function InvestorsPage() {
   const { getS, getImg, isLoading: cmsLoading } = useCMS();
   const { features: metrics } = usePageFeatures('investors');
@@ -52,16 +51,10 @@ export default function InvestorsPage() {
 
   const bgImage = getImg('hero_backgrounds', 'investors_hero_image', '');
 
-  return (
-    <div className="min-h-screen">
-      <Navbar />
+  const hero = useMarketingHero("investors");
 
-      <HighImpactHero
-        title={getS('hero_text', 'investors_hero_title', 'Scaling the Future of Home Services.')}
-        subtitle={getS('hero_text', 'investors_hero_subtitle', 'Join us in transforming how millions of homeowners connect with verified professionals.')}
-        badge={getS('hero_text', 'investors_hero_badge', "Investor Relations")}
-        cmsKey="investors"
-      />
+  return (
+    <MarketingPage hero={hero}>
 
       {/* Stats/Metrics */}
       <section className="py-20 bg-muted/50 dark:bg-zinc-950/50">
@@ -239,7 +232,6 @@ export default function InvestorsPage() {
         </div>
       </section>
 
-      <Footer />
-    </div>
+    </MarketingPage>
   );
 }

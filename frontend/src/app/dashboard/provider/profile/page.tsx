@@ -1,314 +1,360 @@
 "use client";
 
+import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
+
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import axiosInstance from "@/lib/axios";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
-  Building2, 
-  MapPin, 
   ShieldCheck, 
-  Save, 
   Loader2,
-  Camera,
   Map,
-  Zap,
   Briefcase,
-  User,
-  Activity,
-  Phone,
-  Mail,
-  Lock,
-  Star
+  Star,
+  Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
 import { KubaFilePond } from "@/components/ui/filepond";
-import dynamic from "next/dynamic";
+import { ProviderCardBanner } from "@/components/marketplace/ProviderCardBanner";
+import {
+  ProviderBusinessProfileDialog,
+  type ProviderBusinessForm,
+} from "@/components/dashboard/ProviderBusinessProfileDialog";
+import {
+  BrandMediaPanel,
+  DashboardUserAvatar,
+  DashboardGreetingBar,
+  DashboardPanelCard,
+  DashboardStatusBadge,
+} from "@/components/dashboard/workspace";
+import { workspaceUi } from "@/lib/dashboard-workspace-ui";
+import Link from "next/link";
+import Image from "next/image";
+import { getMediaUrl, cn } from "@/lib/utils";
 
-const getAvatarUrl = (path: string | null | undefined) => {
-  if (!path) return null;
-  if (path.startsWith('http')) return path;
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, '') || 'http://localhost:8000';
-  return `${baseUrl}/storage/${path.replace('storage/', '')}`;
-};
-
-const LocationPickerMap = dynamic(() => import("@/components/map/LocationPicker"), {
-  ssr: false,
-  loading: () => <div className="w-full h-[400px] bg-muted rounded-2xl animate-pulse"></div>
-});
+function toBusinessForm(profile: Record<string, unknown>, userPhone?: string): ProviderBusinessForm {
+  const skills = profile.specialized_skills;
+  return {
+    business_name: (profile.business_name as string) || "",
+    bio: (profile.bio as string) || "",
+    location_name: (profile.location_name as string) || "",
+    phone: (profile.phone as string) || userPhone || "+254",
+    latitude: (profile.latitude as number) ?? null,
+    longitude: (profile.longitude as number) ?? null,
+    experience_years: Number(profile.experience_years) || 0,
+    service_radius: Number(profile.service_radius) || 10,
+    specialized_skills: Array.isArray(skills)
+      ? (skills as string[])
+      : typeof skills === "string"
+        ? (skills as string).split(",").map((s) => s.trim()).filter(Boolean)
+        : [],
+  };
+}
 
 export default function ProviderProfile() {
   const { user, checkAuth } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
+  const [businessDialogOpen, setBusinessDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchProfile();
   }, []);
 
+  const emptyProfile = () => ({
+    business_name: "",
+    bio: "",
+    location_name: "",
+    phone: user?.phone || "+254",
+    latitude: null,
+    longitude: null,
+    experience_years: 0,
+    service_radius: 10,
+    specialized_skills: [] as string[],
+  });
+
   const fetchProfile = async () => {
     try {
       const res = await axiosInstance.get("/api/provider/dashboard");
-      const defaultProfile = {
-        business_name: "",
-        bio: "",
-        location_name: "",
-        phone: user?.phone || "+254",
-        latitude: null,
-        longitude: null,
-        experience_years: 0,
-        service_radius: 10
-      };
-      setProfile({ ...defaultProfile, ...(res.data.profile || {}) });
-    } catch (err) {
-      toast.error("Failed to load profile");
+      const body = res.data?.data ?? res.data;
+      const profileData = body?.profile ?? body;
+      setProfile({ ...emptyProfile(), ...(profileData || {}) });
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } })?.response?.status;
+      if (status === 403) {
+        toast.error("Sign in with a provider account to manage this profile.");
+      } else {
+        toast.error("Failed to load profile");
+      }
+      setProfile(emptyProfile());
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSave = async () => {
-    setIsSaving(true);
-    try {
-      await axiosInstance.post("/api/provider/profile", profile);
-      toast.success("Merchant profile updated successfully");
-      await checkAuth();
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.messages 
-        ? (Object.values(err.response.data.messages)[0] as string[])?.[0] 
-        : err.response?.data?.error || "Failed to update profile";
-      toast.error(errorMsg);
-    } finally {
-      setIsSaving(false);
-    }
+  const handleBusinessSaved = async () => {
+    await fetchProfile();
+    await checkAuth();
   };
 
   if (isLoading) {
     return (
-      <div className="space-y-8 animate-pulse max-w-6xl mx-auto p-4">
+      <DashboardPageContainer width="default" className="space-y-8 animate-pulse p-4">
         <div className="h-10 w-48 bg-muted rounded-xl"></div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-1 h-96 bg-muted rounded-2xl"></div>
           <div className="lg:col-span-2 h-[600px] bg-muted rounded-2xl"></div>
         </div>
-      </div>
+      </DashboardPageContainer>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <DashboardPageContainer width="default" className="py-12 text-center text-muted-foreground text-sm">
+        Unable to load provider profile. Refresh the page or contact support.
+      </DashboardPageContainer>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 pb-12">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-2">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground tracking-tight">Merchant Identity</h1>
-          <p className="text-sm text-muted-foreground mt-1">Configure your marketplace presence and operational capacity.</p>
-        </div>
-        <Button onClick={handleSave} disabled={isSaving} className="bg-primary hover:bg-primary text-white rounded-xl font-bold px-8 shadow-sm transition-all h-10 text-[10px] tracking-wide">
-          {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-          Synchronize Data
-        </Button>
-      </div>
+    <DashboardPageContainer width="default" className={workspaceUi.page}>
+      <DashboardGreetingBar
+        greeting="Business profile"
+        subtitle="Logo and banner are your storefront on marketplace cards. Your personal photo is only for account identity (header, chat, team views)."
+        actions={
+          <Button
+            onClick={() => setBusinessDialogOpen(true)}
+            className="rounded-xl h-10 font-semibold"
+          >
+            <Pencil className="w-4 h-4 mr-2" />
+            Edit business profile
+          </Button>
+        }
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Profile Sidebar */}
         <div className="lg:col-span-1 space-y-6">
-          <Card className="border border-border bg-card/50 backdrop-blur-md shadow-sm overflow-hidden text-center">
-            <CardContent className="p-8">
-              <div className="relative inline-block mb-6 group w-full">
-                <div className="w-32 h-32 mx-auto rounded-2xl bg-muted/50 flex items-center justify-center text-foreground border-2 border-border shadow-sm group-hover:scale-105 transition-transform duration-500 overflow-hidden relative">
-                  {user?.avatar_url ? (
-                    <img src={getAvatarUrl(user.avatar_url) || ""} alt={user.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <User className="w-12 h-12 opacity-20" />
-                  )}
-                  <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/5 transition-all"></div>
+          {profile?.id && (
+            <>
+              <BrandMediaPanel
+                title="Storefront banner"
+                description="Wide header image on your public provider card when no logo is set."
+              >
+                <div className="h-28 rounded-2xl overflow-hidden border border-border mb-4">
+                  <ProviderCardBanner
+                    bannerUrl={profile.banner}
+                    businessName={profile.business_name || user?.name || "Provider"}
+                    priority
+                  />
                 </div>
-                
-                <div className="absolute bottom-[-10px] right-1/2 translate-x-16 p-0 bg-primary text-white rounded-xl shadow-lg hover:bg-primary/90 transition-all overflow-hidden w-10 h-10 flex items-center justify-center border-2 border-background">
-                  <KubaFilePond 
+                <KubaFilePond
+                  modelType="provider"
+                  modelId={String(profile.id)}
+                  collection="banners"
+                  onSuccess={() => {
+                    toast.success("Banner updated");
+                    fetchProfile();
+                  }}
+                />
+              </BrandMediaPanel>
+
+              <BrandMediaPanel
+                title="Business logo"
+                description="Primary brand mark on marketplace search and provider cards."
+              >
+                {profile.logo && (
+                  <div className="relative h-24 w-24 mx-auto mb-4 rounded-2xl overflow-hidden border border-border bg-muted">
+                    <Image
+                      src={getMediaUrl(profile.logo, "avatar")}
+                      alt={`${profile.business_name || "Provider"} logo`}
+                      fill
+                      sizes="96px"
+                      className="object-cover"
+                    />
+                  </div>
+                )}
+                <KubaFilePond
+                  modelType="provider"
+                  modelId={String(profile.id)}
+                  collection="logos"
+                  onSuccess={() => {
+                    toast.success("Logo updated");
+                    fetchProfile();
+                  }}
+                />
+              </BrandMediaPanel>
+            </>
+          )}
+
+          <BrandMediaPanel
+            title="Personal photo"
+            description="Your face for the dashboard header, messages, and account menu — not shown as the business logo."
+          >
+            <div className="flex flex-col items-center text-center gap-4">
+              <DashboardUserAvatar name={user?.name} avatarUrl={user?.avatar_url} size="xl" />
+              {user?.id && (
+                <div className="w-full max-w-xs">
+                  <KubaFilePond
                     modelType="user"
-                    modelId={user?.id?.toString() || ""}
+                    modelId={String(user.id)}
                     collection="avatars"
                     onSuccess={() => {
-                      toast.success("Avatar updated");
+                      toast.success("Personal photo updated");
                       checkAuth();
                     }}
-                    label='<span class="text-white">...</span>'
                   />
-                  <Camera className="w-4 h-4 absolute pointer-events-none" />
                 </div>
-              </div>
-              
-              <div className="space-y-2 mt-4 text-center">
-                <h2 className="text-xl font-bold text-foreground tracking-tight">{profile.business_name || user?.name}</h2>
-                <div className="flex items-center justify-center gap-2">
-                  <span className="text-[9px] font-bold text-primary bg-primary/10 px-3 py-1 rounded-full tracking-wide">Elite Provider</span>
-                  <span className="text-[9px] font-bold text-muted-foreground bg-muted px-3 py-1 rounded-full tracking-wide">Verified Partner</span>
+              )}
+              <div className="space-y-2">
+                <h2 className="text-xl font-bold text-foreground tracking-tight">
+                  {profile?.business_name || user?.name || "Provider"}
+                </h2>
+                <div className="flex items-center justify-center gap-2 flex-wrap">
+                  <DashboardStatusBadge status="active" label="Provider" tone="info" />
+                  {profile?.is_verified && (
+                    <DashboardStatusBadge status="verified" label="Verified" tone="good" />
+                  )}
                 </div>
               </div>
 
-              <div className="space-y-4 pt-6 mt-6 border-t border-border">
-                <div className="p-4 bg-muted/30 rounded-xl border border-border">
+              <div className="space-y-4 pt-6 mt-2 border-t border-border w-full">
+                <div className={cn(workspaceUi.frosted.inset, "p-4 w-full")}>
                   <div className="flex items-center justify-between mb-1">
-                    <p className="text-[8px] font-bold text-muted-foreground tracking-widest">Reputation</p>
-                    <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
+                    <p className="text-xs font-medium text-muted-foreground">Rating</p>
+                    <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-lg font-bold text-foreground">Elite</span>
-                    <span className="text-[10px] font-bold text-emerald-600 bg-emerald-100/50 px-2 py-0.5 rounded-full">Top 5%</span>
-                  </div>
+                  <p className="text-lg font-semibold text-foreground">Building reputation</p>
+                  <p className="text-xs text-muted-foreground mt-1">Reviews improve your ranking</p>
                 </div>
-                <Button variant="outline" className="w-full h-10 border-border text-foreground hover:bg-muted font-bold text-[9px] tracking-wide rounded-xl">
-                  Public Profile View
-                </Button>
+                {profile?.id && (
+                  <Button variant="outline" className="w-full rounded-full" asChild>
+                    <Link href={`/providers/${profile.id}`}>View public profile</Link>
+                  </Button>
+                )}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </BrandMediaPanel>
 
-          <Card className="border border-border bg-card/50 backdrop-blur-md shadow-sm">
-            <CardContent className="p-8 space-y-6">
-              <div className="flex items-center justify-between">
-                <h3 className="text-[9px] font-bold text-foreground tracking-wider">Security Vectors</h3>
-                <ShieldCheck className="w-4 h-4 text-primary" />
-              </div>
-              <div className="space-y-4">
-                <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-                  <div className="h-full w-[95%] bg-primary rounded-full"></div>
-                </div>
-                <p className="text-[9px] font-bold text-muted-foreground leading-relaxed text-center">Credential integrity is optimal.</p>
-              </div>
-            </CardContent>
-          </Card>
+          <DashboardPanelCard title="Account security" icon={ShieldCheck} contentClassName="space-y-3">
+            <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+              <div className="h-full w-[95%] bg-primary rounded-full" />
+            </div>
+            <p className="text-xs text-muted-foreground text-center leading-relaxed">
+              Your login and verification details look good.
+            </p>
+          </DashboardPanelCard>
         </div>
 
         {/* Main Panel */}
         <div className="lg:col-span-2 space-y-8">
-          <Card className="border border-border bg-card/50 backdrop-blur-md shadow-sm">
-            <CardContent className="p-8">
-              <div className="flex items-center gap-4 mb-10 border-b border-border pb-8">
-                <div className="w-10 h-10 rounded-xl bg-muted/50 flex items-center justify-center text-foreground border border-border">
-                  <Briefcase className="w-5 h-5" />
-                </div>
-                <div className="space-y-0.5">
-                  <h2 className="text-lg font-bold text-foreground tracking-tight">Business Configuration</h2>
-                  <p className="text-[10px] font-bold text-muted-foreground">Define your core service parameters and bio.</p>
-                </div>
+          <DashboardPanelCard
+            title="Business details"
+            description="How clients see your business on the marketplace"
+            icon={Briefcase}
+            action={
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full"
+                onClick={() => setBusinessDialogOpen(true)}
+              >
+                <Pencil className="h-3.5 w-3.5 mr-1" />
+                Edit
+              </Button>
+            }
+          >
+            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm">
+              <div className="sm:col-span-2">
+                <dt className="text-xs font-medium text-muted-foreground">Business name</dt>
+                <dd className="font-semibold text-foreground mt-0.5">
+                  {profile.business_name || "—"}
+                </dd>
               </div>
-
-              <div className="space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                  <div className="space-y-2 md:col-span-2">
-                    <label className="text-[10px] font-bold text-muted-foreground tracking-wider ml-1">Merchant Trading Name</label>
-                    <div className="relative group">
-                      <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                      <input 
-                        type="text" 
-                        value={profile.business_name || ""}
-                        onChange={(e) => setProfile({ ...profile, business_name: e.target.value })}
-                        className="w-full h-12 pl-12 pr-4 bg-muted/50 border border-border rounded-xl text-[11px] font-bold focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground outline-none shadow-sm"
-                        placeholder="e.g. Acme Services Ltd"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-muted-foreground tracking-wider ml-1">Contact Phone</label>
-                    <div className="relative group">
-                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                      <input 
-                        type="text" 
-                        value={profile.phone || ""}
-                        onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                        className="w-full h-12 pl-12 pr-4 bg-muted/50 border border-border rounded-xl text-[11px] font-bold focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground outline-none shadow-sm"
-                        placeholder="+254 700 000 000"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2 md:col-span-2">
-                    <label className="text-[10px] font-bold text-muted-foreground tracking-wider ml-1">Professional Biography</label>
-                    <textarea 
-                      value={profile.bio || ""}
-                      onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-                      className="w-full min-h-[140px] p-5 bg-muted/50 border border-border rounded-xl text-[11px] font-bold focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground outline-none shadow-sm block resize-none leading-relaxed"
-                      placeholder="Describe your expertise, experience, and why clients should choose you..."
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-muted-foreground tracking-wider ml-1">Base City</label>
-                    <div className="relative group">
-                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                      <input 
-                        type="text" 
-                        value={profile.location_name || ""}
-                        onChange={(e) => setProfile({ ...profile, location_name: e.target.value })}
-                        className="w-full h-12 pl-12 pr-4 bg-muted/50 border border-border rounded-xl text-[11px] font-bold focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground outline-none shadow-sm"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 md:col-span-2">
-                    <label className="text-[10px] font-bold text-muted-foreground tracking-wider ml-1">Specialized Skills / Keywords</label>
-                    <div className="relative group">
-                      <Zap className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                      <input 
-                        type="text" 
-                        value={profile.specialized_skills ? (Array.isArray(profile.specialized_skills) ? profile.specialized_skills.join(', ') : profile.specialized_skills) : ''}
-                        onChange={(e) => setProfile({ ...profile, specialized_skills: e.target.value.split(',').map(s => s.trim()) })}
-                        className="w-full h-12 pl-12 pr-4 bg-muted/50 border border-border rounded-xl text-[11px] font-bold focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground outline-none shadow-sm"
-                        placeholder="e.g. Precision Welding, Advanced Diagnostics, Solar Installation"
-                      />
-                    </div>
-                    <p className="text-[8px] text-muted-foreground ml-1">Separate skills with commas. These help you appear in specific search results.</p>
-                  </div>
-                </div>
+              <div>
+                <dt className="text-xs font-medium text-muted-foreground">Phone</dt>
+                <dd className="font-medium text-foreground mt-0.5">{profile.phone || "—"}</dd>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Geospatial Section */}
-          <Card className="border border-border bg-card/50 backdrop-blur-md shadow-sm">
-            <CardContent className="p-8">
-              <div className="flex items-center justify-between gap-4 mb-10 border-b border-border pb-8">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-muted/50 flex items-center justify-center text-foreground border border-border">
-                    <Map className="w-5 h-5" />
-                  </div>
-                  <div className="space-y-0.5">
-                    <h2 className="text-lg font-bold text-foreground tracking-tight">Geospatial Logistics</h2>
-                    <p className="text-[10px] font-bold text-muted-foreground">Pinpoint your HQ on the map for automated routing.</p>
-                  </div>
-                </div>
+              <div>
+                <dt className="text-xs font-medium text-muted-foreground">Base city</dt>
+                <dd className="font-medium text-foreground mt-0.5">
+                  {profile.location_name || "—"}
+                </dd>
               </div>
-
-              <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-muted/30 rounded-xl border border-border">
-                    <p className="text-[8px] font-bold text-muted-foreground mb-1">Latitudinal Vector</p>
-                    <p className="text-sm font-bold text-foreground">{profile.latitude?.toFixed(6) || 'N/A'}</p>
-                  </div>
-                  <div className="p-4 bg-muted/30 rounded-xl border border-border">
-                    <p className="text-[8px] font-bold text-muted-foreground mb-1">Longitudinal Vector</p>
-                    <p className="text-sm font-bold text-foreground">{profile.longitude?.toFixed(6) || 'N/A'}</p>
-                  </div>
-                </div>
-
-                <div className="rounded-2xl overflow-hidden border border-border">
-                  <LocationPickerMap 
-                    position={profile.latitude && profile.longitude ? [profile.latitude, profile.longitude] : null}
-                    onChange={(lat, lng) => setProfile({ ...profile, latitude: lat, longitude: lng })}
-                    radius={profile.service_radius}
-                  />
-                </div>
-                <p className="text-[10px] text-center font-bold text-muted-foreground">Service coverage is automatically calculated based on your radius from this point.</p>
+              <div className="sm:col-span-2">
+                <dt className="text-xs font-medium text-muted-foreground">Bio</dt>
+                <dd className="text-foreground mt-0.5 leading-relaxed whitespace-pre-wrap">
+                  {profile.bio || "No bio yet"}
+                </dd>
               </div>
-            </CardContent>
-          </Card>
+              <div className="sm:col-span-2">
+                <dt className="text-xs font-medium text-muted-foreground">Skills</dt>
+                <dd className="text-foreground mt-0.5">
+                  {Array.isArray(profile.specialized_skills) && profile.specialized_skills.length
+                    ? profile.specialized_skills.join(", ")
+                    : "—"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs font-medium text-muted-foreground">Experience</dt>
+                <dd className="font-medium text-foreground mt-0.5">
+                  {profile.experience_years ?? 0} years
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs font-medium text-muted-foreground">Service radius</dt>
+                <dd className="font-medium text-foreground mt-0.5">
+                  {profile.service_radius ?? 10} km
+                </dd>
+              </div>
+            </dl>
+          </DashboardPanelCard>
+
+          <DashboardPanelCard
+            title="Service area"
+            description="Where you operate on the map"
+            icon={Map}
+            action={
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full"
+                onClick={() => setBusinessDialogOpen(true)}
+              >
+                <Pencil className="h-3.5 w-3.5 mr-1" />
+                Edit on map
+              </Button>
+            }
+          >
+            <div className="grid grid-cols-2 gap-4">
+              <div className={cn(workspaceUi.frosted.inset, "p-4")}>
+                <p className="text-xs font-medium text-muted-foreground mb-1">Latitude</p>
+                <p className="text-sm font-semibold text-foreground tabular-nums">
+                  {profile.latitude?.toFixed(6) || "—"}
+                </p>
+              </div>
+              <div className={cn(workspaceUi.frosted.inset, "p-4")}>
+                <p className="text-xs font-medium text-muted-foreground mb-1">Longitude</p>
+                <p className="text-sm font-semibold text-foreground tabular-nums">
+                  {profile.longitude?.toFixed(6) || "—"}
+                </p>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground mt-4 leading-relaxed">
+              Open the editor to pin your base location and adjust coverage radius.
+            </p>
+          </DashboardPanelCard>
         </div>
       </div>
-    </div>
+
+      <ProviderBusinessProfileDialog
+        open={businessDialogOpen}
+        onOpenChange={setBusinessDialogOpen}
+        initial={toBusinessForm(profile, user?.phone)}
+        onSuccess={handleBusinessSaved}
+      />
+    </DashboardPageContainer>
   );
 }

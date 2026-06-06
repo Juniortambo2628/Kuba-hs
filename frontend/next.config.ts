@@ -40,11 +40,53 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  async rewrites() {
+  async redirects() {
     return [
       {
+        source: "/dashboard/customer",
+        destination: "/dashboard/client",
+        permanent: false,
+      },
+      {
+        source: "/dashboard/customer/:path*",
+        destination: "/dashboard/client/:path*",
+        permanent: false,
+      },
+      { source: "/categories", destination: "/services", permanent: true },
+      {
+        source: "/categories/:categorySlug/:serviceSlug",
+        destination: "/services/:serviceSlug",
+        permanent: true,
+      },
+      {
+        source: "/categories/:categorySlug",
+        destination: "/services?category=:categorySlug",
+        permanent: true,
+      },
+    ];
+  },
+  async rewrites() {
+    const apiOrigin = (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000').replace(/\/api\/?$/, '');
+    return [
+      {
+        source: '/auth/:path*',
+        destination: `${apiOrigin}/auth/:path*`,
+      },
+      {
+        source: '/api/:path*',
+        destination: `${apiOrigin}/api/:path*`,
+      },
+      {
+        source: '/sanctum/:path*',
+        destination: `${apiOrigin}/sanctum/:path*`,
+      },
+      {
         source: '/cms-assets/:path*',
-        destination: 'http://127.0.0.1:8000/storage/:path*',
+        destination: `${apiOrigin}/cms-assets/:path*`,
+      },
+      {
+        source: '/assets/:path*',
+        destination: `${apiOrigin}/assets/:path*`,
       },
     ];
   },

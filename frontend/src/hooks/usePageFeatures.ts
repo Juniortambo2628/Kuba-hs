@@ -7,6 +7,7 @@ interface PageFeature {
   subtitle?: string;
   description?: string;
   icon?: string;
+  image_url?: string | null;
   metadata?: Record<string, any>;
 }
 

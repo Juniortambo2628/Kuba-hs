@@ -20,7 +20,8 @@ class ProviderSearchService
         $categoryId = $filters['category_id'] ?? null;
         $serviceId = $filters['service_id'] ?? null;
         $minRating = $filters['min_rating'] ?? null;
-        $isVerified = isset($filters['is_verified']) && filter_var($filters['is_verified'], FILTER_VALIDATE_BOOLEAN);
+        $isVerified = isset($filters['is_verified'])
+            && in_array($filters['is_verified'], [true, 1, '1', 'true', 'yes', 'on'], true);
         $locationFilter = $filters['location'] ?? null;
         
         $lat = $filters['latitude'] ?? null;

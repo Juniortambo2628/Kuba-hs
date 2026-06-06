@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AdminExportLog;
 use App\Models\Booking;
 use App\Models\User;
 use App\Models\Payment;
@@ -14,13 +15,31 @@ class ReportController extends Controller
     public function generate(Request $request)
     {
         $type = $request->query('type', 'bookings');
-        
+
+        if (! in_array($type, ['bookings', 'users', 'revenue'], true)) {
+            return response()->json(['error' => 'Invalid report type'], 400);
+        }
+
+        AdminExportLog::create([
+            'user_id' => $request->user()->id,
+            'report_type' => $type,
+            'ip_address' => $request->ip(),
+        ]);
+
         return match ($type) {
             'bookings' => $this->exportBookings(),
             'users' => $this->exportUsers(),
             'revenue' => $this->exportRevenue(),
-            default => response()->json(['error' => 'Invalid report type'], 400),
         };
+    }
+
+    public function history(Request $request)
+    {
+        $logs = AdminExportLog::with('user:id,first_name,last_name,email')
+            ->latest()
+            ->paginate(25);
+
+        return response()->json(['data' => $logs]);
     }
 
     private function exportBookings()

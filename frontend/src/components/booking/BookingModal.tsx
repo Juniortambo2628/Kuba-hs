@@ -1,4 +1,5 @@
 import * as React from "react";
+import { compressBlobToFile } from "@/lib/image-compression";
 import { useState, useMemo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -39,7 +40,9 @@ import {
   Users
 } from "lucide-react";
 import Link from "next/link";
+import { providerHref } from "@/lib/provider-urls";
 import { Button } from "@/components/ui/button";
+import { FieldLabel } from "@/components/shared/ui";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -47,8 +50,63 @@ import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import axiosInstance from "@/lib/axios";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthDialog } from "@/contexts/AuthDialogContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import dynamic from "next/dynamic";
+import {
+  resolveBookingCategoryKey,
+  resolveServiceCategoryName,
+} from "@/lib/booking-form-config";
+import {
+  TabbedDialogLayout,
+  type TabbedDialogTab,
+} from "@/components/shared/dialog/TabbedDialogLayout";
+import { dialogFormUi } from "@/lib/dialog-form-ui";
+import { crudDialogUi } from "@/lib/crud-dialog-ui";
+import { cn } from "@/lib/utils";
+
+export type BookingOffering = {
+  id: string;
+  service_id: string;
+  name: string;
+  description?: string | null;
+  base_price: number;
+  pricing_type?: string;
+  category?: string | null;
+  service?: { name?: string; category?: { name?: string; slug?: string } };
+  service_thumbnail_url?: string | null;
+};
+
+type BookingTabId = "service" | "location" | "schedule";
+
+const BOOKING_TABS: TabbedDialogTab[] = [
+  { id: "service", label: "Service", icon: Briefcase },
+  { id: "location", label: "Location", icon: MapPin },
+  { id: "schedule", label: "Schedule", icon: Calendar },
+];
+
+const BOOKING_TAB_ORDER: BookingTabId[] = ["service", "location", "schedule"];
+
+const BOOKING_TAB_COPY: Record<BookingTabId, { title: string; description: string }> = {
+  service: {
+    title: "Service details",
+    description: "Choose the type of work and describe what you need.",
+  },
+  location: {
+    title: "Service location",
+    description: "Select or add the address where the provider should go.",
+  },
+  schedule: {
+    title: "Schedule & promo",
+    description: "Pick your preferred date and time, and apply a voucher if you have one.",
+  },
+};
+
+const FIELDS_BY_TAB: Record<BookingTabId, (keyof BookingValues)[]> = {
+  service: ["service_type", "quantity", "description"],
+  location: ["address_id"],
+  schedule: ["scheduled_date", "scheduled_time"],
+};
 
 const LocationPicker = dynamic(() => import("@/components/map/LocationPicker"), {
   ssr: false,
@@ -247,12 +305,33 @@ interface BookingValues {
 interface BookingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  provider: any;
-  service: any;
+  provider: { id: string; business_name: string; services?: BookingOffering[] };
+  /** Pre-selected provider offering (provider_services row) */
+  service?: BookingOffering | null;
+  /** All bookable offerings for this provider */
+  offerings?: BookingOffering[];
 }
 
-export function BookingModal({ isOpen, onClose, provider, service }: BookingModalProps) {
-  const [step, setStep] = useState(1);
+function normalizeOffering(raw: BookingOffering | null | undefined): BookingOffering | null {
+  if (!raw) return null;
+  return {
+    ...raw,
+    name: raw.name || raw.service?.name || "Service",
+    service_id: raw.service_id || raw.id,
+  };
+}
+
+export function BookingModal({
+  isOpen,
+  onClose,
+  provider,
+  service: serviceProp,
+  offerings: offeringsProp,
+}: BookingModalProps) {
+  const offerings = offeringsProp ?? provider.services ?? [];
+  const [selectedOffering, setSelectedOffering] = useState<BookingOffering | null>(null);
+  const service = selectedOffering ?? normalizeOffering(serviceProp);
+  const [bookingTab, setBookingTab] = useState<BookingTabId>("service");
   const [isSuccess, setIsSuccess] = useState(false);
   const [showUppy, setShowUppy] = useState(false);
   const [addresses, setAddresses] = useState<any[]>([]);
@@ -274,12 +353,24 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
     is_default: false
   });
   const { user } = useAuth();
+  const { openAuthDialog } = useAuthDialog();
 
   React.useEffect(() => {
     if (isOpen && user) {
       fetchAddresses();
     }
-  }, [isOpen, user]);
+    if (isOpen) {
+      setBookingTab("service");
+      const preset = normalizeOffering(serviceProp);
+      if (preset) {
+        setSelectedOffering(preset);
+      } else if (offerings.length === 1) {
+        setSelectedOffering(normalizeOffering(offerings[0]));
+      } else {
+        setSelectedOffering(null);
+      }
+    }
+  }, [isOpen, user, serviceProp, offerings]);
 
   const fetchAddresses = async () => {
     try {
@@ -341,7 +432,7 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
     // Since we don't have an upload plugin, we manually handle the "Upload" intent
     u.on('upload', () => {
       setShowUppy(false);
-      toast.info("Images attached! Head to the next step to finish your booking.");
+      toast.info("Photos attached. Continue to schedule when you're ready.");
     });
 
     return u;
@@ -349,7 +440,6 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
 
 
   const config = useMemo(() => {
-    console.log("Re-calculating config for service:", service?.name, service?.category);
     if (!service) return DEFAULT_CONFIG;
     
     // Specific service name overrides
@@ -418,8 +508,9 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
       };
     }
 
-    if (!service.category) return DEFAULT_CONFIG;
-    return FORM_CONFIGS[service.category] || DEFAULT_CONFIG;
+    const categoryKey = resolveBookingCategoryKey(resolveServiceCategoryName(service));
+    if (!categoryKey) return DEFAULT_CONFIG;
+    return FORM_CONFIGS[categoryKey] || DEFAULT_CONFIG;
   }, [service]);
 
   const form = useForm<BookingValues>({
@@ -438,6 +529,29 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
 
   const watchedValues = form.watch();
 
+  const tabIndex = BOOKING_TAB_ORDER.indexOf(bookingTab);
+  const isFirstTab = tabIndex <= 0;
+  const isLastTab = tabIndex >= BOOKING_TAB_ORDER.length - 1;
+  const tabCopy = BOOKING_TAB_COPY[bookingTab];
+
+  const goToPrevTab = () => {
+    if (!isFirstTab) {
+      setBookingTab(BOOKING_TAB_ORDER[tabIndex - 1]);
+    }
+  };
+
+  const goToNextTab = async () => {
+    if (bookingTab === "service" && !service) {
+      toast.error("Select which service you want to book");
+      return;
+    }
+    const valid = await form.trigger(FIELDS_BY_TAB[bookingTab]);
+    if (!valid) return;
+    if (!isLastTab) {
+      setBookingTab(BOOKING_TAB_ORDER[tabIndex + 1]);
+    }
+  };
+
   useEffect(() => {
     if (Object.keys(form.formState.errors).length > 0) {
       console.log("LIVE Form Values (watch):", watchedValues);
@@ -451,12 +565,28 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
 
   // Update default value if config changes (e.g. category changes)
   useEffect(() => {
-    console.log("Config Effect Triggered:", config.typeOptions?.[0]?.id);
     if (config?.typeOptions?.[0]?.id) {
       form.setValue('service_type', config.typeOptions[0].id, { shouldValidate: true, shouldDirty: true });
     }
     form.setValue('quantity', 1, { shouldValidate: true, shouldDirty: true });
-  }, [config, form]);
+
+    // Populate from query parameters (search results) if present
+    if (isOpen && typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const dateParam = params.get("date");
+      const timeParam = params.get("time");
+      const guestsParam = params.get("guests");
+      if (dateParam) {
+        form.setValue("scheduled_date", dateParam, { shouldValidate: true, shouldDirty: true });
+      }
+      if (timeParam) {
+        form.setValue("scheduled_time", timeParam, { shouldValidate: true, shouldDirty: true });
+      }
+      if (guestsParam) {
+        form.setValue("quantity", parseInt(guestsParam) || 1, { shouldValidate: true, shouldDirty: true });
+      }
+    }
+  }, [config, form, isOpen]);
 
   const handleValidatePromo = async () => {
     const code = form.getValues('promo_code');
@@ -467,7 +597,7 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
     
     // Estimate price for validation
     const quantity = form.getValues('quantity');
-    const basePrice = service.base_price || 0;
+    const basePrice = service?.base_price || 0;
     const amount = quantity * basePrice;
 
     try {
@@ -498,51 +628,11 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
     form.setValue('quantity', 1);
   }, [config, form]);
 
-  const compressImage = async (file: Blob): Promise<Blob> => {
-    console.log("Compressing image:", file.size);
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onerror = () => reject(new Error("Failed to read file"));
-      reader.onload = (event) => {
-        const img = new Image();
-        img.src = event.target?.result as string;
-        img.onerror = () => reject(new Error("Failed to load image"));
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 1200;
-          const MAX_HEIGHT = 1200;
-          let width = img.width;
-          let height = img.height;
-
-          if (width > height) {
-            if (width > MAX_WIDTH) {
-              height *= MAX_WIDTH / width;
-              width = MAX_WIDTH;
-            }
-          } else {
-            if (height > MAX_HEIGHT) {
-              width *= MAX_HEIGHT / height;
-              height = MAX_HEIGHT;
-            }
-          }
-
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx?.drawImage(img, 0, 0, width, height);
-
-          canvas.toBlob((blob) => {
-            console.log("Compression complete. New size:", blob?.size);
-            resolve(blob || file);
-          }, 'image/jpeg', 0.8); // 80% quality
-        };
-      };
-    });
-  };
-
   const onSubmit = async (data: BookingValues) => {
-    console.log("onSubmit triggered with data:", data);
+    if (!service) {
+      toast.error("Select a service before confirming");
+      return;
+    }
     try {
       const formData = new FormData();
       Object.entries(data).forEach(([key, value]) => {
@@ -552,12 +642,15 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
       formData.append('service_id', service.service_id || service.id);
       formData.append('quantity_label', config.getQuantityBadge(data.service_type));
 
-      // Add & Compress Uppy files
       const files = uppy.getFiles();
       for (const file of files) {
         if (file.data) {
-          const compressed = await compressImage(file.data as Blob);
-          formData.append('images[]', compressed);
+          const optimized = await compressBlobToFile(
+            file.data as Blob,
+            file.name || "booking-photo.jpg",
+            { preset: "booking" }
+          );
+          formData.append("images[]", optimized);
         }
       }
 
@@ -585,20 +678,13 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="relative z-50 w-full max-w-2xl bg-white dark:bg-[#0B0F19] rounded-3xl shadow-2xl overflow-hidden border border-gray-200 dark:border-white/10 pointer-events-auto"
+        className={cn(
+          "relative z-50 w-full max-w-4xl pointer-events-auto bg-card",
+          crudDialogUi.content,
+          "overflow-hidden"
+        )}
       >
-        {/* Header */}
-        <div className="p-6 border-b border-gray-100 dark:border-white/5 flex items-center justify-between bg-gray-50/50 dark:bg-white/5">
-          <div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Book {service.name}</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">with {provider.business_name}</p>
-          </div>
-          <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full">
-            <X className="w-5 h-5" />
-          </Button>
-        </div>
-
-        <div className="p-8 max-h-[80vh] overflow-y-auto">
+        <div className="max-h-[min(90dvh,780px)] overflow-hidden">
           {!user ? (
             <div className="text-center py-12">
               <div className="w-20 h-20 bg-amber-100 dark:bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -609,12 +695,31 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
                 Please sign in to your Kuba account to send messages or book services with {provider.business_name}.
               </p>
               <div className="flex flex-col gap-3 relative z-[60]">
-                <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-8 h-12 font-bold uppercase tracking-widest text-[10px] cursor-pointer shadow-lg shadow-blue-500/20">
-                  <Link href={`/login?redirect=/providers/${provider.id}`}>Sign In to Continue</Link>
+                <Button
+                  type="button"
+                  className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-8 h-12 font-bold uppercase tracking-widest text-[10px] cursor-pointer shadow-lg shadow-blue-500/20"
+                  onClick={() =>
+                    openAuthDialog({
+                      intent: "book",
+                      description: `Sign in to book with ${provider.business_name} and manage your appointments on Kuba.`,
+                    })
+                  }
+                >
+                  Sign in to continue
                 </Button>
-                <Link href="/register/client" className="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors uppercase tracking-tight py-2 text-center pointer-events-auto">
+                <button
+                  type="button"
+                  onClick={() =>
+                    openAuthDialog({
+                      intent: "book",
+                      mode: "register",
+                      description: `Create a free account to book with ${provider.business_name}.`,
+                    })
+                  }
+                  className="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors uppercase tracking-tight py-2 text-center pointer-events-auto"
+                >
                   New to Kuba? Create an account
-                </Link>
+                </button>
               </div>
             </div>
           ) : isSuccess ? (
@@ -636,31 +741,116 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
               </div>
             </div>
           ) : (
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                {/* Always register these fields so they are never lost regardless of step */}
-                <div className="hidden">
-                  <FormField control={form.control} name="service_type" render={() => <input type="hidden" />} />
-                  <FormField control={form.control} name="quantity" render={() => <input type="hidden" />} />
-                </div>
-                
-                {/* Step indicator */}
-                <div className="flex items-center gap-4">
-                  {[1, 2].map((s) => (
-                    <div key={s} className="flex items-center gap-2">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${step >= s ? "bg-blue-600 text-white" : "bg-gray-100 dark:bg-white/5 text-gray-400"}`}>
-                        {s}
-                      </div>
-                      <span className={`text-sm font-semibold ${step >= s ? "text-gray-900 dark:text-white" : "text-gray-400"}`}>
-                        {s === 1 ? "Details" : "Schedule"}
+            <TabbedDialogLayout
+              tabs={BOOKING_TABS}
+              activeTab={bookingTab}
+              onTabChange={(id) => setBookingTab(id as BookingTabId)}
+              title={tabCopy.title}
+              description={
+                service
+                  ? `${service.name} with ${provider.business_name}. ${tabCopy.description}`
+                  : `Choose a service from ${provider.business_name}, then complete your request.`
+              }
+              onClose={onClose}
+              footer={
+                <>
+                  {!isFirstTab && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={goToPrevTab}
+                      className={cn(dialogFormUi.footerBtnOutline, "flex-1")}
+                    >
+                      Back
+                    </Button>
+                  )}
+                  <Button
+                    type={isLastTab ? "submit" : "button"}
+                    form={isLastTab ? "booking-modal-form" : undefined}
+                    onClick={!isLastTab ? () => void goToNextTab() : undefined}
+                    disabled={form.formState.isSubmitting || (bookingTab === "service" && !service)}
+                    className={cn(
+                      dialogFormUi.footerBtnPrimary,
+                      isFirstTab ? "w-full" : "flex-[2]"
+                    )}
+                  >
+                    {form.formState.isSubmitting ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Sending…
                       </span>
-                      {s === 1 && <div className="w-12 h-px bg-gray-200 dark:bg-white/10 mx-2" />}
-                    </div>
-                  ))}
-                </div>
+                    ) : isLastTab ? (
+                      "Confirm booking"
+                    ) : (
+                      <>
+                        Continue
+                        <ChevronRight className="ml-1.5 w-4 h-4" />
+                      </>
+                    )}
+                  </Button>
+                </>
+              }
+            >
+            <Form {...form}>
+              <form
+                id="booking-modal-form"
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-0"
+              >
+                <div className={dialogFormUi.section}>
+                {bookingTab === "service" && (
+                  <>
+                    {offerings.length > 0 && (
+                      <div className="pb-6 mb-6 border-b border-border/50 space-y-3">
+                        <p className="text-sm font-semibold text-foreground">
+                          {offerings.length > 1 ? "Select a service" : "Service"}
+                        </p>
+                        <div
+                          className={cn(
+                            "grid gap-3",
+                            offerings.length > 1 ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1"
+                          )}
+                        >
+                          {offerings.map((off) => {
+                            const normalized = normalizeOffering(off)!;
+                            const selected = service?.id === normalized.id;
+                            return (
+                              <button
+                                key={off.id}
+                                type="button"
+                                onClick={() => setSelectedOffering(normalized)}
+                                className={cn(
+                                  "text-left rounded-xl border p-4 transition-all",
+                                  selected
+                                    ? "border-primary bg-primary/5 ring-1 ring-primary/30"
+                                    : "border-border/60 hover:border-primary/40 hover:bg-muted/30"
+                                )}
+                              >
+                                <p className="font-semibold text-foreground text-sm">
+                                  {normalized.name}
+                                </p>
+                                {normalized.description && (
+                                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                                    {normalized.description}
+                                  </p>
+                                )}
+                                <p className="text-sm font-bold text-primary mt-2 tabular-nums">
+                                  KES {Number(normalized.base_price || 0).toLocaleString()}
+                                  {normalized.pricing_type === "hourly" ? " / hr" : ""}
+                                </p>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
 
-                {step === 1 ? (
-                  <div className="space-y-6">
+                    {!service && (
+                      <p className="text-sm text-amber-700 dark:text-amber-400 mb-4 rounded-xl bg-amber-500/10 px-4 py-3 border border-amber-500/20">
+                        Pick a service above to configure your booking details.
+                      </p>
+                    )}
+
                     {/* Service Type */}
                     <FormField
                       control={form.control}
@@ -721,140 +911,6 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
                       )}
                     />
 
-                    {/* Address Selection */}
-                    <FormField
-                      control={form.control}
-                      name="address_id"
-                      render={({ field }) => (
-                        <FormItem className="space-y-3">
-                          <FormLabel className="text-sm font-bold text-gray-900 dark:text-white flex items-center justify-between">
-                            Service Address
-                            <button
-                              type="button"
-                              onClick={() => setIsAddingAddress(!isAddingAddress)}
-                              className="text-[10px] text-blue-600 dark:text-blue-400 uppercase font-bold tracking-widest hover:underline"
-                            >
-                              {isAddingAddress ? "Cancel" : addresses.length === 0 ? "Add New Address" : "Add New Address"}
-                            </button>
-                          </FormLabel>
-                          <FormControl>
-                            {isAddingAddress ? (
-                              <div className="space-y-4 p-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10">
-                                <div className="space-y-2">
-                                  <label className="text-[10px] font-bold text-gray-500 uppercase">Address Type</label>
-                                  <div className="flex gap-2">
-                                    {[
-                                      { id: 'home', label: 'Home', icon: Home },
-                                      { id: 'work', label: 'Work', icon: Briefcase },
-                                      { id: 'other', label: 'Other', icon: MoreHorizontal }
-                                    ].map((type) => (
-                                      <button
-                                        key={type.id}
-                                        type="button"
-                                        onClick={() => setNewAddress({...newAddress, address_type: type.id as any})}
-                                        className={`flex-1 flex items-center justify-center gap-2 h-10 rounded-xl text-[10px] font-bold uppercase border transition-all ${
-                                          newAddress.address_type === type.id 
-                                            ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-600/20' 
-                                            : 'bg-white dark:bg-[#0B0F19] border-gray-100 dark:border-white/5 text-gray-500 hover:border-blue-200'
-                                        }`}
-                                      >
-                                        <type.icon className="w-3.5 h-3.5" />
-                                        {type.label}
-                                      </button>
-                                    ))}
-                                  </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-3">
-                                  <div className="col-span-2 space-y-1">
-                                    <label className="text-[10px] font-bold text-gray-500 uppercase">Street Address</label>
-                                    <Input 
-                                      value={newAddress.street_address} 
-                                      onChange={e => setNewAddress({...newAddress, street_address: e.target.value})}
-                                      className="bg-white dark:bg-[#0B0F19] h-10 text-xs" 
-                                      placeholder="e.g. 123 Main St"
-                                    />
-                                  </div>
-                                  <div className="space-y-1">
-                                    <label className="text-[10px] font-bold text-gray-500 uppercase">Apt/Suite</label>
-                                    <Input 
-                                      value={newAddress.apartment} 
-                                      onChange={e => setNewAddress({...newAddress, apartment: e.target.value})}
-                                      className="bg-white dark:bg-[#0B0F19] h-10 text-xs" 
-                                      placeholder="Optional"
-                                    />
-                                  </div>
-                                  <div className="space-y-1">
-                                    <label className="text-[10px] font-bold text-gray-500 uppercase">City</label>
-                                    <Input 
-                                      value={newAddress.city} 
-                                      onChange={e => setNewAddress({...newAddress, city: e.target.value})}
-                                      className="bg-white dark:bg-[#0B0F19] h-10 text-xs" 
-                                      placeholder="e.g. Nairobi"
-                                    />
-                                  </div>
-                                  <div className="space-y-1">
-                                    <label className="text-[10px] font-bold text-gray-500 uppercase">State / County</label>
-                                    <Input 
-                                      value={newAddress.state} 
-                                      onChange={e => setNewAddress({...newAddress, state: e.target.value})}
-                                      className="bg-white dark:bg-[#0B0F19] h-10 text-xs" 
-                                      placeholder="e.g. Nairobi County"
-                                    />
-                                  </div>
-                                  <div className="space-y-1">
-                                    <label className="text-[10px] font-bold text-gray-500 uppercase">Postal Code</label>
-                                    <Input 
-                                      value={newAddress.postal_code} 
-                                      onChange={e => setNewAddress({...newAddress, postal_code: e.target.value})}
-                                      className="bg-white dark:bg-[#0B0F19] h-10 text-xs" 
-                                      placeholder="e.g. 00100"
-                                    />
-                                  </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                  <label className="text-[10px] font-bold text-gray-500 uppercase flex items-center justify-between">
-                                    Pin Exact Location
-                                    {newAddress.latitude && (
-                                      <span className="text-sky-500 lowercase font-medium">Coordinates Set</span>
-                                    )}
-                                  </label>
-                                  <div className="relative">
-                                    <LocationPicker 
-                                      position={newAddress.latitude && newAddress.longitude ? [newAddress.latitude, newAddress.longitude] : null}
-                                      onChange={(lat: number, lng: number) => setNewAddress({...newAddress, latitude: lat, longitude: lng})}
-                                    />
-                                  </div>
-                                </div>
-
-                                <Button 
-                                  type="button" 
-                                  onClick={handleCreateAddress}
-                                  disabled={isSavingAddress || !newAddress.street_address || !newAddress.city || !newAddress.state || !newAddress.postal_code}
-                                  className="w-full text-xs font-bold uppercase rounded-xl h-10 bg-blue-600 hover:bg-blue-700 text-white"
-                                >
-                                  {isSavingAddress ? "Saving..." : "Save Address"}
-                                </Button>
-                              </div>
-                            ) : (
-                              <select 
-                                className="w-full h-12 px-4 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl text-xs font-bold focus:ring-2 focus:ring-blue-500 transition-all appearance-none outline-none"
-                                {...field}
-                              >
-                                <option value="">Select an address</option>
-                                {addresses.map((addr) => (
-                                  <option key={addr.id} value={addr.id}>
-                                    {addr.street_address}, {addr.city}
-                                  </option>
-                                ))}
-                              </select>
-                            )}
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
                     {/* Description */}
                     <FormField
                       control={form.control}
@@ -897,13 +953,152 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
                         hideUploadButton={false} // Keep it but we handle it via the 'upload' event above
                         note="Add up to 5 photos. Click 'Upload' to confirm they are ready."
                       />
-                      <p className="text-[10px] text-gray-400 flex items-center gap-1 mt-2">
+                      <p className="text-[10px] text-muted-foreground flex items-center gap-1 mt-2">
                         <AlertCircle className="w-3 h-3" /> Helps pros assess materials & severity
                       </p>
                     </div>
-                  </div>
-                ) : (
-                  <div className="space-y-6">
+                  </>
+                )}
+
+                {bookingTab === "location" && (
+                  <>
+                    <FormField
+                      control={form.control}
+                      name="address_id"
+                      render={({ field }) => (
+                        <FormItem className="space-y-3 py-4 first:pt-0">
+                          <FormLabel className="text-sm font-semibold flex items-center justify-between">
+                            Service address
+                            <button
+                              type="button"
+                              onClick={() => setIsAddingAddress(!isAddingAddress)}
+                              className="text-[10px] text-primary uppercase font-bold tracking-widest hover:underline"
+                            >
+                              {isAddingAddress ? "Cancel" : "Add new address"}
+                            </button>
+                          </FormLabel>
+                          <FormControl>
+                            {isAddingAddress ? (
+                              <div className="space-y-4 p-4 rounded-xl bg-muted/30 border border-border/50">
+                                <div className="space-y-2">
+                                  <FieldLabel>Address Type</FieldLabel>
+                                  <div className="flex gap-2">
+                                    {[
+                                      { id: 'home', label: 'Home', icon: Home },
+                                      { id: 'work', label: 'Work', icon: Briefcase },
+                                      { id: 'other', label: 'Other', icon: MoreHorizontal }
+                                    ].map((type) => (
+                                      <button
+                                        key={type.id}
+                                        type="button"
+                                        onClick={() => setNewAddress({...newAddress, address_type: type.id as any})}
+                                        className={`flex-1 flex items-center justify-center gap-2 h-10 rounded-lg text-[10px] font-bold uppercase border transition-all ${
+                                          newAddress.address_type === type.id 
+                                            ? 'bg-primary border-primary text-primary-foreground' 
+                                            : 'bg-background border-border text-muted-foreground hover:border-primary/30'
+                                        }`}
+                                      >
+                                        <type.icon className="w-3.5 h-3.5" />
+                                        {type.label}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div className="col-span-2 space-y-1">
+                                    <FieldLabel>Street Address</FieldLabel>
+                                    <Input 
+                                      value={newAddress.street_address} 
+                                      onChange={e => setNewAddress({...newAddress, street_address: e.target.value})}
+                                      className={dialogFormUi.input} 
+                                      placeholder="e.g. 123 Main St"
+                                    />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <FieldLabel>Apt/Suite</FieldLabel>
+                                    <Input 
+                                      value={newAddress.apartment} 
+                                      onChange={e => setNewAddress({...newAddress, apartment: e.target.value})}
+                                      className={dialogFormUi.input} 
+                                      placeholder="Optional"
+                                    />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <FieldLabel>City</FieldLabel>
+                                    <Input 
+                                      value={newAddress.city} 
+                                      onChange={e => setNewAddress({...newAddress, city: e.target.value})}
+                                      className={dialogFormUi.input} 
+                                      placeholder="e.g. Nairobi"
+                                    />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <FieldLabel>State / County</FieldLabel>
+                                    <Input 
+                                      value={newAddress.state} 
+                                      onChange={e => setNewAddress({...newAddress, state: e.target.value})}
+                                      className={dialogFormUi.input} 
+                                      placeholder="e.g. Nairobi County"
+                                    />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <FieldLabel>Postal Code</FieldLabel>
+                                    <Input 
+                                      value={newAddress.postal_code} 
+                                      onChange={e => setNewAddress({...newAddress, postal_code: e.target.value})}
+                                      className={dialogFormUi.input} 
+                                      placeholder="e.g. 00100"
+                                    />
+                                  </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <label className="text-[10px] font-bold text-muted-foreground uppercase flex items-center justify-between">
+                                    Pin exact location
+                                    {newAddress.latitude && (
+                                      <span className="text-primary lowercase font-medium">Coordinates set</span>
+                                    )}
+                                  </label>
+                                  <div className="relative">
+                                    <LocationPicker 
+                                      position={newAddress.latitude && newAddress.longitude ? [newAddress.latitude, newAddress.longitude] : null}
+                                      onChange={(lat: number, lng: number) => setNewAddress({...newAddress, latitude: lat, longitude: lng})}
+                                    />
+                                  </div>
+                                </div>
+
+                                <Button 
+                                  type="button" 
+                                  onClick={handleCreateAddress}
+                                  disabled={isSavingAddress || !newAddress.street_address || !newAddress.city || !newAddress.state || !newAddress.postal_code}
+                                  className="w-full text-xs font-bold uppercase rounded-lg h-10"
+                                >
+                                  {isSavingAddress ? "Saving..." : "Save address"}
+                                </Button>
+                              </div>
+                            ) : (
+                              <select 
+                                className={cn("w-full", dialogFormUi.input, "px-4 appearance-none outline-none")}
+                                {...field}
+                              >
+                                <option value="">Select an address</option>
+                                {addresses.map((addr) => (
+                                  <option key={addr.id} value={addr.id}>
+                                    {addr.street_address}, {addr.city}
+                                  </option>
+                                ))}
+                              </select>
+                            )}
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </>
+                )}
+
+                {bookingTab === "schedule" && (
+                  <>
                     <FormField
                       control={form.control}
                       name="scheduled_date"
@@ -995,44 +1190,12 @@ export function BookingModal({ isOpen, onClose, provider, service }: BookingModa
                         </p>
                       )}
                     </div>
-                  </div>
+                  </>
                 )}
-
-                {/* Footer Actions */}
-                <div className="flex gap-4 pt-4">
-                  {step === 2 && (
-                    <Button 
-                      type="button"
-                      variant="outline" 
-                      onClick={() => setStep(1)}
-                      className="flex-1 h-14 border-gray-200 dark:border-white/10 text-gray-700 dark:text-white rounded-2xl font-bold"
-                    >
-                      Back
-                    </Button>
-                  )}
-                  <Button 
-                    type={step === 1 ? "button" : "submit"}
-                    onClick={(e) => {
-                        if (step === 1) {
-                            e.preventDefault();
-                            setStep(2);
-                        }
-                    }}
-                    disabled={form.formState.isSubmitting}
-                    className="flex-[2] h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold shadow-lg shadow-blue-500/20"
-                  >
-                    {form.formState.isSubmitting ? (
-                        <div className="flex items-center gap-2">
-                            <Loader2 className="w-5 h-5 animate-spin" />
-                            <span>Sending...</span>
-                        </div>
-                    ) : step === 1 ? (
-                        <>Next Step <ChevronRight className="ml-2 w-5 h-5" /></>
-                    ) : "Confirm Booking"}
-                  </Button>
                 </div>
               </form>
             </Form>
+            </TabbedDialogLayout>
           )}
         </div>
       </motion.div>

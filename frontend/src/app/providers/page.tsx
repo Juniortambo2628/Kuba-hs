@@ -4,15 +4,13 @@ import { useEffect, useState, Suspense } from "react";
 import { motion } from "framer-motion";
 import axiosInstance from "@/lib/axios";
 import { useSearchParams } from "next/navigation";
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
-import { HighImpactHero } from "@/components/shared/HighImpactHero";
-import { Card, CardContent } from "@/components/ui/card";
+import { MarketingPage } from "@/components/layout/MarketingPage";
+import { useMarketingHero } from "@/hooks/useMarketingHero";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import {
-   Star, MapPin, Shield, ChevronRight, LayoutGrid, List,
-  SlidersHorizontal, CheckCircle2, ArrowRight, Search, Map, Filter
+  MapPin, SlidersHorizontal, Search, Filter,
+  Hammer, Paintbrush, Droplets, Lightbulb, Check, ShieldCheck, Star
 } from "lucide-react";
 import { 
   DropdownMenu, 
@@ -26,10 +24,26 @@ import {
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { getMediaUrl } from "@/lib/utils";
-import { designSystem } from "@/lib/design-system";
-import Image from "next/image";
 import { useCMS } from "@/contexts/CMSContext";
+import { ProviderCard, type ProviderCardData } from "@/components/marketplace";
+import { FavoritesProvider } from "@/contexts/FavoritesContext";
+import {
+  MarketingListingBody,
+  MarketingFilterCard,
+  MarketingViewToggle,
+  MarketingListingToolbar,
+  MarketingEmptyState,
+} from "@/components/marketing";
+import {
+  FilterField,
+  FilterSelect,
+  FilterCheckbox,
+  FilterRatingGroup,
+} from "@/components/shared/ui";
+import { AppButton } from "@/components/shared/ui/AppButton";
+import { marketingUi } from "@/lib/marketing-ui";
+import { cn } from "@/lib/utils";
+import { providerHref } from "@/lib/provider-urls";
 
 const MapView = dynamic(() => import("@/components/shared/MapView"), {
   ssr: false,
@@ -42,6 +56,7 @@ interface Provider {
   business_name: string;
   bio: string;
   logo: string | null;
+  banner?: string | null;
   is_verified: boolean;
   latitude: number | string | null;
   longitude: number | string | null;
@@ -57,30 +72,98 @@ interface Provider {
   starting_price?: number;
 }
 
+function CircleSelector<T>({
+  value,
+  onChange,
+  options
+}: {
+  value: T | null;
+  onChange: (val: T | null) => void;
+  options: { label: string; value: T | null }[]
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {options.map((opt) => {
+        const active = value === opt.value;
+        const isAny = opt.value === null;
+        return (
+          <button
+            key={opt.label}
+            type="button"
+            onClick={() => onChange(opt.value)}
+            className={cn(
+              "flex items-center justify-center font-bold text-xs transition-all cursor-pointer",
+              isAny ? "px-4 h-9 rounded-full" : "w-9 h-9 rounded-full",
+              active
+                ? "bg-foreground text-background font-black border border-foreground"
+                : "bg-card text-foreground border border-border hover:border-muted-foreground/60"
+            )}
+          >
+            {opt.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function Switch({
+  checked,
+  onChange,
+  label
+}: {
+  checked: boolean;
+  onChange: (val: boolean) => void;
+  label: string;
+}) {
+  return (
+    <div className="flex items-center justify-between py-2">
+      <span className="text-sm font-semibold text-foreground">{label}</span>
+      <button
+        type="button"
+        onClick={() => onChange(!checked)}
+        className={cn(
+          "w-10 h-6 rounded-full p-0.5 transition-colors duration-200 cursor-pointer focus:outline-none relative flex items-center",
+          checked ? "bg-[#4F46E5]" : "bg-muted dark:bg-zinc-800"
+        )}
+      >
+        <div
+          className={cn(
+            "w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200",
+            checked ? "translate-x-4" : "translate-x-0"
+          )}
+        />
+      </button>
+    </div>
+  );
+}
+
+import { MarketingFilterSidebar } from "@/components/marketing/MarketingFilterSidebar";
+
 function ProvidersContent() {
-  const { getS, getImg } = useCMS();
+  const { getS } = useCMS();
   const searchParams = useSearchParams();
-  const categoryId = searchParams.get('category');
+  
+  // Parse all query states from URL to keep in sync dynamically
+  const categoryId = searchParams.get('category_id') || searchParams.get('category');
   const serviceId = searchParams.get('service');
   const searchQuery = searchParams.get('search');
+  const minRating = searchParams.get('min_rating') ? Number(searchParams.get('min_rating')) : null;
+  const maxPrice = searchParams.get('max_price') ? Number(searchParams.get('max_price')) : 50000;
+  const onlyVerified = searchParams.get('is_verified') === '1';
+  const radius = searchParams.get('radius') ? Number(searchParams.get('radius')) : 50;
+  const instantBook = searchParams.get('instant_book') === '1';
+  const eqIncluded = searchParams.get('equipment_included') === '1';
+  const sortOrder = searchParams.get('sort_by_price') || null;
+  const selectedServiceIds = searchParams.getAll('service_ids[]').map(Number);
   
   const [providers, setProviders] = useState<Provider[]>([]);
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [view, setView] = useState<"grid" | "list" | "map">("grid");
-  const heroTitle = getS('hero', 'providers_hero_title', "Find Trusted Pros Near You");
-  const heroSubtitle = getS('hero', 'providers_hero_subtitle', "Find the right pro for your home or office from our verified community.");
-  const heroImage = getImg('hero', 'providers_hero_image', "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?q=80&w=2070&auto=format&fit=crop");
 
-  const [minRating, setMinRating] = useState<number | null>(null);
-  const [maxPrice, setMaxPrice] = useState<number>(50000);
-  const [onlyVerified, setOnlyVerified] = useState(false);
-  const [radius, setRadius] = useState(50);
   const [location, setLocation] = useState<{lat: number, lng: number} | null>(null);
   const [isLocating, setIsLocating] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
-  const [sortOrder, setSortOrder] = useState<string | null>(null); // 'asc' or 'desc'
-  const [selectedServiceIds, setSelectedServiceIds] = useState<number[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
 
   const handleNearMe = () => {
     setIsLocating(true);
@@ -99,16 +182,6 @@ function ProvidersContent() {
       setIsLocating(false);
     }
   };
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await axiosInstance.get("/api/categories");
-        setCategories(res.data.data);
-      } catch (err) { console.error("Filter categories fetch failed", err); }
-    };
-    fetchCategories();
-  }, []);
 
   useEffect(() => {
     const fetchProviders = async () => {
@@ -131,6 +204,8 @@ function ProvidersContent() {
             url += `&service_ids[]=${id}`;
           });
         }
+        if (instantBook) url += `&instant_book=1`;
+        if (eqIncluded) url += `&equipment_included=1`;
 
         const response = await axiosInstance.get(url);
         setProviders(response.data.data);
@@ -141,241 +216,60 @@ function ProvidersContent() {
       }
     };
     fetchProviders();
-  }, [categoryId, serviceId, searchQuery, minRating, maxPrice, onlyVerified, radius, location, sortOrder, selectedServiceIds]);
+  }, [categoryId, serviceId, searchQuery, minRating, maxPrice, onlyVerified, radius, location, sortOrder, JSON.stringify(selectedServiceIds), instantBook, eqIncluded]);
 
   return (
-    <>
-      <HighImpactHero
-        title={searchQuery ? `Professionals for "${searchQuery}"` : getS('hero_text', 'providers_hero_title', "Our Verified Professionals")}
-        subtitle={getS('hero_text', 'providers_hero_subtitle', "Connect with top-rated local experts specialized in your selected industry verticals.")}
-        badge={searchQuery ? "Search Results" : getS('hero_text', 'providers_hero_badge', "Verified Professionals")}
-        cmsKey="providers"
-      />
-
-      <div className="flex-1 py-10 md:py-16 bg-white dark:bg-[#0B0F19] transition-colors duration-300">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row gap-8">
-
-            {/* Sidebar */}
-            <aside className={`lg:w-72 shrink-0 ${filterOpen ? "" : "hidden lg:block"}`}>
-              <div className="sticky top-24 space-y-6">
-                <Card className="bg-muted dark:bg-white/5 border-border dark:border-white/10 rounded-2xl overflow-hidden shadow-sm">
-                  <CardContent className="p-5 space-y-6">
-                    <div className="flex items-center justify-between">
-                        <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2 text-sm tracking-wider">
-                            <SlidersHorizontal className="w-4 h-4" /> Filters
-                        </h3>
-                        {(minRating || onlyVerified || location) && (
-                            <button 
-                                onClick={() => { setMinRating(null); setOnlyVerified(false); setLocation(null); }}
-                                className="text-[10px] font-bold text-blue-600 capitalize tracking-widest hover:underline"
-                            >
-                                Reset
-                            </button>
-                        )}
-                    </div>
-
-                    {/* Proximity */}
-                    <div>
-                        <Button 
-                            onClick={handleNearMe}
-                            variant="outline"
-                            className={`w-full h-11 rounded-xl border-dashed ${location ? 'border-blue-500 bg-blue-50/50 text-blue-600' : 'border-border'} flex items-center justify-center gap-2 text-xs font-bold transition-all`}
-                            disabled={isLocating}
-                        >
-                            <MapPin className={`w-4 h-4 ${isLocating ? 'animate-bounce' : ''}`} />
-                            {isLocating ? "Locating..." : location ? "Near You (Active)" : "Search Near Me"}
-                        </Button>
-                    </div>
-
-                    {/* Price Range */}
-                    <div>
-                        <div className="flex items-center justify-between mb-3 text-xs font-semibold text-muted-foreground tracking-wider">
-                            <span>Max Price</span>
-                            <span className="text-blue-600 font-bold">KES {maxPrice.toLocaleString()}</span>
-                        </div>
-                        <input 
-                            type="range" 
-                            min="500" 
-                            max="50000" 
-                            step="500"
-                            value={maxPrice}
-                            onChange={(e) => setMaxPrice(Number(e.target.value))}
-                            className="w-full accent-blue-600 h-1.5 bg-gray-200 dark:bg-white/10 rounded-lg appearance-none cursor-pointer"
-                        />
-                    </div>
-
-                    {/* Verification Status */}
-                    <div>
-                      <label className="text-xs font-semibold text-muted-foreground dark:text-muted-foreground tracking-wider mb-3 block">Security</label>
-                      <div className="space-y-2">
-                        <label className="flex items-center gap-3 cursor-pointer group">
-                          <input 
-                            type="checkbox" 
-                            className="hidden" 
-                            checked={onlyVerified}
-                            onChange={(e) => setOnlyVerified(e.target.checked)}
-                          />
-                          <div className={`w-5 h-5 rounded border ${onlyVerified ? 'border-blue-500 bg-blue-500' : 'border-gray-300 dark:border-white/20'} flex items-center justify-center transition-all`}>
-                            <CheckCircle2 className={`w-3.5 h-3.5 text-white ${onlyVerified ? 'scale-100' : 'scale-0'} transition-transform`} />
-                          </div>
-                          <span className={`text-sm ${onlyVerified ? 'text-gray-900 dark:text-white font-bold' : 'text-gray-600 dark:text-muted-foreground'} group-hover:text-gray-900 dark:group-hover:text-white transition-colors`}>Verified Pros</span>
-                        </label>
-                      </div>
-                    </div>
-
-                    {/* Rating */}
-                    <div>
-                      <label className="text-xs font-semibold text-muted-foreground dark:text-muted-foreground tracking-wider mb-3 block">Minimum Rating</label>
-                      <div className="space-y-2">
-                        {[4.5, 4.0, 3.5].map((r) => (
-                          <label key={r} className="flex items-center gap-3 cursor-pointer group">
-                            <input 
-                                type="radio" 
-                                name="rating" 
-                                className="hidden" 
-                                checked={minRating === r}
-                                onChange={() => setMinRating(r)}
-                            />
-                            <div className={`w-5 h-5 rounded-full border ${minRating === r ? 'border-blue-500' : 'border-gray-300 dark:border-white/20'} flex items-center justify-center transition-all`}>
-                              <div className={`w-2.5 h-2.5 rounded-full bg-blue-500 ${minRating === r ? 'scale-100' : 'scale-0'} transition-transform`} />
-                            </div>
-                            <span className={`text-sm ${minRating === r ? 'text-gray-900 dark:text-white font-bold' : 'text-gray-600 dark:text-muted-foreground'} flex items-center gap-1.5`}>
-                              {r}+ <Star className={`w-3.5 h-3.5 ${minRating === r ? 'fill-amber-500 text-amber-500' : 'text-gray-300'}`} />
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-
-
-                  </CardContent>
-                </Card>
+      <MarketingListingBody>
+          <div className={marketingUi.listing.inner}>
+            <aside className={cn(marketingUi.listing.sidebarWide, !filterOpen && "hidden lg:block")}>
+              <div className={marketingUi.listing.sidebarSticky}>
+                <MarketingFilterSidebar />
               </div>
             </aside>
 
-            {/* Main Content */}
-            <div className="flex-1 min-w-0">
-              {/* Toolbar */}
-              <div className="flex items-center justify-between mb-6">
-                <p className="text-body-pro text-sm text-muted-foreground">
-                  Showing <span className="font-bold text-foreground">{providers.length}</span> professionals
-                </p>
-                <div className="flex items-center gap-4">
-                  <select 
-                    value={sortOrder || ''} 
-                    onChange={(e) => setSortOrder(e.target.value || null)}
-                    className="h-10 bg-muted dark:bg-white/5 border border-border dark:border-white/10 rounded-lg px-4 text-xs font-bold text-muted-foreground outline-none focus:ring-1 focus:ring-primary transition-all hidden sm:block"
-                  >
-                    <option value="">Default Sorting</option>
-                    <option value="asc">Price: Low to High</option>
-                    <option value="desc">Price: High to Low</option>
-                  </select>
-
-                  {/* Services Filter Dropdown */}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" className="h-10 border-border dark:border-white/10 gap-2">
-                        <Filter className="w-4 h-4" /> 
-                        <span className="hidden sm:inline">Filter by Services</span>
-                        {selectedServiceIds.length > 0 && (
-                          <Badge variant="secondary" className="ml-1 h-5 px-1.5 rounded-sm">
-                            {selectedServiceIds.length}
-                          </Badge>
-                        )}
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-64 max-h-[400px] overflow-y-auto custom-scrollbar">
-                      {categories.map((cat, index) => (
-                        <div key={cat.id}>
-                          {index > 0 && <DropdownMenuSeparator />}
-                          <DropdownMenuGroup>
-                            <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-primary/70 bg-muted/30 py-1.5">
-                              {cat.name}
-                            </DropdownMenuLabel>
-                            {cat.services?.map((svc: any) => (
-                              <DropdownMenuCheckboxItem
-                                key={svc.id}
-                                checked={selectedServiceIds.includes(svc.id)}
-                                onCheckedChange={(checked) => {
-                                  if (checked) {
-                                    setSelectedServiceIds([...selectedServiceIds, svc.id]);
-                                  } else {
-                                    setSelectedServiceIds(selectedServiceIds.filter(id => id !== svc.id));
-                                  }
-                                }}
-                                className="text-xs font-bold py-2 cursor-pointer"
-                              >
-                                {svc.name}
-                              </DropdownMenuCheckboxItem>
-                            ))}
-                          </DropdownMenuGroup>
-                        </div>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  
+            <div className={marketingUi.listing.main}>
+              <MarketingListingToolbar count={providers.length} countLabel="professionals">
                   <div className="flex items-center gap-2">
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => setFilterOpen(!filterOpen)}
                       className="lg:hidden text-muted-foreground dark:text-gray-400"
+                      aria-label="Toggle filters"
                     >
                       <SlidersHorizontal className="w-5 h-5" />
                     </Button>
-                    <div className="flex bg-gray-100 dark:bg-white/5 rounded-lg p-1 border border-border dark:border-white/10">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setView("grid")}
-                        className={`h-8 w-8 rounded-md ${view === "grid" ? "bg-white dark:bg-white/10 shadow-sm text-blue-600 dark:text-blue-400" : "text-gray-400"}`}
-                      >
-                        <LayoutGrid className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setView("list")}
-                        className={`h-8 w-8 rounded-md ${view === "list" ? "bg-white dark:bg-white/10 shadow-sm text-blue-600 dark:text-blue-400" : "text-gray-400"}`}
-                      >
-                        <List className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setView("map")}
-                        className={`h-8 w-8 rounded-md ${view === "map" ? "bg-white dark:bg-white/10 shadow-sm text-blue-600 dark:text-blue-400" : "text-gray-400"}`}
-                      >
-                        <Map className="w-4 h-4" />
-                      </Button>
-                    </div>
+                    <button
+                      onClick={handleNearMe}
+                      className="text-xs font-bold text-primary hover:underline cursor-pointer flex items-center gap-1.5"
+                    >
+                      <MapPin className="w-3.5 h-3.5" />
+                      <span>{isLocating ? "Locating..." : location ? "Near Me Active" : "Find Near Me"}</span>
+                    </button>
                   </div>
-                </div>
-              </div>
+                  
+                  <MarketingViewToggle
+                    view={view}
+                    onViewChange={setView}
+                    modes={["grid", "list", "map"]}
+                  />
+              </MarketingListingToolbar>
+
 
                {/* Cards Grid/List/Map */}
               {isPageLoading ? (
-                <div className={view === "grid" ? "grid grid-cols-1 md:grid-cols-2 gap-10" : "flex flex-col gap-8"}>
+                <div className={view === "grid" ? marketingUi.listing.grid : marketingUi.listing.list}>
                   {Array.from({ length: 4 }).map((_, i) => (
-                    <Skeleton key={i} className="h-96 rounded-[2.5rem]" />
+                    <Skeleton key={i} className="aspect-[4/3] w-full rounded-2xl" />
                   ))}
                 </div>
               ) : providers.length === 0 ? (
-                <motion.div
-                  className="text-center py-24 bg-slate-50 dark:bg-zinc-900 border border-border/40 rounded-[3rem]"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  <div className="w-24 h-24 rounded-full bg-white dark:bg-black flex items-center justify-center mx-auto mb-8 shadow-xl">
-                    <Search className="w-10 h-10 text-muted-foreground/40" />
-                  </div>
-                  <h3 className="text-3xl font-bold tracking-tight mb-3">No Professionals Found</h3>
-                  <p className="text-muted-foreground font-medium mb-10 max-w-sm mx-auto italic">Try adjusting your filters or search terms to explore more possibilities.</p>
-                  <Button asChild variant="outline" className="border-border/60 hover:bg-muted font-bold rounded-xl h-12 px-8">
-                    <Link href="/providers">Clear All Filters</Link>
-                  </Button>
-                </motion.div>
+                <MarketingEmptyState
+                  title="No Professionals Found"
+                  description="Try adjusting your filters or search terms to explore more possibilities."
+                  actionLabel="Clear All Filters"
+                  actionHref="/providers"
+                />
               ) : view === "map" ? (
                 <div className="h-[700px] w-full mt-4 rounded-[3rem] overflow-hidden border border-border/40 shadow-2xl">
                   <MapView 
@@ -385,7 +279,7 @@ function ProvidersContent() {
                   />
                 </div>
               ) : (
-                <div className={view === "grid" ? "grid grid-cols-1 md:grid-cols-2 gap-10" : "flex flex-col gap-8"}>
+                <div className={view === "grid" ? marketingUi.listing.grid : marketingUi.listing.list}>
                   {providers.map((provider, index) => (
                     <motion.div
                       key={provider.id}
@@ -394,134 +288,55 @@ function ProvidersContent() {
                       viewport={{ once: true, amount: 0.1 }}
                       transition={{ duration: 0.5, delay: index * 0.05 }}
                     >
-                      <Link href={`/providers/${provider.id}`}>
-                        <Card className={`bg-white dark:bg-black border border-border/40 hover:border-primary/40 transition-all duration-500 cursor-pointer group shadow-sm hover:shadow-2xl hover:shadow-primary/5 flex ${view === "grid" ? "flex-col h-full rounded-[2.5rem]" : "flex-col md:flex-row rounded-[2rem]"} overflow-hidden`}>
-                          
-                          {/* Banner Area */}
-                          <div className={`${view === "grid" ? "h-40" : "md:w-72 h-48 md:h-auto"} bg-slate-50 dark:bg-zinc-900 relative overflow-hidden shrink-0 border-b border-border/10`}>
-                            {provider.is_verified && (
-                              <div className="absolute top-5 right-5 bg-white/80 dark:bg-black/80 backdrop-blur-xl border border-border/40 text-primary px-4 py-1.5 rounded-xl text-[10px] font-black tracking-widest capitalize flex items-center gap-2 z-10 shadow-lg">
-                                <Shield className="w-3.5 h-3.5" /> Verified
-                              </div>
-                            )}
-                          </div>
-                          
-                          <CardContent className="p-8 relative flex-1 flex flex-col">
-                            {/* Institutional Avatar (only in grid) */}
-                            {view === "grid" && (
-                              <div className="absolute -top-12 left-8">
-                                <div className="w-24 h-24 rounded-3xl border-8 border-white dark:border-black bg-white dark:bg-zinc-900 overflow-hidden flex items-center justify-center shadow-xl transition-all duration-500 group-hover:scale-105 group-hover:-translate-y-2 relative">
-                                  {provider.logo ? (
-                                     <Image 
-                                      src={getMediaUrl(provider.logo, 'avatar')} 
-                                      alt={provider.business_name} 
-                                      fill
-                                      className="object-cover" 
-                                     />
-                                  ) : (
-                                     <div className="w-full h-full bg-primary/5 flex items-center justify-center font-black text-3xl text-primary/20 italic">
-                                        {provider.business_name.charAt(0)}
-                                     </div>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-
-                            <div className={`${view === "grid" ? "mt-12" : "flex-1"}`}>
-                              <div className="flex items-start justify-between gap-4 mb-4">
-                                <div className="flex-1">
-                                  <h3 className="text-2xl font-bold tracking-tight group-hover:text-primary transition-colors italic leading-none">
-                                    {provider.business_name}
-                                  </h3>
-                                  <div className="flex flex-wrap items-center gap-4 mt-3">
-                                    <div className="flex items-center gap-1.5 text-muted-foreground transition-all group-hover:text-foreground">
-                                      <MapPin className="w-4 h-4 text-primary/40 group-hover:text-primary transition-colors" /> 
-                                      <span className="text-[11px] font-bold tracking-tight">{provider.location_name}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5 text-amber-500 bg-amber-50 dark:bg-amber-500/5 px-2.5 py-1 rounded-lg border border-amber-100 dark:border-amber-500/10 transition-all">
-                                      <Star className="w-3.5 h-3.5 fill-amber-500" /> 
-                                      <span className="text-[11px] font-black">{provider.rating || 'NEW'}</span>
-                                    </div>
-                                  </div>
-                                </div>
-                                {view === "list" && (
-                                  <div className="w-20 h-20 rounded-2xl border border-border/40 bg-slate-50 dark:bg-zinc-900 overflow-hidden flex items-center justify-center font-bold text-xl text-muted-foreground shrink-0 shadow-sm transition-all group-hover:scale-105 relative">
-                                    {provider.logo ? (
-                                      <Image 
-                                        src={getMediaUrl(provider.logo, 'avatar')} 
-                                        alt="" 
-                                        fill
-                                        className="object-cover" 
-                                      />
-                                    ) : (
-                                      <div className="w-full h-full bg-primary/5 flex items-center justify-center font-black text-2xl text-primary/20 italic">
-                                        {provider.business_name.charAt(0)}
-                                      </div>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-                              <p className="text-muted-foreground text-sm font-medium leading-relaxed line-clamp-2 italic mb-6">
-                                {provider.bio || getS('providers', 'fallback_bio', "Institutional grade professional provider verified for specialized logistical and structural service requirements.")}
-                              </p>
-                              
-                              <div className="flex flex-wrap gap-2 mb-8">
-                                {["Rapid Deployment", "Verified Liability", "Consolidated Billing"].map(badge => (
-                                  <span key={badge} className="text-[9px] font-bold tracking-widest capitalize px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-zinc-900 text-muted-foreground/60 border border-border/20 transition-all group-hover:bg-primary/5 group-hover:text-primary group-hover:border-primary/10">
-                                    {badge}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                            
-                            <div className="pt-6 border-t border-border/10 flex items-center justify-between mt-auto">
-                               <div className="flex flex-col">
-                                 <span className="text-[9px] text-muted-foreground font-black tracking-widest capitalize leading-none mb-1.5">Baseline Pricing</span>
-                                 {provider.starting_price ? (
-                                   <div className="flex items-baseline gap-1">
-                                     <span className="text-foreground text-2xl font-black tracking-tighter">
-                                       KES {Number(provider.starting_price).toLocaleString()}
-                                     </span>
-                                     {provider.services && provider.services.length > 0 && provider.services[0].pricing_type === 'hourly' && (
-                                       <span className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize">/ Session</span>
-                                     )}
-                                   </div>
-                                 ) : (
-                                   <span className="text-foreground text-xl font-black tracking-tighter italic">POA</span>
-                                 )}
-                               </div>
-                               <div className="flex items-center gap-4">
-                                 <span className="text-[10px] font-black text-primary tracking-widest capitalize opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-500">
-                                   View Architecture
-                                 </span>
-                                 <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-zinc-900 text-primary border border-border/40 flex items-center justify-center group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all duration-500 shadow-sm">
-                                   <ArrowRight className="w-5 h-5" />
-                                 </div>
-                               </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </Link>
+                      <ProviderCard
+                        layout={view === "list" ? "list" : "grid"}
+                        provider={
+                          { ...provider, id: String(provider.id) } as unknown as ProviderCardData
+                        }
+                        href={providerHref(provider)}
+                        fallbackBio={getS(
+                          "providers",
+                          "fallback_bio",
+                          "Institutional grade professional provider verified for specialized logistical and structural service requirements."
+                        )}
+                      />
                     </motion.div>
                   ))}
                 </div>
               )}
             </div>
           </div>
-        </div>
-      </div>
-    </>
+      </MarketingListingBody>
+  );
+}
+
+function ProvidersPageShell() {
+  const searchParams = useSearchParams();
+  const baseHero = useMarketingHero("providers");
+  const searchQuery = searchParams.get("search");
+  const hero = {
+    ...baseHero,
+    title: searchQuery ? `Professionals for "${searchQuery}"` : baseHero.title,
+    badge: searchQuery ? "Search Results" : baseHero.badge,
+  };
+
+  return (
+    <FavoritesProvider>
+      <MarketingPage hero={hero} contained={false} shellClassName="min-h-screen flex flex-col">
+        <ProvidersContent />
+      </MarketingPage>
+    </FavoritesProvider>
   );
 }
 
 export default function ProvidersPage() {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      <Suspense fallback={<div className="flex-1 pt-32 pb-24 text-center text-muted-foreground dark:text-white">Loading providers...</div>}>
-        <ProvidersContent />
-      </Suspense>
-      <Footer />
-    </div>
+    <Suspense
+      fallback={
+        <div className="min-h-screen pt-32 pb-24 text-center text-muted-foreground">Loading providers...</div>
+      }
+    >
+      <ProvidersPageShell />
+    </Suspense>
   );
 }

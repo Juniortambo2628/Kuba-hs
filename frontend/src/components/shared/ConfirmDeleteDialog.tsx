@@ -1,8 +1,6 @@
 import React from "react";
 import {
   AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -10,6 +8,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  DashboardAlertCancel,
+  DashboardAlertAction,
+} from "@/components/shared/DashboardAlertActions";
 
 interface ConfirmDeleteDialogProps {
   trigger?: React.ReactNode;
@@ -59,17 +61,14 @@ export function ConfirmDeleteDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="mt-6 flex gap-2">
-          <AlertDialogCancel className="rounded-xl font-bold text-xs uppercase tracking-widest border-border hover:bg-muted">
-            {cancelLabel}
-          </AlertDialogCancel>
-          <AlertDialogAction
+          <DashboardAlertCancel>{cancelLabel}</DashboardAlertCancel>
+          <DashboardAlertAction
             onClick={onConfirm}
-            className={`rounded-xl font-bold text-xs uppercase tracking-widest text-white transition-all ${
-              destructive ? "bg-red-600 hover:bg-red-700 shadow-lg shadow-red-600/20" : "bg-primary hover:bg-black shadow-lg shadow-primary/20"
-            }`}
+            variant={destructive ? "destructive" : "primary"}
+            className={!destructive ? "shadow-lg shadow-primary/20" : "shadow-lg shadow-red-600/20"}
           >
             {confirmLabel}
-          </AlertDialogAction>
+          </DashboardAlertAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

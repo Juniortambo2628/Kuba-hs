@@ -1,37 +1,42 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
+import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter, useSearchParams } from "next/navigation";
-import { default as Link } from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Loader2, ShieldCheck, ChevronLeft } from "lucide-react";
-import { designSystem } from "@/lib/design-system";
-import { AuthSplitLayout } from "@/components/auth/AuthSplitLayout";
-import { AuthFormHeader } from "@/components/auth/AuthFormHeader";
+import { Mail, Lock, Loader2 } from "lucide-react";
+import { AuthPageShell, AuthFormDivider, AuthPrimaryButton } from "@/components/auth/AuthPageShell";
+import { AuthIconInput } from "@/components/auth/AuthIconInput";
 import { AuthSocialButtons } from "@/components/auth/AuthSocialButtons";
+import { useAuthPageContent } from "@/hooks/useAuthPageContent";
 
 function LoginForm() {
   const { login, user, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get("redirect") || "";
-  
+  const { content, footerHref, showSocialProof } = useAuthPageContent("client_login");
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const googleError = searchParams.get("error");
+  const resetStatus = searchParams.get("reset");
+
+  useEffect(() => {
+    if (googleError === "google_auth_failed") {
+      setError("Google sign-in failed. Try email and password or try again.");
+    }
+  }, [googleError]);
 
   useEffect(() => {
     if (!authLoading && user) {
-        if (redirectPath && redirectPath.startsWith('/')) {
-            router.push(redirectPath);
-        } else {
-            const path = user.role === 'admin' ? '/admin' : '/dashboard';
-            router.push(path);
-        }
+      if (redirectPath && redirectPath.startsWith("/")) {
+        router.push(redirectPath);
+      } else {
+        router.push(user.role === "admin" ? "/admin" : "/dashboard");
+      }
     }
   }, [authLoading, user, router, redirectPath]);
 
@@ -39,124 +44,85 @@ function LoginForm() {
     e.preventDefault();
     setError("");
     setIsLoading(true);
-
     try {
       await login({ email, password });
-    } catch (err: any) {
-      setError(
-        err.response?.data?.message || err.message || "Authentication rejected."
-      );
+    } catch (err: unknown) {
+      const message =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+        (err as Error)?.message ||
+        "Authentication rejected.";
+      setError(message);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <AuthSplitLayout
-      theme="blue"
-      visualBgClass="bg-primary"
-      visualContent={
-        <div className="relative z-10 space-y-6 max-w-md">
-          <div className="w-12 h-12 bg-primary-foreground/20 rounded-xl flex items-center justify-center text-primary-foreground">
-            <ShieldCheck className="w-6 h-6" />
-          </div>
-          <h2 className="text-2xl font-semibold leading-snug text-primary-foreground">
-            Connecting you with trusted pros for all your home services.
-          </h2>
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-primary-foreground/20" />
-            <div className="space-y-1">
-              <div className="w-20 h-1.5 bg-primary-foreground/30 rounded-full" />
-              <div className="w-14 h-1 bg-primary-foreground/15 rounded-full" />
-            </div>
-          </div>
+    <AuthPageShell content={content} footerHref={footerHref} showSocialProof={showSocialProof}>
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {resetStatus === "success" && (
+          <p className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-400">
+            Your password has been reset. Sign in with your new password.
+          </p>
+        )}
+        {error && (
+          <p className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            {error}
+          </p>
+        )}
+
+        <AuthIconInput
+          id="email"
+          icon={Mail}
+          type="email"
+          autoComplete="email"
+          placeholder="name@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <AuthIconInput
+          id="password"
+          icon={Lock}
+          type="password"
+          showToggle
+          autoComplete="current-password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+
+        <div className="flex items-center justify-end">
+          <Link
+            href="/forgot-password"
+            className="text-sm font-medium text-[#0d9488] hover:underline underline-offset-2"
+          >
+            Forgot password?
+          </Link>
+        </div>
+
+        <AuthPrimaryButton accent={content.accent} isLoading={isLoading}>
+          {content.submitLabel}
+        </AuthPrimaryButton>
+
+        <AuthFormDivider />
+        <AuthSocialButtons isLoading={isLoading} />
+      </form>
+    </AuthPageShell>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       }
     >
-      <AuthFormHeader 
-        title="Welcome back" 
-        subtitle="Please enter your details to sign in." 
-      />
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {error && (
-          <div className="px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-500 text-[10px] font-semibold tracking-widest capitalize text-center">
-            {error}
-          </div>
-        )}
-        
-        <div className="space-y-4">
-          <div className="space-y-2 text-left">
-            <Label htmlFor="email" className={designSystem.typography.auth.label}>Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="name@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className={designSystem.typography.auth.input}
-            />
-          </div>
-          
-          <div className="space-y-2 text-left">
-            <Label htmlFor="password" className="text-[10px] font-semibold text-muted-foreground tracking-widest ml-1 capitalize">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className={designSystem.typography.auth.input}
-            />
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <input type="checkbox" id="remember" className="h-4 w-4 rounded border-input accent-primary" />
-            <Label htmlFor="remember" className="text-[10px] font-semibold text-muted-foreground tracking-widest capitalize">Remember me</Label>
-          </div>
-          <span className="text-[10px] font-semibold text-muted-foreground tracking-widest capitalize cursor-default" title="Coming soon">
-            Forgot password?
-          </span>
-        </div>
-        
-        <div className="space-y-4">
-          <Button 
-              type="submit" 
-              className={designSystem.typography.auth.button}
-              disabled={isLoading}
-          >
-            {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin mx-auto" />
-            ) : (
-              "Sign In"
-            )}
-          </Button>
-
-          <AuthSocialButtons isLoading={isLoading} />
-        </div>
-      </form>
-
-      <p className="text-center text-[10px] font-semibold text-muted-foreground tracking-widest capitalize">
-        Don't have an account?{" "}
-        <Link href="/register" className="text-primary dark:text-indigo-400 font-bold hover:underline">
-          Sign up
-        </Link>
-      </p>
-    </AuthSplitLayout>
-  );
-}
-export default function LoginPage() {
-  return (
-    <Suspense fallback={
-        <div className="min-h-screen bg-background flex items-center justify-center">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </div>
-    }>
-        <LoginForm />
+      <LoginForm />
     </Suspense>
   );
 }

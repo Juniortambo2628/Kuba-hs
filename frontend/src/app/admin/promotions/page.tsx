@@ -1,5 +1,7 @@
 "use client";
 
+import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
+
 import { useState } from "react";
 import { 
   Ticket, 
@@ -127,7 +129,7 @@ export default function PromotionsPage() {
     };
 
     return (
-        <div className="max-w-[1400px] mx-auto space-y-10 pb-12">
+        <DashboardPageContainer className="space-y-10">
             <DashboardPageHeader 
                 title="Growth & Promotions" 
                 subtitle="Engine for marketplace expansion, seasonal vouchers, and acquisition campaigns."
@@ -249,7 +251,7 @@ export default function PromotionsPage() {
             </div>
 
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-                <SheetContent side="right" className="w-full sm:max-w-xl bg-white dark:bg-[#0B0F19] border-l border-border/40 p-0 overflow-y-auto custom-scrollbar">
+                <SheetContent side="right" className="w-full sm:max-w-xl bg-white dark:bg-[#0B0F19] border-l border-border/40 p-0 overflow-y-auto kuba-scroll">
                     <div className="p-10 border-b border-border/10 space-y-2">
                         <SheetTitle className="text-3xl font-black text-foreground tracking-tighter uppercase italic">
                             {currentCode.id ? 'Refine Strategy' : 'Initialize Campaign'}
@@ -376,6 +378,6 @@ export default function PromotionsPage() {
                 title="Archive Campaign signal?"
                 description="This will permanently nullify the voucher logic and prevent further usage. All historical records will remain intact."
             />
-        </div>
+        </DashboardPageContainer>
     );
 }

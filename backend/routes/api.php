@@ -2,32 +2,58 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Broadcast;
-use App\Http\Controllers\Api\MarketplaceController;
+use App\Http\Controllers\Api\Marketplace\MarketplaceCatalogController;
+use App\Http\Controllers\Api\Marketplace\MarketplaceContentController;
+use App\Http\Controllers\Api\Marketplace\MarketplaceDiscoveryController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\NewPasswordController;
+use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 
 Route::get('/user', function (Request $request) {
-    return $request->user();
+    return new UserResource($request->user());
 })->middleware('auth:sanctum');
 
+Route::get('/dashboard/search', \App\Http\Controllers\Api\DashboardSearchController::class)
+    ->middleware('auth:sanctum');
+
+/** SPA session auth — must live under /api so Next.js rewrites reach Laravel */
+Route::prefix('auth')->group(function () {
+    Route::middleware('guest')->group(function () {
+        Route::post('/login', [AuthenticatedSessionController::class, 'store']);
+        Route::post('/register', [RegisteredUserController::class, 'store']);
+        Route::post('/forgot-password', [PasswordResetLinkController::class, 'store']);
+        Route::post('/reset-password', [NewPasswordController::class, 'store']);
+    });
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/logout', [AuthenticatedSessionController::class, 'destroy']);
+    });
+});
 
 
-Route::get('/faqs', [MarketplaceController::class, 'faqs']);
-Route::get('/testimonials', [MarketplaceController::class, 'testimonials']);
+
+Route::get('/faqs', [MarketplaceContentController::class, 'faqs']);
+Route::get('/testimonials', [MarketplaceContentController::class, 'testimonials']);
 Route::get('/page-features', [\App\Http\Controllers\Api\PageFeatureController::class, 'index']);
 
-Route::get('/categories', [MarketplaceController::class, 'categories']);
-Route::get('/featured-services', [MarketplaceController::class, 'featured']);
-Route::get('/featured-services/{providerService}', [MarketplaceController::class, 'showService']);
-Route::get('/services/{service}', [MarketplaceController::class, 'showGeneralService']); // New general service route
-Route::get('/top-providers', [MarketplaceController::class, 'topProviders']);
-Route::get('/featured-services/{providerService}/similar', [MarketplaceController::class, 'similarProviders']);
-Route::get('/categories/{category}', [MarketplaceController::class, 'showCategory']);
-Route::get('/search', [MarketplaceController::class, 'search']);
-Route::get('/trust-partners', [MarketplaceController::class, 'trustPartners']);
-Route::post('/promo-codes/validate', [MarketplaceController::class, 'validatePromoCode']);
-Route::get('/providers', [MarketplaceController::class, 'providers']);
-Route::get('/providers/{provider}', [MarketplaceController::class, 'show']);
+Route::get('/categories', [MarketplaceCatalogController::class, 'categories']);
+Route::get('/featured-services', [MarketplaceCatalogController::class, 'featured']);
+Route::get('/featured-services/{providerService}', [MarketplaceCatalogController::class, 'showService']);
+Route::get('/services/{service}', [MarketplaceCatalogController::class, 'showGeneralService']);
+Route::get('/featured-services/{providerService}/similar', [MarketplaceCatalogController::class, 'similarProviders']);
+Route::get('/categories/{category}', [MarketplaceCatalogController::class, 'showCategory']);
+Route::get('/categories/{categorySlug}/{serviceSlug}', [MarketplaceCatalogController::class, 'showServiceBySlug']);
+Route::get('/trust-partners', [MarketplaceContentController::class, 'trustPartners']);
+Route::post('/promo-codes/validate', [MarketplaceDiscoveryController::class, 'validatePromoCode']);
+Route::get('/providers', [MarketplaceDiscoveryController::class, 'providers']);
+Route::get('/providers/{provider}', [MarketplaceDiscoveryController::class, 'show']);
+Route::get('/top-providers', [MarketplaceDiscoveryController::class, 'topProviders']);
+Route::get('/search', [MarketplaceDiscoveryController::class, 'search']);
 Route::get('/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'index']);
+Route::get('/geocode/search', [\App\Http\Controllers\Api\GeocodingController::class, 'search']);
 Route::post('/contact', [\App\Http\Controllers\Api\ContactController::class, 'store']);
 Route::post('/investors/inquire', [\App\Http\Controllers\Api\InvestorInquiryController::class, 'store']);
 Route::post('/auth/register-provider', [\App\Http\Controllers\Api\ProviderApplicationController::class, 'register']);
@@ -67,6 +93,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Booking management
     Route::get('/bookings/{booking}', [\App\Http\Controllers\Api\BookingController::class, 'show']);
+    Route::get('/bookings/{booking}/activity', [\App\Http\Controllers\Api\BookingActivityController::class, 'index']);
     Route::patch('/bookings/{booking}/status', [\App\Http\Controllers\Api\BookingController::class, 'updateStatus']);
     Route::patch('/bookings/{booking}/reschedule', [\App\Http\Controllers\Api\BookingController::class, 'reschedule']);
 
@@ -76,53 +103,52 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/notifications/read-all', [\App\Http\Controllers\Api\NotificationController::class, 'markAllAsRead']);
     Route::post('/notifications/{id}/read', [\App\Http\Controllers\Api\NotificationController::class, 'markAsRead']);
 
-    // Verification Routes
-    Route::get('/provider/verification', [\App\Http\Controllers\Api\VerificationController::class, 'index']);
-    Route::post('/provider/verification', [\App\Http\Controllers\Api\VerificationController::class, 'store']);
-    Route::get('/admin/workforce/verification', [\App\Http\Controllers\Api\VerificationController::class, 'index']);
-    Route::patch('/admin/workforce/verification/{id}', [\App\Http\Controllers\Api\VerificationController::class, 'update']);
+    Route::middleware('admin')->group(function () {
+        Route::get('/admin/workforce/verification', [\App\Http\Controllers\Api\VerificationController::class, 'index']);
+        Route::patch('/admin/workforce/verification/{id}', [\App\Http\Controllers\Api\VerificationController::class, 'update']);
+    });
 
-    // Provider Management
-    Route::group(['prefix' => 'provider'], function () {
+    // Provider routes (provider role required)
+    Route::middleware('provider')->prefix('provider')->group(function () {
+        Route::get('/bookings', [\App\Http\Controllers\Provider\BookingController::class, 'index']);
+        Route::get('/verification', [\App\Http\Controllers\Api\VerificationController::class, 'index']);
+        Route::post('/verification', [\App\Http\Controllers\Api\VerificationController::class, 'store']);
         Route::get('/dashboard', [\App\Http\Controllers\Provider\DashboardController::class, 'index']);
-        
-        // Services CRUD
         Route::get('/services', [\App\Http\Controllers\Api\ProviderServiceController::class, 'index']);
         Route::post('/services', [\App\Http\Controllers\Api\ProviderServiceController::class, 'store']);
         Route::put('/services/{id}', [\App\Http\Controllers\Api\ProviderServiceController::class, 'update']);
         Route::delete('/services/{id}', [\App\Http\Controllers\Api\ProviderServiceController::class, 'destroy']);
-
-        // Availability CRUD
         Route::get('/availability', [\App\Http\Controllers\Api\ProviderAvailabilityController::class, 'index']);
         Route::put('/availability', [\App\Http\Controllers\Api\ProviderAvailabilityController::class, 'update']);
         Route::put('/availability/exceptions', [\App\Http\Controllers\Api\ProviderAvailabilityController::class, 'updateExceptions']);
-
-        // Profile Update
         Route::post('/profile', [\App\Http\Controllers\Api\ProviderProfileController::class, 'update']);
-
-        // Reviews
         Route::get('/reviews', [\App\Http\Controllers\Provider\ReviewController::class, 'index']);
     });
 
-    Route::get('/client/dashboard', [\App\Http\Controllers\Client\DashboardController::class, 'index']);
-    Route::get('/client/bookings', [\App\Http\Controllers\Client\BookingController::class, 'index']);
-    Route::post('/client/bookings', [\App\Http\Controllers\Client\BookingController::class, 'store']);
-    Route::apiResource('/client/addresses', \App\Http\Controllers\Client\AddressController::class);
-    Route::get('/client/loyalty', [\App\Http\Controllers\Client\LoyaltyController::class, 'index']);
-    Route::post('/client/loyalty/redeem', [\App\Http\Controllers\Client\LoyaltyController::class, 'redeem']);
-    Route::put('/client/profile', [\App\Http\Controllers\Client\ProfileController::class, 'update']);
-    Route::patch('/client/password', [\App\Http\Controllers\Client\ProfileController::class, 'changePassword']);
-    Route::patch('/client/addresses/{address}/default', [\App\Http\Controllers\Client\AddressController::class, 'setDefault']);
+    Route::middleware('provider')->get('/payments/provider/transactions', [\App\Http\Controllers\Api\PaystackController::class, 'providerTransactions']);
 
-    // Payments (Paystack)
-    Route::post('/payments/paystack/initialize', [\App\Http\Controllers\Api\PaystackController::class, 'initialize']);
-    Route::post('/payments/paystack/verify', [\App\Http\Controllers\Api\PaystackController::class, 'verify']);
-    Route::get('/payments/provider/transactions', [\App\Http\Controllers\Api\PaystackController::class, 'providerTransactions']);
-    Route::get('/payments/client/transactions', [\App\Http\Controllers\Api\PaystackController::class, 'userTransactions']);
+    // Client routes (customer role required)
+    Route::middleware('customer')->group(function () {
+        Route::get('/client/dashboard', [\App\Http\Controllers\Client\DashboardController::class, 'index']);
+        Route::get('/client/bookings', [\App\Http\Controllers\Client\BookingController::class, 'index']);
+        Route::post('/client/bookings', [\App\Http\Controllers\Client\BookingController::class, 'store']);
+        Route::apiResource('/client/addresses', \App\Http\Controllers\Client\AddressController::class);
+        Route::get('/client/loyalty', [\App\Http\Controllers\Client\LoyaltyController::class, 'index']);
+        Route::post('/client/loyalty/redeem', [\App\Http\Controllers\Client\LoyaltyController::class, 'redeem']);
+        Route::put('/client/profile', [\App\Http\Controllers\Client\ProfileController::class, 'update']);
+        Route::patch('/client/password', [\App\Http\Controllers\Client\ProfileController::class, 'changePassword']);
+        Route::patch('/client/addresses/{address}/default', [\App\Http\Controllers\Client\AddressController::class, 'setDefault']);
+        Route::post('/payments/paystack/initialize', [\App\Http\Controllers\Api\PaystackController::class, 'initialize']);
+        Route::post('/payments/paystack/verify', [\App\Http\Controllers\Api\PaystackController::class, 'verify']);
+        Route::get('/payments/client/transactions', [\App\Http\Controllers\Api\PaystackController::class, 'userTransactions']);
+        Route::post('/payments/mpesa/stk-push', [\App\Http\Controllers\Api\MpesaController::class, 'stkPush']);
+        Route::post('/payments/mpesa/check-status', [\App\Http\Controllers\Api\MpesaController::class, 'checkStatus']);
+        Route::post('/reviews', [\App\Http\Controllers\Api\ReviewController::class, 'store']);
+    });
 
-    // Payments (M-Pesa)
-    Route::post('/payments/mpesa/stk-push', [\App\Http\Controllers\Api\MpesaController::class, 'stkPush']);
-    Route::post('/payments/mpesa/check-status', [\App\Http\Controllers\Api\MpesaController::class, 'checkStatus']);
+    // Favorites (any authenticated user)
+    Route::get('/favorites', [\App\Http\Controllers\Api\FavoriteController::class, 'index']);
+    Route::post('/favorites/{provider}', [\App\Http\Controllers\Api\FavoriteController::class, 'toggle']);
 
 
     // Receipt
@@ -135,37 +161,48 @@ Route::middleware('auth:sanctum')->group(function () {
         return response()->json(['booking' => $booking]);
     });
 
-    // Reviews
-    Route::post('/reviews', [\App\Http\Controllers\Api\ReviewController::class, 'store']);
     Route::get('/providers/{provider}/reviews', [\App\Http\Controllers\Api\ReviewController::class, 'providerReviews']);
 
     // Invoices
     Route::get('/invoices/{bookingId}/download', [\App\Http\Controllers\Api\InvoiceController::class, 'download']);
 
-    // Admin routes
-    Route::group(['prefix' => 'admin', 'as' => 'api.admin.'], function () {
+    // Admin routes (admin role required)
+    Route::group(['prefix' => 'admin', 'as' => 'api.admin.', 'middleware' => 'admin'], function () {
         Route::get('/analytics', [\App\Http\Controllers\Admin\AnalyticsController::class, 'index']);
         Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index']);
         Route::get('/messages-summary', [\App\Http\Controllers\Admin\DashboardController::class, 'messagesSummary']);
         Route::get('/bookings', [\App\Http\Controllers\Admin\BookingController::class, 'index']);
+        Route::post('/bookings', [\App\Http\Controllers\Admin\BookingController::class, 'store']);
         Route::get('/bookings/{booking}', [\App\Http\Controllers\Admin\BookingController::class, 'show']);
         Route::patch('/bookings/{booking}/status', [\App\Http\Controllers\Admin\BookingController::class, 'updateStatus']);
         Route::delete('/bookings/{booking}', [\App\Http\Controllers\Admin\BookingController::class, 'destroy']);
         Route::get('/payments', [\App\Http\Controllers\Admin\PaymentController::class, 'index']);
+        Route::get('/payments/{payment}', [\App\Http\Controllers\Admin\PaymentController::class, 'show']);
         Route::get('/finance', [\App\Http\Controllers\Admin\FinanceController::class, 'index']);
         Route::get('/finance/transactions', [\App\Http\Controllers\Admin\FinanceController::class, 'transactions']);
+        // Unified financials namespace (preferred)
+        Route::get('/financials/charts', [\App\Http\Controllers\Admin\FinanceController::class, 'index']);
+        Route::get('/financials/transactions', [\App\Http\Controllers\Admin\FinanceController::class, 'transactions']);
         
         // Configuration & Content
         Route::get('/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'index']);
         Route::post('/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'update']);
         Route::get('/feedback', [\App\Http\Controllers\Admin\FeedbackController::class, 'index']);
         Route::put('/feedback/{id}', [\App\Http\Controllers\Admin\FeedbackController::class, 'update']);
+        Route::delete('/feedback/{id}', [\App\Http\Controllers\Admin\FeedbackController::class, 'destroy']);
+
+        // CMS media (FilePond)
+        Route::post('/media/upload', [\App\Http\Controllers\Admin\MediaController::class, 'upload']);
+        Route::delete('/media/revert', [\App\Http\Controllers\Admin\MediaController::class, 'delete']);
 
         Route::apiResource('trust-partners', \App\Http\Controllers\Admin\TrustPartnerController::class);
         Route::apiResource('page-features', \App\Http\Controllers\Admin\PageFeatureController::class);
 
         Route::apiResource('users', \App\Http\Controllers\Admin\UserController::class);
         Route::patch('users/{user}/toggle-status', [\App\Http\Controllers\Admin\UserController::class, 'toggleStatus']);
+
+        Route::apiResource('providers', \App\Http\Controllers\Admin\ProviderController::class);
+        Route::patch('providers/{provider}/status', [\App\Http\Controllers\Admin\ProviderController::class, 'updateStatus']);
 
 
         // Loyalty routes
@@ -189,13 +226,19 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Reports
         Route::get('/reports/generate', [\App\Http\Controllers\Admin\ReportController::class, 'generate']);
+        Route::get('/reports/history', [\App\Http\Controllers\Admin\ReportController::class, 'history']);
+
+        // Chat moderation
+        Route::get('/chat/conversations', [\App\Http\Controllers\Admin\AdminChatController::class, 'index']);
+        Route::get('/chat/conversations/{conversation}', [\App\Http\Controllers\Admin\AdminChatController::class, 'show']);
+        Route::delete('/chat/messages/{message}', [\App\Http\Controllers\Admin\AdminChatController::class, 'destroyMessage']);
 
         // Investor Inquiries
-        Route::apiResource('investors', \App\Http\Controllers\Admin\InvestorInquiryController::class)->except(['store']);
+        Route::apiResource('investors', \App\Http\Controllers\Admin\InvestorInquiryController::class)->except(['store', 'update']);
         Route::patch('investors/{investor_inquiry}/status', [\App\Http\Controllers\Admin\InvestorInquiryController::class, 'updateStatus']);
 
         // Custom Quotes (Commercial/Cooperatives)
-        Route::apiResource('quotes', \App\Http\Controllers\Admin\QuoteController::class)->except(['store']);
+        Route::apiResource('quotes', \App\Http\Controllers\Admin\QuoteController::class)->except(['store', 'update']);
         Route::patch('/quotes/{quote}/status', [\App\Http\Controllers\Admin\QuoteController::class, 'updateStatus']);
 
         // Promo Codes
@@ -205,8 +248,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Email Templates
         Route::get('/email-templates', [\App\Http\Controllers\Admin\EmailTemplateController::class, 'index']);
+        Route::post('/email-templates', [\App\Http\Controllers\Admin\EmailTemplateController::class, 'store']);
         Route::get('/email-templates/{emailTemplate}', [\App\Http\Controllers\Admin\EmailTemplateController::class, 'show']);
         Route::put('/email-templates/{emailTemplate}', [\App\Http\Controllers\Admin\EmailTemplateController::class, 'update']);
+        Route::delete('/email-templates/{emailTemplate}', [\App\Http\Controllers\Admin\EmailTemplateController::class, 'destroy']);
 
         // Contact Messages
         Route::get('/contact', [\App\Http\Controllers\Admin\ContactController::class, 'index']);

@@ -1,10 +1,15 @@
 import React from "react";
-import { 
-  Car, 
-  Home, 
-  Heart, 
-  Briefcase, 
-  Building2, 
+import type { LucideIcon } from "lucide-react";
+import {
+  Car,
+  Home,
+  Heart,
+  Briefcase,
+  Building2,
+  Settings,
+  ShieldCheck,
+  TrendingUp,
+  Globe,
   Sparkles, 
   Droplet, 
   Zap, 
@@ -23,8 +28,24 @@ import {
   Plug,
   Droplets,
   BookOpen,
-  Scissors
+  Scissors,
 } from "lucide-react";
+
+/** Display-name → Lucide component (categories browse page). */
+export const categoryDisplayIconMap: Record<string, LucideIcon> = {
+  "Home Essentials": Home,
+  "Personal & Wellness": Heart,
+  "Automotive Care": Zap,
+  "Professional & Digital": Settings,
+  "Event & Commercial": Building2,
+  "Corporate Solutions": ShieldCheck,
+  "Financial Services": TrendingUp,
+  "Global Reach": Globe,
+};
+
+export function getCategoryLucideIcon(categoryName: string): LucideIcon {
+  return categoryDisplayIconMap[categoryName] ?? Briefcase;
+}
 
 /**
  * Shared icon mapping for service categories.

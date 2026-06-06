@@ -41,7 +41,13 @@ class PasswordResetLinkController extends Controller
         );
 
         if ($status == Password::RESET_LINK_SENT) {
-            return back()->with('status', __($status));
+            $message = __($status);
+
+            if ($request->wantsJson() || $request->expectsJson()) {
+                return response()->json(['message' => $message, 'status' => $status]);
+            }
+
+            return back()->with('status', $message);
         }
 
         throw ValidationException::withMessages([

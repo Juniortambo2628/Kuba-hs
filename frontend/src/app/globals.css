@@ -39,6 +39,7 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-surface-elevated: var(--surface-elevated);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -78,6 +79,8 @@
 
   --destructive: #ef4444;
 
+  --surface-elevated: #ffffff;
+
   --border: #e2e8f0;
   --input: #e2e8f0;
   --ring: #2563eb;
@@ -104,6 +107,8 @@
 .dark {
   --background: #09090b;
   --foreground: #fafafa;
+
+  --surface-elevated: #0b0f19;
 
   --card: #111318;
   --card-foreground: #fafafa;
@@ -151,9 +156,41 @@
     border-color: var(--border);
     outline-color: var(--ring);
   }
-  html, body {
+  html {
     scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
   }
+  html::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  html::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  html::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 9999px;
+  }
+  html::-webkit-scrollbar-thumb:hover {
+    background-color: #94a3b8;
+  }
+  .dark html {
+    scrollbar-color: #334155 transparent;
+  }
+  .dark html::-webkit-scrollbar-thumb {
+    background-color: #334155;
+  }
+  .dark html::-webkit-scrollbar-thumb:hover {
+    background-color: #475569;
+  }
+  /* Radix dialog scroll lock: avoid extra padding + width jump (scrollbar-gutter already reserved) */
+  body[data-scroll-locked] {
+    padding-right: 0 !important;
+    margin-right: 0 !important;
+    overflow: hidden !important;
+  }
+
   body {
     background-color: var(--background);
     color: var(--foreground);
@@ -170,6 +207,10 @@
     font-weight: 700;
     letter-spacing: -0.025em;
     line-height: 1.1;
+  }
+
+  select {
+    padding-right: 2rem !important;
   }
 
   /* ─── Normalize font-black (900) to bold (700) for Inter consistency ─── */
@@ -206,34 +247,6 @@
     @apply text-xs font-bold tracking-tight;
   }
 
-  /* Subtle scrollbar */
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  ::-webkit-scrollbar-thumb {
-    background-color: #cbd5e1;
-    border-radius: 9999px;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background-color: #94a3b8;
-  }
-  .dark ::-webkit-scrollbar-thumb {
-    background-color: #334155;
-  }
-  .dark ::-webkit-scrollbar-thumb:hover {
-    background-color: #475569;
-  }
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: #cbd5e1 transparent;
-  }
-  .dark * {
-    scrollbar-color: #334155 transparent;
-  }
 }
 
 /* ─── Global Admin UI Tightening ─── */
@@ -317,6 +330,43 @@
 
 
 @layer utilities {
+  /* ─── Scroll SSOT (see src/lib/scroll-ui.ts) ─── */
+  .kuba-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+  }
+  .dark .kuba-scroll {
+    scrollbar-color: #334155 transparent;
+  }
+  .kuba-scroll::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .kuba-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .kuba-scroll::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 9999px;
+  }
+  .kuba-scroll::-webkit-scrollbar-thumb:hover {
+    background-color: #94a3b8;
+  }
+  .dark .kuba-scroll::-webkit-scrollbar-thumb {
+    background-color: #334155;
+  }
+  .dark .kuba-scroll::-webkit-scrollbar-thumb:hover {
+    background-color: #475569;
+  }
+
+  .kuba-scroll-hidden {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .kuba-scroll-hidden::-webkit-scrollbar {
+    display: none;
+  }
+
   @keyframes shimmer {
     100% {
       transform: translateX(100%);
@@ -324,5 +374,23 @@
   }
   .animate-shimmer {
     animation: shimmer 2s infinite;
+  }
+
+  /* Leaflet needs explicit dimensions from parent chain */
+  .leaflet-container {
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+  }
+
+  .leaflet-tooltip.kuba-map-tooltip {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin-top: -4px;
+  }
+  .leaflet-tooltip.kuba-map-tooltip::before {
+    display: none;
   }
 }

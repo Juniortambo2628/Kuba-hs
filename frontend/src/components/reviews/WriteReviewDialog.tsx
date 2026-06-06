@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Star, Upload, X, Loader2, Camera } from "lucide-react";
 import axiosInstance from "@/lib/axios";
+import { compressImageFiles } from "@/lib/image-compression";
 import { toast } from "sonner";
 import { Booking } from "@/types";
 
@@ -53,12 +54,13 @@ export function WriteReviewDialog({ isOpen, onClose, booking, onSuccess }: Write
         }
 
         setIsSubmitting(true);
+        const optimizedImages = await compressImageFiles(images, { preset: "review" });
         const formData = new FormData();
         formData.append("booking_id", booking.id.toString());
         formData.append("rating", rating.toString());
         formData.append("comment", comment);
-        
-        images.forEach((image, i) => {
+
+        optimizedImages.forEach((image, i) => {
             formData.append(`images[${i}]`, image);
         });
 

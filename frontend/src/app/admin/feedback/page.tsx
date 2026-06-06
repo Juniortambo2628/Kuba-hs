@@ -1,19 +1,29 @@
 "use client";
 
+import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
+import {
+  DashboardDataCard,
+  DashboardTableHead,
+  DashboardTableHeaderRow,
+} from "@/components/shared/DashboardTable";
+import { dashboardUi } from "@/lib/dashboard-ui";
+import { DashboardPageSkeleton } from "@/components/shared/DashboardPageSkeleton";
+
 import { useEffect, useState } from "react";
 import axiosInstance from "@/lib/axios";
 import { Card, CardContent } from "@/components/ui/card";
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
+import { Table, TableHeader, TableBody, TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Star, Search, Filter, MessageSquare, AlertCircle, ShieldCheck, MoreHorizontal, User as UserIcon, Briefcase, Zap } from "lucide-react";
+import { Star, Search, Filter, MessageSquare, AlertCircle, ShieldCheck, MoreHorizontal, User as UserIcon, Briefcase, Zap, Trash2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DataToolbar } from "@/components/shared/DataToolbar";
+import { DashboardListToolbar } from "@/components/shared/DashboardListToolbar";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
 import { DashboardStatusBadge } from "@/components/shared/DashboardStatusBadge";
 import { useApiData } from "@/hooks/useApiData";
 import { toast } from "sonner";
+import { ReviewStatusBadge } from "@/components/shared/ReviewStatusBadge";
 
 interface Review {
  id: string;
@@ -33,8 +43,11 @@ export default function AdminFeedback() {
     const [ratingFilter, setRatingFilter] = useState("");
     const [viewMode, setViewMode] = useState<'grid'|'list'>('grid');
 
-    const { data: feedbackData, isLoading, refetch: fetchFeedback } = useApiData<any>(`/api/admin/feedback?search=${search}&rating=${ratingFilter}`, { initialData: null });
-    
+    const { data: feedbackData, isLoading, refetch: fetchFeedback } = useApiData<{
+      data: Review[];
+      stats: { total: number; avg: number; poor_ratings: number };
+    }>(`/api/admin/feedback?search=${search}&rating=${ratingFilter}`, { preserveEnvelope: true, initialData: null });
+
     const reviews = (feedbackData?.data || []) as Review[];
     const stats = feedbackData?.stats || null;
 
@@ -59,29 +72,23 @@ export default function AdminFeedback() {
         }
     };
 
-    const getStatusColor = (status: string) => {
-        switch(status) {
-            case 'published': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
-            case 'hidden': return 'bg-rose-100 text-rose-700 border-rose-200';
-            case 'resolved': return 'bg-blue-100 text-blue-700 border-blue-200';
-            default: return 'bg-gray-100 text-gray-700 border-gray-200';
+    const handleDelete = async (id: string) => {
+        if (!confirm("Delete this review permanently?")) return;
+        try {
+            await axiosInstance.delete(`/api/admin/feedback/${id}`);
+            toast.success("Review deleted");
+            fetchFeedback();
+        } catch {
+            toast.error("Failed to delete review");
         }
     };
 
     if (isLoading && !reviews.length) {
-        return (
-            <div className="max-w-[1400px] mx-auto space-y-8 animate-pulse">
-                <Skeleton className="h-12 w-64 rounded-2xl" />
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {[1,2,3].map(i => <Skeleton key={i} className="h-32 w-full rounded-3xl" />)}
-                </div>
-                <Skeleton className="h-[500px] w-full rounded-[2.5rem]" />
-            </div>
-        );
+        return <DashboardPageSkeleton metrics={3} bodyHeight="h-[500px]" />;
     }
 
     return (
-        <div className="max-w-[1400px] mx-auto space-y-10 pb-12">
+        <DashboardPageContainer className="space-y-10">
             {/* Standard Dashboard Header */}
             <DashboardPageHeader 
                 title="Market Sentiment" 
@@ -113,17 +120,12 @@ export default function AdminFeedback() {
     </div>
    )}
 
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2 mt-4 px-1">
-                <div>
-                    <h2 className="text-2xl font-bold text-foreground tracking-tight">Quality Review Log</h2>
-                    <p className="text-sm font-bold text-muted-foreground mt-1">Detailed customer narratives and merchant performance indicators.</p>
-                </div>
-            </div>
+   {search && (
+    <p className="text-xs text-muted-foreground">Results for &quot;{search}&quot;</p>
+   )}
 
-   <DataToolbar 
-    search={search}
-    onSearchChange={setSearch}
-    searchPlaceholder="Search comments or users..."
+   <DashboardListToolbar
+    hint="Use ⌘K Quick Jump to search feedback"
     viewMode={viewMode}
     onViewChange={setViewMode}
     filters={[
@@ -145,18 +147,17 @@ export default function AdminFeedback() {
    />
 
             {viewMode === 'list' ? (
-                <Card className="border border-border/40 overflow-hidden border-none shadow-sm bg-card/50 backdrop-blur-md">
-                    <CardContent className="p-0">
+                <DashboardDataCard>
                         <Table>
                             <TableHeader>
-                                <TableRow className="hover:bg-transparent border-border/50">
-                                    <TableHead className="pl-10 h-16 text-[11px] font-bold text-muted-foreground">Order Context</TableHead>
-                                    <TableHead className="h-16 text-[11px] font-bold text-muted-foreground">Contributor</TableHead>
-                                    <TableHead className="h-16 text-[11px] font-bold text-muted-foreground">Assessment</TableHead>
-                                    <TableHead className="h-16 text-[11px] font-bold text-muted-foreground">Review Narrative</TableHead>
-                                    <TableHead className="h-16 text-center text-[11px] font-bold text-muted-foreground">Status</TableHead>
-                                    <TableHead className="h-16 pr-10 text-right text-[11px] font-bold text-muted-foreground">Actions</TableHead>
-                                </TableRow>
+                                <DashboardTableHeaderRow>
+                                    <DashboardTableHead position="first" className="!pl-10 h-16">Order Context</DashboardTableHead>
+                                    <DashboardTableHead className="h-16">Contributor</DashboardTableHead>
+                                    <DashboardTableHead className="h-16">Assessment</DashboardTableHead>
+                                    <DashboardTableHead className="h-16">Review Narrative</DashboardTableHead>
+                                    <DashboardTableHead className="h-16 text-center">Status</DashboardTableHead>
+                                    <DashboardTableHead position="last" className="h-16 text-right">Actions</DashboardTableHead>
+                                </DashboardTableHeaderRow>
                             </TableHeader>
                             <TableBody>
                                 {reviews.map((review) => (
@@ -188,9 +189,7 @@ export default function AdminFeedback() {
                                             <p className="text-xs font-bold text-muted-foreground max-w-sm line-clamp-2">"{review.comment}"</p>
                                         </TableCell>
                                         <TableCell className="py-6 text-center">
-                                            <Badge variant="outline" className={`capitalize text-[10px] ${getStatusColor(review.status)}`}>
-                                                {review.status || 'published'}
-                                            </Badge>
+                                            <ReviewStatusBadge status={review.status || 'published'} />
                                         </TableCell>
                                         <TableCell className="pr-10 py-6 text-right">
                                             <div className="flex items-center justify-end gap-2">
@@ -203,6 +202,15 @@ export default function AdminFeedback() {
                                                     <option value="hidden">Hidden</option>
                                                     <option value="resolved">Resolved</option>
                                                 </select>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
+                                                    onClick={() => handleDelete(review.id)}
+                                                    aria-label="Delete review"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </Button>
                                                 <span className="text-[10px] text-muted-foreground ml-2">
                                                     {new Date(review.created_at).toLocaleDateString(undefined, { day: '2-digit', month: 'short' })}
                                                 </span>
@@ -222,12 +230,11 @@ export default function AdminFeedback() {
                                 )}
                             </TableBody>
                         </Table>
-                    </CardContent>
-                </Card>
+                </DashboardDataCard>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {reviews.length === 0 ? (
-                        <div className="col-span-full h-80 flex flex-col items-center justify-center gap-4 text-muted-foreground border border-dashed border-border/60 rounded-[2.5rem] bg-muted/10">
+                        <div className={`col-span-full h-80 ${dashboardUi.table.emptyDashed}`}>
                             <Zap className="h-16 w-16 opacity-10" />
                             <p className="text-xs font-bold text-muted-foreground">No market sentiment recorded in the registry</p>
                         </div>
@@ -258,9 +265,7 @@ export default function AdminFeedback() {
 
                                 <div className="flex items-center justify-between border-t border-border/50 pt-4">
                                     <div className="flex items-center gap-2">
-                                        <Badge variant="outline" className={`capitalize text-[9px] px-1.5 py-0 ${getStatusColor(review.status)}`}>
-                                            {review.status || 'published'}
-                                        </Badge>
+                                        <ReviewStatusBadge status={review.status || 'published'} className="text-[9px] px-1.5 py-0" />
                                         <select 
                                             onChange={(e) => handleStatusUpdate(review.id, e.target.value)}
                                             value={review.status || 'published'}
@@ -270,6 +275,15 @@ export default function AdminFeedback() {
                                             <option value="hidden">Set Hidden</option>
                                             <option value="resolved">Set Resolved</option>
                                         </select>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-7 w-7 text-red-500"
+                                            onClick={() => handleDelete(review.id)}
+                                            aria-label="Delete review"
+                                        >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                        </Button>
                                     </div>
                                     <span className="text-[10px] font-bold text-muted-foreground">
                                         {new Date(review.created_at).toLocaleDateString(undefined, { day: '2-digit', month: 'short' })}
@@ -286,6 +300,6 @@ export default function AdminFeedback() {
                     Refresh Global Sentiment
                 </Button>
             </div>
-  </div>
+  </DashboardPageContainer>
  );
 }

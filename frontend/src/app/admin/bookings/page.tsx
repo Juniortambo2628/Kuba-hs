@@ -2,13 +2,14 @@
 
 import { useEffect, useState, Suspense } from "react";
 import axiosInstance from "@/lib/axios";
-import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { AdminCreateBookingDialog } from "@/components/admin/AdminCreateBookingDialog";
 import { 
   Download,
   MoreHorizontal,
+  Plus,
   Trash2,
   Check,
   Calendar,
@@ -19,7 +20,7 @@ import { useExport } from "@/hooks/useExport";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { DataToolbar } from "@/components/shared/DataToolbar";
+import { DashboardListToolbar } from "@/components/shared/DashboardListToolbar";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -30,6 +31,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
+import { DashboardSuspenseFallback } from "@/components/shared/DashboardSuspenseFallback";
+import { DashboardCard } from "@/components/shared/DashboardCard";
+import {
+  DashboardTableHead,
+  DashboardTableHeaderRow,
+} from "@/components/shared/DashboardTable";
+import { dashboardUi } from "@/lib/dashboard-ui";
 import { BookingStatusBadge } from "@/components/shared/BookingStatusBadge";
 import { DashboardEmptyState } from "@/components/shared/DashboardEmptyState";
 import { BookingCard } from "@/components/shared/BookingCard";
@@ -42,22 +51,10 @@ import {
   DialogTitle, 
   DialogFooter 
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
+import { FieldLabel } from "@/components/shared/ui/FilterControls";
 import { Input } from "@/components/ui/input";
 import { useApiData } from "@/hooks/useApiData";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-
 function AdminBookingsContent() {
   const { search, setSearch, status, setStatus } = useSearchState();
   const { data: bookings, isLoading, refetch: fetchBookings } = useApiData<Booking[]>(
@@ -69,6 +66,7 @@ function AdminBookingsContent() {
   const [selectedBookings, setSelectedBookings] = useState<string[]>([]);
   const [rescheduleData, setRescheduleData] = useState<{ id: string, date: string } | null>(null);
   const [cancelData, setCancelData] = useState<{ id: string, reason: string } | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
   const { exportToCSV } = useExport();
 
   const handleStatusChange = async (id: string, newStatus: string, reason?: string) => {
@@ -115,16 +113,32 @@ function AdminBookingsContent() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 pb-12">
+    <DashboardPageContainer width="default">
       <DashboardPageHeader 
         title="Service Bookings" 
         subtitle="Monitor and manage all service requests across the platform."
+      >
+        <Button
+          onClick={() => setCreateOpen(true)}
+          className="rounded-xl h-11 px-6 font-bold bg-primary text-primary-foreground"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Create booking
+        </Button>
+      </DashboardPageHeader>
+
+      <AdminCreateBookingDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreated={fetchBookings}
       />
 
-      <DataToolbar 
-        search={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Search by ID or client..."
+      {search && (
+        <p className="text-xs text-muted-foreground">Results for &quot;{search}&quot;</p>
+      )}
+
+      <DashboardListToolbar
+        hint="Use ⌘K Quick Jump to search bookings"
         viewMode={viewMode}
         onViewChange={setViewMode}
         filters={[
@@ -144,27 +158,26 @@ function AdminBookingsContent() {
         ]}
         bulkActions={[
           {
-            label: 'Export Records',
+            label: "Export Records",
             icon: <Download className="w-4 h-4" />,
-            onClick: () => exportToCSV(bookings, 'all_bookings')
-          }
+            onClick: () => exportToCSV(bookings, "all_bookings"),
+          },
         ]}
       />
 
       {viewMode === 'list' ? (
-        <Card className="border-none shadow-premium bg-card/50 backdrop-blur-md overflow-hidden rounded-[2rem]">
-          <CardContent className="p-0">
-            <div className="overflow-x-auto custom-scrollbar">
+        <DashboardCard variant="premium" contentClassName="p-0">
+            <div className="overflow-x-auto kuba-scroll">
               <Table>
               <TableHeader>
-                <TableRow className="hover:bg-transparent border-border bg-muted/20">
-                  <TableHead className="w-12 pl-6"><Checkbox checked={selectedBookings.length === bookings.length && bookings.length > 0} onCheckedChange={(val) => val ? setSelectedBookings(bookings.map(b => b.id.toString())) : setSelectedBookings([])} /></TableHead>
-                  <TableHead className="text-[10px] font-black uppercase tracking-widest text-muted-foreground h-12">Booking ID</TableHead>
-                  <TableHead className="text-[10px] font-black uppercase tracking-widest text-muted-foreground h-12">Client & Service</TableHead>
-                  <TableHead className="text-[10px] font-black uppercase tracking-widest text-muted-foreground h-12">Schedule</TableHead>
-                  <TableHead className="text-[10px] font-black uppercase tracking-widest text-muted-foreground h-12">Verification</TableHead>
-                  <TableHead className="pr-6 text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground h-12">Operations</TableHead>
-                </TableRow>
+                <DashboardTableHeaderRow className="bg-muted/20">
+                  <TableHead className="w-12 pl-6 h-12"><Checkbox checked={selectedBookings.length === bookings.length && bookings.length > 0} onCheckedChange={(val) => val ? setSelectedBookings(bookings.map(b => b.id.toString())) : setSelectedBookings([])} /></TableHead>
+                  <DashboardTableHead>Booking ID</DashboardTableHead>
+                  <DashboardTableHead>Client & Service</DashboardTableHead>
+                  <DashboardTableHead>Schedule</DashboardTableHead>
+                  <DashboardTableHead>Verification</DashboardTableHead>
+                  <DashboardTableHead position="last" className="!pr-6">Operations</DashboardTableHead>
+                </DashboardTableHeaderRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
@@ -221,7 +234,7 @@ function AdminBookingsContent() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-52 rounded-2xl p-1.5 shadow-xl border-border bg-card/95 backdrop-blur-xl">
-                            <DropdownMenuLabel className="text-[10px] font-black text-muted-foreground uppercase tracking-widest p-2">Operations</DropdownMenuLabel>
+                            <DropdownMenuLabel className={dashboardUi.dropdown.label}>Operations</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem asChild className="rounded-lg py-2.5 font-bold text-xs gap-3 cursor-pointer">
                               <Link href={`/admin/bookings/${booking.id}`} className="flex items-center gap-3">
@@ -258,8 +271,7 @@ function AdminBookingsContent() {
               </TableBody>
             </Table>
           </div>
-          </CardContent>
-        </Card>
+        </DashboardCard>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {isLoading ? (
@@ -321,7 +333,7 @@ function AdminBookingsContent() {
           </DialogHeader>
           <div className="py-6 space-y-4">
             <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Proposed Date & Time</Label>
+              <FieldLabel>Proposed Date & Time</FieldLabel>
               <Input 
                 type="datetime-local" 
                 className="h-12 rounded-xl bg-muted/50 border-border font-bold text-sm"
@@ -348,7 +360,7 @@ function AdminBookingsContent() {
           </DialogHeader>
           <div className="py-6 space-y-4">
             <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Reason for Cancellation</Label>
+              <FieldLabel>Reason for Cancellation</FieldLabel>
               <textarea 
                 className="w-full min-h-[100px] p-4 rounded-xl bg-muted/50 border border-border font-medium text-sm focus:ring-1 focus:ring-primary outline-none resize-none"
                 placeholder="Briefly explain the cause of revocation..."
@@ -378,13 +390,13 @@ function AdminBookingsContent() {
         </DialogContent>
       </Dialog>
 
-    </div>
+    </DashboardPageContainer>
   );
 }
 
 export default function AdminBookings() {
   return (
-    <Suspense fallback={<div className="max-w-6xl mx-auto p-8"><Skeleton className="h-[600px] w-full rounded-2xl" /></div>}>
+    <Suspense fallback={<DashboardSuspenseFallback />}>
       <AdminBookingsContent />
     </Suspense>
   );

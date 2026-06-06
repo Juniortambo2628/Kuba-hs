@@ -1,175 +1,431 @@
 "use client";
 
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
+import {
+  Dialog,
+  DialogContent,
   DialogDescription,
-  DialogFooter
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { 
-  Clock, 
-  MapPin, 
-  User, 
-  CreditCard, 
-  CheckCircle2, 
-  AlertCircle,
+import { BookingStatusBadge } from "@/components/shared/BookingStatusBadge";
+import {
+  Clock,
+  MapPin,
+  User,
   MessageSquare,
   XCircle,
-  FileText
+  FileText,
+  ArrowLeft,
+  CheckCircle2,
+  Zap,
+  CreditCard,
+  Star,
+  DownloadCloud,
 } from "lucide-react";
+import axiosInstance from "@/lib/axios";
+import { toast } from "sonner";
+import { CheckoutDialog } from "@/components/payment/CheckoutDialog";
+import { WriteReviewDialog } from "@/components/reviews/WriteReviewDialog";
 import { format } from "date-fns";
-
 import { useState } from "react";
 import { ChatUI } from "@/components/chat/ChatUI";
-import { ServiceProgress } from "./ServiceProgress";
+import { BookingStatusProgress } from "@/components/bookings/BookingStatusProgress";
+import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
+import { LiveServiceTimer } from "@/components/booking/LiveServiceTimer";
+import { crudDialogUi } from "@/lib/crud-dialog-ui";
+import { cn } from "@/lib/utils";
+import type { Booking } from "@/types";
+
+export type BookingDetailRole = "client" | "provider";
 
 interface BookingDetailDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  booking: any;
-  onUpdateStatus?: (status: string) => void;
+  booking: Booking | null;
+  role?: BookingDetailRole;
+  onUpdateStatus?: (status: string) => void | Promise<void>;
+  isUpdating?: boolean;
+  /** Required for client checkout in the dialog */
+  userEmail?: string;
+  onRefresh?: () => void | Promise<void>;
 }
 
-export function BookingDetailDialog({ isOpen, onClose, booking, onUpdateStatus }: BookingDetailDialogProps) {
+export function BookingDetailDialog({
+  isOpen,
+  onClose,
+  booking,
+  role = "client",
+  onUpdateStatus,
+  isUpdating = false,
+  userEmail = "",
+  onRefresh,
+}: BookingDetailDialogProps) {
   const [showChat, setShowChat] = useState(false);
-  
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [acceptOpen, setAcceptOpen] = useState(false);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
+
   if (!booking) return null;
+
+  const isProvider = role === "provider";
 
   const handleClose = () => {
     setShowChat(false);
     onClose();
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'confirmed': return 'text-blue-600 bg-blue-50 border-blue-100';
-      case 'completed': return 'text-emerald-600 bg-emerald-50 border-emerald-100';
-      case 'cancelled': return 'text-sky-600 bg-sky-50 border-sky-100';
-      default: return 'text-amber-600 bg-amber-50 border-amber-100';
+  const partyLabel = isProvider ? "Client" : "Provider";
+  const partyName = isProvider
+    ? booking.customer?.name ||
+      [booking.customer?.first_name, booking.customer?.last_name].filter(Boolean).join(" ") ||
+      "Client"
+    : booking.provider?.business_name ||
+      booking.provider?.user?.name ||
+      "Assigned pro";
+
+  const introSubtitle = isProvider
+    ? `${booking.service?.name ?? "Service"} for ${partyName}`
+    : `${booking.service?.name ?? "Service"} with ${partyName}`;
+
+  const notesLabel = isProvider ? "Client requirements" : "Your notes";
+  const messageLabel = isProvider ? "Message client" : "Message provider";
+
+  const price = booking.final_price ?? booking.estimated_price ?? 0;
+
+  const runStatus = (status: string) => {
+    void onUpdateStatus?.(status);
+  };
+
+  const needsPayment =
+    !isProvider &&
+    booking.payment_status !== "paid" &&
+    (booking.status === "confirmed" || booking.status === "completed");
+
+  const handleDownloadInvoice = async () => {
+    try {
+      const response = await axiosInstance.get(`/api/invoices/${booking.id}/download`, {
+        responseType: "blob",
+      });
+      if (typeof window !== "undefined") {
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", `invoice-${booking.id}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        window.URL.revokeObjectURL(url);
+        link.remove();
+        toast.success("Invoice downloaded");
+      }
+    } catch {
+      toast.error("Failed to download invoice");
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className={`sm:max-w-[500px] p-0 overflow-hidden border-none rounded-[2rem] shadow-premium transition-all duration-500 ${showChat ? "sm:max-w-[700px]" : ""}`}>
-        <DialogHeader className="sr-only">
-          <DialogTitle>Booking Details - {booking.booking_number}</DialogTitle>
-          <DialogDescription>
-            Detailed information about your service booking with reference number {booking.booking_number}.
+    <>
+      <Dialog open={isOpen} onOpenChange={handleClose}>
+        <DialogContent
+          className={cn(
+            crudDialogUi.content,
+            "max-w-4xl p-0 gap-0 [&>button.absolute]:hidden",
+            showChat && "max-w-3xl"
+          )}
+        >
+          <DialogTitle className="sr-only">
+            Booking {booking.booking_number}
+          </DialogTitle>
+          <DialogDescription className="sr-only">
+            Track and manage booking {booking.booking_number}
           </DialogDescription>
-        </DialogHeader>
 
-        {showChat ? (
-            <div className="p-4 bg-white dark:bg-zinc-950">
-                <div className="flex items-center justify-between mb-4 px-4">
-                    <Button variant="ghost" onClick={() => setShowChat(false)} className="text-sky-600 font-black uppercase tracking-widest text-[10px]">
-                        ← Back to Details
-                    </Button>
-                    <h2 className="font-black text-[#1E293B] dark:text-white uppercase tracking-tighter">Booking Chat</h2>
-                </div>
+          {showChat ? (
+            <div className="flex flex-col min-h-[400px] max-h-[85dvh] bg-card">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-border/50">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="rounded-full"
+                  onClick={() => setShowChat(false)}
+                >
+                  <ArrowLeft className="h-4 w-4 mr-1" />
+                  Back to booking
+                </Button>
+                <p className="text-sm font-semibold text-foreground">{messageLabel}</p>
+                <span className="w-20" />
+              </div>
+              <div className="flex-1 min-h-0 p-4">
                 <ChatUI bookingId={booking.id} />
+              </div>
             </div>
-        ) : (
-            <>
-                <div className="bg-[#1E293B] p-8 text-white relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-8 opacity-10">
-                        <FileText className="w-24 h-24" />
-                    </div>
-                    <div className="relative z-10 space-y-4">
-                        <div className="flex items-center justify-between">
-                            <div className="space-y-1">
-                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-sky-500">Booking Reference</p>
-                                <h2 className="text-3xl font-black italic tracking-tighter">#{booking.booking_number}</h2>
-                            </div>
-                            <Badge variant="outline" className={`rounded-full px-4 py-1 font-black text-[9px] uppercase tracking-widest border ${getStatusColor(booking.status)}`}>
-                                {booking.status}
-                            </Badge>
-                        </div>
-                        
-                        {/* Service Tracking Progress */}
-                        <ServiceProgress status={booking.status} />
-                    </div>
+          ) : (
+            <div className={cn(crudDialogUi.layout, "bg-card")}>
+              <aside className={crudDialogUi.intro}>
+                <div>
+                  <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-2">
+                    Booking reference
+                  </p>
+                  <h2 className={crudDialogUi.introTitle}>#{booking.booking_number}</h2>
+                  <p className={crudDialogUi.introDesc}>{introSubtitle}</p>
                 </div>
+                <div className="mt-6">
+                  <BookingStatusBadge status={booking.status} />
+                </div>
+                <BookingStatusProgress
+                  status={booking.status}
+                  paymentStatus={booking.payment_status}
+                  compact
+                  className="mt-8"
+                />
+              </aside>
 
-                <div className="p-8 space-y-8 bg-white">
-                    <div className="grid grid-cols-2 gap-8">
-                        <div className="space-y-1.5">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 flex items-center gap-2">
-                                <Clock className="w-3 h-3" /> Scheduled Time
-                            </p>
-                            <p className="font-black text-[#1E293B]">
-                                {booking.scheduled_date ? format(new Date(booking.scheduled_date), 'PPP') : 'TBD'}
-                                {booking.scheduled_time && <span className="block text-[10px] text-sky-600 uppercase tracking-widest mt-0.5">{booking.scheduled_time}</span>}
-                            </p>
-                        </div>
-                        <div className="space-y-1.5">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 flex items-center gap-2">
-                                <User className="w-3 h-3" /> Provider
-                            </p>
-                            <p className="font-black text-[#1E293B]">
-                                {booking.provider?.business_name || booking.provider?.user?.name || 'Assigned Pro'}
-                            </p>
-                        </div>
+              <div className={cn(crudDialogUi.main, "bg-card")}>
+                <div className={cn(crudDialogUi.formWrap, "space-y-0")}>
+                  <div className={cn(crudDialogUi.formCard, "space-y-6")}>
+                    {isProvider &&
+                      (booking.status === "in_progress" || booking.status === "completed") && (
+                        <LiveServiceTimer
+                          startedAt={booking.started_at ?? ""}
+                          completedAt={booking.completed_at}
+                          basePrice={Number(booking.estimated_price ?? 0)}
+                          pricingType={
+                            booking.service?.pricing_type === "hourly" ? "hourly" : "fixed"
+                          }
+                          status={booking.status}
+                        />
+                      )}
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                          <Clock className="h-3.5 w-3.5" />
+                          Scheduled
+                        </p>
+                        <p className="text-sm font-semibold text-foreground">
+                          {booking.scheduled_date
+                            ? format(new Date(booking.scheduled_date), "PPP")
+                            : "TBD"}
+                        </p>
+                        {booking.scheduled_time && (
+                          <p className="text-xs text-muted-foreground">{booking.scheduled_time}</p>
+                        )}
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                          <User className="h-3.5 w-3.5" />
+                          {partyLabel}
+                        </p>
+                        <p className="text-sm font-semibold text-foreground">{partyName}</p>
+                      </div>
                     </div>
 
-                    <div className="space-y-1.5">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 flex items-center gap-2">
-                            <MapPin className="w-3 h-3" /> Service Location
-                        </p>
-                        <p className="font-bold text-sm text-[#1E293B] leading-relaxed">
-                            {booking.address ? `${booking.address.street_address}, ${booking.address.city}` : 'On-site Service'}
-                        </p>
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                        <MapPin className="h-3.5 w-3.5" />
+                        Location
+                      </p>
+                      <p className="text-sm text-foreground leading-relaxed">
+                        {booking.address
+                          ? `${booking.address.street_address}, ${booking.address.city}`
+                          : "On-site service"}
+                      </p>
                     </div>
 
-                    <div className="p-6 bg-gray-50 rounded-2xl space-y-4">
-                        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-gray-400">
-                            <span>Service Item</span>
-                            <span>Cost Breakdown</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                            <p className="font-black text-[#1E293B]">{booking.service?.name}</p>
-                            <p className="font-black text-lg text-sky-600 italic tracking-tighter">
-                                KES {booking.final_price || booking.estimated_price || '0.00'}
-                            </p>
-                        </div>
+                    <div className="rounded-xl border border-border/50 bg-muted/20 p-4 flex justify-between items-center gap-4">
+                      <div>
+                        <p className="text-xs font-medium text-muted-foreground">Service</p>
+                        <p className="text-sm font-semibold text-foreground">
+                          {booking.service?.name ?? "—"}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs font-medium text-muted-foreground">
+                          {isProvider ? "Estimate" : "Estimate"}
+                        </p>
+                        <p className="text-lg font-bold text-foreground tabular-nums">
+                          KES {Number(price).toLocaleString()}
+                        </p>
+                      </div>
                     </div>
 
                     {booking.description && (
-                        <div className="space-y-2">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Specific Requirements</p>
-                            <p className="text-xs font-bold text-gray-500 italic leading-relaxed bg-[#F8FAFC] p-4 rounded-xl border border-gray-100">
-                                "{booking.description}"
-                            </p>
-                        </div>
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                          <FileText className="h-3.5 w-3.5" />
+                          {notesLabel}
+                        </p>
+                        <p className="text-sm text-foreground leading-relaxed rounded-xl bg-muted/30 p-3 border border-border/40">
+                          {booking.description}
+                        </p>
+                      </div>
                     )}
-
-                    <div className="flex items-center gap-4">
-                        {booking.status === 'pending' && (
-                            <Button 
-                                onClick={() => onUpdateStatus?.('cancelled')}
-                                variant="outline" 
-                                className="flex-1 h-14 border-gray-100 bg-white text-sky-600 hover:bg-sky-50 hover:border-sky-100 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all gap-2"
-                            >
-                                <XCircle className="w-4 h-4" />
-                                Cancel Request
-                            </Button>
-                        )}
-                        <Button 
-                            onClick={() => setShowChat(true)}
-                            className="flex-[2] h-14 bg-[#1E293B] hover:bg-sky-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg shadow-gray-100 gap-2"
-                        >
-                            <MessageSquare className="w-4 h-4" />
-                            Message Provider
-                        </Button>
-                    </div>
+                  </div>
                 </div>
-            </>
-        )}
-      </DialogContent>
-    </Dialog>
+
+                <footer className={cn(crudDialogUi.footer, "flex-wrap gap-2 bg-card")}>
+                  {!isProvider && booking.status === "pending" && onUpdateStatus && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className={crudDialogUi.cancelBtn}
+                      disabled={isUpdating}
+                      onClick={() => setCancelOpen(true)}
+                    >
+                      <XCircle className="h-4 w-4 mr-1.5" />
+                      Cancel
+                    </Button>
+                  )}
+
+                  {isProvider && booking.status === "pending" && onUpdateStatus && (
+                    <Button
+                      type="button"
+                      className={cn(crudDialogUi.submitBtn, "bg-emerald-600 hover:bg-emerald-700")}
+                      disabled={isUpdating}
+                      onClick={() => setAcceptOpen(true)}
+                    >
+                      {isUpdating ? (
+                        "Updating…"
+                      ) : (
+                        <>
+                          <CheckCircle2 className="h-4 w-4 mr-1.5" />
+                          Accept job
+                        </>
+                      )}
+                    </Button>
+                  )}
+
+                  {isProvider && booking.status === "confirmed" && onUpdateStatus && (
+                    <Button
+                      type="button"
+                      className={crudDialogUi.submitBtn}
+                      disabled={isUpdating}
+                      onClick={() => runStatus("in_progress")}
+                    >
+                      <Zap className="h-4 w-4 mr-1.5" />
+                      Start job
+                    </Button>
+                  )}
+
+                  {isProvider && booking.status === "in_progress" && onUpdateStatus && (
+                    <Button
+                      type="button"
+                      className={cn(crudDialogUi.submitBtn, "bg-emerald-600 hover:bg-emerald-700")}
+                      disabled={isUpdating}
+                      onClick={() => runStatus("completed")}
+                    >
+                      <CheckCircle2 className="h-4 w-4 mr-1.5" />
+                      Mark complete
+                    </Button>
+                  )}
+
+                  {!isProvider && needsPayment && (
+                    <Button
+                      type="button"
+                      className={cn(crudDialogUi.submitBtn, "bg-amber-500 hover:bg-amber-600")}
+                      onClick={() => setIsCheckoutOpen(true)}
+                    >
+                      <CreditCard className="h-4 w-4 mr-1.5" />
+                      Pay now
+                    </Button>
+                  )}
+
+                  {!isProvider && booking.payment_status === "paid" && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className={crudDialogUi.cancelBtn}
+                      onClick={() => void handleDownloadInvoice()}
+                    >
+                      <DownloadCloud className="h-4 w-4 mr-1.5" />
+                      Invoice
+                    </Button>
+                  )}
+
+                  {!isProvider && booking.status === "completed" && !booking.review && (
+                    <Button
+                      type="button"
+                      className={crudDialogUi.submitBtn}
+                      onClick={() => setIsReviewOpen(true)}
+                    >
+                      <Star className="h-4 w-4 mr-1.5 fill-current" />
+                      Rate service
+                    </Button>
+                  )}
+
+                  <Button
+                    type="button"
+                    variant={isProvider && booking.status !== "pending" ? "outline" : undefined}
+                    className={cn(
+                      !isProvider || booking.status === "pending"
+                        ? crudDialogUi.submitBtn
+                        : crudDialogUi.cancelBtn,
+                      "flex-1 sm:flex-none sm:min-w-[9rem]"
+                    )}
+                    onClick={() => setShowChat(true)}
+                  >
+                    <MessageSquare className="h-4 w-4 mr-1.5" />
+                    {messageLabel}
+                  </Button>
+                </footer>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {!isProvider && (
+        <AppConfirmDialog
+          open={cancelOpen}
+          onOpenChange={setCancelOpen}
+          title="Cancel this booking?"
+          introDescription="The provider will be notified that you no longer need this visit."
+          description="This action cannot be undone. You may need to book again if you change your mind."
+          icon={XCircle}
+          confirmLabel="Yes, cancel"
+          cancelLabel="Keep booking"
+          variant="destructive"
+          onConfirm={() => {
+            runStatus("cancelled");
+            setCancelOpen(false);
+          }}
+        />
+      )}
+
+      {isProvider && onUpdateStatus && (
+        <AppConfirmDialog
+          open={acceptOpen}
+          onOpenChange={setAcceptOpen}
+          title="Accept this job?"
+          introDescription="You will be committed to fulfill this booking for the client."
+          description="The client will be notified immediately once you confirm."
+          icon={CheckCircle2}
+          confirmLabel="Accept job"
+          isLoading={isUpdating}
+          onConfirm={() => {
+            runStatus("confirmed");
+            setAcceptOpen(false);
+          }}
+        />
+      )}
+
+      {!isProvider && (
+        <>
+          <CheckoutDialog
+            isOpen={isCheckoutOpen}
+            onClose={() => setIsCheckoutOpen(false)}
+            booking={booking}
+            userEmail={userEmail}
+            onSuccess={() => void onRefresh?.()}
+          />
+          <WriteReviewDialog
+            isOpen={isReviewOpen}
+            onClose={() => setIsReviewOpen(false)}
+            booking={booking}
+            onSuccess={() => void onRefresh?.()}
+          />
+        </>
+      )}
+    </>
   );
 }

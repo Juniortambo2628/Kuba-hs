@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Badge } from "@/components/ui/badge";
+import { AppPill } from "@/components/shared/ui/AppPill";
 import { designSystem } from "@/lib/design-system";
 import { cn } from "@/lib/utils";
 
@@ -36,11 +36,7 @@ export function LandingSectionHeader({
       viewport={{ once: true, amount: 0.3 }}
       transition={{ duration: 0.6 }}
     >
-      {badge && (
-        <Badge variant="outline" className={designSystem.typography.section.badge}>
-          {badge}
-        </Badge>
-      )}
+      {badge && <AppPill variant="section">{badge}</AppPill>}
       <h2 className={cn(designSystem.typography.section.title, titleClassName)}>
         {title}
       </h2>

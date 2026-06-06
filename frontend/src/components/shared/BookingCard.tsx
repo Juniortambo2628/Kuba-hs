@@ -8,7 +8,14 @@ import { Button } from "@/components/ui/button";
 import { BookingStatusBadge } from "./BookingStatusBadge";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { getBookingStatusAccentClass } from "@/lib/status-styles";
 import { Booking } from "@/types";
+
+function parseScheduledDate(dateStr?: string | null): Date | null {
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
 
 interface BookingCardProps {
   booking: Booking;
@@ -33,7 +40,7 @@ export function BookingCard({
 }: BookingCardProps) {
   const isProvider = type === 'provider';
   const isAdmin = type === 'admin';
-  
+  const scheduled = parseScheduledDate(booking.scheduled_date);
 
   const ServiceIcon = () => {
     if (booking.service_type === 'commercial') return <Building2 className="w-6 h-6" />;
@@ -53,7 +60,7 @@ export function BookingCard({
         {(isProvider || isAdmin) && (
           <div className={cn(
             "w-1 md:w-1.5 transition-all duration-500 shrink-0",
-            booking.status === 'completed' ? 'bg-green-600' : booking.status === 'pending' ? 'bg-amber-400' : 'bg-blue-600',
+            getBookingStatusAccentClass(booking.status),
             "group-hover:w-2 md:group-hover:w-3",
             isSelected && "bg-primary w-2 md:w-3"
           )} />
@@ -93,10 +100,12 @@ export function BookingCard({
                 {!isProvider ? (
                   <>
                     <span className="text-[9px] font-bold text-muted-foreground leading-none">
-                      {new Date(booking.scheduled_date).toLocaleString('default', { month: 'short' })}
+                      {scheduled
+                        ? scheduled.toLocaleString("default", { month: "short" })
+                        : "—"}
                     </span>
                     <span className="text-xl font-bold text-foreground leading-none mt-1">
-                      {new Date(booking.scheduled_date).getDate()}
+                      {scheduled ? scheduled.getDate() : "—"}
                     </span>
                   </>
                 ) : (
@@ -120,7 +129,10 @@ export function BookingCard({
                 {!isProvider && <p className="text-[10px] font-bold text-muted-foreground tracking-tight">Professional Service</p>}
                 
                 <div className="flex flex-wrap items-center gap-4 md:gap-6 text-[10px] font-bold text-muted-foreground tracking-tight mt-2">
-                  <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> {new Date(booking.scheduled_date).toLocaleDateString()}</span>
+                  <span className="flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5" />{" "}
+                    {scheduled ? scheduled.toLocaleDateString() : "Date TBD"}
+                  </span>
                   <span className="flex items-center gap-1.5 font-bold text-foreground">
                     <UserIcon className="w-3.5 h-3.5" /> {isProvider ? booking.customer?.name : isAdmin ? `Client: ${booking.customer?.name}` : booking.provider?.business_name || 'Assigned Pro'}
                   </span>
@@ -177,7 +189,10 @@ export function BookingCard({
                 <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Scheduled</p>
                 <div className="flex items-center gap-2 text-[11px] font-bold text-foreground">
                   <Clock className="w-3.5 h-3.5 text-muted-foreground/50" /> 
-                  {booking.scheduled_time || (booking.scheduled_date ? new Date(booking.scheduled_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'TBD')}
+                  {booking.scheduled_time ||
+                    (scheduled
+                      ? scheduled.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                      : "TBD")}
                 </div>
               </div>
               <div className="space-y-1">

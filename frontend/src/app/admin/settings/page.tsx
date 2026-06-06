@@ -1,8 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
+import { DashboardPageSkeleton } from "@/components/shared/DashboardPageSkeleton";
+
+import { useState } from "react";
+import NextImage from "next/image";
 import axiosInstance, { handleApiError } from "@/lib/axios";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -21,7 +25,6 @@ import {
   BarChart3,
   Smartphone,
   Info,
-  Home,
   Palette,
   Layers,
   Type,
@@ -40,16 +43,22 @@ import {
     DialogDescription
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Skeleton } from "@/components/ui/skeleton";
+import { dashboardUi } from "@/lib/dashboard-ui";
+import { uiPrimitives } from "@/lib/ui-primitives";
+import { cn } from "@/lib/utils";
+import { FieldLabel } from "@/components/shared/ui";
 import { FilePond, registerPlugin } from 'react-filepond';
 import 'filepond/dist/filepond.min.css';
 import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
 import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
-import { motion, AnimatePresence } from "framer-motion";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
 import { useApiData } from "@/hooks/useApiData";
+import { compressImageFile } from "@/lib/image-compression";
+import { useCMS } from "@/contexts/CMSContext";
 import { NavigationManager } from "./components/NavigationManager";
 import { LivePreviewModal } from "./components/LivePreviewModal";
+import { resolveMediaUrl } from "@/lib/utils";
+import type { LucideIcon } from "lucide-react";
 
 registerPlugin(FilePondPluginImagePreview);
 
@@ -93,10 +102,12 @@ const ImageSettingCard = ({
             
             <div className="relative aspect-video group/asset overflow-hidden bg-muted/5">
                 {currentUrl ? (
-                    <img 
-                        src={currentUrl} 
+                    <NextImage
+                        src={currentUrl}
                         alt={setting.label}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover/media-card:scale-105"
+                        fill
+                        unoptimized
+                        className="object-cover transition-transform duration-700 group-hover/media-card:scale-105"
                     />
                 ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-muted-foreground/30">
@@ -155,8 +166,8 @@ const ImageManagementDialog = ({
                     MANAGE ASSET
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-xl rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl">
-                <DialogHeader className="p-8 pb-4 bg-muted/30">
+            <DialogContent className={dashboardUi.dialog.content}>
+                <DialogHeader className={dashboardUi.dialog.header}>
                     <div className="flex items-center gap-3 mb-2">
                         <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
                             <ImageIcon className="w-4 h-4" />
@@ -168,17 +179,19 @@ const ImageManagementDialog = ({
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="p-8 space-y-8 max-h-[60vh] overflow-y-auto premium-scrollbar">
+                <div className={dashboardUi.dialog.body}>
                     {/* Visual Comparison */}
                     <div className="grid grid-cols-1 gap-6">
                         <div className="space-y-3">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Current State</label>
+                            <FieldLabel>Current State</FieldLabel>
                             <div className="relative aspect-video rounded-3xl overflow-hidden bg-muted border border-border/10 shadow-inner group">
                                 {previewUrl || savedUrl ? (
-                                    <img 
-                                        src={previewUrl || savedUrl || ""} 
-                                        className="w-full h-full object-cover" 
-                                        alt="Preview" 
+                                    <NextImage
+                                        src={previewUrl || savedUrl || ""}
+                                        alt="Preview"
+                                        fill
+                                        unoptimized
+                                        className="object-cover"
                                     />
                                 ) : (
                                     <div className="w-full h-full flex flex-col items-center justify-center gap-3 text-muted-foreground/30">
@@ -197,7 +210,7 @@ const ImageManagementDialog = ({
                         </div>
 
                         <div className="space-y-3">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Update Content</label>
+                            <FieldLabel>Update Content</FieldLabel>
                             <div className="premium-dropzone">
                                 <FilePond
                                     onupdatefiles={(fileItems) => {
@@ -216,7 +229,7 @@ const ImageManagementDialog = ({
                     </div>
                 </div>
 
-                <DialogFooter className="p-8 pt-0 flex-col sm:flex-row gap-4">
+                <DialogFooter className={dashboardUi.dialog.footer}>
                     {(previewUrl || savedUrl) && (
                         <Button 
                             variant="destructive" 
@@ -264,20 +277,29 @@ interface Metadata {
     maintenance_mode: boolean;
 }
 
-const GROUP_CONFIG: Record<string, { label: string, icon: any, category: string, description: string }> = {
+interface SettingsApiResponse {
+    settings: Record<string, Setting[]>;
+    metadata?: Metadata | null;
+}
+
+const GROUP_CONFIG: Record<string, { label: string; icon: LucideIcon; category: string; description: string }> = {
     // ── Brand & Identity ──
     'identity': { label: 'Brand Identity', icon: Globe, category: 'brand', description: 'Logos, favicons, and site branding.' },
     'social_links': { label: 'Social Links', icon: Share2, category: 'brand', description: 'Social media handles and platform links.' },
 
     // ── Hero Visuals ──
-    'hero_backgrounds': { label: 'Backgrounds', icon: ImageIcon, category: 'hero', description: 'Hero background images for all page sections.' },
+    'hero_backgrounds': { label: 'Backgrounds', icon: ImageIcon, category: 'hero', description: 'Default hero images per page (e.g. services_hero_image). Category/service pages use uploaded thumbnails when available.' },
     'hero_text': { label: 'Titles & Copy', icon: Type, category: 'hero', description: 'Headlines, subtitles, and badge text for hero banners.' },
 
     // ── Content ──
-    'home_hero': { label: 'Landing — Hero', icon: Sparkles, category: 'content', description: 'Homepage headline, subtitle, and call-to-action button.' },
-    'about_page': { label: 'Landing — How We Operate', icon: Info, category: 'content', description: 'Three-step process cards, images, and section headings.' },
-    'site_stats': { label: 'Landing — Impact Metrics', icon: BarChart3, category: 'content', description: 'Numerical counters showing platform growth.' },
-    'market_narratives': { label: 'Pages — Section Content', icon: Layout, category: 'content', description: 'Body text for featured sections and portals.' },
+    'home_hero': { label: 'Landing — Hero', icon: Sparkles, category: 'content', description: 'Eyebrow, headline, stat line, search bar labels, and hero copy.' },
+    'about_page': { label: 'How It Works', icon: Info, category: 'content', description: 'Section headline, intro, and three feature columns (step titles & descriptions).' },
+    'payment': { label: 'Payment Gateway Keys', icon: CreditCard, category: 'system', description: 'Paystack/M-Pesa keys (stored in DB; use env for secrets in production).' },
+    'site_stats': { label: 'Landing — Legacy counters', icon: BarChart3, category: 'content', description: 'Stat values used in the bottom CTA card (stat_1–4). The standalone “Why thousands trust” section was removed from the homepage.' },
+    'landing_sections': { label: 'Landing — Section Headings', icon: Layout, category: 'content', description: 'Badges, titles, and subtitles for categories, services, providers, testimonials, and FAQ blocks.' },
+    'cta': { label: 'Landing — Bottom CTA', icon: Sparkles, category: 'content', description: 'Final call-to-action copy and button labels.' },
+    'market_narratives': { label: 'Pages — Section Content', icon: Layout, category: 'content', description: 'Corporate landing banner (corp_banner_*), legacy corp_title/desc keys, and portal page copy.' },
+    'auth_pages': { label: 'Authentication Pages', icon: Smartphone, category: 'content', description: 'Login, register, forgot password, and reset password copy, visuals, and social proof.' },
 
     // ── System & Config ──
     'support_info': { label: 'Contact & Support', icon: Smartphone, category: 'system', description: 'Contact emails, phone numbers, and addresses.' },
@@ -294,16 +316,33 @@ const PAGE_MAPPINGS = [
     { id: 'investors', label: 'Investor Relations' },
     { id: 'contact', label: 'Contact & Support' },
     { id: 'blog', label: 'Kuba Journal' },
+    { id: 'auth', label: 'Authentication' },
 ];
 
 const getPageForKey = (key: string, group: string) => {
     // Specific elements for "How We Operate" physically on the Landing Page
     if (
         key.startsWith('step_') || 
-        key === 'about_badge' || 
-        key === 'about_title_1' || 
-        key === 'about_title_2' || 
-        key === 'about_desc'
+        key === 'about_badge' ||
+        key === 'how_eyebrow' ||
+        key === 'how_headline' ||
+        key === 'how_intro' ||
+        key === 'about_title_1' ||
+        key === 'about_title_2' ||
+        key === 'about_desc' ||
+        key.startsWith('step_') ||
+        key.startsWith('hero_eyebrow') ||
+        key.startsWith('hero_headline') ||
+        key.startsWith('hero_stat_') ||
+        key.startsWith('hero_search_') ||
+        key.startsWith('search_modal_') ||
+        key.startsWith('stats_') ||
+        key.startsWith('categories_') ||
+        key.startsWith('services_') ||
+        key.startsWith('providers_') ||
+        key.startsWith('testimonials_') ||
+        key.startsWith('faq_') ||
+        key.startsWith('how_cta_')
     ) {
         return 'landing';
     }
@@ -317,7 +356,8 @@ const getPageForKey = (key: string, group: string) => {
     if (group === 'services_page' || group === 'services') return 'services';
     if (group === 'contact_page' || group === 'contact') return 'contact';
     if (group === 'blog_page' || group === 'blog') return 'blog';
-    if (group === 'home_hero' || group === 'site_stats' || group === 'stats' || group === 'cta' || group === 'testimonials' || group === 'sections') return 'landing';
+    if (group === 'auth_pages' || key.startsWith('auth_')) return 'auth';
+    if (group === 'home_hero' || group === 'site_stats' || group === 'stats' || group === 'cta' || group === 'landing_sections' || group === 'testimonials' || group === 'sections') return 'landing';
 
     // Fallback to key prefixes
     if (key.startsWith('about_')) return 'about';
@@ -335,102 +375,39 @@ const getPageForKey = (key: string, group: string) => {
 };
 
 export default function UnifiedSettingsPage() {
-    const { data: settingsData, isLoading, refetch: fetchSettings, setData: setSettingsData } = useApiData<any>("/api/admin/settings");
-    const settings = settingsData?.settings || {} as Record<string, Setting[]>;
-    const metadata = settingsData?.metadata || null as Metadata | null;
+    const { refreshSettings } = useCMS();
+    const { data: settingsData, isLoading, refetch: fetchSettings, setData: setSettingsData } = useApiData<SettingsApiResponse>("/api/admin/settings");
+    const settings = settingsData?.settings ?? ({} as Record<string, Setting[]>);
+    const metadata = settingsData?.metadata ?? null;
 
     const [files, setFiles] = useState<Record<string, File>>({});
     const [isSaving, setIsSaving] = useState(false);
-    const [activeMainTab, setActiveMainTab] = useState("brand");
+    const [, setActiveMainTab] = useState("brand");
 
-    const MAX_IMAGE_SIZE = 1 * 1024 * 1024; // 1MB threshold
-    const MAX_IMAGE_WIDTH = 1920;
-    const COMPRESS_QUALITY = 0.8;
-
-    const compressImage = (file: File): Promise<File> => {
-        return new Promise((resolve) => {
-            if (file.size <= MAX_IMAGE_SIZE || file.type === 'image/svg+xml') {
-                return resolve(file);
-            }
-
-            const img = new Image();
-            const canvas = document.createElement('canvas');
-            const url = URL.createObjectURL(file);
-
-            img.onload = () => {
-                URL.revokeObjectURL(url);
-                let { width, height } = img;
-
-                if (width > MAX_IMAGE_WIDTH) {
-                    height = Math.round(height * (MAX_IMAGE_WIDTH / width));
-                    width = MAX_IMAGE_WIDTH;
-                }
-
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext('2d')!;
-                ctx.drawImage(img, 0, 0, width, height);
-
-                const mimeType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
-                canvas.toBlob(
-                    (blob) => {
-                        if (blob && blob.size < file.size) {
-                            const compressed = new File([blob], file.name, { type: mimeType, lastModified: Date.now() });
-                            console.log(`Compressed ${file.name}: ${(file.size/1024).toFixed(0)}KB → ${(compressed.size/1024).toFixed(0)}KB`);
-                            resolve(compressed);
-                        } else {
-                            resolve(file);
-                        }
-                    },
-                    mimeType,
-                    COMPRESS_QUALITY
-                );
-            };
-
-            img.onerror = () => {
-                URL.revokeObjectURL(url);
-                resolve(file);
-            };
-
-            img.src = url;
+    const handleValueChange = (group: string, id: string, value: string) => {
+        if (!settingsData) return;
+        setSettingsData({
+            ...settingsData,
+            settings: {
+                ...settingsData.settings,
+                [group]: (settingsData.settings[group] ?? []).map((s: Setting) =>
+                    s.id === id ? { ...s, value } : s
+                ),
+            },
         });
     };
 
-    const BACKEND_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/api$/, '');
-    
-    const getMediaUrl = (url: any) => {
-        if (!url || typeof url !== 'string') {
-            if (url && typeof url === 'object') {
-                console.warn("getMediaUrl received an object instead of string:", url);
-            }
-            return "";
-        }
-        const finalUrl = url.startsWith('http') ? url : `${BACKEND_URL}/${url.replace(/^\//, '')}`;
-        // Only use /cms-assets/ proxy in local dev (artisan serve CORS workaround)
-        if (finalUrl.includes('localhost') && finalUrl.includes('/storage/')) {
-            return finalUrl.replace('/storage/', '/cms-assets/');
-        }
-        return finalUrl;
-    };
-
-    const handleValueChange = (group: string, id: string, value: string) => {
-        setSettingsData((prev: any) => ({
-            ...prev,
-            settings: {
-                ...prev.settings,
-                [group]: (prev.settings[group] as Setting[]).map((s: Setting) => s.id === id ? { ...s, value } : s)
-            }
-        }));
-    };
-
     const handleRemoveImage = (group: string, id: string) => {
-        setSettingsData((prev: any) => ({
-            ...prev,
+        if (!settingsData) return;
+        setSettingsData({
+            ...settingsData,
             settings: {
-                ...prev.settings,
-                [group]: (prev.settings[group] as Setting[]).map((s: Setting) => s.id === id ? { ...s, value: "", image_url: null } : s)
-            }
-        }));
+                ...settingsData.settings,
+                [group]: (settingsData.settings[group] ?? []).map((s: Setting) =>
+                    s.id === id ? { ...s, value: "", image_url: null } : s
+                ),
+            },
+        });
         setFiles(prev => {
             const newFiles = { ...prev };
             delete newFiles[id];
@@ -445,10 +422,9 @@ export default function UnifiedSettingsPage() {
             const formData = new FormData();
             const allSettings = Object.values(settings).flat() as Setting[];
 
-            // Compress all pending image files first
             const compressedFiles: Record<string, File> = {};
             for (const [id, file] of Object.entries(files)) {
-                compressedFiles[id] = await compressImage(file);
+                compressedFiles[id] = await compressImageFile(file, { preset: "cms" });
             }
             
             // Filter out json type settings (handled by their own components)
@@ -470,7 +446,8 @@ export default function UnifiedSettingsPage() {
             });
             
             toast.success("Synchronized! Site settings updated.");
-            fetchSettings();
+            await fetchSettings();
+            await refreshSettings();
             setFiles({});
         } catch (err) {
             toast.error(handleApiError(err));
@@ -481,21 +458,13 @@ export default function UnifiedSettingsPage() {
 
     if (isLoading) {
         return (
-            <div className="max-w-[1600px] mx-auto space-y-8 p-4 md:p-8 animate-pulse">
-                <div className="h-10 w-64 bg-muted rounded-xl" />
-                <div className="space-y-6">
-                    <div className="h-14 w-full bg-muted rounded-2xl" />
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {[1, 2, 3].map(i => <Skeleton key={i} className="h-48 w-full rounded-3xl" />)}
-                    </div>
-                </div>
-            </div>
+            <DashboardPageSkeleton width="wide" metrics={3} className="p-4 md:p-8" />
         );
     }
 
     const getGroupsByCategory = (cat: string) => {
         return Object.entries(GROUP_CONFIG)
-            .filter(([_, config]) => config.category === cat)
+            .filter(([, config]) => config.category === cat)
             .map(([groupId, config]) => ({
                 id: groupId,
                 ...config,
@@ -514,10 +483,10 @@ export default function UnifiedSettingsPage() {
     ];
 
     return (
-        <div className="max-w-[1600px] mx-auto space-y-10 pb-20 p-4 md:p-6 bg-[#F8FAFC] dark:bg-black min-h-screen">
+        <DashboardPageContainer width="wide" className="space-y-10 pb-20">
             <DashboardPageHeader 
-                title="Platform Architecture" 
-                subtitle="Consolidated site parameters, narratives, and global configurations."
+                title="Platform CMS" 
+                subtitle="Site settings stored in site_settings — synced to the public site via /api/settings."
             >
                 <Button 
                     onClick={handleSave} 
@@ -530,7 +499,7 @@ export default function UnifiedSettingsPage() {
             </DashboardPageHeader>
 
             <Tabs defaultValue="brand" onValueChange={setActiveMainTab} className="w-full">
-                <div className="flex items-center justify-between mb-8 overflow-x-auto no-scrollbar scroll-smooth">
+                <div className="flex items-center justify-between mb-8 overflow-x-auto kuba-scroll-hidden scroll-smooth">
                     <TabsList className="bg-transparent h-auto p-0 flex gap-8 border-b border-border/10 rounded-none w-full justify-start">
                         {categories.map(cat => (
                             <TabsTrigger 
@@ -612,7 +581,7 @@ export default function UnifiedSettingsPage() {
                                                         <p className="text-muted-foreground text-sm font-medium">No configurations currently mapped for this section.</p>
                                                     </div>
                                                 ) : (
-                                                    <div className={`grid grid-cols-1 md:grid-cols-2 ${catId === 'hero' ? 'xl:grid-cols-3' : ''} gap-6`}>
+                                                    <div className={uiPrimitives.layout.grid3}>
                                                         {pageSettings.map(setting => (
                                                             <div key={setting.id}>
                                                                 {setting.type === 'image' ? (
@@ -621,10 +590,10 @@ export default function UnifiedSettingsPage() {
                                                                         pendingFile={files[setting.id]}
                                                                         onSetFile={(file: File) => setFiles(prev => ({ ...prev, [setting.id]: file }))}
                                                                         onRemove={() => handleRemoveImage(setting.group, setting.id)}
-                                                                        getMediaUrl={getMediaUrl}
+                                                                        getMediaUrl={resolveMediaUrl}
                                                                     />
                                                                 ) : (
-                                                                    <Card className="p-6 border border-border/40 bg-white dark:bg-zinc-900 rounded-2xl shadow-sm space-y-3 hover:border-primary/20 transition-all h-full">
+                                                                    <Card className={cn(dashboardUi.card.padding, "border border-border/40 bg-white dark:bg-zinc-900 rounded-2xl shadow-sm space-y-3 hover:border-primary/20 transition-all h-full")}>
                                                                         <div className="flex items-center justify-between gap-4">
                                                                             <label className="text-xs font-black uppercase tracking-widest text-muted-foreground truncate" title={setting.label || setting.key.replace(/_/g, ' ')}>
                                                                                 {setting.label || setting.key.replace(/_/g, ' ')}
@@ -681,7 +650,7 @@ export default function UnifiedSettingsPage() {
                                         </div>
                                     </div>
 
-                                    <div className={`grid grid-cols-1 ${group.id === 'hero_backgrounds' ? 'md:grid-cols-2 xl:grid-cols-3' : 'md:grid-cols-2 lg:grid-cols-2'} gap-6`}>
+                                    <div className={uiPrimitives.layout.grid3}>
                                         {group.settings.map((setting: Setting) => (
                                             <div key={setting.id}>
                                                 {setting.type === 'image' ? (
@@ -690,10 +659,10 @@ export default function UnifiedSettingsPage() {
                                                         pendingFile={files[setting.id]}
                                                         onSetFile={(file: File) => setFiles(prev => ({ ...prev, [setting.id]: file }))}
                                                         onRemove={() => handleRemoveImage(setting.group, setting.id)}
-                                                        getMediaUrl={getMediaUrl}
+                                                        getMediaUrl={resolveMediaUrl}
                                                     />
                                                 ) : (
-                                                    <Card className="p-6 border border-border/40 bg-white dark:bg-zinc-900 rounded-2xl shadow-sm space-y-3 hover:border-primary/20 transition-all">
+                                                    <Card className={cn(dashboardUi.card.padding, "border border-border/40 bg-white dark:bg-zinc-900 rounded-2xl shadow-sm space-y-3 hover:border-primary/20 transition-all")}>
                                                         <div className="flex items-center justify-between gap-4">
                                                             <label className="text-xs font-black uppercase tracking-widest text-muted-foreground truncate">
                                                                 {setting.label || setting.key.replace(/_/g, ' ')}
@@ -733,13 +702,13 @@ export default function UnifiedSettingsPage() {
             })}
 
                 <TabsContent value="navigation" className="mt-0 focus:outline-none">
-                    <div className="bg-white dark:bg-zinc-900 p-8 rounded-3xl border border-border/40 shadow-sm min-h-[600px]">
+                    <div className={cn("bg-white dark:bg-zinc-900 rounded-2xl border border-border/40 shadow-sm min-h-[600px]", uiPrimitives.surface.paddingLg)}>
                         <div className="mb-10 flex items-center gap-4">
                             <div className="p-3 bg-primary/10 text-primary rounded-2xl">
                                 <Navigation className="w-6 h-6" />
                             </div>
                             <div>
-                                <h3 className="text-2xl font-bold tracking-tight text-foreground">Global Navigation Engine</h3>
+                                <h3 className="text-sm font-bold tracking-tight text-foreground uppercase">Global Navigation</h3>
                                 <p className="text-sm font-medium text-muted-foreground">Manage header, footer, and utility links across the primary storefront.</p>
                             </div>
                         </div>
@@ -777,14 +746,7 @@ export default function UnifiedSettingsPage() {
                     font-weight: 800;
                     color: #64748b;
                 }
-                .no-scrollbar::-webkit-scrollbar {
-                    display: none;
-                }
-                .no-scrollbar {
-                    -ms-overflow-style: none;
-                    scrollbar-width: none;
-                }
             `}</style>
-        </div>
+        </DashboardPageContainer>
     );
 }

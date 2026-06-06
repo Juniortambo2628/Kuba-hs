@@ -2,34 +2,38 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\ImageOptimizationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class MediaController extends Controller
 {
+    public function __construct(
+        private readonly ImageOptimizationService $images
+    ) {}
+
     /**
      * Handle generic media upload for authorized models.
      */
     public function upload(Request $request)
     {
         $request->validate([
-            'file' => 'required|image|max:10240', // 10MB limit
+            'file' => 'required|image|max:10240',
             'collection' => 'required|string',
             'model_type' => 'required|string',
             'model_id' => 'required|string',
         ]);
 
         $modelClass = "App\\Models\\" . Str::studly($request->model_type);
-        
+
         if (!class_exists($modelClass)) {
             return response()->json(['error' => 'Invalid model type'], 422);
         }
 
         $model = $modelClass::findOrFail($request->model_id);
 
-        // Simple authorization check: user must own the model or be admin
-        // This is a basic check, can be refined per model
         $user = Auth::user();
         if (!$user->isAdmin()) {
             if ($model instanceof \App\Models\User && $model->id !== $user->id) {
@@ -46,10 +50,21 @@ class MediaController extends Controller
         $media = $model->addMediaFromRequest('file')
             ->toMediaCollection($request->collection);
 
+        $preset = $this->images->presetFromCollection($request->collection, $request->model_type);
+        $this->images->optimizeMedia($media, $preset);
+
+        if ($request->collection === 'thumbnail' && $model instanceof \App\Models\Service) {
+            Cache::forget('api_categories_all');
+        }
+        if ($model instanceof \App\Models\Provider) {
+            Cache::forget('api_providers_latest');
+            Cache::forget('api_top_providers');
+        }
+
         return response()->json([
             'message' => 'File uploaded successfully',
             'url' => $media->getFullUrl(),
-            'id' => $media->id
+            'id' => $media->id,
         ]);
     }
 
@@ -60,7 +75,6 @@ class MediaController extends Controller
     {
         $media = \Spatie\MediaLibrary\MediaCollections\Models\Media::findOrFail($id);
 
-        // Authorization check: user must own the model the media belongs to or be admin
         $model = $media->model;
         $user = Auth::user();
 

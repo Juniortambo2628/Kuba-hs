@@ -27,7 +27,7 @@ class StoreBookingRequest extends FormRequest
             'scheduled_date' => 'required|date|after_or_equal:today',
             'scheduled_time' => 'nullable|string',
             'description' => 'nullable|string',
-            'service_type' => 'required|in:residential,commercial,large_scale',
+            'service_type' => 'required|string|max:64',
             'quantity' => 'required|integer|min:1',
             'quantity_label' => 'nullable|string',
             'images' => 'nullable|array',

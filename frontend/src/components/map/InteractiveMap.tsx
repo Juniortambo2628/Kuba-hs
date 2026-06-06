@@ -7,6 +7,7 @@ import L from "leaflet";
 import { Users, Star, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { providerHref } from "@/lib/provider-urls";
 
 // Fix for default Leaflet icon not loading in Next.js
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -95,7 +96,7 @@ export default function InteractiveMap({ providers, center = [-1.2921, 36.8219],
                       {provider.bio || "Professional home services."}
                   </p>
                   <Button asChild size="sm" className="w-full h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
-                      <Link href={`/providers/${provider.id}`}>
+                      <Link href={providerHref(provider)}>
                           View Profile <ArrowRight className="w-3 h-3 ml-1" />
                       </Link>
                   </Button>

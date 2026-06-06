@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { Download, Banknote, Clock, CheckCircle, Zap, CreditCard, Wallet, AlertCircle } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
+import { useState, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { Download, Banknote, Clock, CheckCircle, Zap, Wallet, AlertCircle } from "lucide-react";
+import { FinanceOverview } from "@/components/admin/FinanceOverview";
+import { Table, TableHeader, TableBody, TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -17,14 +18,24 @@ import { useSearchState } from "@/hooks/useSearchState";
 import { useExport } from "@/hooks/useExport";
 import { toast } from "sonner";
 import { useApiData } from "@/hooks/useApiData";
-import { DataToolbar } from "@/components/shared/DataToolbar";
+import { DashboardListToolbar } from "@/components/shared/DashboardListToolbar";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
+import {
+  DashboardDataCard,
+  DashboardTableHead,
+  DashboardTableHeaderRow,
+} from "@/components/shared/DashboardTable";
+import { DashboardSuspenseFallback } from "@/components/shared/DashboardSuspenseFallback";
 import { MetricCard } from "@/components/shared/MetricCard";
+import { PaymentTransactionBadge } from "@/components/shared/PaymentTransactionBadge";
+import { PayoutStatusBadge } from "@/components/shared/PayoutStatusBadge";
+import { PaymentDetailSheet } from "@/components/admin/PaymentDetailSheet";
 import axiosInstance from "@/lib/axios";
 
 // --- TYPES ---
 interface Payment {
-  id: string | number;
+  id: string;
   transaction_id: string;
   amount: number;
   platform_fee: number;
@@ -51,42 +62,54 @@ interface Payout {
   };
 }
 
-// --- MAIN PAGE ---
-export default function AdminPayments() {
+const VALID_TABS = ["overview", "transactions", "payouts"] as const;
+type FinanceTab = (typeof VALID_TABS)[number];
+
+function AdminPaymentsContent() {
   const { exportToCSV } = useExport();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const tabParam = searchParams.get("tab");
+  const activeTab: FinanceTab = VALID_TABS.includes(tabParam as FinanceTab)
+    ? (tabParam as FinanceTab)
+    : "overview";
+
+  const setTab = (tab: FinanceTab) => {
+    router.replace(`/admin/payments?tab=${tab}`, { scroll: false });
+  };
 
   return (
-    <div className="max-w-[1400px] mx-auto space-y-8 pb-12">
-      <DashboardPageHeader 
-        title="Financial Ledger" 
-        subtitle="Comprehensive oversight of platform revenue, transactions, and merchant disbursements."
-      >
-        <div className="flex items-center gap-3">
-          <Button 
-            onClick={() => toast.info("Opening Payout Gateway Configuration...")}
-            size="sm"
-            className="rounded-xl font-bold px-6"
-          >
-            Gateway Settings
-          </Button>
-        </div>
-      </DashboardPageHeader>
-      
-      <Tabs defaultValue="transactions" className="w-full">
+    <DashboardPageContainer>
+      <DashboardPageHeader
+        title="Finance & Payments"
+        subtitle="Revenue overview, transaction registry, and provider payout processing."
+      />
+
+      <Tabs value={activeTab} onValueChange={(v) => setTab(v as FinanceTab)} className="w-full">
         <TabsList className="mb-6 bg-transparent space-x-2 border-b border-border w-full justify-start rounded-none h-auto p-0 pb-1">
-          <TabsTrigger 
-            value="transactions" 
+          <TabsTrigger
+            value="overview"
             className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary border border-transparent data-[state=active]:border-primary/20 rounded-full px-6 py-2 transition-all font-bold"
           >
-            Revenue & Transactions
+            Overview
           </TabsTrigger>
-          <TabsTrigger 
+          <TabsTrigger
+            value="transactions"
+            className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary border border-transparent data-[state=active]:border-primary/20 rounded-full px-6 py-2 transition-all font-bold"
+          >
+            Transactions
+          </TabsTrigger>
+          <TabsTrigger
             value="payouts"
             className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary border border-transparent data-[state=active]:border-primary/20 rounded-full px-6 py-2 transition-all font-bold"
           >
-            Provider Payout Ledger
+            Provider Payouts
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="overview" className="space-y-6 mt-0">
+          <FinanceOverview />
+        </TabsContent>
 
         <TabsContent value="transactions" className="space-y-6 mt-0">
           <TransactionsView exportToCSV={exportToCSV} formatKES={formatKES} />
@@ -96,7 +119,15 @@ export default function AdminPayments() {
           <PayoutsView exportToCSV={exportToCSV} formatKES={formatKES} />
         </TabsContent>
       </Tabs>
-    </div>
+    </DashboardPageContainer>
+  );
+}
+
+export default function AdminPayments() {
+  return (
+    <Suspense fallback={<DashboardSuspenseFallback bodyHeight="h-64" />}>
+      <AdminPaymentsContent />
+    </Suspense>
   );
 }
 
@@ -107,6 +138,8 @@ const formatKES = (val: number | string) => `KES ${Number(val || 0).toLocaleStri
 function TransactionsView({ exportToCSV, formatKES }: { exportToCSV: any, formatKES: any }) {
   const { search, setSearch, status, setStatus } = useSearchState();
   const [viewMode, setViewMode] = useState<'grid'|'list'>('grid');
+  const [detailPaymentId, setDetailPaymentId] = useState<string | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
   const { data: paymentData, isLoading } = useApiData<any>(
     `/api/admin/payments?search=${search}&status=${status || ''}`,
     { initialData: null }
@@ -130,20 +163,18 @@ function TransactionsView({ exportToCSV, formatKES }: { exportToCSV: any, format
         ))}
       </div>
 
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 px-1">
-        <div>
-          <h2 className="text-xl font-black text-foreground tracking-tight">Transaction Registry</h2>
-          <p className="text-sm font-medium text-muted-foreground mt-1">Audit log of all monetary movements from clients.</p>
-        </div>
-        <Button onClick={() => exportToCSV(payments, 'transactions')} variant="outline" size="sm" className="rounded-xl font-bold gap-2">
-          <Download className="w-4 h-4" /> Export
+      <div className="flex justify-end px-1">
+        <Button onClick={() => exportToCSV(payments, "transactions")} variant="outline" size="sm" className="rounded-xl font-bold gap-2">
+          <Download className="w-4 h-4" /> Export CSV
         </Button>
       </div>
 
-      <DataToolbar 
-        search={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Search by Transaction ID or Client..."
+      {search && (
+        <p className="text-xs text-muted-foreground">Results for &quot;{search}&quot;</p>
+      )}
+
+      <DashboardListToolbar
+        hint="Use ⌘K Quick Jump to search payments"
         viewMode={viewMode}
         onViewChange={setViewMode}
         filters={[
@@ -162,25 +193,32 @@ function TransactionsView({ exportToCSV, formatKES }: { exportToCSV: any, format
         ]}
       />
 
-      <Card className="border border-border shadow-sm">
-        <CardContent className="p-0">
+      <DashboardDataCard variant="base">
           <Table>
             <TableHeader>
-              <TableRow className="hover:bg-transparent border-border">
-                <TableHead className="pl-6 h-14 text-xs font-bold text-muted-foreground">Transaction Ref</TableHead>
-                <TableHead className="h-14 text-xs font-bold text-muted-foreground">Identity</TableHead>
-                <TableHead className="h-14 text-xs font-bold text-muted-foreground">Gross Amount</TableHead>
-                <TableHead className="h-14 text-xs font-bold text-muted-foreground">Status</TableHead>
-                <TableHead className="h-14 pr-6 text-right text-xs font-bold text-muted-foreground">Settled At</TableHead>
-              </TableRow>
+              <DashboardTableHeaderRow>
+                <DashboardTableHead position="first" className="!pl-6 h-14 text-xs">Transaction Ref</DashboardTableHead>
+                <DashboardTableHead className="h-14 text-xs">Identity</DashboardTableHead>
+                <DashboardTableHead className="h-14 text-xs">Gross Amount</DashboardTableHead>
+                <DashboardTableHead className="h-14 text-xs">Status</DashboardTableHead>
+                <DashboardTableHead className="h-14 text-xs">Settled At</DashboardTableHead>
+                <DashboardTableHead position="last" className="h-14 text-xs text-right">Action</DashboardTableHead>
+              </DashboardTableHeaderRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}><TableCell className="p-6" colSpan={5}><Skeleton className="h-4 w-full" /></TableCell></TableRow>
+                  <TableRow key={i}><TableCell className="p-6" colSpan={6}><Skeleton className="h-4 w-full" /></TableCell></TableRow>
                 ))
               ) : payments.map((p) => (
-                <TableRow key={p.id} className="hover:bg-muted/50 border-border">
+                <TableRow
+                  key={p.id}
+                  className="hover:bg-muted/50 border-border cursor-pointer"
+                  onClick={() => {
+                    setDetailPaymentId(String(p.id));
+                    setDetailOpen(true);
+                  }}
+                >
                   <TableCell className="pl-6 py-4">
                     <div className="font-mono text-sm font-bold">{p.transaction_id || `KBA-TX-${p.id}`}</div>
                   </TableCell>
@@ -193,22 +231,41 @@ function TransactionsView({ exportToCSV, formatKES }: { exportToCSV: any, format
                     <div className="text-[10px] text-muted-foreground">{formatKES(p.platform_fee)} Platform Fee</div>
                   </TableCell>
                   <TableCell className="py-4">
-                    <Badge variant="outline" className="capitalize text-[10px] font-bold">{p.status}</Badge>
+                    <PaymentTransactionBadge status={p.status} />
                   </TableCell>
-                  <TableCell className="pr-6 py-4 text-right text-xs font-bold text-muted-foreground">
+                  <TableCell className="py-4 text-xs font-bold text-muted-foreground">
                     {new Date(p.created_at).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell className="pr-6 py-4 text-right">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="rounded-lg text-xs font-bold"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDetailPaymentId(String(p.id));
+                        setDetailOpen(true);
+                      }}
+                    >
+                      View
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
               {payments.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-64 text-center text-muted-foreground font-bold text-sm">No transactions found.</TableCell>
+                  <TableCell colSpan={6} className="h-64 text-center text-muted-foreground font-bold text-sm">No transactions found.</TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+      </DashboardDataCard>
+
+      <PaymentDetailSheet
+        paymentId={detailPaymentId}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+      />
     </div>
   );
 }
@@ -279,19 +336,12 @@ function PayoutsView({ exportToCSV, formatKES }: { exportToCSV: any, formatKES: 
         ))}
       </div>
 
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 px-1 mt-8">
-        <div>
-          <h2 className="text-xl font-black text-foreground tracking-tight">Provider Withdrawal Requests</h2>
-          <p className="text-sm font-medium text-muted-foreground mt-1">Review, approve, and finalize payouts owed to service providers.</p>
-        </div>
-      </div>
+      {search && (
+        <p className="text-xs text-muted-foreground">Results for &quot;{search}&quot;</p>
+      )}
 
-      <DataToolbar 
-        search={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Search by Provider or Reference..."
-        viewMode="list"
-        onViewChange={() => {}}
+      <DashboardListToolbar
+        hint="Use ⌘K Quick Jump to search payouts"
         filters={[
           {
             id: 'status',
@@ -309,18 +359,17 @@ function PayoutsView({ exportToCSV, formatKES }: { exportToCSV: any, formatKES: 
         ]}
       />
 
-      <Card className="border border-border shadow-sm">
-        <CardContent className="p-0">
+      <DashboardDataCard variant="base">
           <Table>
             <TableHeader>
-              <TableRow className="hover:bg-transparent border-border">
-                <TableHead className="pl-6 h-14 text-xs font-bold text-muted-foreground">Provider</TableHead>
-                <TableHead className="h-14 text-xs font-bold text-muted-foreground">Payout Amount</TableHead>
-                <TableHead className="h-14 text-xs font-bold text-muted-foreground">Method</TableHead>
-                <TableHead className="h-14 text-xs font-bold text-muted-foreground">Status</TableHead>
-                <TableHead className="h-14 text-xs font-bold text-muted-foreground">Requested At</TableHead>
-                <TableHead className="pr-6 text-right h-14 text-xs font-bold text-muted-foreground">Action</TableHead>
-              </TableRow>
+              <DashboardTableHeaderRow>
+                <DashboardTableHead position="first" className="!pl-6 h-14 text-xs">Provider</DashboardTableHead>
+                <DashboardTableHead className="h-14 text-xs">Payout Amount</DashboardTableHead>
+                <DashboardTableHead className="h-14 text-xs">Method</DashboardTableHead>
+                <DashboardTableHead className="h-14 text-xs">Status</DashboardTableHead>
+                <DashboardTableHead className="h-14 text-xs">Requested At</DashboardTableHead>
+                <DashboardTableHead position="last" className="h-14 text-xs text-right">Action</DashboardTableHead>
+              </DashboardTableHeaderRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
@@ -341,13 +390,7 @@ function PayoutsView({ exportToCSV, formatKES }: { exportToCSV: any, formatKES: 
                     <Badge variant="outline" className="capitalize text-[10px] bg-background/50 border-border">{p.payment_method?.replace('_', ' ')}</Badge>
                   </TableCell>
                   <TableCell className="py-4">
-                    <Badge variant="outline" className={`capitalize text-[10px] font-bold ${
-                      p.status === 'pending' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : 
-                      p.status === 'paid' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 
-                      'bg-muted text-muted-foreground'
-                    }`}>
-                      {p.status}
-                    </Badge>
+                    <PayoutStatusBadge status={p.status} />
                   </TableCell>
                   <TableCell className="py-4 text-xs font-bold text-muted-foreground whitespace-nowrap">
                     {new Date(p.created_at).toLocaleDateString()}
@@ -372,8 +415,7 @@ function PayoutsView({ exportToCSV, formatKES }: { exportToCSV: any, formatKES: 
               )}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+      </DashboardDataCard>
 
       {/* PROCESS PAYOUT DRAWER */}
       <Sheet open={resolveDrawerOpen} onOpenChange={setResolveDrawerOpen}>
@@ -456,11 +498,7 @@ function PayoutsView({ exportToCSV, formatKES }: { exportToCSV: any, formatKES: 
                   <div className="bg-muted/50 p-4 rounded-xl border border-border space-y-3">
                     <div className="flex justify-between items-center border-b border-border pb-2">
                       <span className="text-xs font-bold text-muted-foreground">Final Status</span>
-                      <Badge variant="outline" className={`capitalize text-[10px] font-bold ${
-                        selectedPayout.status === 'paid' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-red-500/10 text-red-600'
-                      }`}>
-                        {selectedPayout.status}
-                      </Badge>
+                      <PayoutStatusBadge status={selectedPayout.status} />
                     </div>
                     <div className="flex justify-between items-center border-b border-border pb-2">
                       <span className="text-xs font-bold text-muted-foreground">Reference</span>

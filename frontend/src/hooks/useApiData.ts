@@ -1,61 +1,51 @@
-import { useState, useEffect, useCallback } from "react";
+import useSWR from "swr";
 import axiosInstance from "@/lib/axios";
+import { normalizeApiResponse } from "@/lib/api-response";
 
-interface UseApiDataOptions {
+export interface UseApiDataOptions<T> {
   extractKey?: string;
-  initialData?: any;
+  /** Keep full JSON body (e.g. responses with `stats` + `data`) */
+  preserveEnvelope?: boolean;
+  initialData?: T | null;
 }
 
 /**
- * A reusable hook to fetch data from an API endpoint with loading and error states.
- * Consolidates the boilerplate pattern used across many components.
- * 
- * @param url The API endpoint to fetch from
- * @param options Configuration for data extraction and initial state
+ * Admin-friendly data hook backed by SWR (same network layer as useData).
  */
-export function useApiData<T>(url: string, options: UseApiDataOptions = {}) {
-  const [data, setData] = useState<T>(options.initialData ?? null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<any>(null);
+export function useApiData<T>(url: string, options: UseApiDataOptions<T> = {}) {
+  const { data, error, isLoading, mutate } = useSWR<T>(
+    url || null,
+    async (endpoint: string) => {
+      const response = await axiosInstance.get(endpoint);
+      let result: unknown = response.data;
 
-  const fetchData = useCallback(async () => {
-    if (!url) {
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await axiosInstance.get(url);
-      let result = response.data;
-      
-      // Handle the common Laravel/Sanctum response structure
-      if (options.extractKey && result && typeof result === 'object' && options.extractKey in result) {
-        result = result[options.extractKey];
-      } else if (result && result.data !== undefined) {
-        // Default to .data if it exists (common for paginated or wrapped responses)
-        result = result.data;
+      if (options.preserveEnvelope) {
+        return result as T;
       }
-      
-      setData(result);
-    } catch (err: any) {
-      console.error(`API Fetch Error [${url}]:`, err);
-      setError(err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [url, options.extractKey]);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+      if (
+        options.extractKey &&
+        result &&
+        typeof result === "object" &&
+        options.extractKey in (result as object)
+      ) {
+        result = (result as Record<string, unknown>)[options.extractKey];
+      } else {
+        result = normalizeApiResponse(result);
+      }
 
-  return { 
-    data, 
-    isLoading, 
-    error, 
-    setData, 
-    refetch: fetchData 
+      return result as T;
+    },
+    { revalidateOnFocus: false }
+  );
+
+  const resolved = (data ?? options.initialData ?? null) as T;
+
+  return {
+    data: resolved,
+    isLoading,
+    error,
+    setData: (value: T) => mutate(value, false),
+    refetch: () => mutate(),
   };
 }

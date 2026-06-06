@@ -1,5 +1,8 @@
 "use client";
 
+import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
+import { DashboardPageSkeleton } from "@/components/shared/DashboardPageSkeleton";
+
 import { useEffect, useState } from "react";
 import axiosInstance, { handleApiError } from "@/lib/axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -63,16 +66,11 @@ export default function TrustPartnersPage() {
     };
 
     if (isLoading) {
-        return (
-            <div className="max-w-5xl mx-auto space-y-6 animate-pulse p-6">
-                <Skeleton className="h-10 w-48 rounded-lg" />
-                <Skeleton className="h-64 rounded-xl" />
-            </div>
-        );
+        return <DashboardPageSkeleton width="narrow" metrics={0} bodyHeight="h-64" />;
     }
 
     return (
-        <div className="max-w-5xl mx-auto space-y-10 pb-12">
+        <DashboardPageContainer width="narrow" className="space-y-10">
             <DashboardPageHeader 
                 title="Trust Ecosystem" 
                 subtitle="Manage brand logos and corporate partners displayed on the landing page."
@@ -180,6 +178,6 @@ export default function TrustPartnersPage() {
                     </div>
                 )}
             </div>
-        </div>
+        </DashboardPageContainer>
     );
 }

@@ -3,29 +3,44 @@
 import { useState, useEffect, Suspense } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Loader2, Lock } from "lucide-react";
-import { useCMS } from "@/contexts/CMSContext";
 import Link from "next/link";
+import { Mail, Lock, Loader2 } from "lucide-react";
+import {
+  AuthPageShell,
+  AuthPrimaryButton,
+} from "@/components/auth/AuthPageShell";
+import { AuthIconInput } from "@/components/auth/AuthIconInput";
+import type { AuthPageContent } from "@/lib/auth-page-content";
+
+const ADMIN_AUTH_CONTENT: AuthPageContent = {
+  title: "Admin sign in",
+  subtitle: "Enter your credentials to access the platform CMS, bookings, and operations.",
+  submitLabel: "Sign in",
+  footerPrefix: "Not an administrator?",
+  footerLinkLabel: "Client sign in",
+  visual: {
+    headline: "Manage providers, bookings, and site content from one secure hub.",
+    caption: "Authorized Kuba team access only. All sign-in activity is monitored.",
+    status: "Admin",
+  },
+  accent: "client",
+};
 
 function AdminLoginForm() {
-  const { login, user, isLoading: authLoading } = useAuth();
-  const { getS, getImg } = useCMS();
+  const { login, logout, user, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get("redirect") || "";
-  
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && user && user.role === 'admin') {
-        const path = redirectPath.startsWith('/') ? redirectPath : '/admin';
-        router.push(path);
+    if (!authLoading && user && user.role === "admin") {
+      const path = redirectPath.startsWith("/") ? redirectPath : "/admin";
+      router.push(path);
     }
   }, [authLoading, user, router, redirectPath]);
 
@@ -35,120 +50,87 @@ function AdminLoginForm() {
     setIsLoading(true);
 
     try {
-      await login({ email, password });
-    } catch (err: any) {
-      setError(
-        err.response?.data?.message || err.message || "Authentication rejected."
-      );
+      const loggedIn = await login({ email, password });
+      if (!loggedIn || loggedIn.role !== "admin") {
+        setError("This account does not have admin access.");
+        await logout();
+        return;
+      }
+    } catch (err: unknown) {
+      const message =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ||
+        (err as Error)?.message ||
+        "Authentication rejected.";
+      setError(message);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* Form Column */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 md:p-16">
-        <div className="w-full max-w-sm space-y-8">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <div className="relative h-12 w-48 dark:hidden">
-              <img src={getImg('identity', 'logo_light', '/assets/branding/Kuba-Logo-Login-Light-mode.png')} alt="KUBA" className="h-full w-auto object-contain" />
-            </div>
-            <div className="relative h-12 w-48 hidden dark:block">
-              <img src={getImg('identity', 'logo_dark', '/assets/branding/Kuba-Logo-Login-Dark-mode.png')} alt="KUBA" className="h-full w-auto object-contain" />
-            </div>
-          </Link>
-
-          <div>
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">Admin Sign In</h1>
-            <p className="text-sm text-muted-foreground mt-1">Enter your credentials to access the admin panel.</p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {error && (
-              <div className="px-4 py-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm text-center">
-                {error}
-              </div>
-            )}
-            
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="admin@kuba.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="h-10"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="h-10"
-                />
-              </div>
-            </div>
-
-            <Button 
-                type="submit" 
-                className="w-full h-10"
-                disabled={isLoading}
-            >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                "Sign In"
-              )}
-            </Button>
-          </form>
-
-          <p className="text-center text-xs text-muted-foreground">
-            Secure administrative access. Unauthorized use is prohibited.
+    <AuthPageShell
+      content={ADMIN_AUTH_CONTENT}
+      footerHref="/login"
+      showSocialProof={false}
+      homeHref="/"
+    >
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {error && (
+          <p className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            {error}
           </p>
-        </div>
-      </div>
+        )}
 
-      {/* Visual Column */}
-      <div className="hidden lg:flex lg:w-1/2 bg-primary relative overflow-hidden flex-col justify-end p-16">
-        <div className="space-y-6 max-w-md">
-          <div className="w-12 h-12 bg-primary-foreground/20 rounded-xl flex items-center justify-center text-primary-foreground">
-            <Lock className="w-6 h-6" />
-          </div>
-          <h2 className="text-2xl font-semibold leading-snug text-primary-foreground">
-            Manage your home services platform with powerful admin tools.
-          </h2>
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-primary-foreground/20" />
-            <div className="space-y-1">
-              <div className="w-20 h-1.5 bg-primary-foreground/30 rounded-full" />
-              <div className="w-14 h-1 bg-primary-foreground/15 rounded-full" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+        <AuthIconInput
+          id="admin-email"
+          icon={Mail}
+          type="email"
+          autoComplete="email"
+          placeholder="admin@kuba.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <AuthIconInput
+          id="admin-password"
+          icon={Lock}
+          type="password"
+          showToggle
+          autoComplete="current-password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+
+        <AuthPrimaryButton accent="client" isLoading={isLoading}>
+          {ADMIN_AUTH_CONTENT.submitLabel}
+        </AuthPrimaryButton>
+
+        <p className="text-center text-[11px] text-muted-foreground">
+          Secure administrative access. Unauthorized use is prohibited.
+        </p>
+        <p className="text-center text-xs text-muted-foreground">
+          <Link href="/" className="hover:text-primary underline-offset-2 hover:underline">
+            Back to public site
+          </Link>
+        </p>
+      </form>
+    </AuthPageShell>
   );
 }
 
 export default function AdminLoginPage() {
   return (
-    <Suspense fallback={
-        <div className="min-h-screen bg-background flex items-center justify-center">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
-    }>
-        <AdminLoginForm />
+      }
+    >
+      <AdminLoginForm />
     </Suspense>
   );
 }

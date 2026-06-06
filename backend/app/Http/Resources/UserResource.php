@@ -26,6 +26,7 @@ class UserResource extends JsonResource
             'is_verified' => $this->is_verified,
             'is_active' => $this->is_active,
             'created_at' => $this->created_at,
+            'total_points' => $this->total_points,
             'membership_tier' => $this->membership_tier ? new LoyaltyTierResource($this->membership_tier) : null,
             'permissions' => $this->getAllPermissions()->pluck('name'),
             'roles' => $this->getRoleNames(),

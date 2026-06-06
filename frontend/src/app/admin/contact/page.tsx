@@ -1,10 +1,17 @@
 "use client";
 
+import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
+import { DashboardSuspenseFallback } from "@/components/shared/DashboardSuspenseFallback";
+
 import { useEffect, useState, Suspense } from "react";
 import { ContactMessage } from "@/types";
 import axiosInstance from "@/lib/axios";
-import { Card, CardContent } from "@/components/ui/card";
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
+import { Table, TableHeader, TableBody, TableRow, TableCell } from "@/components/ui/table";
+import {
+  DashboardDataCard,
+  DashboardTableHead,
+  DashboardTableHeaderRow,
+} from "@/components/shared/DashboardTable";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
   MoreHorizontal, 
@@ -15,7 +22,7 @@ import {
   MessageSquare
 } from "lucide-react";
 import { useSearchState } from "@/hooks/useSearchState";
-import { DataToolbar } from "@/components/shared/DataToolbar";
+import { DashboardListToolbar } from "@/components/shared/DashboardListToolbar";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -29,11 +36,14 @@ import { DashboardStatusBadge } from "@/components/shared/DashboardStatusBadge";
 import { DashboardEmptyState } from "@/components/shared/DashboardEmptyState";
 import { useApiData } from "@/hooks/useApiData";
 import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import {
+  DashboardAlertCancel,
+  DashboardAlertAction,
+} from "@/components/shared/DashboardAlertActions";
+import { dashboardUi } from "@/lib/dashboard-ui";
 import { toast } from "sonner";
-import { 
+import {
   AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -83,31 +93,28 @@ function AdminContactContent() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 pb-12">
+    <DashboardPageContainer width="default">
       <DashboardPageHeader 
         title="Contact Messages" 
         subtitle="Review and manage inquiries directly from the landing page contact form."
       />
 
-      <DataToolbar 
-        search={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Search by name or email..."
-        viewMode={viewMode}
-        onViewChange={() => {}}
-      />
+      {search && (
+        <p className="text-xs text-muted-foreground">Results for &quot;{search}&quot;</p>
+      )}
 
-      <Card className="border border-border overflow-hidden bg-card">
-        <CardContent className="p-0">
+      <DashboardListToolbar hint="Use ⌘K Quick Jump to search inquiries" />
+
+      <DashboardDataCard variant="base">
           <Table>
             <TableHeader>
-              <TableRow className="hover:bg-transparent border-border/50">
-                <TableHead className="pl-10 h-16 text-[11px] font-bold text-muted-foreground">Sender</TableHead>
-                <TableHead className="h-16 text-[11px] font-bold text-muted-foreground">Subject</TableHead>
-                <TableHead className="h-16 text-[11px] font-bold text-muted-foreground">Status</TableHead>
-                <TableHead className="h-16 text-[11px] font-bold text-muted-foreground">Date Received</TableHead>
-                <TableHead className="pr-10 text-right h-16 text-[11px] font-bold text-muted-foreground">Operations</TableHead>
-              </TableRow>
+              <DashboardTableHeaderRow>
+                <DashboardTableHead position="first" className="!pl-10 h-16">Sender</DashboardTableHead>
+                <DashboardTableHead className="h-16">Subject</DashboardTableHead>
+                <DashboardTableHead className="h-16">Status</DashboardTableHead>
+                <DashboardTableHead className="h-16">Date Received</DashboardTableHead>
+                <DashboardTableHead position="last" className="h-16">Operations</DashboardTableHead>
+              </DashboardTableHeaderRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
@@ -166,7 +173,7 @@ function AdminContactContent() {
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-44 rounded-xl">
-                        <DropdownMenuLabel className="text-[11px] font-bold text-muted-foreground tracking-tight">Message Operations</DropdownMenuLabel>
+                        <DropdownMenuLabel className={dashboardUi.dropdown.labelAlt}>Message Operations</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => setStatusUpdate({ id: m.id, status: 'read'})} className="cursor-pointer text-xs font-medium text-foreground gap-2">
                            <Eye className="w-3.5 h-3.5" /> Mark as Read
@@ -195,8 +202,7 @@ function AdminContactContent() {
               ))}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+      </DashboardDataCard>
 
 
       {/* Status Update Confirmation */}
@@ -209,9 +215,9 @@ function AdminContactContent() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-2 sm:gap-0 pt-4">
-            <AlertDialogCancel className="rounded-xl font-bold text-xs uppercase tracking-widest text-foreground">Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-                className="rounded-xl font-bold text-xs uppercase tracking-widest bg-blue-600 hover:bg-blue-700 text-white border-none shadow-md"
+            <DashboardAlertCancel>Cancel</DashboardAlertCancel>
+            <DashboardAlertAction
+                className="!bg-blue-600 hover:!bg-blue-700"
                 onClick={() => {
                     if (statusUpdate) {
                         updateStatus(statusUpdate.id, statusUpdate.status);
@@ -220,17 +226,17 @@ function AdminContactContent() {
                 }}
             >
                 Confirm
-            </AlertDialogAction>
+            </DashboardAlertAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </DashboardPageContainer>
   );
 }
 
 export default function AdminContact() {
   return (
-    <Suspense fallback={<div className="max-w-6xl mx-auto p-8"><Skeleton className="h-[600px] w-full rounded-2xl" /></div>}>
+    <Suspense fallback={<DashboardSuspenseFallback />}>
       <AdminContactContent />
     </Suspense>
   );

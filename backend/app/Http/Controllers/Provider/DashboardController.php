@@ -13,17 +13,7 @@ class DashboardController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $provider = $user->provider;
-        
-        if (!$provider && $user->role === 'provider') {
-            $provider = \App\Models\Provider::create([
-                'user_id' => $user->id,
-                'business_name' => $user->name,
-                'is_verified' => false,
-                'experience_years' => 0,
-                'service_radius' => 10,
-            ]);
-        }
+        $provider = $user->ensureProviderProfile();
 
         if (!$provider) {
             return response()->json(['error' => 'Provider profile not found'], 404);
@@ -35,12 +25,16 @@ class DashboardController extends Controller
             ->take(10)
             ->get();
 
+        $approvedDocs = $provider->verificationDocuments()
+            ->where('status', 'approved')
+            ->count();
+
         $stats = [
-            'total_earnings' => \App\Models\Payment::whereHas('booking', function($query) use ($provider) {
+            'total_earnings' => (float) \App\Models\Payment::whereHas('booking', function ($query) use ($provider) {
                 $query->where('provider_id', $provider->id);
             })->where('status', 'completed')->sum('amount'),
             'active_bookings' => Booking::where('provider_id', $provider->id)
-                ->whereIn('status', ['pending', 'confirmed'])
+                ->whereIn('status', ['pending', 'confirmed', 'in_progress'])
                 ->count(),
             'completed_bookings' => $completed = Booking::where('provider_id', $provider->id)
                 ->where('status', 'completed')
@@ -51,15 +45,13 @@ class DashboardController extends Controller
 
         return response()->json([
             'stats' => $stats,
-            'recent_bookings' => BookingResource::collection($bookings),
-            'profile' => [
-                'business_name' => $provider->business_name,
-                'bio' => $provider->bio,
-                'location_name' => $provider->location_name,
-                'phone' => $user->phone,
-                'experience_years' => $provider->experience_years,
-                'service_radius' => $provider->service_radius,
-                'is_verified' => $provider->is_verified,
+            'recent_bookings' => BookingResource::collection($bookings)->resolve(),
+            'profile' => $provider->fresh()->toProfileEditorArray($user),
+            'verification' => [
+                'is_verified' => (bool) $provider->is_verified,
+                'documents_submitted' => $provider->verificationDocuments()->count(),
+                'documents_approved' => $approvedDocs,
+                'needs_action' => ! $provider->is_verified && $approvedDocs < 2,
             ],
         ]);
     }

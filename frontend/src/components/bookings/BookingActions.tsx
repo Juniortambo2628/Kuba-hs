@@ -8,12 +8,13 @@ import { toast } from "sonner";
 import { CheckoutDialog } from "@/components/payment/CheckoutDialog";
 import { WriteReviewDialog } from "@/components/reviews/WriteReviewDialog";
 import { Star } from "lucide-react";
+import type { Booking } from "@/types";
 
 interface BookingActionsProps {
-    booking: any;
+    booking: Booking;
     userEmail: string;
     onRefresh: () => void;
-    onMessage: (id: number) => void;
+    onMessage: (id: string) => void;
     isStartingChat: boolean;
 }
 

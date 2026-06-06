@@ -38,7 +38,9 @@ export interface Service {
 }
 
 export interface Provider {
-  id: number;
+  id: string;
+  slug?: string;
+  user_id?: string;
   business_name: string;
   brand_name?: string;
   bio?: string;
@@ -47,7 +49,16 @@ export interface Provider {
   rating?: number;
   review_count?: number;
   is_verified?: boolean;
+  application_status?: 'pending' | 'approved' | 'active' | 'rejected' | 'suspended' | string;
+  availability_status?: 'available' | 'busy' | 'offline' | string;
+  compliance_status?: string;
+  quality_score?: number;
+  balance?: number;
+  total_earned?: number;
+  bookings_count?: number;
+  services_count?: number;
   logo?: string;
+  banner?: string | null;
   latitude?: number;
   longitude?: number;
   service_radius?: number;
@@ -55,29 +66,50 @@ export interface Provider {
   user?: User;
   services?: ProviderService[];
   reviews?: Review[];
+  verification_documents?: VerificationDocument[];
   starting_price?: number | string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface VerificationDocument {
+  id: string;
+  document_type: string;
+  file_path?: string;
+  url?: string;
+  status: string;
+  rejection_reason?: string;
+  expires_at?: string;
+  is_expired?: boolean;
+  created_at?: string;
+}
+
+export interface ProviderServiceImage {
+  id: number | string;
+  url: string;
 }
 
 export interface ProviderService {
-  id: number;
-  service_id: number;
+  id: string;
+  service_id: string;
   base_price: number;
   pricing_type: string;
   min_hours?: number;
   travel_fee?: number;
   equipment_included?: boolean;
-  extra_configs?: any;
+  extra_configs?: Record<string, unknown> | null;
   is_available: boolean;
   name?: string;
   description?: string;
   category?: string;
-  image_urls?: string[];
+  service_thumbnail_url?: string | null;
+  image_urls?: ProviderServiceImage[];
   provider?: Provider;
   service?: Service;
 }
 
 export interface Booking {
-  id: number;
+  id: string;
   booking_number: string;
   customer_id?: string;
   provider_id?: string;
@@ -166,21 +198,25 @@ export interface LoyaltyTier {
 
 export interface Conversation {
   id: string;
-  customer_id: number;
-  provider_id: number;
+  booking_id?: string;
+  customer_id: string;
+  provider_id: string;
   last_message_at: string;
   unread_count: number;
   customer: User;
-  provider: { user: User };
-  booking: {
-    service: { name: string };
+  provider: { id?: string; business_name?: string; user: User };
+  booking?: {
+    id?: string;
+    booking_number?: string;
+    status?: string;
+    service?: { id?: number; name: string } | null;
   };
   latestMessage?: Message;
 }
 
 export interface Message {
   id: string;
-  sender_id: number;
+  sender_id: string;
   body: string;
   created_at: string;
   read_at: string | null;
@@ -205,6 +241,7 @@ export interface CustomQuote {
   email: string;
   phone: string;
   organization_type: 'commercial' | 'cooperative' | 'other';
+  source?: string | null;
   service_category: string;
   description: string;
   status: 'pending' | 'reviewed' | 'contacted' | 'contracted' | 'rejected';

@@ -21,6 +21,7 @@ class CustomQuoteResource extends JsonResource
             'email' => $this->email,
             'phone' => $this->phone,
             'organization_type' => $this->organization_type,
+            'source' => $this->source,
             'service_category' => $this->service_category,
             'description' => $this->description,
             'status' => $this->status ?? 'pending',

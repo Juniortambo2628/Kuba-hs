@@ -7,7 +7,6 @@ import {
   Search, 
   X, 
   Command, 
-  ArrowRight, 
   Sparkles, 
   User, 
   Briefcase, 
@@ -18,14 +17,26 @@ import {
   Calendar,
   Layers,
   Loader2,
-  Grid3X3
+  Grid3X3,
+  MapPin,
+  Receipt,
 } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { cn, getMediaUrl } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import axiosInstance from "@/lib/axios";
-import Image from "next/image";
+import { ScrollRegion } from "@/components/shared/ScrollRegion";
+import { ProviderSearchRow, SearchResultRow, type ProviderSearchRowData } from "@/components/marketplace";
+import { providerHref } from "@/lib/provider-urls";
+import {
+  ADMIN_SEARCH_ENTRIES,
+  CLIENT_SEARCH_ENTRIES,
+  dedupeSearchEntries,
+  PROVIDER_SEARCH_ENTRIES,
+  PUBLIC_SEARCH_ENTRIES,
+  type GlobalSearchCategory,
+  type GlobalSearchStaticEntry,
+} from "@/config/global-search-static";
 
 interface SearchItem {
   id: string;
@@ -33,7 +44,71 @@ interface SearchItem {
   description?: string;
   url: string;
   icon: React.ReactNode;
-  category: "Pages" | "Services" | "Account" | "Quick Actions";
+  category: GlobalSearchCategory;
+  provider?: ProviderSearchRowData;
+}
+
+function iconForCategory(category: GlobalSearchCategory): React.ReactNode {
+  switch (category) {
+    case "Bookings":
+      return <Calendar className="w-4 h-4" />;
+    case "Addresses":
+      return <MapPin className="w-4 h-4" />;
+    case "Billing":
+      return <Receipt className="w-4 h-4" />;
+    case "Providers":
+      return <User className="w-4 h-4" />;
+    case "Services":
+      return <Sparkles className="w-4 h-4" />;
+    case "Account":
+      return <Settings className="w-4 h-4" />;
+    default:
+      return <Sparkles className="w-4 h-4" />;
+  }
+}
+
+function iconForEntry(entry: GlobalSearchStaticEntry): React.ReactNode {
+  switch (entry.id) {
+    case "page-home":
+      return <Home className="w-4 h-4" />;
+    case "page-services":
+      return <Sparkles className="w-4 h-4" />;
+    case "page-providers":
+      return <User className="w-4 h-4" />;
+    case "page-about":
+    case "client-dashboard":
+    case "provider-dashboard":
+    case "admin-dashboard":
+      return <LayoutDashboard className="w-4 h-4" />;
+    case "client-bookings":
+      return <Calendar className="w-4 h-4" />;
+    case "client-messages":
+    case "provider-messages":
+      return <MessageSquare className="w-4 h-4" />;
+    case "client-profile":
+    case "provider-profile":
+      return <Settings className="w-4 h-4" />;
+    case "provider-bookings":
+    case "provider-services":
+      return <Briefcase className="w-4 h-4" />;
+    case "client-addresses":
+      return <MapPin className="w-4 h-4" />;
+    case "client-billing":
+      return <Receipt className="w-4 h-4" />;
+    case "admin-categories":
+      return <Grid3X3 className="w-4 h-4" />;
+    case "admin-users":
+      return <User className="w-4 h-4" />;
+    default:
+      return <Sparkles className="w-4 h-4" />;
+  }
+}
+
+function staticEntryToItem(entry: GlobalSearchStaticEntry): SearchItem {
+  return {
+    ...entry,
+    icon: iconForEntry(entry),
+  };
 }
 
 export function GlobalSearch() {
@@ -51,37 +126,11 @@ export function GlobalSearch() {
   }, []);
 
   const getStaticItems = () => {
-    const items: SearchItem[] = [
-      { id: "home", title: "Home", url: "/", icon: <Home className="w-4 h-4" />, category: "Pages" },
-      { id: "services", title: "All Services", url: "/services", icon: <Sparkles className="w-4 h-4" />, category: "Pages" },
-      { id: "providers", title: "Find Providers", url: "/providers", icon: <User className="w-4 h-4" />, category: "Pages" },
-      { id: "about", title: "About Kuba", url: "/about", icon: <LayoutDashboard className="w-4 h-4" />, category: "Pages" },
-    ];
-
-    if (user) {
-      if (user.role === 'customer') {
-        items.push(
-          { id: "dashboard", title: "My Dashboard", url: "/dashboard/client", icon: <LayoutDashboard className="w-4 h-4" />, category: "Quick Actions" },
-          { id: "bookings", title: "My Bookings", url: "/dashboard/client/bookings", icon: <Calendar className="w-4 h-4" />, category: "Quick Actions" },
-          { id: "messages", title: "Conversation History", url: "/dashboard/client/messages", icon: <MessageSquare className="w-4 h-4" />, category: "Quick Actions" },
-          { id: "profile", title: "Account Settings", url: "/dashboard/client/profile", icon: <Settings className="w-4 h-4" />, category: "Account" }
-        );
-      } else if (user.role === 'provider') {
-        items.push(
-          { id: "dashboard", title: "Pro Dashboard", url: "/dashboard/provider", icon: <LayoutDashboard className="w-4 h-4" />, category: "Quick Actions" },
-          { id: "jobs", title: "My Jobs", url: "/dashboard/provider/jobs", icon: <Briefcase className="w-4 h-4" />, category: "Quick Actions" },
-          { id: "messages", title: "Messages", url: "/dashboard/provider/messages", icon: <MessageSquare className="w-4 h-4" />, category: "Quick Actions" },
-          { id: "profile", title: "Pro Profile", url: "/dashboard/provider/profile", icon: <Settings className="w-4 h-4" />, category: "Account" }
-        );
-      } else if (user.role === 'admin') {
-        items.push(
-          { id: "dashboard", title: "Admin Portal", url: "/admin", icon: <LayoutDashboard className="w-4 h-4" />, category: "Quick Actions" },
-          { id: "services", title: "Service Categories", url: "/admin/categories", icon: <Grid3X3 className="w-4 h-4" />, category: "Quick Actions" },
-          { id: "users", title: "Manage Users", url: "/admin/users", icon: <User className="w-4 h-4" />, category: "Quick Actions" }
-        );
-      }
-    }
-    return items;
+    const entries = [...PUBLIC_SEARCH_ENTRIES];
+    if (user?.role === "customer") entries.push(...CLIENT_SEARCH_ENTRIES);
+    else if (user?.role === "provider") entries.push(...PROVIDER_SEARCH_ENTRIES);
+    else if (user?.role === "admin") entries.push(...ADMIN_SEARCH_ENTRIES);
+    return entries.map(staticEntryToItem);
   };
 
   const [categories, setCategories] = useState<any[]>([]);
@@ -95,7 +144,7 @@ export function GlobalSearch() {
           id: `cat-${cat.id}`,
           title: cat.name,
           description: `View all ${cat.name} services`,
-          url: `/services?category=${cat.id}`,
+          url: `/services?category=${cat.slug || cat.id}`,
           icon: <Layers className="w-4 h-4" />,
           category: "Services"
         })));
@@ -131,39 +180,79 @@ export function GlobalSearch() {
   useEffect(() => {
     const staticItems = getStaticItems();
     if (!query || query.length < 2) {
-      setResults([...staticItems, ...categories].slice(0, 8));
+      setResults(dedupeSearchEntries([...staticItems, ...categories]).slice(0, 8));
       return;
     }
 
     const timer = setTimeout(async () => {
       setIsSearching(true);
       try {
-        const { data } = await axiosInstance.get(`/api/search?search=${query}`);
-        const dynamicItems: SearchItem[] = (data.data || []).map((item: any) => ({
-          id: `pro-${item.id}`,
-          title: item.business_name,
-          description: item.location_name || 'Verified Pro',
-          url: `/providers/${item.id}`,
-          icon: item.logo ? (
-            <div className="relative w-full h-full">
-              <Image 
-                src={getMediaUrl(item.logo, 'avatar')} 
-                alt="" 
-                fill
-                className="object-cover rounded shadow-inner" 
-              />
-            </div>
-          ) : <User className="w-4 h-4" />,
-          category: "Providers"
-        }));
-
         const staticItems = getStaticItems();
-        const filteredStatic = [...staticItems, ...categories].filter(item => 
-          item.title.toLowerCase().includes(query.toLowerCase()) ||
-          item.category.toLowerCase().includes(query.toLowerCase())
+        const filteredStatic = [...staticItems, ...categories].filter(
+          (item) =>
+            item.title.toLowerCase().includes(query.toLowerCase()) ||
+            item.category.toLowerCase().includes(query.toLowerCase())
         );
 
-        setResults([...filteredStatic, ...dynamicItems]);
+        const fetches: Promise<SearchItem[]>[] = [];
+
+        if (user && (user.role === "customer" || user.role === "provider")) {
+          fetches.push(
+            axiosInstance
+              .get(`/api/dashboard/search?search=${encodeURIComponent(query)}`)
+              .then((res) =>
+                (res.data.data || []).map(
+                  (item: {
+                    id: string;
+                    title: string;
+                    description?: string;
+                    url: string;
+                    category: GlobalSearchCategory;
+                  }) => ({
+                    id: item.id,
+                    title: item.title,
+                    description: item.description,
+                    url: item.url,
+                    icon: iconForCategory(item.category),
+                    category: item.category,
+                  })
+                )
+              )
+              .catch(() => [] as SearchItem[])
+          );
+        }
+
+        if (!user || user.role === "customer") {
+          fetches.push(
+            axiosInstance
+              .get(`/api/search?search=${encodeURIComponent(query)}`)
+              .then((res) =>
+                (res.data.data || []).map((item: Record<string, unknown>) => ({
+                  id: `pro-${item.id}`,
+                  title: String(item.business_name),
+                  description: String(item.location_name || "Verified Pro"),
+                  url: providerHref(item as Parameters<typeof providerHref>[0]),
+                  icon: <User className="w-4 h-4" />,
+                  category: "Providers" as const,
+                  provider: {
+                    id: item.id as string,
+                    business_name: item.business_name as string,
+                    location_name: item.location_name as string | undefined,
+                    rating: item.rating as number | undefined,
+                    logo: item.logo as string | undefined,
+                    services: item.services,
+                    user: item.user,
+                  },
+                }))
+              )
+              .catch(() => [] as SearchItem[])
+          );
+        }
+
+        const dynamicGroups = await Promise.all(fetches);
+        const dynamicItems = dynamicGroups.flat();
+
+        setResults(dedupeSearchEntries([...filteredStatic, ...dynamicItems]));
         setSelectedIndex(0);
       } catch (err) {
         console.error("Global search dynamic fetch failed:", err);
@@ -201,7 +290,7 @@ export function GlobalSearch() {
         className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50 border border-border hover:bg-muted transition-all text-muted-foreground group"
       >
         <Search className="w-4 h-4 group-hover:text-primary transition-colors" />
-        <span className="text-xs font-bold tracking-tight">Search...</span>
+        <span className="text-xs font-bold tracking-tight hidden md:inline">Search…</span>
         <kbd className="hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100">
           <span className="text-xs">⌘</span>K
         </kbd>
@@ -224,14 +313,18 @@ export function GlobalSearch() {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: -20 }}
                 transition={{ duration: 0.2, ease: "easeOut" }}
-                className="relative w-full max-w-xl bg-card border border-border rounded-2xl shadow-2xl overflow-hidden overflow-y-auto max-h-[70vh] m-4"
+                className="relative w-full max-w-xl bg-card border border-border rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[70vh] m-4"
                 onKeyDown={handleKeyDown}
               >
                 <div className="flex items-center px-4 border-b border-border">
                   <Search className="w-5 h-5 text-muted-foreground" />
                   <input
                     ref={inputRef}
-                    placeholder="What are you looking for?"
+                    placeholder={
+                      user?.role === "customer" || user?.role === "provider"
+                        ? "Bookings, addresses, services, pages…"
+                        : "What are you looking for?"
+                    }
                     className="flex-1 h-14 bg-transparent border-none outline-none px-4 text-sm font-semibold placeholder:text-muted-foreground"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
@@ -247,60 +340,58 @@ export function GlobalSearch() {
                   </button>
                 </div>
 
-                <div className="p-2">
+                <ScrollRegion className="flex-1 min-h-0 p-2">
                   {results.length === 0 ? (
                     <div className="py-12 text-center text-muted-foreground">
                       <p className="text-sm font-semibold">No results found for "{query}"</p>
                       <p className="text-xs mt-1">Try searching for services or help guides.</p>
                     </div>
                   ) : (
-                    <div className="space-y-4 pt-2">
-                      {/* Grouping could be added here, but keep it simple for now */}
-                      {results.map((item, index) => (
-                        <div 
-                          key={item.id}
-                          onClick={() => handleSelect(item.url)}
-                          onMouseEnter={() => setSelectedIndex(index)}
-                          className={cn(
-                            "flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border border-transparent",
-                            index === selectedIndex ? "bg-primary/10 border-primary/20" : "hover:bg-muted"
-                          )}
-                        >
-                          <div className={cn(
-                            "w-10 h-10 rounded-lg flex items-center justify-center transition-colors",
-                            index === selectedIndex ? "bg-white dark:bg-sky-500/20 text-primary shadow-sm" : "bg-muted text-muted-foreground"
-                          )}>
-                            {item.icon}
+                    <div className="space-y-2 pt-2">
+                      {results.map((item, index) =>
+                        item.provider ? (
+                          <div
+                            key={`${item.category}:${item.id}`}
+                            onMouseEnter={() => setSelectedIndex(index)}
+                          >
+                            <ProviderSearchRow
+                              variant="command"
+                              provider={item.provider}
+                              selected={index === selectedIndex}
+                              subtitle={`${item.category}${item.description ? ` • ${item.description}` : ""}`}
+                              onClick={() => handleSelect(item.url)}
+                            />
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <p className={cn(
-                              "text-sm font-black transition-colors",
-                              index === selectedIndex ? "text-primary" : "text-foreground"
-                            )}>
-                              {item.title}
-                            </p>
-                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none mt-1">
-                              {item.category} {item.description && `• ${item.description}`}
-                            </p>
+                        ) : (
+                          <div
+                            key={`${item.category}:${item.id}`}
+                            onMouseEnter={() => setSelectedIndex(index)}
+                          >
+                            <SearchResultRow
+                              variant="command"
+                              selected={index === selectedIndex}
+                              title={item.title}
+                              icon={item.icon}
+                              subtitle={`${item.category}${item.description ? ` • ${item.description}` : ""}`}
+                              onClick={() => handleSelect(item.url)}
+                            />
                           </div>
-                          {index === selectedIndex && (
-                            <ArrowRight className="w-4 h-4 text-primary animate-in fade-in slide-in-from-left-2 duration-300" />
-                          )}
-                        </div>
-                      ))}
+                        )
+                      )}
                     </div>
                   )}
-                </div>
+                </ScrollRegion>
 
-                <div className="p-3 bg-muted/30 border-t border-border flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                <div className="shrink-0 p-3 bg-muted/30 border-t border-border flex items-center justify-between text-xs font-medium text-muted-foreground">
                   <div className="flex items-center gap-4">
-                    <span className="flex items-center gap-1.5"><kbd className="px-1 border rounded bg-background">↵</kbd> Select</span>
-                    <span className="flex items-center gap-1.5"><kbd className="px-1 border rounded bg-background">↑↓</kbd> Navigate</span>
+                    <span className="flex items-center gap-1.5">
+                      <kbd className="px-1 border rounded bg-background text-[10px]">↵</kbd> Select
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <kbd className="px-1 border rounded bg-background text-[10px]">↑↓</kbd> Navigate
+                    </span>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="flex items-center gap-1.5 opacity-60">Powered by</span>
-                    <span className="text-foreground tracking-tighter text-sm font-black">KUBA</span>
-                  </div>
+                  <span className="text-sm font-bold text-primary">Kuba</span>
                 </div>
               </motion.div>
             </div>

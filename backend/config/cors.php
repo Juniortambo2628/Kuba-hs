@@ -19,14 +19,19 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => [
-        env('FRONTEND_URL', 'http://localhost:3000'), 
+    'allowed_origins' => array_filter([
+        env('FRONTEND_URL', 'http://localhost:3000'),
         'http://127.0.0.1:3000',
+        'http://localhost:3000',
         'https://www.kuba.co.ke',
-        'https://kuba.co.ke'
-    ],
+        'https://kuba.co.ke',
+    ]),
 
-    'allowed_origins_patterns' => [],
+    'allowed_origins_patterns' => [
+        '#^http://127\.0\.0\.1:3000$#',
+        '#^http://localhost:3000$#',
+        '#^http://192\.168\.\d{1,3}\.\d{1,3}:3000$#',
+    ],
 
     'allowed_headers' => ['*'],
 

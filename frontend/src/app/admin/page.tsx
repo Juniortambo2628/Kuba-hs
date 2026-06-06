@@ -1,16 +1,24 @@
 "use client";
 
+import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
+import {
+  DashboardDataCard,
+  DashboardTableHead,
+  DashboardTableHeaderRow,
+} from "@/components/shared/DashboardTable";
+import { DashboardSuspenseFallback } from "@/components/shared/DashboardSuspenseFallback";
+import { DashboardPageSkeleton } from "@/components/shared/DashboardPageSkeleton";
+
 import { useEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import axiosInstance from "@/lib/axios";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Table, 
   TableHeader, 
   TableBody, 
-  TableHead, 
   TableRow, 
   TableCell 
 } from "@/components/ui/table";
@@ -74,15 +82,7 @@ function AdminDashboardContent() {
   }, [analyticsData]);
 
   if (isLoading) {
-    return (
-      <div className="space-y-6 animate-pulse max-w-6xl mx-auto">
-        <Skeleton className="h-10 w-48 rounded-lg" />
-        <div className="grid gap-4 md:grid-cols-4">
-          {[1,2,3,4].map(i => <Skeleton key={i} className="h-28 w-full rounded-xl" />)}
-        </div>
-        <Skeleton className="h-[400px] w-full rounded-xl" />
-      </div>
-    );
+    return <DashboardPageSkeleton width="default" metrics={4} />;
   }
 
   const metricCards = [
@@ -106,7 +106,7 @@ function AdminDashboardContent() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 pb-12">
+    <DashboardPageContainer width="default">
       {/* Page Header */}
       <DashboardPageHeader 
         title="Dashboard" 
@@ -210,18 +210,18 @@ function AdminDashboardContent() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto custom-scrollbar">
+        <DashboardDataCard variant="base" className="rounded-none border-0 shadow-none border-t border-border">
+          <div className="overflow-x-auto kuba-scroll">
             <Table>
             <TableHeader>
-              <TableRow className="hover:bg-transparent border-border bg-muted/20">
-                <TableHead className="pl-6 text-[11px] font-bold text-muted-foreground tracking-tight h-10">Order</TableHead>
-                <TableHead className="text-[11px] font-bold text-muted-foreground tracking-tight h-10">Service</TableHead>
-                <TableHead className="text-[11px] font-bold text-muted-foreground tracking-tight h-10">Customer</TableHead>
-                <TableHead className="text-[11px] font-bold text-muted-foreground tracking-tight h-10">Date</TableHead>
-                <TableHead className="text-[11px] font-bold text-muted-foreground tracking-tight h-10">Status</TableHead>
-                <TableHead className="pr-6 text-right text-[11px] font-bold text-muted-foreground tracking-tight h-10">Action</TableHead>
-              </TableRow>
+              <DashboardTableHeaderRow>
+                <DashboardTableHead position="first" className="!pl-6 h-10 tracking-tight">Order</DashboardTableHead>
+                <DashboardTableHead className="h-10 tracking-tight">Service</DashboardTableHead>
+                <DashboardTableHead className="h-10 tracking-tight">Customer</DashboardTableHead>
+                <DashboardTableHead className="h-10 tracking-tight">Date</DashboardTableHead>
+                <DashboardTableHead className="h-10 tracking-tight">Status</DashboardTableHead>
+                <DashboardTableHead position="last" className="h-10 text-right tracking-tight">Action</DashboardTableHead>
+              </DashboardTableHeaderRow>
             </TableHeader>
             <TableBody>
               {bookings.slice(0, 10).map((booking) => (
@@ -271,6 +271,7 @@ function AdminDashboardContent() {
             </TableBody>
           </Table>
           </div>
+        </DashboardDataCard>
           
           <div className="p-4 border-t border-border flex justify-center">
             <Link href="/admin/bookings" className="flex items-center gap-1.5 text-xs text-primary hover:underline font-bold group">
@@ -278,15 +279,14 @@ function AdminDashboardContent() {
               <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
             </Link>
           </div>
-        </CardContent>
       </Card>
-    </div>
+    </DashboardPageContainer>
   );
 }
 
 export default function AdminDashboard() {
   return (
-    <Suspense fallback={<div className="max-w-6xl mx-auto p-8"><Skeleton className="h-[600px] w-full rounded-2xl" /></div>}>
+    <Suspense fallback={<DashboardSuspenseFallback />}>
       <AdminDashboardContent />
     </Suspense>
   );

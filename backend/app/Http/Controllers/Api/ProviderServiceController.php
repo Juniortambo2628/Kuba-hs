@@ -3,67 +3,76 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\ProviderService;
+use App\Http\Resources\ProviderServiceResource;
+use App\Http\Resources\ServiceResource;
+use App\Http\Requests\StoreProviderServiceRequest;
 use App\Models\Service;
+use App\Services\ProviderManagementService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Requests\StoreProviderServiceRequest;
-use App\Services\ProviderManagementService;
 
 class ProviderServiceController extends Controller
 {
     public function index()
     {
         $user = Auth::user();
-        $provider = $user->provider;
+        $provider = $user->ensureProviderProfile();
 
-        if (!$provider) {
+        if (! $provider) {
             return response()->json(['error' => 'Provider profile not found'], 404);
         }
 
-        $services = $provider->providerServices()->with('service.category')->get();
+        $services = $provider->providerServices()
+            ->with(['service.category'])
+            ->orderByDesc('updated_at')
+            ->get();
+
+        $available = Service::with('category')
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
 
         return response()->json([
-            'services' => $services,
-            'available_services' => Service::with('category')->get()->map(function($s) {
-                return [
-                    'id' => $s->id,
-                    'name' => $s->name,
-                    'category' => $s->category,
-                ];
-            }),
+            'services' => ProviderServiceResource::collection($services),
+            'available_services' => ServiceResource::collection($available),
         ]);
     }
 
     public function store(StoreProviderServiceRequest $request, ProviderManagementService $serviceManager)
     {
         $user = Auth::user();
-        $provider = $user->provider;
+        $provider = $user->ensureProviderProfile();
 
-        if (!$provider) {
+        if (! $provider) {
             return response()->json(['error' => 'Provider profile not found'], 404);
+        }
+
+        if ($provider->providerServices()->where('service_id', $request->service_id)->exists()) {
+            return response()->json([
+                'message' => 'You already offer this service. Edit the existing listing instead.',
+            ], 422);
         }
 
         $providerService = $serviceManager->syncProviderService($provider, $request->validated());
 
         return response()->json([
-            'message' => 'Service configuration synchronized successfully',
-            'service' => $providerService->load('service.category'),
-        ]);
+            'message' => 'Service added to your profile',
+            'service' => new ProviderServiceResource($providerService->load('service.category')),
+        ], 201);
     }
 
-    public function update(Request $request, $id, ProviderManagementService $serviceManager)
+    public function update(Request $request, string $id, ProviderManagementService $serviceManager)
     {
         $user = Auth::user();
-        $provider = $user->provider;
+        $provider = $user->ensureProviderProfile();
 
-        if (!$provider) {
+        if (! $provider) {
             return response()->json(['error' => 'Provider profile not found'], 404);
         }
 
         $validated = $request->validate([
             'base_price' => 'required|numeric|min:0',
-            'is_available' => 'boolean',
+            'is_available' => 'sometimes|boolean',
             'pricing_type' => 'nullable|string|in:fixed,hourly,quote',
             'min_hours' => 'nullable|integer|min:1',
             'travel_fee' => 'nullable|numeric|min:0',
@@ -75,15 +84,19 @@ class ProviderServiceController extends Controller
 
         return response()->json([
             'message' => 'Service updated successfully',
-            'service' => $providerService->load('service.category'),
+            'service' => new ProviderServiceResource($providerService->load('service.category')),
         ]);
     }
 
-    public function destroy($id)
+    public function destroy(string $id)
     {
         $user = Auth::user();
-        $provider = $user->provider;
-        
+        $provider = $user->ensureProviderProfile();
+
+        if (! $provider) {
+            return response()->json(['error' => 'Provider profile not found'], 404);
+        }
+
         $providerService = $provider->providerServices()->findOrFail($id);
         $providerService->delete();
 

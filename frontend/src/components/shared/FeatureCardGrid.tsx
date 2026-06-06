@@ -1,8 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { CheckCircle2, type LucideIcon } from "lucide-react";
-import { resolveIcon } from "@/lib/icon-map";
+import { getMediaUrl } from "@/lib/utils";
+import { MarketplaceCardMediaFallback } from "@/components/marketplace/MarketplaceCardMediaFallback";
 
 interface Feature {
   id?: number;
@@ -10,6 +12,7 @@ interface Feature {
   subtitle?: string;
   description?: string;
   icon?: string;
+  image_url?: string | null;
   metadata?: {
     bg?: string;
     color?: string;
@@ -33,24 +36,24 @@ interface FeatureCardGridProps {
 }
 
 const colsMap = {
-  2: "grid-cols-1 md:grid-cols-2",
-  3: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
-  4: "grid-cols-2 md:grid-cols-4",
+  2: "grid-cols-1 sm:grid-cols-2",
+  3: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
+  4: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
 };
 
 export function FeatureCardGrid({
   features,
   columns = 3,
   accentColor = "primary",
-  fallbackIcon,
+  fallbackIcon: _fallbackIcon,
   showChecklist = false,
   variant = "left",
 }: FeatureCardGridProps) {
   return (
     <div className={`grid ${colsMap[columns]} gap-10`}>
       {features.map((feature, i) => {
-        const IconComp = resolveIcon(feature.icon, fallbackIcon);
         const featuresList = feature.metadata?.features || [];
+        const imageSrc = feature.image_url ? getMediaUrl(feature.image_url, "service") : null;
 
         return (
           <motion.div
@@ -65,15 +68,27 @@ export function FeatureCardGrid({
                 : `p-8 bg-white dark:bg-black border border-border/40 rounded-[2.5rem] space-y-6 hover:shadow-2xl hover:shadow-${accentColor}-500/5 transition-all duration-500`
             }`}
           >
-            <div
-              className={`${
-                variant === "centered"
-                  ? `w-16 h-16 rounded-2xl ${feature.metadata?.bg || `bg-${accentColor}-500/10`} ${feature.metadata?.color || `text-${accentColor}-500`} flex items-center justify-center mx-auto mb-6`
-                  : `w-14 h-14 rounded-2xl bg-${accentColor}-500/5 flex items-center justify-center group-hover:bg-${accentColor}-600 group-hover:text-white transition-colors`
-              }`}
-            >
-              <IconComp className={variant === "centered" ? "w-8 h-8" : "w-6 h-6"} />
-            </div>
+            {imageSrc ? (
+              <div
+                className={
+                  variant === "centered"
+                    ? "relative w-full aspect-[16/10] rounded-2xl overflow-hidden mb-6 mx-auto max-w-sm"
+                    : "relative w-full aspect-[16/10] rounded-2xl overflow-hidden mb-4"
+                }
+              >
+                <Image src={imageSrc} alt={feature.title} fill className="object-cover" sizes="400px" />
+              </div>
+            ) : (
+              <div
+                className={
+                  variant === "centered"
+                    ? "relative w-full aspect-[16/10] rounded-2xl overflow-hidden mb-6 mx-auto max-w-sm"
+                    : "relative w-full aspect-[16/10] rounded-2xl overflow-hidden mb-4"
+                }
+              >
+                <MarketplaceCardMediaFallback />
+              </div>
+            )}
 
             <div className={variant === "centered" ? "" : "space-y-2"}>
               <h3
