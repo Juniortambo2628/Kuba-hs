@@ -77,7 +77,7 @@ function ClientBookingsContent() {
     }
   };
 
-  const handleUpdateStatus = async (bookingId: string, nextStatus: string) => {
+  const handleUpdateStatus = async (bookingId: string, nextStatus: Booking["status"]) => {
     setIsUpdating(true);
     try {
       const payload: { status: string; cancellation_reason?: string } = { status: nextStatus };
@@ -316,7 +316,7 @@ function ClientBookingsContent() {
         userEmail={user?.email ?? ""}
         onRefresh={() => { mutateBookings(); }}
         onUpdateStatus={(nextStatus) =>
-          selectedBooking && handleUpdateStatus(selectedBooking.id, nextStatus)
+          selectedBooking && handleUpdateStatus(selectedBooking.id, nextStatus as Booking["status"])
         }
       />
     </DashboardPageContainer>
