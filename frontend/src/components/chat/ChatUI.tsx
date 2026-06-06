@@ -95,7 +95,7 @@ export function ChatUI({ bookingId, onClose }: ChatUIProps) {
             setMessages(
                 (Array.isArray(rawMessages) ? rawMessages : []).map((m) =>
                     normalizeMessage(m as unknown as Record<string, unknown>)
-                ) as Message[]
+                ) as unknown as Message[]
             );
             try {
                 await axiosInstance.patch(`/api/chat/conversations/${conv.id}/read`);
@@ -132,7 +132,7 @@ export function ChatUI({ bookingId, onClose }: ChatUIProps) {
             const sent = unwrapResource<Record<string, unknown>>(res.data) ?? res.data;
             setMessages((prev) => [
                 ...prev,
-                normalizeMessage(sent as Record<string, unknown>) as Message,
+                normalizeMessage(sent as Record<string, unknown>) as unknown as Message,
             ]);
             setNewMessage("");
         } catch (err) {

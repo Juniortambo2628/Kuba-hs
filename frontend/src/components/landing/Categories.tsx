@@ -83,7 +83,7 @@ function CategorySlide({ category }: { category: Category }) {
                   href={serviceDetailHref({
                     ...service,
                     category_slug: category.slug,
-                  })}
+                  } as any)}
                   className="group flex items-center gap-3 py-3 md:py-3.5 text-base"
                 >
                   <span className="min-w-0 flex-1 font-semibold text-foreground group-hover:text-primary transition-colors leading-snug">

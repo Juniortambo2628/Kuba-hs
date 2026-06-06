@@ -14,7 +14,7 @@ interface ProviderMapPopupProps {
 
 export function ProviderMapPopup({ provider }: ProviderMapPopupProps) {
   const services = (provider.services ?? [])
-    .map((s) => s.name || s.service?.name)
+    .map((s: any) => s.name || s.service?.name)
     .filter(Boolean)
     .slice(0, 5) as string[];
 

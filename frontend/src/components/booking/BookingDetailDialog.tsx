@@ -190,7 +190,7 @@ export function BookingDetailDialog({
                           completedAt={booking.completed_at}
                           basePrice={Number(booking.estimated_price ?? 0)}
                           pricingType={
-                            booking.service?.pricing_type === "hourly" ? "hourly" : "fixed"
+                            (booking.service as any)?.pricing_type === "hourly" ? "hourly" : "fixed"
                           }
                           status={booking.status}
                         />

@@ -8,7 +8,7 @@ import type { ComponentProps } from "react";
 type LandingButtonVariant = "primary" | "secondary" | "ghost";
 type LandingButtonSize = "sm" | "md" | "lg";
 
-interface LandingButtonProps extends ComponentProps<typeof Button> {
+interface LandingButtonProps extends Omit<ComponentProps<typeof Button>, "variant" | "size"> {
   variant?: LandingButtonVariant;
   size?: LandingButtonSize;
 }

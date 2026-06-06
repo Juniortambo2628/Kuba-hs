@@ -151,7 +151,7 @@ export function ServiceMegamenu({ isOpen, onClose }: ServiceMegamenuProps) {
         .forEach((s) => {
           links.push({
             label: s.name,
-            href: serviceDetailHref({ ...s, category_slug: activeCategory.slug }),
+            href: serviceDetailHref({ ...s, category_slug: activeCategory.slug } as any),
           });
         });
     }

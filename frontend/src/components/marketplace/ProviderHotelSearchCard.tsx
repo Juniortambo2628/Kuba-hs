@@ -44,7 +44,7 @@ export function ProviderHotelSearchCard({
       ? Number(provider.starting_price).toLocaleString()
       : null;
   const serviceCount = provider.services?.length ?? 0;
-  const categoryName = provider.services?.[0]?.service?.category?.name;
+  const categoryName = (provider.services?.[0] as any)?.service?.category?.name;
 
   return (
     <article
