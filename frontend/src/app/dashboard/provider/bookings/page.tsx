@@ -229,7 +229,7 @@ function BookingsHistoryContent() {
                         onManage={() => openBooking(booking)}
                         onMessage={handleMessageClient}
                         onAccept={(id) => handleUpdateStatus(id, "confirmed")}
-                        isStartingChat={isStartingChat === booking.id}
+                        isStartingChat={isStartingChat}
                         isUpdating={isUpdating}
                       />
                     </TableCell>
@@ -256,7 +256,7 @@ function BookingsHistoryContent() {
                     onManage={() => openBooking(booking)}
                     onMessage={handleMessageClient}
                     onAccept={(id) => handleUpdateStatus(id, "confirmed")}
-                    isStartingChat={isStartingChat === booking.id}
+                    isStartingChat={isStartingChat}
                     isUpdating={isUpdating}
                   />
                 }
