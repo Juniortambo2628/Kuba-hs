@@ -273,7 +273,11 @@ function ProvidersContent() {
               ) : view === "map" ? (
                 <div className="h-[700px] w-full mt-4 rounded-[3rem] overflow-hidden border border-border/40 shadow-2xl">
                   <MapView 
-                    providers={providers} 
+                    providers={providers.map(p => ({
+                      ...p,
+                      latitude: typeof p.latitude === 'string' ? parseFloat(p.latitude) : p.latitude,
+                      longitude: typeof p.longitude === 'string' ? parseFloat(p.longitude) : p.longitude,
+                    }))}
                     showRadius={true}
                     onMarkerClick={(p) => console.log("Clicked pro:", p.business_name)}
                   />
