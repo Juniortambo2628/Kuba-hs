@@ -164,21 +164,23 @@ export function Footer() {
         <div className={footerUi.bottomBar}>
           <p>Copyright © {year} Kuba Platform Inc. All rights reserved.</p>
           <p>
-            <button
-              type="button"
-              onClick={() => openLegalModal("privacy")}
+            <a
+              href="/policies/Kuba_Legal_Pack.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
               className={footerUi.bottomLink}
             >
               Privacy Policy
-            </button>
+            </a>
             {" & "}
-            <button
-              type="button"
-              onClick={() => openLegalModal("terms")}
+            <a
+              href="/policies/Kuba_User_Terms_and_Conditions.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
               className={footerUi.bottomLink}
             >
               Terms of Use
-            </button>
+            </a>
           </p>
         </div>
 
