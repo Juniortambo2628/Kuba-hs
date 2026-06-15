@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ShieldCheck, CheckCircle2, Briefcase, Star, Users, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import axiosInstance from "@/lib/axios";
@@ -28,9 +29,14 @@ export default function ProviderApplyPage() {
     password_confirmation: "",
     category: "",
   });
+  const [acceptPolicies, setAcceptPolicies] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!acceptPolicies) {
+      toast.error("You must accept the provider policies before applying.");
+      return;
+    }
     setIsSubmitting(true);
     try {
       await axiosInstance.post("/api/auth/register-provider", formData);
@@ -188,8 +194,53 @@ export default function ProviderApplyPage() {
                 />
               </div>
             </div>
+            <div className="flex items-start gap-3 pt-2">
+              <Checkbox
+                id="accept-policies-apply"
+                checked={acceptPolicies}
+                onCheckedChange={(checked) => setAcceptPolicies(checked === true)}
+                className="mt-0.5"
+              />
+              <label
+                htmlFor="accept-policies-apply"
+                className="text-xs leading-relaxed text-muted-foreground cursor-pointer select-none"
+              >
+                I have read and agree to the{" "}
+                <a
+                  href="/policies/Kuba_Comprehensive_Service_Provider_Policy.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-primary hover:underline"
+                >
+                  Comprehensive Service Provider Policy
+                </a>
+                ,{" "}
+                <a
+                  href="/policies/Kuba_Risk_Management_and_Professional_Conduct_Policy.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-primary hover:underline"
+                >
+                  Risk Management &amp; Professional Conduct Policy
+                </a>
+                ,{" "}
+                <a
+                  href="/policies/Kuba_Service_Provider_Code_of_Conduct_and_Accountability_Policy.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-primary hover:underline"
+                >
+                  Code of Conduct &amp; Accountability Policy
+                </a>
+                , and the{" "}
+                <Link href="/legal/provider-agreement" className="font-semibold text-primary hover:underline">
+                  Provider Agreement
+                </Link>
+                .
+              </label>
+            </div>
             <Button
-              disabled={isSubmitting}
+              disabled={isSubmitting || !acceptPolicies}
               className={designSystem.typography.auth.button + " group overflow-hidden"}
             >
               <span className="relative z-10 font-black">{isSubmitting ? "Submitting..." : "Apply to Join Kuba"}</span>
@@ -197,12 +248,6 @@ export default function ProviderApplyPage() {
                 <ChevronRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform relative z-10" />
               )}
             </Button>
-            <p className="text-[10px] text-center text-muted-foreground uppercase font-black tracking-widest pt-4">
-              By applying, you agree to our{" "}
-              <Link href="/legal/provider-agreement" className="text-primary hover:underline">
-                Provider Terms
-              </Link>
-            </p>
           </form>
         </ApplyFormLayout>
       </MarketingSection>

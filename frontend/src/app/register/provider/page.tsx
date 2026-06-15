@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -30,6 +31,9 @@ const registerSchema = z
     phone: z.string().min(10, "Phone number must be at least 10 characters"),
     password: z.string().min(8, "Password must be at least 8 characters"),
     password_confirmation: z.string(),
+    accept_policies: z.literal(true, {
+      message: "You must accept the provider policies to continue",
+    }),
   })
   .refine((data) => data.password === data.password_confirmation, {
     message: "Passwords don't match",
@@ -52,6 +56,7 @@ export default function ProviderRegisterPage() {
       phone: "+254",
       password: "",
       password_confirmation: "",
+      accept_policies: false as unknown as true,
     },
   });
 
@@ -170,6 +175,59 @@ export default function ProviderRegisterPage() {
                   />
                 </FormControl>
                 <FormMessage className="text-xs" />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="accept_policies"
+            render={({ field }) => (
+              <FormItem>
+                <div className="flex items-start gap-3 pt-2">
+                  <FormControl>
+                    <Checkbox
+                      id="accept-policies"
+                      checked={field.value === true}
+                      onCheckedChange={field.onChange}
+                      className="mt-0.5"
+                    />
+                  </FormControl>
+                  <label
+                    htmlFor="accept-policies"
+                    className="text-xs leading-relaxed text-muted-foreground cursor-pointer select-none"
+                  >
+                    I have read and agree to the{" "}
+                    <a
+                      href="/policies/Kuba_Comprehensive_Service_Provider_Policy.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold text-emerald-600 hover:underline"
+                    >
+                      Comprehensive Service Provider Policy
+                    </a>
+                    ,{" "}
+                    <a
+                      href="/policies/Kuba_Risk_Management_and_Professional_Conduct_Policy.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold text-emerald-600 hover:underline"
+                    >
+                      Risk Management &amp; Professional Conduct Policy
+                    </a>
+                    , and the{" "}
+                    <a
+                      href="/policies/Kuba_Service_Provider_Code_of_Conduct_and_Accountability_Policy.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold text-emerald-600 hover:underline"
+                    >
+                      Code of Conduct &amp; Accountability Policy
+                    </a>
+                    .
+                  </label>
+                </div>
+                <FormMessage className="text-xs pl-7" />
               </FormItem>
             )}
           />

@@ -31,82 +31,82 @@ interface Category extends ServiceCategoryCardData {
   }>;
 }
 
+const CATEGORY_ORDER = [
+  "Cleaning & Maintenance",
+  "Electrical",
+  "Health & Wellness",
+  "Personal & Grooming",
+  "Education & Training",
+  "Food & Hospitality",
+  "Professional Services",
+  "Legal Services",
+  "Technology & IT Services",
+  "HR Services",
+  "Financial Services",
+  "Commercial Real Estate",
+  "Commercial Logistics",
+];
+
 const MAX_SERVICES = 8;
 
 function categoryHref(slug: string) {
   return `/services?category=${encodeURIComponent(slug)}`;
 }
 
-function CategorySlide({ category }: { category: Category }) {
+function CategoryServicesPanel({ category }: { category: Category }) {
   const services = category.services?.slice(0, MAX_SERVICES) ?? [];
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-8 lg:gap-10 items-start">
-      <div
-        className={cn(
-          "w-full [&_a]:block",
-          "[&_article>div:first-child]:aspect-[16/11] [&_article>div:first-child]:max-h-none"
-        )}
-      >
-        <ServiceCategoryCard
-          category={category}
+    <div
+      className={cn(
+        "flex flex-col w-full rounded-[1.75rem]",
+        "border border-border/50 bg-muted/25 dark:bg-muted/15",
+        "p-6 md:p-8 h-full"
+      )}
+    >
+      <div className="flex items-center justify-between gap-4 mb-5 md:mb-6">
+        <h3 className="text-xl md:text-2xl font-bold text-foreground tracking-tight">
+          Services in {category.name}
+        </h3>
+        <Link
           href={categoryHref(category.slug)}
-          layout="grid"
-          className="w-full"
-        />
+          className="text-sm font-semibold text-primary hover:underline shrink-0"
+        >
+          View all
+        </Link>
       </div>
 
-      <div
-        className={cn(
-          "flex flex-col w-full rounded-[1.75rem]",
-          "border border-border/50 bg-muted/25 dark:bg-muted/15",
-          "p-6 md:p-8"
-        )}
-      >
-        <div className="flex items-center justify-between gap-4 mb-5 md:mb-6">
-          <h3 className="text-xl md:text-2xl font-bold text-foreground tracking-tight">
-            Services in this category
-          </h3>
-          <Link
-            href={categoryHref(category.slug)}
-            className="text-sm font-semibold text-primary hover:underline shrink-0"
-          >
-            View all
-          </Link>
-        </div>
+      {services.length > 0 ? (
+        <ul className="divide-y divide-border/40 -mx-1 px-1">
+          {services.map((service) => (
+            <li key={service.id}>
+              <Link
+                href={serviceDetailHref({
+                  ...service,
+                  category_slug: category.slug,
+                } as any)}
+                className="group flex items-center gap-3 py-3 md:py-3.5 text-base"
+              >
+                <span className="min-w-0 flex-1 font-semibold text-foreground group-hover:text-primary transition-colors leading-snug">
+                  {service.name}
+                </span>
+                <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground group-hover:text-primary transition-colors" />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-base text-muted-foreground text-center py-8 px-4 leading-relaxed">
+          Services coming soon in this category.
+        </p>
+      )}
 
-        {services.length > 0 ? (
-          <ul className="divide-y divide-border/40 -mx-1 px-1">
-            {services.map((service) => (
-              <li key={service.id}>
-                <Link
-                  href={serviceDetailHref({
-                    ...service,
-                    category_slug: category.slug,
-                  } as any)}
-                  className="group flex items-center gap-3 py-3 md:py-3.5 text-base"
-                >
-                  <span className="min-w-0 flex-1 font-semibold text-foreground group-hover:text-primary transition-colors leading-snug">
-                    {service.name}
-                  </span>
-                  <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground group-hover:text-primary transition-colors" />
-                </Link>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-base text-muted-foreground text-center py-8 px-4 leading-relaxed">
-            Services coming soon in this category.
-          </p>
-        )}
-
-        <LandingButton asChild variant="secondary" size="sm" className="mt-5 md:mt-6 w-fit">
-          <Link href={categoryHref(category.slug)}>
-            Explore {category.name}
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </LandingButton>
-      </div>
+      <LandingButton asChild variant="secondary" size="sm" className="mt-5 md:mt-6 w-fit mt-auto">
+        <Link href={categoryHref(category.slug)}>
+          Explore {category.name}
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+      </LandingButton>
     </div>
   );
 }
@@ -143,7 +143,15 @@ export function Categories() {
       try {
         const response = await axiosInstance.get("/api/categories");
         const data = response.data.data ?? [];
-        setCategories(data);
+        const sorted = [...data].sort((a, b) => {
+          const indexA = CATEGORY_ORDER.indexOf(a.name);
+          const indexB = CATEGORY_ORDER.indexOf(b.name);
+          if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+          if (indexA !== -1) return -1;
+          if (indexB !== -1) return 1;
+          return a.name.localeCompare(b.name);
+        });
+        setCategories(sorted);
         setSlideIndex(0);
       } catch (error) {
         console.error("Failed to fetch categories:", error);
@@ -187,46 +195,40 @@ export function Categories() {
             No categories available yet.
           </p>
         ) : (
-          <div className="w-full">
-            <div className="relative w-full overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-start w-full">
+            <div className="lg:col-span-1 space-y-1 max-h-[500px] overflow-y-auto pr-2 subtle-scroll">
+              {categories.map((category, idx) => (
+                <button
+                  key={category.id}
+                  onClick={() => setSlideIndex(idx)}
+                  className={cn(
+                    "w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border",
+                    idx === slideIndex
+                      ? "bg-primary text-primary-foreground border-primary shadow-md"
+                      : "bg-background hover:bg-muted border-border text-foreground hover:border-primary/30"
+                  )}
+                >
+                  {category.name}
+                </button>
+              ))}
+            </div>
+
+            <div className="lg:col-span-2 h-full">
               <AnimatePresence mode="wait" initial={false}>
                 {activeCategory && (
                   <motion.div
                     key={activeCategory.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.35, ease: "easeInOut" }}
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="h-full"
                   >
-                    <CategorySlide category={activeCategory} />
+                    <CategoryServicesPanel category={activeCategory} />
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
-
-            {slideCount > 1 && (
-              <div className="flex items-center justify-center gap-4 mt-10 md:mt-12">
-                <button
-                  type="button"
-                  onClick={goPrev}
-                  className="h-10 w-10 rounded-full border border-border bg-background hover:bg-muted flex items-center justify-center transition-colors"
-                  aria-label="Previous category"
-                >
-                  <ChevronLeft className="h-5 w-5" />
-                </button>
-                <span className="text-xs font-semibold text-muted-foreground tabular-nums min-w-[4rem] text-center">
-                  {slideIndex + 1} / {slideCount}
-                </span>
-                <button
-                  type="button"
-                  onClick={goNext}
-                  className="h-10 w-10 rounded-full border border-border bg-background hover:bg-muted flex items-center justify-center transition-colors"
-                  aria-label="Next category"
-                >
-                  <ChevronRight className="h-5 w-5" />
-                </button>
-              </div>
-            )}
           </div>
         )}
 
