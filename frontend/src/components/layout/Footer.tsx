@@ -161,27 +161,36 @@ export function Footer() {
           </div>
         </div>
 
-        <div className={footerUi.bottomBar}>
-          <p>Copyright © {year} Kuba Platform Inc. All rights reserved.</p>
-          <p>
+        <div className={cn(footerUi.bottomBar, "flex flex-col md:flex-row items-center justify-between gap-4")}>
+          <p className="text-center md:text-left">Copyright © {year} Kuba Platform Inc. All rights reserved.</p>
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm text-center">
             <a
-              href="/policies/Kuba_Legal_Pack.pdf"
+              href="/policies/Kuba_Comprehensive_Service_Provider_Policy.pdf"
               target="_blank"
               rel="noopener noreferrer"
               className={footerUi.bottomLink}
             >
-              Privacy Policy
+              Comprehensive Service Provider Policy
             </a>
-            {" & "}
+            <span className="hidden xl:inline text-muted-foreground/40">|</span>
             <a
-              href="/policies/Kuba_User_Terms_and_Conditions.pdf"
+              href="/policies/Kuba_Risk_Management_and_Professional_Conduct_Policy.pdf"
               target="_blank"
               rel="noopener noreferrer"
               className={footerUi.bottomLink}
             >
-              Terms of Use
+              Risk Management & Professional Conduct
             </a>
-          </p>
+            <span className="hidden xl:inline text-muted-foreground/40">|</span>
+            <a
+              href="/policies/Kuba_Service_Provider_Code_of_Conduct_and_Accountability_Policy.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={footerUi.bottomLink}
+            >
+              Code of Conduct & Accountability
+            </a>
+          </div>
         </div>
 
         <p className="text-center text-xs text-muted-foreground/80 mt-6">
