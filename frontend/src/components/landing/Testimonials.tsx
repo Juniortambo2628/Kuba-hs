@@ -128,9 +128,10 @@ export function Testimonials() {
           transition={{ duration: 0.6, delay: 0.2 }}
         >
           {isLoading ? (
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-3 gap-6">
               <Skeleton className="h-[420px] rounded-[2rem]" />
               <Skeleton className="h-[420px] rounded-[2rem] hidden md:block" />
+              <Skeleton className="h-[420px] rounded-[2rem] hidden lg:block" />
             </div>
           ) : (
             <Carousel opts={{ align: "start", loop: testimonials.length > 1 }} className="w-full">
@@ -138,7 +139,7 @@ export function Testimonials() {
                 {testimonials.map((testimonial) => (
                   <CarouselItem
                     key={testimonial.id}
-                    className="pl-4 md:pl-6 basis-full md:basis-1/2"
+                    className="pl-4 md:pl-6 basis-full md:basis-1/2 lg:basis-1/3"
                   >
                     <TestimonialCard testimonial={testimonial} />
                   </CarouselItem>
