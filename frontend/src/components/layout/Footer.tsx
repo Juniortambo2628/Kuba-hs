@@ -190,6 +190,33 @@ export function Footer() {
             >
               Code of Conduct & Accountability
             </a>
+            <span className="hidden xl:inline text-muted-foreground/40">|</span>
+            <a
+              href="/policies/Kuba_Legal_Pack_(Dated-130626).pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={footerUi.bottomLink}
+            >
+              Legal Pack
+            </a>
+            <span className="hidden xl:inline text-muted-foreground/40">|</span>
+            <a
+              href="/policies/Kuba_Service_Provider_Agreement_(Dated-130626).pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={footerUi.bottomLink}
+            >
+              Service Provider Agreement
+            </a>
+            <span className="hidden xl:inline text-muted-foreground/40">|</span>
+            <a
+              href="/policies/Kuba_User_Terms_and_Conditions_(Dated-130626).pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={footerUi.bottomLink}
+            >
+              User Terms & Conditions
+            </a>
           </div>
         </div>
 
