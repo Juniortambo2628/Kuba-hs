@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\Address;
 use App\Models\Booking;
@@ -10,12 +11,13 @@ use App\Models\Provider;
 use App\Models\ProviderService;
 use App\Models\Service;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardSearchController extends Controller
 {
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): JsonResponse
     {
         $user = Auth::user();
         $q = trim((string) ($request->query('search') ?? $request->query('q') ?? ''));
@@ -24,17 +26,17 @@ class DashboardSearchController extends Controller
             return response()->json(['data' => []]);
         }
 
-        $like = '%' . $q . '%';
+        $like = '%'.$q.'%';
         $results = [];
 
-        if ($user->role === 'customer') {
+        if ($user->role === UserRole::Customer) {
             $results = array_merge(
                 $results,
                 $this->searchClientBookings($user->id, $like, $q),
                 $this->searchClientAddresses($user->id, $like),
                 $this->searchClientPayments($user->id, $like)
             );
-        } elseif ($user->role === 'provider') {
+        } elseif ($user->role === UserRole::Provider) {
             $provider = $user->ensureProviderProfile();
             if ($provider) {
                 $results = array_merge(
@@ -43,7 +45,7 @@ class DashboardSearchController extends Controller
                     $this->searchProviderServices($provider->id, $like)
                 );
             }
-        } elseif ($user->role === 'admin') {
+        } elseif ($user->role === UserRole::Admin) {
             $results = array_merge(
                 $results,
                 $this->searchAdminUsers($like, $q),
@@ -61,7 +63,7 @@ class DashboardSearchController extends Controller
         return Booking::query()
             ->where('customer_id', $userId)
             ->with('service')
-            ->where(function ($query) use ($like, $q) {
+            ->where(function ($query) use ($like) {
                 $query->where('booking_number', 'like', $like)
                     ->orWhere('id', 'like', $like)
                     ->orWhereHas('service', fn ($sq) => $sq->where('name', 'like', $like));
@@ -70,10 +72,10 @@ class DashboardSearchController extends Controller
             ->limit(5)
             ->get()
             ->map(fn (Booking $b) => [
-                'id' => 'booking-' . $b->id,
+                'id' => 'booking-'.$b->id,
                 'title' => $b->service?->name ?? 'Booking',
-                'description' => '#' . ($b->booking_number ?? $b->id),
-                'url' => '/dashboard/client/bookings?search=' . urlencode($q),
+                'description' => '#'.($b->booking_number ?? $b->id),
+                'url' => '/dashboard/client/bookings?search='.urlencode($q),
                 'category' => 'Bookings',
             ])
             ->all();
@@ -92,10 +94,10 @@ class DashboardSearchController extends Controller
             ->limit(5)
             ->get()
             ->map(fn (Address $a) => [
-                'id' => 'address-' . $a->id,
+                'id' => 'address-'.$a->id,
                 'title' => $a->street_address,
                 'description' => trim("{$a->city}, {$a->state}"),
-                'url' => '/dashboard/client/services?search=' . urlencode($a->street_address),
+                'url' => '/dashboard/client/services?search='.urlencode($a->street_address),
                 'category' => 'Addresses',
             ])
             ->all();
@@ -121,10 +123,10 @@ class DashboardSearchController extends Controller
                 $serviceName = $p->booking?->service?->name ?? 'Payment';
 
                 return [
-                    'id' => 'payment-' . $p->id,
+                    'id' => 'payment-'.$p->id,
                     'title' => $serviceName,
-                    'description' => $p->transaction_id ?? ('KES ' . number_format((float) $p->amount, 0)),
-                    'url' => '/dashboard/client/billing?search=' . urlencode($serviceName),
+                    'description' => $p->transaction_id ?? ('KES '.number_format((float) $p->amount, 0)),
+                    'url' => '/dashboard/client/billing?search='.urlencode($serviceName),
                     'category' => 'Billing',
                 ];
             })
@@ -149,10 +151,10 @@ class DashboardSearchController extends Controller
             ->limit(5)
             ->get()
             ->map(fn (Booking $b) => [
-                'id' => 'booking-' . $b->id,
+                'id' => 'booking-'.$b->id,
                 'title' => $b->service?->name ?? 'Job',
-                'description' => ($b->customer?->name ?? 'Client') . ' · #' . ($b->booking_number ?? $b->id),
-                'url' => '/dashboard/provider/bookings?search=' . urlencode($q),
+                'description' => ($b->customer?->name ?? 'Client').' · #'.($b->booking_number ?? $b->id),
+                'url' => '/dashboard/provider/bookings?search='.urlencode($q),
                 'category' => 'Bookings',
             ])
             ->all();
@@ -170,10 +172,10 @@ class DashboardSearchController extends Controller
                 $name = $ps->service?->name ?? 'Service';
 
                 return [
-                    'id' => 'offering-' . $ps->id,
+                    'id' => 'offering-'.$ps->id,
                     'title' => $name,
                     'description' => $ps->service?->category?->name ?? 'Your offering',
-                    'url' => '/dashboard/provider/services?search=' . urlencode($name),
+                    'url' => '/dashboard/provider/services?search='.urlencode($name),
                     'category' => 'Services',
                 ];
             })
@@ -193,10 +195,10 @@ class DashboardSearchController extends Controller
             ->limit(5)
             ->get()
             ->map(fn (User $u) => [
-                'id' => 'user-' . $u->id,
+                'id' => 'user-'.$u->id,
                 'title' => $u->name ?: trim("{$u->first_name} {$u->last_name}"),
-                'description' => $u->email . ' · ' . $u->role,
-                'url' => '/admin/users?search=' . urlencode($q),
+                'description' => $u->email.' · '.$u->role,
+                'url' => '/admin/users?search='.urlencode($q),
                 'category' => 'Users',
             ])
             ->all();
@@ -219,10 +221,10 @@ class DashboardSearchController extends Controller
             ->limit(5)
             ->get()
             ->map(fn (Booking $b) => [
-                'id' => 'booking-' . $b->id,
+                'id' => 'booking-'.$b->id,
                 'title' => $b->service?->name ?? 'Booking',
-                'description' => ($b->customer?->name ?? 'Client') . ' · #' . ($b->booking_number ?? $b->id),
-                'url' => '/admin/bookings?search=' . urlencode($q),
+                'description' => ($b->customer?->name ?? 'Client').' · #'.($b->booking_number ?? $b->id),
+                'url' => '/admin/bookings?search='.urlencode($q),
                 'category' => 'Bookings',
             ])
             ->all();
@@ -245,10 +247,10 @@ class DashboardSearchController extends Controller
             ->limit(5)
             ->get()
             ->map(fn (Provider $p) => [
-                'id' => 'provider-' . $p->id,
+                'id' => 'provider-'.$p->id,
                 'title' => $p->business_name,
                 'description' => $p->location_name ?? ($p->user?->email ?? 'Provider'),
-                'url' => '/admin/providers?search=' . urlencode($q),
+                'url' => '/admin/providers?search='.urlencode($q),
                 'category' => 'Providers',
             ])
             ->all();
@@ -262,10 +264,10 @@ class DashboardSearchController extends Controller
             ->limit(5)
             ->get()
             ->map(fn (Service $s) => [
-                'id' => 'service-' . $s->id,
+                'id' => 'service-'.$s->id,
                 'title' => $s->name,
                 'description' => $s->category?->name ?? 'Catalog service',
-                'url' => '/admin/categories?search=' . urlencode($s->name),
+                'url' => '/admin/categories?search='.urlencode($s->name),
                 'category' => 'Services',
             ])
             ->all();

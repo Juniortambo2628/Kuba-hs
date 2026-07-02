@@ -4,20 +4,20 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\TrustPartner;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Cache;
-
-
 
 class TrustPartnerController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
-        return response()->json(TrustPartner::orderBy('name')->get());
+        $partners = TrustPartner::latest()->paginate(20);
+
+        return response()->json($partners);
     }
 
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -27,16 +27,17 @@ class TrustPartnerController extends Controller
 
         $partner = TrustPartner::create($validated);
         Cache::forget('api_trust_partners');
+
         return response()->json($partner, 201);
 
     }
 
-    public function show(TrustPartner $trustPartner)
+    public function show(TrustPartner $trustPartner): JsonResponse
     {
         return response()->json($trustPartner);
     }
 
-    public function update(Request $request, TrustPartner $trustPartner)
+    public function update(Request $request, TrustPartner $trustPartner): JsonResponse
     {
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255',
@@ -46,15 +47,16 @@ class TrustPartnerController extends Controller
 
         $trustPartner->update($validated);
         Cache::forget('api_trust_partners');
+
         return response()->json($trustPartner);
 
     }
 
-    public function destroy(TrustPartner $trustPartner)
+    public function destroy(TrustPartner $trustPartner): JsonResponse
     {
         $trustPartner->delete();
         Cache::forget('api_trust_partners');
+
         return response()->json(['message' => 'Partner removed successfully.']);
     }
-
 }

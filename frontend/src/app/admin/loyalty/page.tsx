@@ -29,7 +29,7 @@ import { DashboardDataCard } from "@/components/shared/DashboardTable";
 import { dashboardUi } from "@/lib/dashboard-ui";
 import { uiPrimitives } from "@/lib/ui-primitives";
 import { cn } from "@/lib/utils";
-import { useApiData } from "@/hooks/useApiData";
+import { useData } from "@/hooks/useData";
 
 interface Tier {
  id: number;
@@ -50,12 +50,12 @@ interface Transaction {
 
 export default function AdminLoyalty() {
   const [ledgerPage, setLedgerPage] = useState(1);
-  const { data: tiers, isLoading: tiersLoading, refetch: fetchTiers } = useApiData<Tier[]>("/api/admin/loyalty/tiers", { initialData: [] });
-  const { data: transData, isLoading: transLoading, refetch: refetchTransactions } = useApiData<any>(
+  const { data: tiers, isLoading: tiersLoading, refetch: fetchTiers } = useData<Tier[]>("/api/admin/loyalty/tiers", { initialData: [] });
+  const { data: transData, isLoading: transLoading, refetch: refetchTransactions } = useData<any>(
     `/api/admin/loyalty/transactions?page=${ledgerPage}`,
     { initialData: null, preserveEnvelope: true }
   );
-  const { data: clientUsers } = useApiData<{ id: string; name: string; email: string }[]>(
+  const { data: clientUsers } = useData<{ id: string; name: string; email: string }[]>(
     "/api/admin/users?role=client&per_page=100",
     { initialData: [] }
   );

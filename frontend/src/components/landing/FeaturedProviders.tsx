@@ -1,8 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import axiosInstance from "@/lib/axios";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,13 +17,17 @@ import {
   landingTitleParts,
   LandingGradientTitle,
 } from "@/lib/landing-section-header-copy";
+import { useLandingFetch } from "@/hooks/useLandingFetch";
+import { LandingSectionFooter } from "@/components/shared/LandingSectionFooter";
 
 const PREVIEW_LIMIT = 3;
 
 export function FeaturedProviders() {
   const { getS } = useCMS();
-  const [providers, setProviders] = useState<Provider[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: allProviders, isLoading } = useLandingFetch<Provider>("/api/search");
+  const providers = allProviders
+    .sort((a, b) => (b.rating || 0) - (a.rating || 0))
+    .slice(0, PREVIEW_LIMIT);
 
   const providersTitle = getS(
     "landing_sections",
@@ -36,23 +38,6 @@ export function FeaturedProviders() {
     providersTitle,
     "Professionals"
   );
-
-  useEffect(() => {
-    const fetchProviders = async () => {
-      try {
-        const response = await axiosInstance.get("/api/search");
-        const sorted = [...response.data.data].sort(
-          (a: Provider, b: Provider) => (b.rating || 0) - (a.rating || 0)
-        );
-        setProviders(sorted.slice(0, PREVIEW_LIMIT));
-      } catch (error) {
-        console.error("Failed to fetch featured providers:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchProviders();
-  }, []);
 
   return (
     <FavoritesProvider>
@@ -94,14 +79,7 @@ export function FeaturedProviders() {
           </div>
         </motion.div>
 
-        <div className="mt-12 flex justify-center">
-          <LandingButton asChild variant="secondary" size="md">
-            <Link href="/providers">
-              View all professionals
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </LandingButton>
-        </div>
+        <LandingSectionFooter href="/providers" label="View all professionals" />
     </LandingSection>
     </FavoritesProvider>
   );

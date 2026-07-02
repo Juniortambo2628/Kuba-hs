@@ -3,23 +3,24 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Payment;
 use App\Http\Resources\PaymentResource;
+use App\Models\Payment;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class PaymentController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $query = Payment::with(['customer', 'provider.user', 'booking.service']);
 
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where('transaction_id', 'like', "%{$search}%")
-                  ->orWhereHas('customer', function($q) use ($search) {
-                      $q->where('first_name', 'like', "%{$search}%")
-                          ->orWhere('last_name', 'like', "%{$search}%");
-                  });
+                ->orWhereHas('customer', function ($q) use ($search) {
+                    $q->where('first_name', 'like', "%{$search}%")
+                        ->orWhere('last_name', 'like', "%{$search}%");
+                });
         }
 
         if ($request->filled('status')) {
@@ -42,7 +43,7 @@ class PaymentController extends Controller
         ]);
     }
 
-    public function show(Payment $payment)
+    public function show(Payment $payment): JsonResponse
     {
         $payment->load([
             'customer',

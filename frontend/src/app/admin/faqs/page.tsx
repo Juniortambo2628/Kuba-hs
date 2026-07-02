@@ -27,8 +27,8 @@ import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
 import { DashboardListToolbar } from "@/components/shared/DashboardListToolbar";
 import { FaqFormDialog } from "@/components/admin/FaqFormDialog";
 import { Badge } from "@/components/ui/badge";
-import { useApiData } from "@/hooks/useApiData";
-import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { useData } from "@/hooks/useData";
+import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
 import { toast } from "sonner";
 import Image from "next/image";
 
@@ -42,12 +42,13 @@ interface FAQ {
 }
 
 function FAQManagementContent() {
-  const { data: faqs, isLoading, refetch: fetchFaqs, setData: setFaqs } = useApiData<FAQ[]>('/api/admin/faqs', { initialData: [] });
+  const { data: faqs, isLoading, refetch: fetchFaqs, setData: setFaqs } = useData<FAQ[]>('/api/admin/faqs', { initialData: [] });
   
   const [editingFaq, setEditingFaq] = useState<FAQ | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const { search, status: statusFilter, setStatus: setStatusFilter } = useSearchState();
   const [viewMode, setViewMode] = useState<'grid'|'list'|'order'>('list');
+  const [deleteId, setDeleteId] = useState<number | null>(null);
 
   const handleDelete = async (id: number) => {
     try {
@@ -336,16 +337,9 @@ function FAQManagementContent() {
                           <Button variant="ghost" size="icon" onClick={() => startEdit(faq)} className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50">
                             <Edit className="w-4 h-4" />
                           </Button>
-                           <ConfirmDeleteDialog
-                             trigger={
-                               <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-600 hover:text-rose-700 hover:bg-rose-50">
-                                 <Trash2 className="w-4 h-4" />
-                               </Button>
-                             }
-                             title="Purge FAQ Entry?"
-                             description="This will permanently remove this question from the platform registry. This action cannot be undone."
-                             onConfirm={() => handleDelete(faq.id)}
-                           />
+                           <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-600 hover:text-rose-700 hover:bg-rose-50" onClick={() => setDeleteId(faq.id)}>
+                              <Trash2 className="w-4 h-4" />
+                           </Button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -396,16 +390,9 @@ function FAQManagementContent() {
                             <Button variant="outline" size="sm" onClick={() => startEdit(faq)} className="h-8 text-[10px] font-bold px-3">
                                 Edit
                             </Button>
-                             <ConfirmDeleteDialog
-                               trigger={
-                                 <Button variant="ghost" size="sm" className="h-8 text-[10px] font-bold px-3 text-rose-500 hover:text-rose-600 hover:bg-rose-50">
-                                     Remove
-                                 </Button>
-                               }
-                               title="Remove FAQ?"
-                               description="Are you sure you want to delete this entry?"
-                               onConfirm={() => handleDelete(faq.id)}
-                             />
+                             <Button variant="ghost" size="sm" className="h-8 text-[10px] font-bold px-3 text-rose-500 hover:text-rose-600 hover:bg-rose-50" onClick={() => setDeleteId(faq.id)}>
+                                 Remove
+                             </Button>
                         </div>
                     </CardContent>
                 </Card>
@@ -431,6 +418,13 @@ function FAQManagementContent() {
             : { order: faqs.length }
         }
         onSuccess={fetchFaqs}
+      />
+      <AppConfirmDialog
+        open={deleteId !== null}
+        onOpenChange={() => setDeleteId(null)}
+        onConfirm={async () => { if (deleteId !== null) { await handleDelete(deleteId); setDeleteId(null); } }}
+        title="Purge FAQ Entry?"
+        description="This will permanently remove this question from the platform registry. This action cannot be undone."
       />
     </DashboardPageContainer>
   );

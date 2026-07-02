@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
 
 class BlogPost extends Model implements \Spatie\MediaLibrary\HasMedia
 {
@@ -17,6 +17,10 @@ class BlogPost extends Model implements \Spatie\MediaLibrary\HasMedia
         'image',
         'is_published',
         'author_id',
+    ];
+
+    protected $casts = [
+        'is_published' => 'boolean',
     ];
 
     protected $appends = ['image_url'];

@@ -12,7 +12,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { BookingDetailDialog } from "@/components/booking/BookingDetailDialog";
 import { BookingCard } from "@/components/shared/BookingCard";
-import { DashboardEmptyState } from "@/components/shared/DashboardEmptyState";
+import { EmptyState } from "@/components/shared/ui/EmptyState";
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
 import {
   DashboardGreetingBar,
@@ -20,10 +20,10 @@ import {
   DashboardFrostedStatGrid,
   DashboardPanelCard,
 } from "@/components/dashboard/workspace";
-import { workspaceUi } from "@/lib/dashboard-workspace-ui";
+import { workspaceUi } from "@/lib/dashboard-ui";
 
 import { Booking, User, LoyaltyTier } from "@/types";
-import { unwrapResourceList } from "@/lib/api-resource";
+import { extractApiList } from "@/lib/api-response";
 
 interface ClientStats {
   total_bookings: number;
@@ -46,7 +46,7 @@ export default function ClientOverview() {
   );
 
   const stats = data?.stats || null;
-  const upcoming = unwrapResourceList<Booking>(data?.upcoming_bookings);
+  const upcoming = extractApiList(data?.upcoming_bookings);
   const isLoading = authLoading || isDashboardLoading;
 
   const fetchDashboardData = async () => {
@@ -189,7 +189,8 @@ export default function ClientOverview() {
                 />
               ))
           ) : (
-            <DashboardEmptyState
+            <EmptyState
+              variant="dashboard"
               icon={Briefcase}
               title="No upcoming bookings"
               description="Browse services and book your first appointment."
@@ -197,7 +198,7 @@ export default function ClientOverview() {
                 <Button asChild className="rounded-full mt-4">
                   <Link href="/services">Browse services</Link>
                 </Button>
-            </DashboardEmptyState>
+            </EmptyState>
           )}
         </div>
 

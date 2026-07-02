@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\InvestorInquiryStatus;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -16,5 +17,9 @@ class InvestorInquiry extends Model
         'investment_range',
         'message',
         'status',
+    ];
+
+    protected $casts = [
+        'status' => InvestorInquiryStatus::class,
     ];
 }

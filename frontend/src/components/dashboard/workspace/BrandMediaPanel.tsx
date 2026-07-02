@@ -2,7 +2,7 @@
 
 import { ReactNode } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { workspaceUi } from "@/lib/dashboard-workspace-ui";
+import { workspaceUi } from "@/lib/dashboard-ui";
 import { cn } from "@/lib/utils";
 
 interface BrandMediaPanelProps {

@@ -12,6 +12,7 @@ import { MarketingSection } from "@/components/shared/MarketingSection";
 import { FeatureCardGrid } from "@/components/shared/FeatureCardGrid";
 import { CTABanner } from "@/components/shared/CTABanner";
 import Image from "next/image";
+import { FALLBACK_IMAGES } from "@/lib/fallback-images";
 
 export default function CommercialPage() {
   const { getS, getImg } = useCMS();
@@ -69,7 +70,7 @@ export default function CommercialPage() {
           >
             <div className="aspect-[4/3] rounded-[3rem] overflow-hidden bg-muted shadow-2xl relative">
               <Image 
-                src={getImg('market_narratives', 'commercial_thesis_image', 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&q=80')} 
+                src={getImg('market_narratives', 'commercial_thesis_image', FALLBACK_IMAGES.office)} 
                 fill
                 className="object-cover" 
                 alt="Commercial Excellence" 

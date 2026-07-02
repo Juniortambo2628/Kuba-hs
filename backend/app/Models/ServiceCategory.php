@@ -7,13 +7,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
 class ServiceCategory extends Model implements HasMedia
 {
-    use HasFactory, HasUuids, InteractsWithMedia;
+    use HasFactory, HasUuids, InteractsWithMedia, SoftDeletes;
 
     protected $fillable = [
         'name',
@@ -23,6 +23,10 @@ class ServiceCategory extends Model implements HasMedia
         'icon_url',
         'image_url',
         'sort_order',
+    ];
+
+    protected $casts = [
+        'sort_order' => 'integer',
     ];
 
     protected $appends = ['dynamic_icon_url', 'slug'];
@@ -48,7 +52,7 @@ class ServiceCategory extends Model implements HasMedia
 
     public static function isMediaPathOrUrl(?string $value): bool
     {
-        if (!$value) {
+        if (! $value) {
             return false;
         }
         $value = trim($value);
@@ -67,9 +71,6 @@ class ServiceCategory extends Model implements HasMedia
         return $this->belongsTo(ServiceCategory::class, 'parent_category_id');
     }
 
-    /**
-     * @return HasMany
-     */
     public function children(): HasMany
     {
         return $this->hasMany(ServiceCategory::class, 'parent_category_id')->orderBy('sort_order');

@@ -3,15 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
-use Illuminate\Http\Request;
-
 use App\Http\Resources\UserResource;
+use App\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $query = User::query();
 
@@ -21,10 +21,10 @@ class UserController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function(\Illuminate\Database\Eloquent\Builder $q) use ($search) {
+            $query->where(function (\Illuminate\Database\Eloquent\Builder $q) use ($search) {
                 $q->where('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -37,13 +37,11 @@ class UserController extends Controller
         }
 
         return UserResource::collection(
-            $query->latest()->paginate(20)->withQueryString()
+            $query->with('loyaltyPoints')->latest()->paginate(20)->withQueryString()
         );
     }
 
-
-
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -59,20 +57,18 @@ class UserController extends Controller
         unset($validated['name']);
 
         $validated['password'] = bcrypt($validated['password']);
-        
+
         $user = User::create($validated);
 
         return new UserResource($user);
     }
 
-    public function show(User $user)
+    public function show(User $user): JsonResponse
     {
         return new UserResource($user);
     }
 
-
-
-    public function update(Request $request, User $user)
+    public function update(Request $request, User $user): JsonResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -86,20 +82,20 @@ class UserController extends Controller
         $user->first_name = $names[0];
         $user->last_name = $names[1] ?? '';
 
-        if (!empty($validated['password'])) {
+        if (! empty($validated['password'])) {
             $user->password = bcrypt($validated['password']);
         }
 
         $user->email = $validated['email'];
         $user->role = $validated['role'];
         $user->is_active = $validated['is_active'] ?? $user->is_active;
-        
+
         $user->save();
 
         return new UserResource($user);
     }
 
-    public function destroy(User $user)
+    public function destroy(User $user): JsonResponse
     {
         // Prevent deleting self
         if ($user->id === auth()->id()) {
@@ -111,10 +107,10 @@ class UserController extends Controller
         return response()->json(['message' => 'User deleted successfully.']);
     }
 
-    public function toggleStatus(User $user)
+    public function toggleStatus(User $user): JsonResponse
     {
         $user->update([
-            'is_active' => !$user->is_active
+            'is_active' => ! $user->is_active,
         ]);
 
         return new UserResource($user);

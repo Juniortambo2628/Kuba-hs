@@ -16,7 +16,7 @@ import {
   ClientAddressCard,
 } from "@/components/dashboard/workspace";
 import { AddressFormDialog } from "@/components/dashboard/AddressFormDialog";
-import { workspaceUi } from "@/lib/dashboard-workspace-ui";
+import { workspaceUi } from "@/lib/dashboard-ui";
 import { cn } from "@/lib/utils";
 import { useSearchState } from "@/hooks/useSearchState";
 import { DashboardSuspenseFallback } from "@/components/shared/DashboardSuspenseFallback";

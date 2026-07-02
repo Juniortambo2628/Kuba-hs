@@ -1,15 +1,9 @@
 import { getAvatarDisplayUrl } from "@/lib/avatar-url";
+import { extractApiList } from "@/lib/api-response";
 import type { Conversation, Message, User } from "@/types";
 
-/** Laravel resource collections may nest under `data`. */
-export function unwrapResourceList<T>(payload: unknown): T[] {
-  if (Array.isArray(payload)) return payload;
-  if (payload && typeof payload === "object" && "data" in payload) {
-    const inner = (payload as { data: unknown }).data;
-    return Array.isArray(inner) ? (inner as T[]) : [];
-  }
-  return [];
-}
+/** @deprecated Use extractApiList from "@/lib/api-response" directly. */
+export const unwrapResourceList = extractApiList;
 
 export function unwrapResource<T>(payload: unknown): T | null {
   if (!payload || typeof payload !== "object") return null;

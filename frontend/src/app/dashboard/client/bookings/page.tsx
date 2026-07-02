@@ -25,20 +25,20 @@ import {
   DashboardFrostedStatCard,
   DashboardFrostedStatGrid,
 } from "@/components/dashboard/workspace";
-import { workspaceUi } from "@/lib/dashboard-workspace-ui";
+import { workspaceUi } from "@/lib/dashboard-ui";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { DashboardListToolbar } from "@/components/shared/DashboardListToolbar";
 import { useSearchState } from "@/hooks/useSearchState";
 import { DashboardSuspenseFallback } from "@/components/shared/DashboardSuspenseFallback";
-import { BookingStatusBadge } from "@/components/shared/BookingStatusBadge";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 import { BookingCard } from "@/components/shared/BookingCard";
-import { DashboardEmptyState } from "@/components/shared/DashboardEmptyState";
+import { EmptyState } from "@/components/shared/ui/EmptyState";
 import { BookingDetailDialog } from "@/components/booking/BookingDetailDialog";
 import { ClientBookingActions } from "@/components/bookings/ClientBookingActions";
 import { Booking } from "@/types";
-import { unwrapResourceList } from "@/lib/api-resource";
+import { extractApiList } from "@/lib/api-response";
 
 function ClientBookingsContent() {
   const router = useRouter();
@@ -57,7 +57,7 @@ function ClientBookingsContent() {
     { dedupingInterval: 500 }
   );
 
-  const bookings = unwrapResourceList<Booking>(bookingsData);
+  const bookings = extractApiList(bookingsData);
   const isLoading = authLoading || isBookingsLoading;
 
   const openBooking = useCallback((booking: Booking) => {
@@ -87,8 +87,8 @@ function ClientBookingsContent() {
       await axiosInstance.patch(`/api/bookings/${bookingId}/status`, payload);
       toast.success(nextStatus === "cancelled" ? "Booking cancelled" : `Booking ${nextStatus}`);
       const fresh = await mutateBookings();
-      const list = unwrapResourceList<Booking>(fresh);
-      const updated = list.find((b) => b.id === bookingId);
+      const list = extractApiList<Booking>(fresh);
+      const updated = list.find((b: Booking) => b.id === bookingId);
       if (updated) setSelectedBooking(updated);
       else if (selectedBooking?.id === bookingId) {
         setSelectedBooking({ ...selectedBooking, status: nextStatus });
@@ -212,14 +212,15 @@ function ClientBookingsContent() {
               {bookings.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="p-0">
-                    <DashboardEmptyState
+                    <EmptyState
+                      variant="dashboard"
                       title="No bookings found in your history"
                       className="min-h-[400px]"
                     >
                       <Button asChild className="rounded-full">
                         <Link href="/services">Browse services</Link>
                       </Button>
-                    </DashboardEmptyState>
+                    </EmptyState>
                   </TableCell>
                 </TableRow>
               ) : (
@@ -258,7 +259,7 @@ function ClientBookingsContent() {
                       KES {Number(booking.estimated_price ?? 0).toLocaleString()}
                     </TableCell>
                     <TableCell className="py-6">
-                      <BookingStatusBadge status={booking.status} />
+                      <StatusBadge status={booking.status} type="booking" />
                     </TableCell>
                     <TableCell
                       className="pr-10 py-6 text-right"
@@ -282,7 +283,8 @@ function ClientBookingsContent() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {bookings.length === 0 ? (
-            <DashboardEmptyState
+            <EmptyState
+              variant="dashboard"
               title="No bookings found"
               className="col-span-full h-48"
             />

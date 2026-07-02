@@ -5,7 +5,7 @@ import { Calendar, MapPin, Clock, User as UserIcon, Briefcase, Building2, Factor
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BookingStatusBadge } from "./BookingStatusBadge";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { getBookingStatusAccentClass } from "@/lib/status-styles";
@@ -88,7 +88,7 @@ export function BookingCard({
                   </Badge>
                 )}
               </div>
-              <BookingStatusBadge status={booking.status} />
+              <StatusBadge status={booking.status} type="booking" />
             </div>
 
             {/* Service Info */}
@@ -145,7 +145,6 @@ export function BookingCard({
           {/* Optional Content */}
           {showProgress && (
             <div className="px-6 py-4 -mx-8 bg-muted/30 border-y border-border/50">
-              {/* This assumes a BookingProgressTracker component exists or is passed as children */}
               <p className="text-[9px] font-bold text-muted-foreground text-center">Progress Tracking Enabled</p>
             </div>
           )}

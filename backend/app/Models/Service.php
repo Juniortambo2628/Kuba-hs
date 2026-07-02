@@ -7,13 +7,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Scout\Searchable;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
-use Laravel\Scout\Searchable;
 
 class Service extends Model implements HasMedia
 {
-    use HasFactory, HasUuids, InteractsWithMedia, Searchable;
+    use HasFactory, HasUuids, InteractsWithMedia, Searchable, SoftDeletes;
 
     protected $fillable = [
         'category_id',
@@ -54,10 +55,9 @@ class Service extends Model implements HasMedia
             return $this->where($this->getRouteKeyName(), $value)->first();
         }
 
-        return static::query()
-            ->where('is_active', true)
-            ->get()
-            ->first(fn (self $service) => \Illuminate\Support\Str::slug($service->name) === $value);
+        return $this->where('is_active', true)
+            ->whereRaw('LOWER(REPLACE(name, " ", "-")) = ?', [$value])
+            ->first();
     }
 
     public function category(): BelongsTo

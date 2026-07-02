@@ -2,34 +2,37 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\BookingPaymentStatus;
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\Response;
 
 class InvoiceController extends Controller
 {
     /**
      * Download the invoice for a specific booking.
      */
-    public function download(Request $request, $bookingId)
+    public function download(Request $request, $bookingId): Response
     {
         $user = $request->user();
-        
+
         $booking = Booking::with(['customer', 'provider.user', 'service', 'payment'])
             ->findOrFail($bookingId);
 
         // Authorization: Only the customer or provider of this booking can download
         if ($user->id !== $booking->customer_id && ($booking->provider && $user->id !== $booking->provider->user_id)) {
             // Check if admin
-            if ($user->role !== 'admin') {
+            if ($user->role !== UserRole::Admin) {
                 return response()->json(['message' => 'Unauthorized.'], 403);
             }
         }
 
         // Must be paid to have an invoice
-        if ($booking->payment_status !== 'paid' || !$booking->payment) {
+        if ($booking->payment_status !== BookingPaymentStatus::Paid || ! $booking->payment) {
             return response()->json(['message' => 'Invoice is only available for paid bookings.'], 400);
         }
 
@@ -44,11 +47,12 @@ class InvoiceController extends Controller
             ];
 
             $pdf = Pdf::loadView('invoices.booking', $data);
-            
-            return $pdf->download('invoice-' . $booking->booking_number . '.pdf');
-            
+
+            return $pdf->download('invoice-'.$booking->booking_number.'.pdf');
+
         } catch (\Exception $e) {
-            Log::error("Invoice Generation Error: " . $e->getMessage());
+            Log::error('Invoice Generation Error: '.$e->getMessage());
+
             return response()->json(['message' => 'Failed to generate invoice.'], 500);
         }
     }

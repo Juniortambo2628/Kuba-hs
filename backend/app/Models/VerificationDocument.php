@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\VerificationDocumentStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,23 +22,26 @@ class VerificationDocument extends Model
 
     protected $casts = [
         'expires_at' => 'date',
+        'status' => VerificationDocumentStatus::class,
     ];
 
     protected $appends = ['is_expired', 'url'];
 
     public function getUrlAttribute(): string
     {
-        if (!$this->file_path) {
+        if (! $this->file_path) {
             return '';
         }
+
         return \Illuminate\Support\Facades\Storage::disk('public')->url($this->file_path);
     }
 
     public function getIsExpiredAttribute(): bool
     {
-        if (!$this->expires_at) {
+        if (! $this->expires_at) {
             return false;
         }
+
         return $this->expires_at->isPast();
     }
 

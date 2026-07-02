@@ -29,7 +29,7 @@ import {
   DashboardTableHead,
   DashboardTableHeaderRow,
 } from "@/components/shared/DashboardTable";
-import { DashboardEmptyState } from "@/components/shared/DashboardEmptyState";
+import { EmptyState } from "@/components/shared/ui/EmptyState";
 import { PaymentTransactionBadge } from "@/components/shared/PaymentTransactionBadge";
 import { toast } from "sonner";
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
@@ -39,7 +39,7 @@ import {
   DashboardFrostedStatGrid,
   DashboardPanelCard,
 } from "@/components/dashboard/workspace";
-import { workspaceUi } from "@/lib/dashboard-workspace-ui";
+import { workspaceUi } from "@/lib/dashboard-ui";
 
 function ClientBillingContent() {
   const { user } = useAuth();
@@ -221,14 +221,14 @@ function ClientBillingContent() {
             </TableBody>
           </Table>
         ) : (
-          <DashboardEmptyState title="No payments yet" className="py-20">
+          <EmptyState variant="dashboard" title="No payments yet" className="py-20">
             <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-6">
               Completed booking payments will appear here with downloadable invoices.
             </p>
             <Button asChild className="rounded-full">
               <Link href="/services">Browse services</Link>
             </Button>
-          </DashboardEmptyState>
+          </EmptyState>
         )}
       </DashboardPanelCard>
 

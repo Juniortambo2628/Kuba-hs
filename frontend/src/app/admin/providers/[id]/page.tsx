@@ -12,12 +12,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
-import { DashboardStatusBadge } from "@/components/shared/DashboardStatusBadge";
-import { ComplianceStatusBadge } from "@/components/shared/ComplianceStatusBadge";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 import { ChevronLeft, Loader2, ShieldCheck, Star, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { getMediaUrl } from "@/lib/utils";
-import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
 import { KubaFilePond } from "@/components/ui/filepond";
 
@@ -274,8 +273,8 @@ export default function AdminProviderDetailPage({ params }: { params: Promise<{ 
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-3 items-center">
-            <DashboardStatusBadge status={form.application_status} />
-            <ComplianceStatusBadge status={form.compliance_status} />
+            <StatusBadge status={form.application_status} type="dashboard" />
+            <StatusBadge status={form.compliance_status} type="compliance" />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -374,9 +373,9 @@ export default function AdminProviderDetailPage({ params }: { params: Promise<{ 
         </Button>
       </div>
 
-      <ConfirmDeleteDialog
-        isOpen={showDeactivate}
-        onClose={() => setShowDeactivate(false)}
+      <AppConfirmDialog
+        open={showDeactivate}
+        onOpenChange={() => setShowDeactivate(false)}
         onConfirm={handleDeactivate}
         title="Deactivate provider?"
         description="Suspends the account and marks the provider offline. This does not delete booking history."

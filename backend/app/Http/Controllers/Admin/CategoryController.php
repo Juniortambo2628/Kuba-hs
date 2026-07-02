@@ -5,13 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ServiceCategoryResource;
 use App\Models\ServiceCategory;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
 class CategoryController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
         return response()->json([
             'categories' => ServiceCategoryResource::collection(
@@ -20,7 +21,7 @@ class CategoryController extends Controller
         ]);
     }
 
-    public function show(ServiceCategory $category)
+    public function show(ServiceCategory $category): JsonResponse
     {
         $category->load('services');
 
@@ -29,7 +30,7 @@ class CategoryController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -39,10 +40,9 @@ class CategoryController extends Controller
             'image_url' => 'nullable|string',
         ]);
 
-        
         if ($request->hasFile('image')) {
             $validated['image_url'] = $this->storeCategoryImage($request->file('image'));
-        } elseif (!empty($validated['image_url'])) {
+        } elseif (! empty($validated['image_url'])) {
             $validated['image_url'] = $this->normalizeImagePath($validated['image_url']);
         }
 
@@ -57,7 +57,7 @@ class CategoryController extends Controller
         ], 201);
     }
 
-    public function update(Request $request, ServiceCategory $category)
+    public function update(Request $request, ServiceCategory $category): JsonResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -111,7 +111,7 @@ class CategoryController extends Controller
 
     private function deleteCategoryImage(?string $imageUrl): void
     {
-        if (!$imageUrl) {
+        if (! $imageUrl) {
             return;
         }
 
@@ -121,9 +121,13 @@ class CategoryController extends Controller
         }
     }
 
-    public function destroy(ServiceCategory $category)
+    public function destroy(ServiceCategory $category): JsonResponse
     {
-        $category->services()->delete(); // Clean up orphans
+        // Clean up provider_services for all services in this category
+        $serviceIds = $category->services()->pluck('id');
+        \App\Models\ProviderService::whereIn('service_id', $serviceIds)->delete();
+
+        $category->services()->delete();
         $category->delete();
         Cache::forget('api_categories_all');
 

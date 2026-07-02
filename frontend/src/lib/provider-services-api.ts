@@ -1,13 +1,8 @@
 import type { ProviderService, Service } from "@/types";
+import { extractApiList } from "@/lib/api-response";
 
-export function unwrapResourceList<T>(payload: unknown): T[] {
-  if (Array.isArray(payload)) return payload;
-  if (payload && typeof payload === "object" && "data" in payload) {
-    const inner = (payload as { data: unknown }).data;
-    return Array.isArray(inner) ? (inner as T[]) : [];
-  }
-  return [];
-}
+/** @deprecated Use extractApiList from "@/lib/api-response" directly. */
+export const unwrapResourceList = extractApiList;
 
 export interface ProviderServicesPayload {
   services: ProviderService[];

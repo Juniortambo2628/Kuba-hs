@@ -4,9 +4,6 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use App\Http\Resources\UserResource;
-use App\Http\Resources\ProviderResource;
-use App\Http\Resources\BookingResource;
 
 class PaymentResource extends JsonResource
 {
@@ -30,8 +27,8 @@ class PaymentResource extends JsonResource
             'customer' => new UserResource($this->whenLoaded('customer')),
             'provider' => new ProviderResource($this->whenLoaded('provider')),
             'booking' => new BookingResource($this->whenLoaded('booking')),
-            'booking_number' => $this->whenLoaded('booking', fn() => $this->booking->booking_number),
-            'service_name' => $this->whenLoaded('booking', fn() => $this->booking->service ? $this->booking->service->name : null),
+            'booking_number' => $this->whenLoaded('booking', fn () => $this->booking->booking_number),
+            'service_name' => $this->whenLoaded('booking', fn () => $this->booking->service ? $this->booking->service->name : null),
             'created_at' => $this->created_at->toIso8601String(),
         ];
     }

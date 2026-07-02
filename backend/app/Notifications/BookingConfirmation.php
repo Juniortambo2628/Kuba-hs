@@ -20,6 +20,7 @@ class BookingConfirmation extends Notification implements ShouldQueue
         if (config('mail.default') !== 'log' && config('mail.default') !== 'array') {
             $channels[] = 'mail';
         }
+
         return $channels;
     }
 
@@ -29,15 +30,15 @@ class BookingConfirmation extends Notification implements ShouldQueue
             return (new \App\Mail\DynamicMail('empty'))->to($notifiable->email);
         }
 
-        return (new \App\Mail\DynamicMail('booking_confirmation_customer', [
+        return new \App\Mail\DynamicMail('booking_confirmation_customer', [
             'customer_name' => $this->booking->customer->first_name ?? $notifiable->name,
             'booking_number' => $this->booking->booking_number,
             'service_name' => $this->booking->service->name,
             'scheduled_date' => $this->booking->scheduled_date->format('M d, Y'),
             'scheduled_time' => $this->booking->scheduled_time ?? 'TBD',
-            'amount' => '$' . number_format((float) $this->booking->estimated_price, 2),
-            'dashboard_url' => url('/dashboard/client/bookings/' . $this->booking->id),
-        ], $notifiable));
+            'amount' => '$'.number_format((float) $this->booking->estimated_price, 2),
+            'dashboard_url' => url('/dashboard/client/bookings/'.$this->booking->id),
+        ], $notifiable);
     }
 
     public function toArray(object $notifiable): array
@@ -48,7 +49,7 @@ class BookingConfirmation extends Notification implements ShouldQueue
             'booking_number' => $this->booking->booking_number,
             'title' => 'Booking Confirmed',
             'message' => "Your booking #{$this->booking->booking_number} for {$this->booking->service->name} has been received.",
-            'url' => url('/dashboard/client/bookings/' . $this->booking->id),
+            'url' => url('/dashboard/client/bookings/'.$this->booking->id),
         ];
     }
 }

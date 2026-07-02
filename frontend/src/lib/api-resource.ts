@@ -1,11 +1,5 @@
 /**
- * Laravel JsonResource collections nested in JSON responses are shaped as `{ data: T[] }`.
- * Paginated endpoints use the same top-level `data` key on the axios response body.
+ * @deprecated Import from "@/lib/api-response" instead.
+ * Re-exported for backward compatibility.
  */
-export function unwrapResourceList<T>(value: unknown): T[] {
-  if (Array.isArray(value)) return value as T[];
-  if (value && typeof value === "object" && Array.isArray((value as { data?: unknown }).data)) {
-    return (value as { data: T[] }).data;
-  }
-  return [];
-}
+export { extractApiList as unwrapResourceList } from "@/lib/api-response";

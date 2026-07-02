@@ -19,7 +19,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { ChatUI } from "@/components/chat/ChatUI";
-import { BookingStatusBadge } from "@/components/shared/BookingStatusBadge";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBookingDetail } from "@/hooks/useBookingDetail";
 import { AdminBookingSidebar } from "@/components/booking/AdminBookingSidebar";
@@ -97,7 +97,7 @@ export default function AdminBookingClient({ params }: { params: Promise<{ id: s
               <h1 className="text-3xl font-bold text-foreground tracking-tighter uppercase">
                 Order <span className="text-primary">#{booking.booking_number}</span>
               </h1>
-              <BookingStatusBadge status={booking.status} className="rounded-full px-4 py-1 text-[10px] uppercase tracking-widest shadow-sm" />
+              <StatusBadge status={booking.status} type="booking" className="rounded-full px-4 py-1 text-[10px] uppercase tracking-widest shadow-sm" />
             </div>
             <p className="text-xs font-semibold text-muted-foreground uppercase flex items-center gap-2">
               <Zap className="w-3.5 h-3.5 text-primary" />

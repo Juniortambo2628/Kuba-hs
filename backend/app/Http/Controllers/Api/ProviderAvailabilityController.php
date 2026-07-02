@@ -3,18 +3,18 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\ProviderAvailability;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ProviderAvailabilityController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
         $user = Auth::user();
         $provider = $user->provider;
 
-        if (!$provider) {
+        if (! $provider) {
             return response()->json(['error' => 'Provider profile not found'], 404);
         }
 
@@ -24,7 +24,7 @@ class ProviderAvailabilityController extends Controller
         ]);
     }
 
-    public function update(Request $request)
+    public function update(Request $request): JsonResponse
     {
         $user = Auth::user();
         $provider = $user->provider;
@@ -54,7 +54,7 @@ class ProviderAvailabilityController extends Controller
         ]);
     }
 
-    public function updateExceptions(Request $request)
+    public function updateExceptions(Request $request): JsonResponse
     {
         $user = Auth::user();
         $provider = $user->provider;

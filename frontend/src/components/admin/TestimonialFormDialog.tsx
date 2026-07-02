@@ -1,14 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Star } from "lucide-react";
 import { FieldLabel } from "@/components/shared/ui";
 import { CrudFormDialog } from "@/components/shared/dialog/CrudFormDialog";
 import { DashboardImageUpload } from "@/components/shared/DashboardImageUpload";
-import axiosInstance, { handleApiError } from "@/lib/axios";
-import { toast } from "sonner";
+import { useCrudForm } from "@/hooks/useCrudForm";
 import type { Testimonial } from "@/types/admin";
 
 export type TestimonialFormValues = {
@@ -18,14 +17,6 @@ export type TestimonialFormValues = {
   rating: number;
   image_url: string;
 };
-
-const emptyForm = (): TestimonialFormValues => ({
-  client_name: "",
-  client_role: "",
-  content: "",
-  rating: 5,
-  image_url: "",
-});
 
 interface TestimonialFormDialogProps {
   open: boolean;
@@ -44,44 +35,18 @@ export function TestimonialFormDialog({
   order = 0,
   onSuccess,
 }: TestimonialFormDialogProps) {
-  const [form, setForm] = useState<TestimonialFormValues>(emptyForm());
-  const [isSaving, setIsSaving] = useState(false);
+  const { form, setForm, isSaving, handleSubmit } = useCrudForm<TestimonialFormValues>({
+    empty: () => ({ client_name: "", client_role: "", content: "", rating: 5, image_url: "" }),
+    endpoint: "/api/admin/testimonials",
+    editingId,
+    initial,
+    extraCreatePayload: { order },
+  });
 
-  useEffect(() => {
-    if (!open) return;
-    setForm({
-      ...emptyForm(),
-      client_name: initial?.client_name ?? "",
-      client_role: initial?.client_role ?? "",
-      content: initial?.content ?? "",
-      rating: initial?.rating ?? 5,
-      image_url: initial?.image_url ?? "",
-    });
-  }, [open, initial]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSaving(true);
-    try {
-      if (editingId) {
-        await axiosInstance.put(`/api/admin/testimonials/${editingId}`, form);
-        toast.success("Testimonial updated");
-        onOpenChange(false);
-        onSuccess();
-      } else {
-        const res = await axiosInstance.post("/api/admin/testimonials", {
-          ...form,
-          order,
-        });
-        toast.success("Testimonial created");
-        onOpenChange(false);
-        onSuccess(res.data);
-      }
-    } catch (err: unknown) {
-      toast.error(handleApiError(err));
-    } finally {
-      setIsSaving(false);
-    }
+  const onSubmit = async (e: React.FormEvent) => {
+    await handleSubmit(e);
+    onOpenChange(false);
+    onSuccess();
   };
 
   return (
@@ -94,7 +59,7 @@ export function TestimonialFormDialog({
       submitLabel={editingId ? "Save changes" : "Create endorsement"}
       isSubmitting={isSaving}
     >
-      <form id="admin-testimonial-form" onSubmit={handleSubmit} className="space-y-5">
+      <form id="admin-testimonial-form" onSubmit={onSubmit} className="space-y-5">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
             <FieldLabel>Client name</FieldLabel>

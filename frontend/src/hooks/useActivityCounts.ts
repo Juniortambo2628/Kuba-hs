@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import axiosInstance from "@/lib/axios";
 import { useAuth } from "@/contexts/AuthContext";
 import { getEcho } from "@/lib/echo";
-import { unwrapResourceList } from "@/lib/chat-utils";
+import { extractApiList } from "@/lib/api-response";
 
 export interface ActivityCounts {
   bookings: number;
@@ -41,7 +41,7 @@ export function useActivityCounts() {
       let unreadMessages = 0;
       try {
         const msgRes = await axiosInstance.get("/api/chat/conversations");
-        const conversations = unwrapResourceList<{ unread_count?: number }>(
+        const conversations = extractApiList<{ unread_count?: number }>(
           msgRes.data?.conversations
         );
         unreadMessages = conversations.reduce(

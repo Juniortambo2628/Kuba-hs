@@ -3,19 +3,21 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Spatie\Permission\Traits\HasRoles;
+use Laravel\Scout\Searchable;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
-use Laravel\Scout\Searchable;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements HasMedia
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasUuids, HasRoles, InteractsWithMedia, Searchable;
+    use HasFactory, HasRoles, HasUuids, InteractsWithMedia, Notifiable, Searchable, SoftDeletes;
 
     public function registerMediaCollections(): void
     {
@@ -30,8 +32,6 @@ class User extends Authenticatable implements HasMedia
     protected $appends = [
         'name',
         'avatar_url',
-        'total_points',
-        'membership_tier',
     ];
 
     /**
@@ -75,6 +75,8 @@ class User extends Authenticatable implements HasMedia
             'password' => 'hashed',
             'is_verified' => 'boolean',
             'is_active' => 'boolean',
+            'unsubscribed_from_emails' => 'boolean',
+            'role' => UserRole::class,
         ];
     }
 
@@ -97,7 +99,7 @@ class User extends Authenticatable implements HasMedia
         }
 
         $stored = $this->attributes['avatar_url'] ?? null;
-        if ($stored && !self::isPlaceholderAvatarUrl($stored)) {
+        if ($stored && ! self::isPlaceholderAvatarUrl($stored)) {
             return $stored;
         }
 
@@ -120,17 +122,17 @@ class User extends Authenticatable implements HasMedia
      */
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return $this->role === UserRole::Admin;
     }
 
     public function isProvider(): bool
     {
-        return $this->role === 'provider';
+        return $this->role === UserRole::Provider;
     }
 
     public function isCustomer(): bool
     {
-        return $this->role === 'customer';
+        return $this->role === UserRole::Customer;
     }
 
     /**
@@ -146,7 +148,7 @@ class User extends Authenticatable implements HasMedia
      */
     public function ensureProviderProfile(): ?Provider
     {
-        if ($this->role !== 'provider') {
+        if ($this->role !== UserRole::Provider) {
             return null;
         }
 
@@ -176,6 +178,16 @@ class User extends Authenticatable implements HasMedia
         return $this->hasMany(Address::class);
     }
 
+    public function bookings()
+    {
+        return $this->hasMany(Booking::class, 'customer_id');
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class, 'customer_id');
+    }
+
     public function favorites()
     {
         return $this->hasMany(UserFavorite::class);
@@ -188,23 +200,41 @@ class User extends Authenticatable implements HasMedia
 
     /**
      * Get the user's total loyalty points.
+     * Cached per request — avoid calling this in loops without eager-loading loyaltyPoints.
      */
     public function getTotalPointsAttribute(): int
     {
-        return (int) $this->loyaltyPoints()
+        if (array_key_exists('total_points', $this->relations)) {
+            return $this->relations['total_points'];
+        }
+
+        $total = (int) $this->loyaltyPoints()
             ->selectRaw('SUM(CASE WHEN transaction_type = "earn" THEN points ELSE -points END) as total')
             ->value('total') ?? 0;
+
+        $this->relations['total_points'] = $total;
+
+        return $total;
     }
 
     /**
      * Get the user's current loyalty tier.
+     * Cached per request — avoid calling this in loops without eager-loading loyaltyPoints.
      */
     public function getMembershipTierAttribute()
     {
-        return LoyaltyTier::where('min_points', '<=', $this->total_points)
+        if (array_key_exists('membership_tier', $this->relations)) {
+            return $this->relations['membership_tier'];
+        }
+
+        $tier = LoyaltyTier::where('min_points', '<=', $this->total_points)
             ->where('is_active', true)
             ->orderByDesc('min_points')
             ->first();
+
+        $this->relations['membership_tier'] = $tier;
+
+        return $tier;
     }
 
     /**

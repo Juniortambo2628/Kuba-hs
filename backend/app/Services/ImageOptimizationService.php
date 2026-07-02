@@ -12,14 +12,23 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 class ImageOptimizationService
 {
     public const PRESET_AVATAR = 'avatar';
+
     public const PRESET_LOGO = 'logo';
+
     public const PRESET_BANNER = 'banner';
+
     public const PRESET_THUMBNAIL = 'thumbnail';
+
     public const PRESET_CMS = 'cms';
+
     public const PRESET_CATEGORY = 'category';
+
     public const PRESET_BOOKING = 'booking';
+
     public const PRESET_REVIEW = 'review';
+
     public const PRESET_DOCUMENT = 'document';
+
     public const PRESET_GENERAL = 'general';
 
     /**
@@ -46,7 +55,7 @@ class ImageOptimizationService
         string $preset = self::PRESET_GENERAL,
         ?string $mimeType = null
     ): void {
-        if (!$this->isOptimizableImage($fullPath, $mimeType)) {
+        if (! $this->isOptimizableImage($fullPath, $mimeType)) {
             return;
         }
 
@@ -66,7 +75,7 @@ class ImageOptimizationService
      */
     public function optimizeMedia(Media $media, string $preset = self::PRESET_GENERAL): void
     {
-        if (!$this->isOptimizableImage($media->getPath(), $media->mime_type)) {
+        if (! $this->isOptimizableImage($media->getPath(), $media->mime_type)) {
             return;
         }
 

@@ -2,14 +2,12 @@
 
 namespace App\Events;
 
-use Illuminate\Broadcasting\Channel;
+use App\Models\Booking;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use App\Models\Booking;
 
 class BookingStatusUpdated implements ShouldBroadcastNow
 {
@@ -25,11 +23,11 @@ class BookingStatusUpdated implements ShouldBroadcastNow
     public function broadcastOn(): array
     {
         $channels = [
-            new PrivateChannel('user.' . $this->booking->customer_id),
+            new PrivateChannel('user.'.$this->booking->customer_id),
         ];
 
         if ($this->booking->provider) {
-            $channels[] = new PrivateChannel('user.' . $this->booking->provider->user_id);
+            $channels[] = new PrivateChannel('user.'.$this->booking->provider->user_id);
         }
 
         return $channels;

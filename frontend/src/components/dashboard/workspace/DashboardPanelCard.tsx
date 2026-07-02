@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
-import { workspaceUi } from "@/lib/dashboard-workspace-ui";
+import { workspaceUi } from "@/lib/dashboard-ui";
 import { DashboardSectionHeader } from "./DashboardSectionHeader";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";

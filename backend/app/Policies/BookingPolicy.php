@@ -2,9 +2,9 @@
 
 namespace App\Policies;
 
+use App\Enums\UserRole;
 use App\Models\Booking;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class BookingPolicy
 {
@@ -21,10 +21,16 @@ class BookingPolicy
      */
     public function view(User $user, Booking $booking): bool
     {
-        if ($user->role === 'admin') return true;
-        if ($user->role === 'provider' && $booking->provider_id === ($user->provider->id ?? null)) return true;
-        if ($user->role === 'customer' && $booking->customer_id === $user->id) return true;
-        
+        if ($user->role === UserRole::Admin) {
+            return true;
+        }
+        if ($user->role === UserRole::Provider && $booking->provider_id === ($user->provider->id ?? null)) {
+            return true;
+        }
+        if ($user->role === UserRole::Customer && $booking->customer_id === $user->id) {
+            return true;
+        }
+
         return false;
     }
 
@@ -33,19 +39,21 @@ class BookingPolicy
      */
     public function update(User $user, Booking $booking): bool
     {
-        if ($user->role === 'admin') return true;
-
-        if ($user->role === 'provider' && $booking->provider_id === ($user->provider->id ?? null)) {
+        if ($user->role === UserRole::Admin) {
             return true;
         }
 
-        if ($user->role === 'customer' && $booking->customer_id === $user->id) {
+        if ($user->role === UserRole::Provider && $booking->provider_id === ($user->provider->id ?? null)) {
+            return true;
+        }
+
+        if ($user->role === UserRole::Customer && $booking->customer_id === $user->id) {
             // Clients can only cancel through this endpoint
             return request()->input('status') === 'cancelled';
         }
 
         // Allow in_progress for providers
-        if ($user->role === 'provider' && $booking->provider_id === ($user->provider->id ?? null)) {
+        if ($user->role === UserRole::Provider && $booking->provider_id === ($user->provider->id ?? null)) {
             return in_array(request()->input('status'), ['confirmed', 'in_progress', 'completed', 'cancelled']);
         }
 

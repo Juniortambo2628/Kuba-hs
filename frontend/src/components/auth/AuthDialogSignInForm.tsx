@@ -6,7 +6,7 @@ import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { dialogFormUi } from "@/lib/dialog-form-ui";
+import { dialogFormUi } from "@/lib/crud-dialog-ui";
 import { AuthSocialButtons } from "@/components/auth/AuthSocialButtons";
 import {
   DialogFormField,

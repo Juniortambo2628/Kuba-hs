@@ -42,12 +42,12 @@ import { MetricCard } from "@/components/shared/MetricCard";
 import { VisualAnalytics } from "@/components/dashboard/VisualAnalytics";
 import { useSearchState } from "@/hooks/useSearchState";
 import { useExport } from "@/hooks/useExport";
-import { useApiData } from "@/hooks/useApiData";
+import { useData } from "@/hooks/useData";
 import Link from "next/link";
 
 import { Booking, User, Provider } from "@/types";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
-import { BookingStatusBadge } from "@/components/shared/BookingStatusBadge";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Suspense } from "react";
 
 interface AdminStats {
@@ -67,8 +67,8 @@ function AdminDashboardContent() {
   const { search, setSearch, status, setStatus } = useSearchState();
   const router = useRouter();
   const [trends, setTrends] = useState<any>({ users: [], bookings: [], revenue: [] });
-  const { data: analyticsData, isLoading: analyticsLoading } = useApiData<any>("/api/admin/analytics");
-  const { data: bookingsData, isLoading: bookingsLoading, refetch: fetchBookings } = useApiData<any>(`/api/admin/bookings?search=${search}&status=${status}`, { initialData: null });
+  const { data: analyticsData, isLoading: analyticsLoading } = useData<any>("/api/admin/analytics");
+  const { data: bookingsData, isLoading: bookingsLoading, refetch: fetchBookings } = useData<any>(`/api/admin/bookings?search=${search}&status=${status}`, { initialData: null });
   
   const stats = analyticsData ? { ...analyticsData.summary, growth: analyticsData.growth } as AdminStats : null;
   const bookings = (bookingsData?.data || []) as Booking[];
@@ -247,7 +247,7 @@ function AdminDashboardContent() {
                     <p className="text-sm font-medium text-foreground">{new Date(booking.scheduled_date).toLocaleDateString()}</p>
                   </TableCell>
                   <TableCell>
-                    <BookingStatusBadge status={booking.status} />
+                    <StatusBadge status={booking.status} type="booking" />
                   </TableCell>
                   <TableCell className="pr-6 text-right">
                     <Link href={`/admin/bookings/${booking.id}`}>

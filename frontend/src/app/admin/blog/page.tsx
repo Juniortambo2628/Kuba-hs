@@ -25,8 +25,8 @@ import { toast } from "sonner";
 import { DashboardListToolbar } from "@/components/shared/DashboardListToolbar";
 import { useSearchState } from "@/hooks/useSearchState";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
-import { useApiData } from "@/hooks/useApiData";
-import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { useData } from "@/hooks/useData";
+import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
 
 interface Post {
  id: string;
@@ -54,8 +54,9 @@ export default function AdminBlog() {
    excerpt: "",
    is_published: false,
   });
+  const [deleteTarget, setDeleteTarget] = useState<Post | null>(null);
 
-  const { data: posts, isLoading, refetch: fetchPosts } = useApiData<Post[]>("/api/admin/blog", { initialData: [] });
+  const { data: posts, isLoading, refetch: fetchPosts } = useData<Post[]>("/api/admin/blog", { initialData: [] });
 
  const openCreate = () => {
   setSelectedPost(null);
@@ -242,18 +243,9 @@ export default function AdminBlog() {
            <button onClick={() => openEdit(post)} className="p-2.5 text-muted-foreground hover:text-primary hover:bg-red-50 rounded-xl transition-all">
              <Edit3 className="w-4 h-4" />
            </button>
-            <ConfirmDeleteDialog
-              trigger={
-                <button className="p-2.5 text-muted-foreground hover:text-red-600 hover:bg-red-50 rounded-xl transition-all">
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              }
-              title="Purge Literary Asset?"
-              description={
-                <>Are you sure you want to delete <span className="font-bold text-foreground">"{post.title}"</span>? This article will be permanently removed from the editorial manuscript registry and platform archives.</>
-              }
-              onConfirm={() => handleDelete(post.id)}
-            />
+             <button className="p-2.5 text-muted-foreground hover:text-red-600 hover:bg-red-50 rounded-xl transition-all" onClick={() => setDeleteTarget(post)}>
+              <Trash2 className="w-4 h-4" />
+             </button>
           </TableCell>
          </TableRow>
         ))}
@@ -324,18 +316,9 @@ export default function AdminBlog() {
          <Button onClick={() => openEdit(post)} variant="outline" size="sm" className="w-full h-9 bg-background hover:bg-muted text-xs font-bold">
           <Edit3 className="w-3.5 h-3.5 mr-2" /> Edit
          </Button>
-           <ConfirmDeleteDialog
-             trigger={
-               <Button variant="ghost" size="sm" className="w-full h-9 text-red-500 hover:text-red-600 hover:bg-red-50 text-xs font-bold">
-                 <Trash2 className="w-3.5 h-3.5 mr-2" /> Delete
-               </Button>
-             }
-             title="Execute Deletion?"
-             description={
-               <>This action is irreversible. The article <span className="font-bold text-foreground">"{post.title}"</span> will be purged from the Kuba registry.</>
-             }
-             onConfirm={() => handleDelete(post.id)}
-           />
+           <Button variant="ghost" size="sm" className="w-full h-9 text-red-500 hover:text-red-600 hover:bg-red-50 text-xs font-bold" onClick={() => setDeleteTarget(post)}>
+              <Trash2 className="w-3.5 h-3.5 mr-2" /> Delete
+           </Button>
         </div>
        </CardContent>
       </Card>
@@ -362,6 +345,13 @@ export default function AdminBlog() {
        </div>
      </div>
    </div>
-  </DashboardPageContainer>
+   <AppConfirmDialog
+     open={!!deleteTarget}
+     onOpenChange={() => setDeleteTarget(null)}
+     onConfirm={async () => { if (deleteTarget) { await handleDelete(deleteTarget.id); setDeleteTarget(null); } }}
+     title="Purge Literary Asset?"
+     description={<>Are you sure you want to delete <span className="font-bold text-foreground">"{deleteTarget?.title}"</span>? This article will be permanently removed from the editorial manuscript registry and platform archives.</>}
+   />
+   </DashboardPageContainer>
  );
 }

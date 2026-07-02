@@ -2,7 +2,7 @@
 
 import type { LucideIcon } from "lucide-react";
 import { X } from "lucide-react";
-import { dialogFormUi } from "@/lib/dialog-form-ui";
+import { dialogFormUi } from "@/lib/crud-dialog-ui";
 import { crudDialogUi } from "@/lib/crud-dialog-ui";
 import { cn } from "@/lib/utils";
 

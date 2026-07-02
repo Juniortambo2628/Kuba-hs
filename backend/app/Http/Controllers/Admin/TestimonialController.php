@@ -4,18 +4,20 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Testimonial;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
-
 class TestimonialController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
-        return response()->json(Testimonial::orderBy('order')->orderBy('id', 'desc')->get());
+        $testimonials = Testimonial::orderBy('order')->latest()->paginate(20);
+
+        return response()->json($testimonials);
     }
 
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'client_name' => 'required|string|max:255',
@@ -24,21 +26,22 @@ class TestimonialController extends Controller
             'rating' => 'integer|min:1|max:5',
             'image_url' => 'nullable|string',
             'is_active' => 'boolean',
-            'order' => 'integer'
+            'order' => 'integer',
         ]);
 
         $testimonial = Testimonial::create($validated);
         Cache::forget('api_testimonials_all');
+
         return response()->json($testimonial, 201);
 
     }
 
-    public function show(Testimonial $testimonial)
+    public function show(Testimonial $testimonial): JsonResponse
     {
         return response()->json($testimonial);
     }
 
-    public function update(Request $request, Testimonial $testimonial)
+    public function update(Request $request, Testimonial $testimonial): JsonResponse
     {
         $validated = $request->validate([
             'client_name' => 'sometimes|required|string|max:255',
@@ -47,24 +50,26 @@ class TestimonialController extends Controller
             'rating' => 'integer|min:1|max:5',
             'image_url' => 'nullable|string',
             'is_active' => 'boolean',
-            'order' => 'integer'
+            'order' => 'integer',
         ]);
 
         $testimonial->update($validated);
         Cache::forget('api_testimonials_all');
+
         return response()->json($testimonial);
 
     }
 
-    public function destroy(Testimonial $testimonial)
+    public function destroy(Testimonial $testimonial): JsonResponse
     {
         $testimonial->delete();
         Cache::forget('api_testimonials_all');
+
         return response()->json(null, 204);
 
     }
 
-    public function reorder(Request $request)
+    public function reorder(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'items' => 'required|array',
@@ -77,6 +82,7 @@ class TestimonialController extends Controller
         }
 
         Cache::forget('api_testimonials_all');
+
         return response()->json(['message' => 'Reordered successfully']);
 
     }

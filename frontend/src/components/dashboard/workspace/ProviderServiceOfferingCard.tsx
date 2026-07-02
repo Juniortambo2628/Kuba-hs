@@ -4,10 +4,18 @@ import Image from "next/image";
 import { Briefcase, Check, PenLine, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { KubaFilePond } from "@/components/ui/filepond";
-import { workspaceUi } from "@/lib/dashboard-workspace-ui";
+import { workspaceUi } from "@/lib/dashboard-ui";
 import { getMediaUrl, cn } from "@/lib/utils";
 import type { ProviderService } from "@/types";
-import { categoryDisplayName, serviceDisplayName } from "@/lib/provider-services-api";
+import { extractApiList } from "@/lib/api-response";
+
+function serviceDisplayName(offering: ProviderService): string {
+  return offering.service?.name ?? offering.name ?? "Service";
+}
+
+function categoryDisplayName(offering: ProviderService): string {
+  return offering.service?.category?.name ?? offering.category ?? "General";
+}
 import axiosInstance from "@/lib/axios";
 import { toast } from "sonner";
 

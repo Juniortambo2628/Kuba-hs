@@ -12,6 +12,7 @@ import {
   landingTitleParts,
   LandingGradientTitle,
 } from "@/lib/landing-section-header-copy";
+import { FALLBACK_IMAGES } from "@/lib/fallback-images";
 
 export function CTA() {
   const { getS } = useCMS();
@@ -75,8 +76,8 @@ export function CTA() {
             {/* Right Rich Media Collage */}
             <div className="max-lg:hidden relative h-full w-full min-h-[500px]">
                 <div className="absolute inset-0 bg-gradient-to-l from-transparent to-gray-50 dark:to-[#0f1523] z-10 w-24" />
-                <Image 
-                    src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=1200&auto=format&fit=crop" 
+                <Image
+                    src={FALLBACK_IMAGES.cleaning}
                     alt="Professionals"
                     fill
                     sizes="(max-width: 1024px) 100vw, 50vw"

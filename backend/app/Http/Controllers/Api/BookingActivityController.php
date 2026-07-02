@@ -6,12 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\BookingActivityLogResource;
 use App\Models\Booking;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\JsonResponse;
 
 class BookingActivityController extends Controller
 {
     use AuthorizesRequests;
 
-    public function index(Booking $booking)
+    public function index(Booking $booking): JsonResponse
     {
         $this->authorize('view', $booking);
 

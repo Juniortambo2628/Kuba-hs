@@ -2,18 +2,21 @@
 
 namespace App\Models;
 
+use App\Enums\ProviderApplicationStatus;
+use App\Enums\ProviderAvailabilityStatus;
+use App\Enums\ProviderComplianceStatus;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Provider extends Model implements \Spatie\MediaLibrary\HasMedia
 {
-    use HasFactory, HasUuids, \Laravel\Scout\Searchable, \Spatie\MediaLibrary\InteractsWithMedia;
+    use HasFactory, HasUuids, \Laravel\Scout\Searchable, SoftDeletes, \Spatie\MediaLibrary\InteractsWithMedia;
 
     protected $fillable = [
-        'id',
         'user_id',
         'business_name',
         'bio',
@@ -42,6 +45,9 @@ class Provider extends Model implements \Spatie\MediaLibrary\HasMedia
         'quality_score' => 'decimal:2',
         'balance' => 'decimal:2',
         'total_earned' => 'decimal:2',
+        'application_status' => ProviderApplicationStatus::class,
+        'availability_status' => ProviderAvailabilityStatus::class,
+        'compliance_status' => ProviderComplianceStatus::class,
     ];
 
     public function getSlugAttribute(): string
@@ -55,9 +61,7 @@ class Provider extends Model implements \Spatie\MediaLibrary\HasMedia
             return $this->where($this->getRouteKeyName(), $value)->first();
         }
 
-        return static::query()
-            ->get()
-            ->first(fn (self $provider) => $provider->slug === $value);
+        return $this->whereRaw('LOWER(REPLACE(business_name, " ", "-")) = ?', [\Illuminate\Support\Str::slug($value)])->first();
     }
 
     public function user(): BelongsTo
@@ -93,6 +97,16 @@ class Provider extends Model implements \Spatie\MediaLibrary\HasMedia
     public function payouts(): HasMany
     {
         return $this->hasMany(Payout::class);
+    }
+
+    public function bookings(): HasMany
+    {
+        return $this->hasMany(Booking::class);
+    }
+
+    public function conversations(): HasMany
+    {
+        return $this->hasMany(Conversation::class);
     }
 
     public function registerMediaCollections(): void
@@ -134,6 +148,8 @@ class Provider extends Model implements \Spatie\MediaLibrary\HasMedia
      */
     public function toSearchableArray(): array
     {
+        $this->loadMissing('providerServices.service.category');
+
         return [
             'id' => $this->id,
             'business_name' => $this->business_name,

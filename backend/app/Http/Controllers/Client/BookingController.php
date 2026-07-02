@@ -2,57 +2,98 @@
 
 namespace App\Http\Controllers\Client;
 
+use App\Enums\BookingStatus;
 use App\Http\Controllers\Controller;
-use App\Models\Booking;
+use App\Http\Requests\StoreBookingRequest;
 use App\Http\Resources\BookingResource;
+use App\Models\Booking;
+use App\Services\BookingService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Requests\StoreBookingRequest;
-use App\Services\BookingService;
 
 class BookingController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        
-        $query = Booking::where('customer_id', $user->id)
-            ->with(['provider.user', 'service', 'address', 'review', 'payment']);
 
-        if ($request->search) {
-            $query->where(function ($q) use ($request) {
-                $q->where('booking_number', 'like', "%{$request->search}%")
-                  ->orWhereHas('service', function ($sq) use ($request) {
-                      $sq->where('name', 'like', "%{$request->search}%");
-                  });
-            });
-        }
-
-        if ($request->status) {
-            $query->where('status', $request->status);
-        }
-
-        $bookings = $query->latest()->paginate($request->per_page ?? 10);
+        $bookings = Booking::where('customer_id', $user->id)
+            ->with(['provider.user', 'service', 'address', 'review', 'payment'])
+            ->search($request->search)
+            ->byStatus($request->status)
+            ->latest()
+            ->paginate($request->per_page ?? 10);
 
         return BookingResource::collection($bookings);
     }
 
-    public function store(StoreBookingRequest $request, BookingService $bookingService)
+    public function show(Booking $booking): JsonResponse
     {
         $user = Auth::user();
-        
-        $images = $request->hasFile('images') ? $request->file('images') : null;
-        
-        $booking = $bookingService->createBooking($user, $request->validated(), $images);
 
-        if ($booking->provider && $booking->provider->user) {
-            $booking->provider->user->notify(new \App\Notifications\NewBookingReceived($booking));
+        if ($booking->customer_id !== $user->id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         return response()->json([
+            'booking' => new BookingResource(
+                $booking->load(['provider.user', 'service', 'address', 'review', 'payment', 'media'])
+            ),
+        ]);
+    }
+
+    public function store(StoreBookingRequest $request, BookingService $bookingService): JsonResponse
+    {
+        $user = Auth::user();
+
+        $images = $request->hasFile('images') ? $request->file('images') : null;
+
+        $booking = $bookingService->createBooking($user, $request->validated(), $images);
+
+        return response()->json([
             'message' => 'Booking request sent successfully!',
-            'booking' => new BookingResource($booking)
+            'booking' => new BookingResource($booking),
         ], 201);
+    }
+
+    public function cancel(Booking $booking, Request $request): JsonResponse
+    {
+        $user = Auth::user();
+
+        if ($booking->customer_id !== $user->id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        if (! in_array($booking->status, [BookingStatus::Pending, BookingStatus::Confirmed])) {
+            return response()->json([
+                'message' => 'Only pending or confirmed bookings can be cancelled.',
+            ], 422);
+        }
+
+        $booking->update([
+            'status' => 'cancelled',
+            'cancellation_reason' => $request->input('cancellation_reason'),
+        ]);
+
+        app(\App\Services\BookingActivityLogService::class)->log(
+            $booking,
+            'cancelled',
+            $user,
+            'Booking cancelled by customer',
+            ['reason' => $request->input('cancellation_reason')]
+        );
+
+        app(\App\Services\LoyaltyService::class)->revertPointsForBooking($booking);
+
+        if ($booking->provider && $booking->provider->user) {
+            $booking->provider->user->notify(new \App\Notifications\BookingStatusUpdated($booking));
+        }
+
+        return response()->json([
+            'message' => 'Booking cancelled successfully.',
+            'booking' => new BookingResource($booking->fresh(['provider.user', 'service'])),
+        ]);
     }
 }

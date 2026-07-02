@@ -2,9 +2,10 @@
 
 namespace App\Services;
 
+use App\Enums\UserRole;
+use App\Models\Address;
 use App\Models\Booking;
 use App\Models\ProviderService;
-use App\Models\Address;
 use App\Models\User;
 use Illuminate\Support\Str;
 
@@ -18,7 +19,7 @@ class BookingService
     {
         // Handle Address
         $addressId = $data['address_id'] ?? null;
-        if (!$addressId && isset($data['new_address'])) {
+        if (! $addressId && isset($data['new_address'])) {
             $address = Address::create([
                 'user_id' => $user->id,
                 'address_type' => $this->resolveAddressType($data['service_type']),
@@ -40,7 +41,7 @@ class BookingService
         // Combine date and time if scheduled_time is present
         $scheduledDate = $data['scheduled_date'];
         if (isset($data['scheduled_time'])) {
-            $scheduledDate .= ' ' . $data['scheduled_time'] . ':00';
+            $scheduledDate .= ' '.$data['scheduled_time'].':00';
         }
 
         // Calculate Price based on advanced rules
@@ -67,7 +68,7 @@ class BookingService
             'customer_id' => $user->id,
             'provider_id' => $data['provider_id'],
             'service_id' => $data['service_id'],
-            'booking_number' => 'BK-' . strtoupper(Str::random(8)),
+            'booking_number' => 'BK-'.strtoupper(Str::random(8)),
             'scheduled_date' => $scheduledDate,
             'scheduled_time' => $data['scheduled_time'] ?? null,
             'status' => 'pending',
@@ -108,7 +109,7 @@ class BookingService
 
         // Notify Provider (New Service Request)
         if (isset($booking->provider->user)) {
-             $booking->provider->user->notify(new \App\Notifications\NewBookingReceived($booking));
+            $booking->provider->user->notify(new \App\Notifications\NewBookingReceived($booking));
         }
 
         // Notify Customer (Confirmation)
@@ -136,7 +137,7 @@ class BookingService
 
         $scheduledDate = $data['scheduled_date'];
         if (! empty($data['scheduled_time'])) {
-            $scheduledDate .= ' ' . $data['scheduled_time'] . ':00';
+            $scheduledDate .= ' '.$data['scheduled_time'].':00';
         }
 
         $price = 0;
@@ -161,7 +162,7 @@ class BookingService
             'customer_id' => $customer->id,
             'provider_id' => $data['provider_id'],
             'service_id' => $data['service_id'],
-            'booking_number' => 'BK-' . strtoupper(Str::random(8)),
+            'booking_number' => 'BK-'.strtoupper(Str::random(8)),
             'scheduled_date' => $scheduledDate,
             'scheduled_time' => $data['scheduled_time'] ?? null,
             'status' => $status,
@@ -212,12 +213,12 @@ class BookingService
      */
     public function updateBookingStatus(Booking $booking, User $user, string $status): Booking
     {
-        $isProvider = $user->role === 'provider'
+        $isProvider = $user->role === UserRole::Provider
             && $user->provider
             && $user->provider->id === $booking->provider_id;
         $isCustomer = $user->id === $booking->customer_id;
 
-        if (!$isProvider && !$isCustomer && $user->role !== 'admin') {
+        if (! $isProvider && ! $isCustomer && $user->role !== UserRole::Admin) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -229,7 +230,7 @@ class BookingService
         $updateData = ['status' => $status];
 
         // Record started_at when service begins
-        if ($status === 'in_progress' && !$booking->started_at) {
+        if ($status === 'in_progress' && ! $booking->started_at) {
             $updateData['started_at'] = now();
         }
 

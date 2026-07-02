@@ -14,8 +14,8 @@ import { Loader2, Plus, Trash2, Edit, ShieldCheck, Globe } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
-import { useApiData } from "@/hooks/useApiData";
-import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { useData } from "@/hooks/useData";
+import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
 import { Switch } from "@/components/ui/switch";
 import { DashboardImageUpload } from "@/components/shared/DashboardImageUpload";
 
@@ -27,11 +27,12 @@ interface TrustPartner {
 }
 
 export default function TrustPartnersPage() {
-    const { data: partners, isLoading, refetch: fetchPartners } = useApiData<TrustPartner[]>("/api/admin/trust-partners", { initialData: [] });
+    const { data: partners, isLoading, refetch: fetchPartners } = useData<TrustPartner[]>("/api/admin/trust-partners", { initialData: [] });
     const [isOpen, setIsOpen] = useState(false);
     const [selectedPartner, setSelectedPartner] = useState<TrustPartner | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [form, setForm] = useState({ name: '', logo_path: '', is_active: true });
+    const [deleteTarget, setDeleteTarget] = useState<TrustPartner | null>(null);
 
     const handleSave = async () => {
         setIsSubmitting(true);
@@ -139,18 +140,9 @@ export default function TrustPartnersPage() {
                                     <Button variant="ghost" size="icon" onClick={() => openEdit(partner)} className="h-8 w-8 text-muted-foreground hover:text-primary">
                                         <Edit className="w-4 h-4" />
                                     </Button>
-                                    <ConfirmDeleteDialog
-                                        trigger={
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-red-500">
-                                                <Trash2 className="w-4 h-4" />
-                                            </Button>
-                                        }
-                                        title="Remove Partner?"
-                                        description={
-                                            <>Are you sure you want to delete <span className="font-bold text-foreground">{partner.name}</span>? This will hide them from the landing page.</>
-                                        }
-                                        onConfirm={() => handleDelete(partner.id)}
-                                    />
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-red-500" onClick={() => setDeleteTarget(partner)}>
+                                        <Trash2 className="w-4 h-4" />
+                                    </Button>
                                 </div>
                             </div>
                         </CardHeader>
@@ -178,6 +170,13 @@ export default function TrustPartnersPage() {
                     </div>
                 )}
             </div>
+            <AppConfirmDialog
+                open={!!deleteTarget}
+                onOpenChange={() => setDeleteTarget(null)}
+                onConfirm={async () => { if (deleteTarget) { await handleDelete(deleteTarget.id); setDeleteTarget(null); } }}
+                title="Remove Partner?"
+                description={<>Are you sure you want to delete <span className="font-bold text-foreground">{deleteTarget?.name}</span>? This will hide them from the landing page.</>}
+            />
         </DashboardPageContainer>
     );
 }

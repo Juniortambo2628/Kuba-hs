@@ -4,7 +4,6 @@ export { AppBadge, type AppBadgeVariant } from "./AppBadge";
 export { AppPill, type AppPillVariant } from "./AppPill";
 export { PageContainer } from "./PageContainer";
 export { SectionHeader } from "./SectionHeader";
-export { SurfaceCard, type SurfaceVariant } from "./SurfaceCard";
 export {
   FilterField,
   FilterSelect,

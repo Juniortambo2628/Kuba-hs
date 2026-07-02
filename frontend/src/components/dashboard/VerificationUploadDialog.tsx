@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Upload, FileText } from "lucide-react";
 import { FieldLabel } from "@/components/shared/ui";
 import { CrudFormDialog } from "@/components/shared/dialog/CrudFormDialog";
-import { workspaceUi } from "@/lib/dashboard-workspace-ui";
+import { workspaceUi } from "@/lib/dashboard-ui";
 import { cn } from "@/lib/utils";
 import axiosInstance, { handleApiError } from "@/lib/axios";
 import { compressImageFile } from "@/lib/image-compression";

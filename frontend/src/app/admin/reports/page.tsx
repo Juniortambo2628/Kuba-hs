@@ -3,7 +3,7 @@
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
 
 import { useState } from "react";
-import { useApiData } from "@/hooks/useApiData";
+import { useData } from "@/hooks/useData";
 import { extractApiList } from "@/lib/api-response";
 import {
   DashboardDataCard,
@@ -64,7 +64,7 @@ interface ExportLogRow {
 
 export default function AdminReportsPage() {
   const [downloading, setDownloading] = useState<string | null>(null);
-  const { data: historyEnvelope, isLoading: historyLoading, refetch: refetchHistory } = useApiData<unknown>(
+  const { data: historyEnvelope, isLoading: historyLoading, refetch: refetchHistory } = useData<unknown>(
     "/api/admin/reports/history",
     { preserveEnvelope: true, initialData: null }
   );

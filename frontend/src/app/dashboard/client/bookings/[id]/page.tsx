@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
-import { workspaceUi } from "@/lib/dashboard-workspace-ui";
+import { workspaceUi } from "@/lib/dashboard-ui";
 import { useAuth } from "@/contexts/AuthContext";
 
 /** Deep link to a booking — opens the same management dialog as the list page. */

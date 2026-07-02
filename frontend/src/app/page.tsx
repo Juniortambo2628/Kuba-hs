@@ -8,6 +8,9 @@ import { brandingFromSettings, getSSRSettings, homeHeroFromSettings } from "@/li
 const FeaturedServices = nextDynamic(() =>
   import("@/components/landing/FeaturedServices").then((m) => ({ default: m.FeaturedServices }))
 );
+const LandingAboutStory = nextDynamic(() =>
+  import("@/components/landing/LandingAboutStory").then((m) => ({ default: m.LandingAboutStory }))
+);
 const About = nextDynamic(() =>
   import("@/components/landing/About").then((m) => ({ default: m.About }))
 );
@@ -50,6 +53,7 @@ export default async function Home() {
   return (
     <MarketingShell>
       <Hero initialData={heroData} />
+      <LandingAboutStory />
       <FeaturedServices />
       <About />
       <Categories />

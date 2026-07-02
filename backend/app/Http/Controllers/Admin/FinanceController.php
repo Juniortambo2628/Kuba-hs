@@ -4,8 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
-use App\Models\Booking;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 class FinanceController extends Controller
@@ -13,7 +14,7 @@ class FinanceController extends Controller
     /**
      * Get financial overview and payout statistics.
      */
-    public function index()
+    public function index(): JsonResponse
     {
         $stats = [
             'total_volume' => Payment::where('status', 'completed')->sum('amount'),
@@ -61,7 +62,7 @@ class FinanceController extends Controller
     /**
      * Get detailed list of transactions with filtering.
      */
-    public function transactions(Request $request)
+    public function transactions(Request $request): LengthAwarePaginator
     {
         $query = Payment::with(['customer', 'provider.user', 'booking']);
 
@@ -71,12 +72,12 @@ class FinanceController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function(\Illuminate\Database\Eloquent\Builder $q) use ($search) {
+            $query->where(function (\Illuminate\Database\Eloquent\Builder $q) use ($search) {
                 $q->where('transaction_id', 'like', "%{$search}%")
-                  ->orWhereHas('customer', function($sq) use ($search) {
-                      $sq->where('first_name', 'like', "%{$search}%")
-                        ->orWhere('last_name', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('customer', function ($sq) use ($search) {
+                        $sq->where('first_name', 'like', "%{$search}%")
+                            ->orWhere('last_name', 'like', "%{$search}%");
+                    });
             });
         }
 

@@ -3,6 +3,9 @@
 namespace App\Services;
 
 use App\Models\Provider;
+use App\Enums\VerificationDocumentStatus;
+use App\Enums\ProviderComplianceStatus;
+use App\Enums\ProviderApplicationStatus;
 use Illuminate\Support\Facades\Log;
 
 class ProviderQualityService
@@ -46,11 +49,11 @@ class ProviderQualityService
         $thirtyDaysFromNow = now()->addDays(30);
 
         foreach ($documents as $doc) {
-            if ($doc->status === 'rejected') {
-                return 'non_compliant'; // Any rejected doc makes them non compliant
+            if ($doc->status === VerificationDocumentStatus::Rejected) {
+                return ProviderComplianceStatus::NonCompliant->value; // Any rejected doc makes them non compliant
             }
 
-            if ($doc->status === 'pending') {
+            if ($doc->status === VerificationDocumentStatus::Pending) {
                 $allApproved = false;
             }
 
@@ -62,18 +65,18 @@ class ProviderQualityService
         }
 
         if ($hasExpired) {
-            return 'non_compliant';
+            return ProviderComplianceStatus::NonCompliant->value;
         }
 
         if ($expiringSoon) {
-            return 'expiring_soon';
+            return ProviderComplianceStatus::ExpiringSoon->value;
         }
 
         if ($allApproved) {
-            return 'compliant';
+            return ProviderComplianceStatus::Compliant->value;
         }
 
-        return 'pending'; // Some are still pending approval, and none are expired/rejected
+        return ProviderComplianceStatus::Pending->value; // Some are still pending approval, and none are expired/rejected
     }
 
     /**
@@ -89,16 +92,16 @@ class ProviderQualityService
 
         // Factor 2: Compliance Penalty
         $compliancePenalty = 0;
-        if ($provider->compliance_status === 'non_compliant') {
+        if ($provider->compliance_status === ProviderComplianceStatus::NonCompliant) {
             $compliancePenalty = 40; // Severe penalty
-        } elseif ($provider->compliance_status === 'expiring_soon') {
+        } elseif ($provider->compliance_status === ProviderComplianceStatus::ExpiringSoon) {
             $compliancePenalty = 10; // Warning penalty
-        } elseif ($provider->compliance_status === 'pending') {
+        } elseif ($provider->compliance_status === ProviderComplianceStatus::Pending) {
             $compliancePenalty = 20; // Unverified penalty
         }
 
         // Factor 3: Application Status (if rejected, they shouldn't even be scored highly)
-        if ($provider->application_status === 'rejected' || $provider->application_status === 'suspended') {
+        if ($provider->application_status === ProviderApplicationStatus::Rejected || $provider->application_status === ProviderApplicationStatus::Suspended) {
             return 0.0;
         }
 

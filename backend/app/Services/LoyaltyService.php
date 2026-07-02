@@ -2,9 +2,10 @@
 
 namespace App\Services;
 
-use App\Models\User;
-use App\Models\LoyaltyPoint;
+use App\Enums\BookingStatus;
 use App\Models\Booking;
+use App\Models\LoyaltyPoint;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
 class LoyaltyService
@@ -15,7 +16,7 @@ class LoyaltyService
      */
     public function awardPointsForBooking(Booking $booking)
     {
-        if ($booking->status !== 'completed') {
+        if ($booking->status !== BookingStatus::Completed) {
             return;
         }
 
@@ -23,8 +24,8 @@ class LoyaltyService
         $amount = 0;
         if ($booking->payment) {
             $amount = $booking->payment->amount;
-        } else if ($booking->providerService) {
-            $amount = $booking->providerService->base_price;
+        } elseif ($booking->service) {
+            $amount = $booking->estimated_price ?? 0;
         }
 
         if ($amount <= 0) {
@@ -41,7 +42,7 @@ class LoyaltyService
                 'transaction_type' => 'earn',
             ]);
 
-            // Update user total points if we had a column for it, 
+            // Update user total points if we had a column for it,
             // but the KI/current models seem to calculate it on the fly or via sum.
             // Let's check User model for any 'points' field.
         });
@@ -76,7 +77,9 @@ class LoyaltyService
             ->where('transaction_type', 'earn')
             ->first();
 
-        if (!$earnedEntry) return;
+        if (! $earnedEntry) {
+            return;
+        }
 
         return DB::transaction(function () use ($booking, $earnedEntry) {
             return LoyaltyPoint::create([
@@ -96,7 +99,7 @@ class LoyaltyService
         $currentPoints = LoyaltyPoint::where('user_id', $user->id)->sum('points');
 
         if ($currentPoints < $points) {
-            throw new \Exception("Insufficient points balance.");
+            throw new \Exception('Insufficient points balance.');
         }
 
         return DB::transaction(function () use ($user, $points, $rewardType) {
@@ -108,7 +111,7 @@ class LoyaltyService
             ]);
 
             // Generate a simple voucher code
-            $voucherCode = 'KUBA-' . strtoupper(bin2hex(random_bytes(4)));
+            $voucherCode = 'KUBA-'.strtoupper(bin2hex(random_bytes(4)));
 
             return [
                 'points_deducted' => $points,

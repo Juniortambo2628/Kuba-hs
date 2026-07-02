@@ -4,63 +4,66 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\FAQ;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
-
 class FAQController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
         return response()->json(FAQ::orderBy('order')->orderBy('id', 'desc')->get());
     }
 
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'question' => 'required|string|max:255',
             'answer' => 'required|string',
             'category' => 'nullable|string',
             'is_active' => 'boolean',
-            'order' => 'integer'
+            'order' => 'integer',
         ]);
 
         $faq = FAQ::create($validated);
         Cache::forget('api_faqs_all');
+
         return response()->json($faq, 201);
 
     }
 
-    public function show(FAQ $faq)
+    public function show(FAQ $faq): JsonResponse
     {
         return response()->json($faq);
     }
 
-    public function update(Request $request, FAQ $faq)
+    public function update(Request $request, FAQ $faq): JsonResponse
     {
         $validated = $request->validate([
             'question' => 'sometimes|required|string|max:255',
             'answer' => 'sometimes|required|string',
             'category' => 'nullable|string',
             'is_active' => 'boolean',
-            'order' => 'integer'
+            'order' => 'integer',
         ]);
 
         $faq->update($validated);
         Cache::forget('api_faqs_all');
+
         return response()->json($faq);
 
     }
 
-    public function destroy(FAQ $faq)
+    public function destroy(FAQ $faq): JsonResponse
     {
         $faq->delete();
         Cache::forget('api_faqs_all');
+
         return response()->json(null, 204);
 
     }
 
-    public function reorder(Request $request)
+    public function reorder(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'items' => 'required|array',
@@ -73,6 +76,7 @@ class FAQController extends Controller
         }
 
         Cache::forget('api_faqs_all');
+
         return response()->json(['message' => 'Reordered successfully']);
 
     }

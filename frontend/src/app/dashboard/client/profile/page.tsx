@@ -35,7 +35,7 @@ import {
   DashboardPanelCard,
   DashboardStatusBadge,
 } from "@/components/dashboard/workspace";
-import { workspaceUi } from "@/lib/dashboard-workspace-ui";
+import { workspaceUi } from "@/lib/dashboard-ui";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { ProfileEditDialog } from "@/components/dashboard/ProfileEditDialog";

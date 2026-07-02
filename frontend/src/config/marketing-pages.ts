@@ -1,4 +1,5 @@
 import type { HighImpactHeroProps } from "@/components/shared/HighImpactHero";
+import { FALLBACK_IMAGES } from "@/lib/fallback-images";
 
 /** CMS hero keys + defaults for public marketing routes (SSOT). */
 export const MARKETING_PAGE_HERO = {
@@ -93,8 +94,7 @@ export const MARKETING_PAGE_HERO = {
       title: "Our Verified Professionals",
       subtitle: "Connect with top-rated local experts specialized in your selected industry verticals.",
       badge: "Verified Professionals",
-      bgImage:
-        "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?q=80&w=2070&auto=format&fit=crop",
+      bgImage: FALLBACK_IMAGES.team,
     },
   },
   categories: {
@@ -107,8 +107,7 @@ export const MARKETING_PAGE_HERO = {
       title: "Service Categories",
       subtitle: "Find the right professional for any task across our specialized industry verticals.",
       badge: "Explore Kuba",
-      bgImage:
-        "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?q=80&w=2070&auto=format&fit=crop",
+      bgImage: FALLBACK_IMAGES.team,
     },
   },
   quotesApply: {
@@ -133,8 +132,7 @@ export const MARKETING_PAGE_HERO = {
       title: "Service Detail",
       subtitle: "Compare professionals, pricing, and book on Kuba.",
       badge: "Service",
-      bgImage:
-        "https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=2070&auto=format&fit=crop",
+      bgImage: FALLBACK_IMAGES.cleaning,
     },
   },
   providerProfile: {
@@ -147,8 +145,7 @@ export const MARKETING_PAGE_HERO = {
       title: "Professional Profile",
       subtitle: "Explore services, reviews, and book with a verified Kuba professional.",
       badge: "Professional",
-      bgImage:
-        "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?q=80&w=2070&auto=format&fit=crop",
+      bgImage: FALLBACK_IMAGES.team,
     },
   },
   providerApply: {

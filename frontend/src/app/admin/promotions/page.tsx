@@ -22,7 +22,7 @@ import {
   TrendingUp,
   Users
 } from "lucide-react";
-import { useApiData } from "@/hooks/useApiData";
+import { useData } from "@/hooks/useData";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -35,7 +35,7 @@ import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import axiosInstance from "@/lib/axios";
 import { toast } from "sonner";
-import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
 
 interface PromoCode {
     id: number;
@@ -53,7 +53,7 @@ interface PromoCode {
 }
 
 export default function PromotionsPage() {
-    const { data: promoData, isLoading, refetch } = useApiData<{data: PromoCode[]}>("/api/admin/promo-codes", { initialData: { data: [] } });
+    const { data: promoData, isLoading, refetch } = useData<{data: PromoCode[]}>("/api/admin/promo-codes", { initialData: { data: [] } });
     const promoCodes = promoData?.data || [];
     
     const [searchQuery, setSearchQuery] = useState("");
@@ -371,9 +371,9 @@ export default function PromotionsPage() {
                 </SheetContent>
             </Sheet>
 
-            <ConfirmDeleteDialog 
-                isOpen={!!deleteId}
-                onClose={() => setDeleteId(null)}
+            <AppConfirmDialog 
+                open={!!deleteId}
+                onOpenChange={() => setDeleteId(null)}
                 onConfirm={handleDelete}
                 title="Archive Campaign signal?"
                 description="This will permanently nullify the voucher logic and prevent further usage. All historical records will remain intact."

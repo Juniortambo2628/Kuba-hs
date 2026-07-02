@@ -14,9 +14,9 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { DashboardListToolbar } from "@/components/shared/DashboardListToolbar";
-import { BookingStatusBadge } from "@/components/shared/BookingStatusBadge";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 import { BookingCard } from "@/components/shared/BookingCard";
-import { DashboardEmptyState } from "@/components/shared/DashboardEmptyState";
+import { EmptyState } from "@/components/shared/ui/EmptyState";
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
 import { DashboardSuspenseFallback } from "@/components/shared/DashboardSuspenseFallback";
 import {
@@ -24,7 +24,7 @@ import {
   DashboardFrostedStatCard,
   DashboardFrostedStatGrid,
 } from "@/components/dashboard/workspace";
-import { workspaceUi } from "@/lib/dashboard-workspace-ui";
+import { workspaceUi } from "@/lib/dashboard-ui";
 import {
   Table,
   TableBody,
@@ -35,7 +35,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSearchState } from "@/hooks/useSearchState";
 import { Booking } from "@/types";
-import { unwrapResourceList } from "@/lib/api-resource";
+import { extractApiList } from "@/lib/api-response";
 import { BookingDetailDialog } from "@/components/booking/BookingDetailDialog";
 import { ProviderBookingActions } from "@/components/bookings/ProviderBookingActions";
 
@@ -53,7 +53,7 @@ function BookingsHistoryContent() {
     (url) => axiosInstance.get(url).then((res) => res.data)
   );
 
-  const bookings = unwrapResourceList<Booking>(bookingsData);
+  const bookings = extractApiList(bookingsData);
   const activeCount = bookings.filter((b) =>
     ["pending", "confirmed", "in_progress"].includes(b.status)
   ).length;
@@ -89,7 +89,7 @@ function BookingsHistoryContent() {
               : `Booking ${nextStatus}`
       );
       const fresh = await mutate();
-      const list = unwrapResourceList<Booking>(fresh);
+      const list = extractApiList(fresh);
       const updated = list.find((b) => b.id === bookingId);
       if (updated) setSelectedBooking(updated);
       else if (selectedBooking?.id === bookingId) {
@@ -185,7 +185,8 @@ function BookingsHistoryContent() {
               {bookings.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="p-0">
-                    <DashboardEmptyState
+                    <EmptyState
+                      variant="dashboard"
                       title="No bookings found"
                       className="min-h-[320px]"
                     />
@@ -221,7 +222,7 @@ function BookingsHistoryContent() {
                       </p>
                     </TableCell>
                     <TableCell className="py-6">
-                      <BookingStatusBadge status={booking.status} />
+                      <StatusBadge status={booking.status} type="booking" />
                     </TableCell>
                     <TableCell className="pr-10 py-6 text-right" onClick={(e) => e.stopPropagation()}>
                       <ProviderBookingActions
@@ -242,7 +243,7 @@ function BookingsHistoryContent() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {bookings.length === 0 ? (
-            <DashboardEmptyState title="No bookings found" className="col-span-full h-48" />
+            <EmptyState variant="dashboard" title="No bookings found" className="col-span-full h-48" />
           ) : (
             bookings.map((booking) => (
               <BookingCard

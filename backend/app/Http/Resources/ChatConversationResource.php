@@ -21,7 +21,7 @@ class ChatConversationResource extends JsonResource
             'unread_count' => (int) ($this->unread_count ?? 0),
             'customer' => $this->whenLoaded('customer', fn () => new ChatUserResource($this->customer)),
             'provider' => $this->whenLoaded('provider', function () {
-                if (!$this->provider) {
+                if (! $this->provider) {
                     return null;
                 }
 
@@ -34,7 +34,7 @@ class ChatConversationResource extends JsonResource
                 ];
             }),
             'booking' => $this->whenLoaded('booking', function () {
-                if (!$this->booking) {
+                if (! $this->booking) {
                     return null;
                 }
 

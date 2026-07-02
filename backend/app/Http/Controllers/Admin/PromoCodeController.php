@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\PromoCode;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class PromoCodeController extends Controller
@@ -11,17 +12,17 @@ class PromoCodeController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(): JsonResponse
     {
         return response()->json([
-            'data' => PromoCode::latest()->get()
+            'data' => PromoCode::latest()->get(),
         ]);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(PromoCode $promoCode)
+    public function show(PromoCode $promoCode): JsonResponse
     {
         return response()->json(['data' => $promoCode]);
     }
@@ -29,7 +30,7 @@ class PromoCodeController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'code' => 'required|string|unique:promo_codes',
@@ -47,17 +48,17 @@ class PromoCodeController extends Controller
 
         return response()->json([
             'message' => 'Promo code created successfully.',
-            'data' => $promoCode
+            'data' => $promoCode,
         ], 201);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, PromoCode $promoCode)
+    public function update(Request $request, PromoCode $promoCode): JsonResponse
     {
         $validated = $request->validate([
-            'code' => 'required|string|unique:promo_codes,code,' . $promoCode->id,
+            'code' => 'required|string|unique:promo_codes,code,'.$promoCode->id,
             'discount_type' => 'required|in:fixed,percentage',
             'discount_value' => 'required|numeric|min:0',
             'min_booking_amount' => 'nullable|numeric|min:0',
@@ -72,59 +73,49 @@ class PromoCodeController extends Controller
 
         return response()->json([
             'message' => 'Promo code updated successfully.',
-            'data' => $promoCode
+            'data' => $promoCode,
         ]);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(PromoCode $promoCode)
+    public function destroy(PromoCode $promoCode): JsonResponse
     {
         $promoCode->delete();
 
         return response()->json([
-            'message' => 'Promo code deleted successfully.'
+            'message' => 'Promo code deleted successfully.',
         ]);
     }
 
     /**
      * Toggle active status.
      */
-    public function toggleStatus(PromoCode $promoCode)
+    public function toggleStatus(PromoCode $promoCode): JsonResponse
     {
-        $promoCode->update(['is_active' => !$promoCode->is_active]);
+        $promoCode->update(['is_active' => ! $promoCode->is_active]);
 
         return response()->json([
             'message' => 'Promo code status updated.',
-            'data' => $promoCode
+            'data' => $promoCode,
         ]);
     }
 
     /**
      * Validate a promo code for a client.
      */
-    public function validateCode(Request $request)
+    public function validateCode(Request $request): JsonResponse
     {
         $request->validate([
             'code' => 'required|string',
-            'amount' => 'required|numeric'
+            'amount' => 'required|numeric',
         ]);
 
-        $promoCode = PromoCode::where('code', $request->code)->first();
-
-        if (!$promoCode) {
-            return response()->json(['message' => 'Invalid promo code.'], 404);
-        }
-
-        if (!$promoCode->isValid($request->amount)) {
-            return response()->json(['message' => 'Promo code is not applicable or has expired.'], 422);
-        }
-
-        return response()->json([
-            'valid' => true,
-            'discount_amount' => $promoCode->calculateDiscount($request->amount),
-            'promo_code' => $promoCode
-        ]);
+        return app(\App\Actions\ValidatePromoCode::class)(
+            $request->code,
+            $request->amount,
+            skipActiveCheck: true
+        );
     }
 }

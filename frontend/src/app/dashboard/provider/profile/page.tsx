@@ -28,7 +28,7 @@ import {
   DashboardPanelCard,
   DashboardStatusBadge,
 } from "@/components/dashboard/workspace";
-import { workspaceUi } from "@/lib/dashboard-workspace-ui";
+import { workspaceUi } from "@/lib/dashboard-ui";
 import Link from "next/link";
 import Image from "next/image";
 import { getMediaUrl, cn } from "@/lib/utils";

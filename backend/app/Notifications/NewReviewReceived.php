@@ -5,7 +5,6 @@ namespace App\Notifications;
 use App\Models\Review;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class NewReviewReceived extends Notification implements ShouldQueue
@@ -23,6 +22,7 @@ class NewReviewReceived extends Notification implements ShouldQueue
         if (config('mail.default') !== 'log' && config('mail.default') !== 'array') {
             $channels[] = 'mail';
         }
+
         return $channels;
     }
 
@@ -32,13 +32,13 @@ class NewReviewReceived extends Notification implements ShouldQueue
             return (new \App\Mail\DynamicMail('empty'))->to($notifiable->email);
         }
 
-        return (new \App\Mail\DynamicMail('new_review_received_provider', [
+        return new \App\Mail\DynamicMail('new_review_received_provider', [
             'provider_name' => $this->review->booking->provider->user->name,
             'rating' => $this->review->rating,
             'booking_number' => $this->review->booking->booking_number,
             'reviews_url' => url('/dashboard/reviews'),
             'comment' => $this->review->comment ?? 'No comment provided.',
-        ], $notifiable));
+        ], $notifiable);
     }
 
     /**

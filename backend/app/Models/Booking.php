@@ -2,19 +2,21 @@
 
 namespace App\Models;
 
+use App\Enums\BookingPaymentStatus;
+use App\Enums\BookingStatus;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Scout\Searchable;
-
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
 class Booking extends Model implements HasMedia
 {
     /** @use HasFactory<\Database\Factories\BookingFactory> */
-    use HasFactory, HasUuids, Searchable, InteractsWithMedia;
+    use HasFactory, HasUuids, InteractsWithMedia, Searchable, SoftDeletes;
 
     protected $fillable = [
         'customer_id',
@@ -52,6 +54,8 @@ class Booking extends Model implements HasMedia
         'completed_at' => 'datetime',
         'estimated_price' => 'decimal:2',
         'final_price' => 'decimal:2',
+        'status' => BookingStatus::class,
+        'payment_status' => BookingPaymentStatus::class,
     ];
 
     protected $appends = ['image_urls', 'total_price', 'elapsed_seconds'];
@@ -69,14 +73,17 @@ class Booking extends Model implements HasMedia
      */
     public function getElapsedSecondsAttribute(): ?int
     {
-        if (!$this->started_at) return null;
+        if (! $this->started_at) {
+            return null;
+        }
         $end = $this->completed_at ?? now();
+
         return (int) $this->started_at->diffInSeconds($end);
     }
 
     public function getImageUrlsAttribute(): array
     {
-        return $this->getMedia('issue_images')->map(fn($media) => [
+        return $this->getMedia('issue_images')->map(fn ($media) => [
             'id' => $media->id,
             'url' => $media->getFullUrl(),
         ])->toArray();
@@ -120,6 +127,45 @@ class Booking extends Model implements HasMedia
     public function activityLogs(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(BookingActivityLog::class);
+    }
+
+    public function conversation(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Conversation::class);
+    }
+
+    // ── Query Scopes ──────────────────────────────────────────────
+
+    /**
+     * Scope: filter by status.
+     */
+    public function scopeByStatus($query, ?string $status)
+    {
+        if ($status) {
+            $query->where('status', $status);
+        }
+
+        return $query;
+    }
+
+    /**
+     * Scope: search bookings by number, customer name, or service name.
+     */
+    public function scopeSearch($query, ?string $search)
+    {
+        if (! $search) {
+            return $query;
+        }
+
+        return $query->where(function ($q) use ($search) {
+            $q->where('booking_number', 'like', "%{$search}%")
+                ->orWhereHas('customer', function ($cq) use ($search) {
+                    $cq->where('first_name', 'like', "%{$search}%")
+                        ->orWhere('last_name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                })
+                ->orWhereHas('service', fn ($sq) => $sq->where('name', 'like', "%{$search}%"));
+        });
     }
 
     /**

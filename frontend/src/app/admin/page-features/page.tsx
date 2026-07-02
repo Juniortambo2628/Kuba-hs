@@ -14,8 +14,8 @@ import { Loader2, Plus, Trash2, Edit, Monitor, Star, Sparkles } from "lucide-rea
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
-import { useApiData } from "@/hooks/useApiData";
-import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { useData } from "@/hooks/useData";
+import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
@@ -62,7 +62,7 @@ interface PageFeature {
 }
 
 export default function PageFeaturesPage() {
-    const { data: featuresData, isLoading, refetch: fetchFeatures } = useApiData<any>("/api/admin/page-features", { initialData: [] });
+    const { data: featuresData, isLoading, refetch: fetchFeatures } = useData<any>("/api/admin/page-features", { initialData: [] });
     const features = (featuresData || []) as PageFeature[];
     const [isOpen, setIsOpen] = useState(false);
     const [selectedFeature, setSelectedFeature] = useState<PageFeature | null>(null);
@@ -78,6 +78,7 @@ export default function PageFeaturesPage() {
         order_index: 0,
         is_active: true
     });
+    const [deleteTarget, setDeleteTarget] = useState<PageFeature | null>(null);
 
 
     const handleSave = async () => {
@@ -299,16 +300,9 @@ export default function PageFeaturesPage() {
                                                     <Button variant="ghost" size="icon" onClick={() => openEdit(feature)} className="h-8 w-8 text-muted-foreground hover:text-primary">
                                                         <Edit className="w-4 h-4" />
                                                     </Button>
-                                                    <ConfirmDeleteDialog
-                                                        trigger={
-                                                            <button className="h-8 w-8 text-muted-foreground hover:text-red-500 rounded-md hover:bg-red-50 flex items-center justify-center transition-colors">
-                                                                <Trash2 className="w-4 h-4" />
-                                                            </button>
-                                                        }
-                                                        title="Delete Feature?"
-                                                        description={`Archiving "${feature.title}" will remove it from the ${feature.page_name} page immediately.`}
-                                                        onConfirm={() => handleDelete(feature.id)}
-                                                    />
+                                                    <button className="h-8 w-8 text-muted-foreground hover:text-red-500 rounded-md hover:bg-red-50 flex items-center justify-center transition-colors" onClick={() => setDeleteTarget(feature)}>
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
                                                 </div>
                                             </div>
                                             <p className="text-sm text-muted-foreground line-clamp-2 mb-4 leading-relaxed font-medium">
@@ -338,6 +332,13 @@ export default function PageFeaturesPage() {
                     </div>
                 )}
             </div>
+            <AppConfirmDialog
+                open={!!deleteTarget}
+                onOpenChange={() => setDeleteTarget(null)}
+                onConfirm={async () => { if (deleteTarget) { await handleDelete(deleteTarget.id); setDeleteTarget(null); } }}
+                title="Delete Feature?"
+                description={`Archiving "${deleteTarget?.title}" will remove it from the ${deleteTarget?.page_name} page immediately.`}
+            />
         </DashboardPageContainer>
     );
 }

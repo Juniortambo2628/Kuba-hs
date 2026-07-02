@@ -4,18 +4,18 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
-use App\Models\Payment;
-use App\Models\Provider;
 use App\Models\ContactMessage;
 use App\Models\CustomQuote;
+use App\Models\Payment;
+use App\Models\Provider;
 use App\Models\Review;
 use App\Models\User;
 use App\Models\VerificationDocument;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\JsonResponse;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
         $userCount = User::count();
         $providerCount = Provider::count();
@@ -44,16 +44,16 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function messagesSummary()
+    public function messagesSummary(): JsonResponse
     {
         $contactCount = ContactMessage::where('status', 'new')->count();
         $feedbackCount = Review::where('status', 'hidden')->count();
         $quoteCount = CustomQuote::where('status', 'pending')->count();
 
         $recentSignals = collect([
-            ...ContactMessage::where('status', 'new')->latest()->limit(3)->get()->map(fn($m) => ['type' => 'contact', 'data' => $m]),
-            ...Review::where('status', 'hidden')->latest()->limit(3)->get()->map(fn($f) => ['type' => 'feedback', 'data' => $f]),
-            ...CustomQuote::where('status', 'pending')->latest()->limit(3)->get()->map(fn($q) => ['type' => 'quote', 'data' => $q]),
+            ...ContactMessage::where('status', 'new')->latest()->limit(3)->get()->map(fn ($m) => ['type' => 'contact', 'data' => $m]),
+            ...Review::where('status', 'hidden')->latest()->limit(3)->get()->map(fn ($f) => ['type' => 'feedback', 'data' => $f]),
+            ...CustomQuote::where('status', 'pending')->latest()->limit(3)->get()->map(fn ($q) => ['type' => 'quote', 'data' => $q]),
         ])->sortByDesc('data.created_at')->values()->all();
 
         return response()->json([
@@ -61,9 +61,9 @@ class DashboardController extends Controller
                 'contacts' => $contactCount,
                 'feedback' => $feedbackCount,
                 'quotes' => $quoteCount,
-                'total' => $contactCount + $feedbackCount + $quoteCount
+                'total' => $contactCount + $feedbackCount + $quoteCount,
             ],
-            'recent' => $recentSignals
+            'recent' => $recentSignals,
         ]);
     }
 }

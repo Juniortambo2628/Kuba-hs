@@ -37,12 +37,12 @@ class ProviderService extends Model implements \Spatie\MediaLibrary\HasMedia
     public function getImageUrlsAttribute(): array
     {
         $media = $this->getMedia('services');
-        
+
         if ($media->isEmpty() && $this->service) {
             $media = $this->service->getMedia('images');
         }
 
-        return $media->map(fn($m) => [
+        return $media->map(fn ($m) => [
             'id' => $m->id,
             'url' => $m->getFullUrl(),
         ])->toArray();

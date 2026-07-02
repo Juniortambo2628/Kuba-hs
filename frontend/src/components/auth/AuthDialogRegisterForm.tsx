@@ -17,7 +17,7 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import { dialogFormUi } from "@/lib/dialog-form-ui";
+import { dialogFormUi } from "@/lib/crud-dialog-ui";
 import {
   DialogFormField,
   DialogFormSection,

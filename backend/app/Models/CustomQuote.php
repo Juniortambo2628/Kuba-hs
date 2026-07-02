@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\CustomQuoteStatus;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -21,5 +22,9 @@ class CustomQuote extends Model
         'estimated_volume',
         'description',
         'status',
+    ];
+
+    protected $casts = [
+        'status' => CustomQuoteStatus::class,
     ];
 }

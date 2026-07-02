@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\CustomQuoteStatus;
 use App\Http\Controllers\Controller;
-use App\Models\CustomQuote;
 use App\Http\Resources\CustomQuoteResource;
+use App\Models\CustomQuote;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class QuoteController extends Controller
@@ -12,15 +14,17 @@ class QuoteController extends Controller
     /**
      * Display a listing of custom quotes.
      */
-    public function index()
+    public function index(): JsonResponse
     {
-        return CustomQuoteResource::collection(CustomQuote::latest()->get());
+        $quotes = CustomQuote::latest()->paginate(20);
+
+        return response()->json($quotes);
     }
 
     /**
      * Display the specified custom quote.
      */
-    public function show(CustomQuote $quote)
+    public function show(CustomQuote $quote): JsonResponse
     {
         return new CustomQuoteResource($quote);
     }
@@ -28,28 +32,29 @@ class QuoteController extends Controller
     /**
      * Update the status of a custom quote.
      */
-    public function updateStatus(Request $request, CustomQuote $quote)
+    public function updateStatus(Request $request, CustomQuote $quote): JsonResponse
     {
         $validated = $request->validate([
-            'status' => 'required|string|in:pending,reviewed,contacted,contracted,rejected'
+            'status' => 'required|string|in:'.implode(',', array_column(CustomQuoteStatus::cases(), 'value')),
         ]);
 
         $quote->update([
-            'status' => $validated['status']
+            'status' => $validated['status'],
         ]);
 
         return response()->json([
             'message' => 'Quote status updated successfully',
-            'quote' => new CustomQuoteResource($quote)
+            'quote' => new CustomQuoteResource($quote),
         ]);
     }
 
     /**
      * Remove the specified custom quote from storage.
      */
-    public function destroy(CustomQuote $quote)
+    public function destroy(CustomQuote $quote): JsonResponse
     {
         $quote->delete();
+
         return response()->json(['message' => 'Quote deleted successfully']);
     }
 }
