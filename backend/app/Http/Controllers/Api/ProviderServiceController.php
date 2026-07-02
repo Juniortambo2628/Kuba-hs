@@ -3,17 +3,18 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreProviderServiceRequest;
 use App\Http\Resources\ProviderServiceResource;
 use App\Http\Resources\ServiceResource;
-use App\Http\Requests\StoreProviderServiceRequest;
 use App\Models\Service;
 use App\Services\ProviderManagementService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ProviderServiceController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
         $user = Auth::user();
         $provider = $user->ensureProviderProfile();
@@ -38,7 +39,7 @@ class ProviderServiceController extends Controller
         ]);
     }
 
-    public function store(StoreProviderServiceRequest $request, ProviderManagementService $serviceManager)
+    public function store(StoreProviderServiceRequest $request, ProviderManagementService $serviceManager): JsonResponse
     {
         $user = Auth::user();
         $provider = $user->ensureProviderProfile();
@@ -61,7 +62,7 @@ class ProviderServiceController extends Controller
         ], 201);
     }
 
-    public function update(Request $request, string $id, ProviderManagementService $serviceManager)
+    public function update(Request $request, string $id, ProviderManagementService $serviceManager): JsonResponse
     {
         $user = Auth::user();
         $provider = $user->ensureProviderProfile();
@@ -88,7 +89,7 @@ class ProviderServiceController extends Controller
         ]);
     }
 
-    public function destroy(string $id)
+    public function destroy(string $id): JsonResponse
     {
         $user = Auth::user();
         $provider = $user->ensureProviderProfile();

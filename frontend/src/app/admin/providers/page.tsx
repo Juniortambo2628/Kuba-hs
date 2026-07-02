@@ -19,8 +19,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
-import { DashboardStatusBadge } from "@/components/shared/DashboardStatusBadge";
-import { ComplianceStatusBadge } from "@/components/shared/ComplianceStatusBadge";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 import { DashboardListToolbar } from "@/components/shared/DashboardListToolbar";
 import {
   DropdownMenu,
@@ -38,7 +37,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
 import {
   DashboardDataCard,
@@ -234,10 +233,10 @@ function AdminProvidersContent() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <DashboardStatusBadge status={p.application_status || "pending"} />
+                        <StatusBadge status={p.application_status || "pending"} type="dashboard" />
                       </TableCell>
                       <TableCell>
-                        <ComplianceStatusBadge status={p.compliance_status || "pending"} />
+<StatusBadge status={p.compliance_status || "pending"} type="compliance" />
                       </TableCell>
                       <TableCell>
                         <span className="flex items-center gap-1 text-sm font-bold">
@@ -282,13 +281,13 @@ function AdminProvidersContent() {
                   <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
                     <Briefcase className="w-5 h-5 text-primary" />
                   </div>
-                  <DashboardStatusBadge status={p.application_status || "pending"} />
+                  <StatusBadge status={p.application_status || "pending"} type="dashboard" />
                 </div>
                 <div>
                   <h3 className="font-bold">{p.business_name}</h3>
                   <p className="text-xs text-muted-foreground">{p.user?.email}</p>
                 </div>
-                <ComplianceStatusBadge status={p.compliance_status || "pending"} />
+                <StatusBadge status={p.compliance_status || "pending"} type="compliance" />
                 <Button asChild variant="outline" className="w-full rounded-xl">
                   <Link href={`/admin/providers/${p.id}`}>
                     Manage <ExternalLink className="w-3.5 h-3.5 ml-2" />
@@ -352,9 +351,9 @@ function AdminProvidersContent() {
         </DialogContent>
       </Dialog>
 
-      <ConfirmDeleteDialog
-        isOpen={!!deleteId}
-        onClose={() => setDeleteId(null)}
+      <AppConfirmDialog
+        open={!!deleteId}
+        onOpenChange={() => setDeleteId(null)}
         onConfirm={() => deleteId && handleDeactivate(deleteId)}
         title="Deactivate provider?"
         description="This suspends the provider account and sets availability to offline. Bookings history is preserved."

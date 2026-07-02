@@ -32,10 +32,10 @@ import {
   DropdownMenuLabel
 } from "@/components/ui/dropdown-menu";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
-import { DashboardStatusBadge } from "@/components/shared/DashboardStatusBadge";
-import { DashboardEmptyState } from "@/components/shared/DashboardEmptyState";
-import { useApiData } from "@/hooks/useApiData";
-import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { StatusBadge } from "@/components/shared/StatusBadge";
+import { EmptyState } from "@/components/shared/ui/EmptyState";
+import { useData } from "@/hooks/useData";
+import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
 import {
   DashboardAlertCancel,
   DashboardAlertAction,
@@ -53,9 +53,10 @@ import {
 
 function AdminContactContent() {
   const { search, setSearch } = useSearchState();
-  const { data: messagesData, isLoading, refetch: fetchMessages } = useApiData<any>(`/api/admin/contact?search=${search}`, { initialData: null });
+  const { data: messagesData, isLoading, refetch: fetchMessages } = useData<any>(`/api/admin/contact?search=${search}`, { initialData: null });
   const messages = (messagesData?.data || []) as ContactMessage[];
   const [statusUpdate, setStatusUpdate] = useState<{ id: string | number, status: string } | null>(null);
+  const [deleteId, setDeleteId] = useState<string | number | null>(null);
   
   // Define default values
   const viewMode = 'list';
@@ -130,8 +131,9 @@ function AdminContactContent() {
               ) : messages.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="p-0">
-                    <DashboardEmptyState 
-                      title="No messages found" 
+                    <EmptyState
+                      variant="dashboard"
+                      title="No messages found"
                       description="You do not have any new inquiries."
                     />
                   </TableCell>
@@ -156,8 +158,9 @@ function AdminContactContent() {
                     <p className="text-xs text-muted-foreground truncate max-w-[200px]">{m.message}</p>
                   </TableCell>
                   <TableCell>
-                    <DashboardStatusBadge 
+                    <StatusBadge 
                         status={m.status === 'new' ? 'Pending' : m.status === 'read' ? 'Reviewed' : 'Completed'} 
+                        type="dashboard"
                     />
                   </TableCell>
                   <TableCell className="text-[10px] font-bold text-muted-foreground">
@@ -185,16 +188,9 @@ function AdminContactContent() {
                            <MessageSquare className="w-3.5 h-3.5" /> Reply to Email
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <ConfirmDeleteDialog
-                            trigger={
-                                <button className="w-full text-left px-2 py-1.5 text-xs font-medium text-red-500 hover:text-red-600 hover:bg-red-50 gap-2 flex items-center rounded-md">
-                                    <Trash2 className="w-3.5 h-3.5" /> Delete Message
-                                </button>
-                            }
-                            title="Purge Message?"
-                            description="This action will permanently delete this contact inquiry. This cannot be undone."
-                            onConfirm={() => deleteMessage(m.id)}
-                        />
+                        <button className="w-full text-left px-2 py-1.5 text-xs font-medium text-red-500 hover:text-red-600 hover:bg-red-50 gap-2 flex items-center rounded-md" onClick={() => setDeleteId(m.id)}>
+                            <Trash2 className="w-3.5 h-3.5" /> Delete Message
+                        </button>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -230,6 +226,13 @@ function AdminContactContent() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <AppConfirmDialog
+        open={deleteId !== null}
+        onOpenChange={() => setDeleteId(null)}
+        onConfirm={async () => { if (deleteId !== null) { await deleteMessage(deleteId); setDeleteId(null); } }}
+        title="Purge Message?"
+        description="This action will permanently delete this contact inquiry. This cannot be undone."
+      />
     </DashboardPageContainer>
   );
 }

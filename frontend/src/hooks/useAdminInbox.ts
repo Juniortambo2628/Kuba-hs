@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo } from "react";
 import axiosInstance from "@/lib/axios";
-import { useApiData } from "@/hooks/useApiData";
+import { useData } from "@/hooks/useData";
 import { extractApiList } from "@/lib/api-response";
 import { toast } from "sonner";
 
@@ -81,21 +81,21 @@ export function useAdminInbox() {
     data: contactRaw,
     refetch: refetchContacts,
     isLoading: contactLoading,
-  } = useApiData<unknown>("/api/admin/contact", { initialData: null });
+  } = useData<unknown>("/api/admin/contact", { initialData: null });
 
   const {
     data: feedbackRaw,
     refetch: refetchFeedback,
     isLoading: feedbackLoading,
-  } = useApiData<unknown>("/api/admin/feedback", { preserveEnvelope: true, initialData: null });
+  } = useData<unknown>("/api/admin/feedback", { preserveEnvelope: true, initialData: null });
 
   const {
     data: quoteRaw,
     refetch: refetchQuotes,
     isLoading: quotesLoading,
-  } = useApiData<unknown>("/api/admin/quotes", { initialData: null });
+  } = useData<unknown>("/api/admin/quotes", { initialData: null });
 
-  const { data: summary, isLoading: summaryLoading } = useApiData<{
+  const { data: summary, isLoading: summaryLoading } = useData<{
     counts?: { contacts?: number; feedback?: number; quotes?: number; total?: number };
     recent?: unknown[];
   }>("/api/admin/messages-summary", { initialData: null });

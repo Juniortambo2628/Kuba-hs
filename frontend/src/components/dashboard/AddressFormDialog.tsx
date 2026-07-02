@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FieldLabel } from "@/components/shared/ui";
 import { CrudFormDialog } from "@/components/shared/dialog/CrudFormDialog";
-import { workspaceUi } from "@/lib/dashboard-workspace-ui";
+import { workspaceUi } from "@/lib/dashboard-ui";
 import axiosInstance, { handleApiError } from "@/lib/axios";
 import { toast } from "sonner";
 

@@ -3,17 +3,17 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
-use App\Models\Booking;
 use App\Http\Resources\BookingResource;
 use App\Http\Resources\LoyaltyPointResource;
-use Illuminate\Http\Request;
+use App\Models\Booking;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
-        $user = Auth::user();
+        $user = Auth::user()->load('loyaltyPoints');
 
         $bookings = Booking::where('customer_id', $user->id)
             ->with(['provider.user', 'service', 'address', 'review'])

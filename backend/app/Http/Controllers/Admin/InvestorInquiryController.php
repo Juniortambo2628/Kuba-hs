@@ -2,43 +2,46 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\InvestorInquiryStatus;
 use App\Http\Controllers\Controller;
 use App\Models\InvestorInquiry;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class InvestorInquiryController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
         return \App\Http\Resources\InvestorInquiryResource::collection(InvestorInquiry::latest()->get());
     }
 
-    public function show(InvestorInquiry $investorInquiry)
+    public function show(InvestorInquiry $investorInquiry): JsonResponse
     {
-        if ($investorInquiry->status === 'pending') {
-            $investorInquiry->update(['status' => 'reviewed']);
+        if ($investorInquiry->status === InvestorInquiryStatus::Pending) {
+            $investorInquiry->update(['status' => InvestorInquiryStatus::Reviewed]);
         }
+
         return new \App\Http\Resources\InvestorInquiryResource($investorInquiry);
     }
 
-    public function updateStatus(Request $request, InvestorInquiry $investorInquiry)
+    public function updateStatus(Request $request, InvestorInquiry $investorInquiry): JsonResponse
     {
         $validated = $request->validate([
-            'status' => 'required|string|in:pending,reviewed,contacted,rejected'
+            'status' => 'required|string|in:'.implode(',', array_column(InvestorInquiryStatus::cases(), 'value')),
         ]);
 
         $investorInquiry->update($validated);
 
         return response()->json([
             'message' => 'Inquiry status updated successfully',
-            'inquiry' => $investorInquiry
+            'inquiry' => $investorInquiry,
         ]);
     }
 
-    public function destroy(InvestorInquiry $investorInquiry)
+    public function destroy(InvestorInquiry $investorInquiry): JsonResponse
     {
         $investorInquiry->delete();
+
         return response()->json(['message' => 'Inquiry deleted successfully']);
     }
 }
-

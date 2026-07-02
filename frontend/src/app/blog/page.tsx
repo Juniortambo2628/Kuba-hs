@@ -15,6 +15,7 @@ import { useCMS } from "@/contexts/CMSContext";
 import { getMediaUrl } from "@/lib/utils";
 import { designSystem } from "@/lib/design-system";
 import Image from "next/image";
+import { FALLBACK_IMAGES } from "@/lib/fallback-images";
 
 export default function BlogList() {
   const { getS, getImg } = useCMS();
@@ -96,7 +97,7 @@ export default function BlogList() {
           >
             <div className="aspect-[4/3] rounded-[3rem] overflow-hidden bg-muted shadow-2xl relative">
               <Image 
-                src={getImg('market_narratives', 'journal_featured_image', 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&q=80')} 
+                src={getImg('market_narratives', 'journal_featured_image', FALLBACK_IMAGES.office)} 
                 fill
                 className="object-cover" 
                 alt="Journal Featured" 

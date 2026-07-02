@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
 
 class AnalyticsController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
         $now = now();
         $last30Days = $now->copy()->subDays(30);
@@ -77,7 +78,7 @@ class AnalyticsController extends Controller
                 'total_bookings' => \App\Models\Booking::count(),
                 'platform_revenue' => \App\Models\Payment::where('status', 'completed')->sum('platform_fee'),
                 'avg_rating' => \App\Models\Review::avg('rating') ?: 0,
-            ]
+            ],
         ]);
     }
 }

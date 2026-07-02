@@ -25,6 +25,7 @@ class StoreReviewRequest extends FormRequest
             'booking_id' => 'required|exists:bookings,id',
             'rating' => 'required|integer|min:1|max:5',
             'comment' => 'nullable|string|max:1000',
+            'images.*' => 'nullable|image|max:5120',
         ];
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\BlogPost;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class BlogController extends Controller
@@ -11,7 +12,7 @@ class BlogController extends Controller
     /**
      * Display a listing of published blog posts.
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $query = BlogPost::where('is_published', true)
             ->with(['author:id,name,avatar_url'])
@@ -22,7 +23,7 @@ class BlogController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('excerpt', 'like', "%{$search}%");
+                    ->orWhere('excerpt', 'like', "%{$search}%");
             });
         }
 
@@ -35,14 +36,14 @@ class BlogController extends Controller
                 'current_page' => $posts->currentPage(),
                 'last_page' => $posts->lastPage(),
                 'total' => $posts->total(),
-            ]
+            ],
         ]);
     }
 
     /**
      * Display the specified published blog post by slug.
      */
-    public function show($slug)
+    public function show($slug): JsonResponse
     {
         $post = BlogPost::where('slug', $slug)
             ->where('is_published', true)
@@ -51,7 +52,7 @@ class BlogController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $post
+            'data' => $post,
         ]);
     }
 }

@@ -1,8 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import axiosInstance from "@/lib/axios";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -23,53 +21,17 @@ import {
   landingTitleParts,
   LandingGradientTitle,
 } from "@/lib/landing-section-header-copy";
-
-const CATEGORY_ORDER = [
-  "Cleaning & Maintenance",
-  "Electrical",
-  "Health & Wellness",
-  "Personal & Grooming",
-  "Education & Training",
-  "Food & Hospitality",
-  "Professional Services",
-  "Legal Services",
-  "Technology & IT Services",
-  "HR Services",
-  "Financial Services",
-  "Commercial Real Estate",
-  "Commercial Logistics",
-];
+import { sortCategoriesByOrder } from "@/lib/category-constants";
+import { useLandingFetch } from "@/hooks/useLandingFetch";
+import { LandingSectionFooter } from "@/components/shared/LandingSectionFooter";
 
 export function FeaturedServices() {
   const { getS } = useCMS();
-  const [categories, setCategories] = useState<ServiceCategoryCardData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: rawCategories, isLoading } = useLandingFetch("/api/categories");
+  const categories = sortCategoriesByOrder(rawCategories);
 
   const servicesTitle = getS("landing_sections", "services_title", "Just Added");
   const { part1: svcTitle1, part2: svcTitle2 } = landingTitleParts(servicesTitle, "Added");
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await axiosInstance.get("/api/categories");
-        const data = response.data.data ?? [];
-        const sorted = [...data].sort((a, b) => {
-          const indexA = CATEGORY_ORDER.indexOf(a.name);
-          const indexB = CATEGORY_ORDER.indexOf(b.name);
-          if (indexA !== -1 && indexB !== -1) return indexA - indexB;
-          if (indexA !== -1) return -1;
-          if (indexB !== -1) return 1;
-          return a.name.localeCompare(b.name);
-        });
-        setCategories(sorted);
-      } catch (error) {
-        console.error("Failed to fetch categories:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchCategories();
-  }, []);
 
   if (!isLoading && categories.length === 0) return null;
 
@@ -127,14 +89,7 @@ export function FeaturedServices() {
           )}
         </div>
 
-        <div className="mt-12 flex justify-center">
-          <LandingButton asChild size="md">
-            <Link href="/services">
-              View all categories
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </LandingButton>
-        </div>
+        <LandingSectionFooter href="/services" label="View all categories" />
     </LandingSection>
   );
 }

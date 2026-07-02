@@ -31,7 +31,7 @@ import { ChartContainer } from "@/components/shared/ChartContainer";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useApiData } from "@/hooks/useApiData";
+import { useData } from "@/hooks/useData";
 
 interface MonthData {
   month: string;
@@ -63,7 +63,7 @@ interface FinanceStats {
 }
 
 export function FinanceOverview() {
-  const { data: financeData, isLoading } = useApiData<{ stats: FinanceStats; recent_payments: Payment[] }>(
+  const { data: financeData, isLoading } = useData<{ stats: FinanceStats; recent_payments: Payment[] }>(
     "/api/admin/financials/charts"
   );
   const stats = financeData?.stats;

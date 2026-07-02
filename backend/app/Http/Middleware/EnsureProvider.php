@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\UserRole;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -12,7 +13,7 @@ class EnsureProvider
     {
         $user = $request->user();
 
-        if (!$user || $user->role !== 'provider') {
+        if (! $user || $user->role !== UserRole::Provider) {
             abort(403, 'Provider access required.');
         }
 

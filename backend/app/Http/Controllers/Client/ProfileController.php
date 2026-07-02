@@ -3,18 +3,19 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class ProfileController extends Controller
 {
-    public function update(Request $request)
+    public function update(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
             'first_name' => 'sometimes|string|max:255',
             'last_name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|email|max:255|unique:users,email,' . $request->user()->id,
+            'email' => 'sometimes|email|max:255|unique:users,email,'.$request->user()->id,
             'phone' => 'nullable|string|max:50',
         ]);
 
@@ -27,7 +28,7 @@ class ProfileController extends Controller
         ]);
     }
 
-    public function changePassword(Request $request)
+    public function changePassword(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'current_password' => 'required|string',
@@ -36,7 +37,7 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
-        if (!Hash::check($validated['current_password'], $user->password)) {
+        if (! Hash::check($validated['current_password'], $user->password)) {
             return response()->json([
                 'message' => 'Current password is incorrect.',
                 'errors' => ['current_password' => ['The current password is incorrect.']],

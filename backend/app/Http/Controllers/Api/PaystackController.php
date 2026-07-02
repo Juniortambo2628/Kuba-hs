@@ -2,21 +2,23 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
-use App\Models\Booking;
-use App\Models\Payment;
-use Illuminate\Http\Request;
 use App\Http\Requests\InitializePaymentRequest;
 use App\Http\Requests\VerifyPaymentRequest;
-use App\Services\PaymentService;
 use App\Http\Resources\PaymentResource;
+use App\Models\Booking;
+use App\Models\Payment;
+use App\Services\PaymentService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class PaystackController extends Controller
 {
     /**
      * Initialize a Paystack transaction for a booking.
      */
-    public function initialize(InitializePaymentRequest $request, PaymentService $paymentService)
+    public function initialize(InitializePaymentRequest $request, PaymentService $paymentService): JsonResponse
     {
         try {
             $user = $request->user();
@@ -27,6 +29,7 @@ class PaystackController extends Controller
             return response()->json($paymentData);
         } catch (\Exception $e) {
             $code = $e->getCode() > 0 ? $e->getCode() : 500;
+
             return response()->json(['message' => $e->getMessage()], $code);
         }
     }
@@ -34,17 +37,18 @@ class PaystackController extends Controller
     /**
      * Verify a Paystack transaction via reference.
      */
-    public function verify(VerifyPaymentRequest $request, PaymentService $paymentService)
+    public function verify(VerifyPaymentRequest $request, PaymentService $paymentService): JsonResponse
     {
         try {
             $booking = $paymentService->verifyPayment($request->reference);
 
             return response()->json([
                 'message' => 'Payment verified successfully.',
-                'booking' => $booking
+                'booking' => $booking,
             ]);
         } catch (\Exception $e) {
             $code = $e->getCode() > 0 ? $e->getCode() : 500;
+
             return response()->json(['message' => $e->getMessage()], $code);
         }
     }
@@ -52,15 +56,15 @@ class PaystackController extends Controller
     /**
      * Get transaction history for the authenticated provider.
      */
-    public function providerTransactions(Request $request)
+    public function providerTransactions(Request $request): JsonResponse
     {
         $user = $request->user();
-        if ($user->role !== 'provider') {
+        if ($user->role !== UserRole::Provider) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         $provider = $user->provider;
-        if (!$provider) {
+        if (! $provider) {
             return response()->json(['message' => 'Provider profile not found'], 404);
         }
 
@@ -75,10 +79,10 @@ class PaystackController extends Controller
     /**
      * Get transaction history for the authenticated user (client).
      */
-    public function userTransactions(Request $request)
+    public function userTransactions(Request $request): JsonResponse
     {
         $user = $request->user();
-        
+
         $payments = Payment::with('booking.service')
             ->where('customer_id', $user->id)
             ->orderBy('created_at', 'desc')

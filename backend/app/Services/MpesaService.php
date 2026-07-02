@@ -3,17 +3,22 @@
 namespace App\Services;
 
 use App\Models\Booking;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
 
 class MpesaService
 {
     private $consumerKey;
+
     private $consumerSecret;
+
     private $shortCode;
+
     private $passkey;
+
     private $baseUrl;
+
     private $callbackUrl;
 
     public function __construct()
@@ -31,8 +36,8 @@ class MpesaService
      */
     public function generateToken()
     {
-        $url = $this->baseUrl . '/oauth/v1/generate?grant_type=client_credentials';
-        
+        $url = $this->baseUrl.'/oauth/v1/generate?grant_type=client_credentials';
+
         $response = Http::withoutVerifying()
             ->withBasicAuth($this->consumerKey, $this->consumerSecret)
             ->get($url);
@@ -52,8 +57,8 @@ class MpesaService
     {
         $token = $this->generateToken();
         $timestamp = Carbon::now()->format('YmdHis');
-        $password = base64_encode($this->shortCode . $this->passkey . $timestamp);
-        
+        $password = base64_encode($this->shortCode.$this->passkey.$timestamp);
+
         $amount = (int) ($booking->final_price ?? $booking->estimated_price);
         // Standard platform fee 10%
         $platformFee = round($amount * 0.10, 2);
@@ -62,12 +67,12 @@ class MpesaService
         // Sanitize phone number (remove +, ensures 254...)
         $phoneNumber = preg_replace('/[^0-9]/', '', $phoneNumber);
         if (str_starts_with($phoneNumber, '0')) {
-            $phoneNumber = '254' . substr($phoneNumber, 1);
+            $phoneNumber = '254'.substr($phoneNumber, 1);
         } elseif (str_starts_with($phoneNumber, '7') || str_starts_with($phoneNumber, '1')) {
-            $phoneNumber = '254' . $phoneNumber;
+            $phoneNumber = '254'.$phoneNumber;
         }
 
-        $url = $this->baseUrl . '/mpesa/stkpush/v1/processrequest';
+        $url = $this->baseUrl.'/mpesa/stkpush/v1/processrequest';
 
         $body = [
             'BusinessShortCode' => $this->shortCode,
@@ -79,8 +84,8 @@ class MpesaService
             'PartyB' => $this->shortCode,
             'PhoneNumber' => $phoneNumber,
             'CallBackURL' => $this->callbackUrl,
-            'AccountReference' => 'KUBA-' . $booking->booking_number,
-            'TransactionDesc' => 'Payment for Home Service: ' . $booking->service->name,
+            'AccountReference' => 'KUBA-'.$booking->booking_number,
+            'TransactionDesc' => 'Payment for Home Service: '.$booking->service->name,
         ];
 
         $response = Http::withoutVerifying()->withToken($token)->post($url, $body);

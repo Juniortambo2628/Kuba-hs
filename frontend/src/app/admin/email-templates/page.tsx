@@ -32,9 +32,9 @@ import {
 import { Label } from "@/components/ui/label";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { useApiData } from "@/hooks/useApiData";
+import { useData } from "@/hooks/useData";
 import { EmailTemplate } from "@/types";
-import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
 
 const SYSTEM_TEMPLATE_KEYS = new Set([
   "booking_confirmation_customer",
@@ -55,7 +55,7 @@ const emptyCreateForm = () => ({
 });
 
 export default function AdminEmailTemplatesPage() {
-  const { data: templates, isLoading, refetch: fetchTemplates } = useApiData<EmailTemplate[]>(
+  const { data: templates, isLoading, refetch: fetchTemplates } = useData<EmailTemplate[]>(
     "/api/admin/email-templates",
     { initialData: [] }
   );
@@ -506,9 +506,9 @@ export default function AdminEmailTemplatesPage() {
         </div>
       </div>
 
-      <ConfirmDeleteDialog
-        isOpen={!!deleteId}
-        onClose={() => setDeleteId(null)}
+      <AppConfirmDialog
+        open={!!deleteId}
+        onOpenChange={() => setDeleteId(null)}
         onConfirm={handleDelete}
         title="Delete email template?"
         description="This template will be removed permanently. System templates cannot be deleted."

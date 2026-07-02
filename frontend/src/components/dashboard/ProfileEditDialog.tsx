@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { User, Mail, Phone } from "lucide-react";
 import { CrudFormDialog } from "@/components/shared/dialog/CrudFormDialog";
 import { FieldLabel } from "@/components/shared/ui";
-import { workspaceUi } from "@/lib/dashboard-workspace-ui";
+import { workspaceUi } from "@/lib/dashboard-ui";
 import { cn } from "@/lib/utils";
 import axiosInstance, { handleApiError } from "@/lib/axios";
 import { toast } from "sonner";

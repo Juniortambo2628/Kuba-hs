@@ -24,13 +24,13 @@ class UpdateProviderProfileRequest extends FormRequest
         return [
             'business_name' => 'required|string|max:255',
             'bio' => 'nullable|string|max:1000',
-            'experience_years' => 'nullable|integer|min:0|max:50',
             'location_name' => 'nullable|string|max:255',
-            'service_radius' => 'nullable|integer|min:1|max:200',
-            'services' => 'required|array|min:1',
-            'services.*.service_id' => 'required|exists:services,id',
-            'services.*.base_price' => 'required|numeric|min:0',
-            'services.*.pricing_type' => 'required|in:fixed,hourly,per_project',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
+            'experience_years' => 'nullable|integer|min:0|max:50',
+            'service_radius' => 'nullable|integer|min:0',
+            'specialized_skills' => 'nullable|array',
+            'specialized_skills.*' => 'nullable|string|max:50',
         ];
     }
 }

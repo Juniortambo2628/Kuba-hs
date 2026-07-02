@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\ImageOptimizationService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -17,7 +18,7 @@ class MediaController extends Controller
     /**
      * Handle generic media upload for authorized models.
      */
-    public function upload(Request $request)
+    public function upload(Request $request): JsonResponse
     {
         $request->validate([
             'file' => 'required|image|max:10240',
@@ -26,16 +27,16 @@ class MediaController extends Controller
             'model_id' => 'required|string',
         ]);
 
-        $modelClass = "App\\Models\\" . Str::studly($request->model_type);
+        $modelClass = 'App\\Models\\'.Str::studly($request->model_type);
 
-        if (!class_exists($modelClass)) {
+        if (! class_exists($modelClass)) {
             return response()->json(['error' => 'Invalid model type'], 422);
         }
 
         $model = $modelClass::findOrFail($request->model_id);
 
         $user = Auth::user();
-        if (!$user->isAdmin()) {
+        if (! $user->isAdmin()) {
             if ($model instanceof \App\Models\User && $model->id !== $user->id) {
                 return response()->json(['error' => 'Unauthorized'], 403);
             }
@@ -71,14 +72,14 @@ class MediaController extends Controller
     /**
      * Delete a media item.
      */
-    public function destroy($id)
+    public function destroy($id): JsonResponse
     {
         $media = \Spatie\MediaLibrary\MediaCollections\Models\Media::findOrFail($id);
 
         $model = $media->model;
         $user = Auth::user();
 
-        if (!$user->isAdmin()) {
+        if (! $user->isAdmin()) {
             if ($model instanceof \App\Models\User && $model->id !== $user->id) {
                 return response()->json(['error' => 'Unauthorized'], 403);
             }

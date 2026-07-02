@@ -2,29 +2,24 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\BookingStatus;
 use App\Http\Controllers\Controller;
-use App\Models\Booking;
-use App\Models\Review;
-use App\Models\Provider;
-use App\Services\ImageOptimizationService;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use App\Http\Requests\StoreReviewRequest;
 use App\Http\Resources\ReviewResource;
+use App\Models\Booking;
+use App\Models\Provider;
+use App\Models\Review;
+use App\Services\ImageOptimizationService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 
 class ReviewController extends Controller
 {
     /**
      * Store a new review for a booking.
      */
-    public function store(Request $request)
+    public function store(StoreReviewRequest $request): JsonResponse
     {
-        $request->validate([
-            'booking_id' => 'required|exists:bookings,id',
-            'rating' => 'required|integer|min:1|max:5',
-            'comment' => 'nullable|string|max:1000',
-            'images.*' => 'nullable|image|max:5120', // 5MB limit
-        ]);
-
         $booking = Booking::findOrFail($request->booking_id);
         $user = $request->user();
 
@@ -34,7 +29,7 @@ class ReviewController extends Controller
         }
 
         // Must be completed to review
-        if ($booking->status !== 'completed') {
+        if ($booking->status !== BookingStatus::Completed) {
             return response()->json(['message' => 'You can only review completed services.'], 422);
         }
 
@@ -46,7 +41,7 @@ class ReviewController extends Controller
         return DB::transaction(function () use ($request, $booking, $user) {
             $review = Review::create([
                 'booking_id' => $booking->id,
-                'user_id' => $user->id,
+                'customer_id' => $user->id,
                 'provider_id' => $booking->provider_id,
                 'rating' => $request->rating,
                 'comment' => $request->comment,
@@ -77,7 +72,7 @@ class ReviewController extends Controller
             ->first();
 
         Provider::where('id', $providerId)->update([
-            'rating' => round($stats->avg_rating, 1),
+            'rating_avg' => round($stats->avg_rating, 1),
             'review_count' => $stats->count,
         ]);
     }
@@ -85,7 +80,7 @@ class ReviewController extends Controller
     /**
      * Get reviews for a provider.
      */
-    public function providerReviews($providerId)
+    public function providerReviews($providerId): JsonResponse
     {
         $reviews = Review::with(['user', 'media'])
             ->where('provider_id', $providerId)

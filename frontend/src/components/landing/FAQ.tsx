@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Accordion,
@@ -8,7 +7,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import axiosInstance from "@/lib/axios";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LandingSection } from "@/components/landing/LandingSection";
 import { LandingSectionHeader } from "@/components/shared/LandingSectionHeader";
@@ -17,6 +15,7 @@ import {
   landingTitleParts,
   LandingGradientTitle,
 } from "@/lib/landing-section-header-copy";
+import { useLandingFetch } from "@/hooks/useLandingFetch";
 
 interface FAQItem {
   id: number;
@@ -26,25 +25,10 @@ interface FAQItem {
 
 export function FAQ() {
   const { getS } = useCMS();
-  const [faqs, setFaqs] = useState<FAQItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: faqs, isLoading } = useLandingFetch<FAQItem>("/api/faqs");
 
   const faqTitle = getS("landing_sections", "faq_title", "Frequently Asked Questions");
   const { part1: faqTitle1, part2: faqTitle2 } = landingTitleParts(faqTitle, "Questions");
-
-  useEffect(() => {
-    const fetchFaqs = async () => {
-      try {
-        const response = await axiosInstance.get("/api/faqs");
-        setFaqs(response.data.data ?? response.data);
-      } catch (error) {
-        console.error("Failed to fetch FAQs:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchFaqs();
-  }, []);
 
   return (
     <LandingSection variant="muted" className="relative transition-colors duration-300">

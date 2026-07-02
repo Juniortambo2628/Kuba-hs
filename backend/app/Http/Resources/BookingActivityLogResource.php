@@ -16,7 +16,7 @@ class BookingActivityLogResource extends JsonResource
             'metadata' => $this->metadata,
             'actor' => $this->when($this->relationLoaded('user') && $this->user, fn () => [
                 'id' => $this->user->id,
-                'name' => trim($this->user->first_name . ' ' . $this->user->last_name) ?: $this->user->email,
+                'name' => trim($this->user->first_name.' '.$this->user->last_name) ?: $this->user->email,
                 'role' => $this->user->role,
             ]),
             'created_at' => $this->created_at?->toIso8601String(),

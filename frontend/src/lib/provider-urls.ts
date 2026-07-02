@@ -2,14 +2,8 @@
  * Build a public URL for a provider profile (slug preferred, UUID still works via API).
  */
 
-export function toSlug(value: string): string {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/[\s_]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
+export { toSlug } from "@/lib/slug";
+import { toSlug } from "@/lib/slug";
 
 interface ProviderLinkSource {
   id?: string | number;

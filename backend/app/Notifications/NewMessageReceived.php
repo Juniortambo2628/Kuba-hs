@@ -2,19 +2,18 @@
 
 namespace App\Notifications;
 
+use App\Enums\UserRole;
+use App\Models\Message;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Notification;
-use App\Models\Message;
 use Illuminate\Notifications\Messages\BroadcastMessage;
+use Illuminate\Notifications\Notification;
 
 class NewMessageReceived extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(public Message $message)
-    {
-    }
+    public function __construct(public Message $message) {}
 
     public function via(object $notifiable): array
     {
@@ -25,10 +24,10 @@ class NewMessageReceived extends Notification implements ShouldQueue
     {
         // Load relationships if not loaded
         $this->message->loadMissing(['sender', 'conversation.booking.service']);
-        
+
         $senderName = $this->message->sender->first_name;
         $serviceName = $this->message->conversation->booking->service->name ?? 'Service';
-        $dashboardRole = $notifiable->role === 'provider' ? 'provider' : 'client';
+        $dashboardRole = $notifiable->role === UserRole::Provider ? 'provider' : 'client';
 
         return [
             'type' => 'new_message',

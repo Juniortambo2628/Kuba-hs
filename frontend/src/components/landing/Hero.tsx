@@ -11,11 +11,12 @@ import { LandingButton } from "@/components/shared/LandingButton";
 import { getMediaUrl } from "@/lib/utils";
 import { marketingSection } from "@/lib/marketing-section";
 import { cn } from "@/lib/utils";
+import { FALLBACK_IMAGES } from "@/lib/fallback-images";
 
 const FALLBACK_HERO_IMAGES = [
-  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=2058&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1600566753190-17f0baa42a6a?q=80&w=2070&auto=format&fit=crop",
+  FALLBACK_IMAGES.hero1,
+  FALLBACK_IMAGES.hero2,
+  FALLBACK_IMAGES.hero3,
 ];
 
 interface HeroProps {

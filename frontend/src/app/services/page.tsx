@@ -17,8 +17,8 @@ import {
   MarketingFilterSidebar,
   MarketingViewToggle,
   MarketingListingToolbar,
-  MarketingEmptyState,
 } from "@/components/marketing";
+import { EmptyState } from "@/components/shared/ui/EmptyState";
 import { marketingUi } from "@/lib/marketing-ui";
 import { serviceDetailHref, toSlug } from "@/lib/service-urls";
 import { cn } from "@/lib/utils";
@@ -219,7 +219,8 @@ function ServicesContent() {
               </div>
             ) : browsingCategory ? (
               filteredServices.length === 0 ? (
-                <MarketingEmptyState
+                <EmptyState
+                  variant="marketing"
                   title="No Services Found"
                   description={
                     activeCategory

@@ -3,19 +3,20 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\BlogPost;
 use App\Http\Resources\BlogPostResource;
+use App\Models\BlogPost;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class BlogController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
         return BlogPostResource::collection(BlogPost::with('author')->latest()->paginate(10));
     }
 
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -25,7 +26,7 @@ class BlogController extends Controller
             'is_published' => 'boolean',
         ]);
 
-        $validated['slug'] = Str::slug($validated['title']) . '-' . rand(1000, 9999);
+        $validated['slug'] = Str::slug($validated['title']).'-'.rand(1000, 9999);
         $validated['author_id'] = auth()->id();
 
         $post = BlogPost::create($validated);
@@ -33,12 +34,12 @@ class BlogController extends Controller
         return new BlogPostResource($post);
     }
 
-    public function show(BlogPost $blogPost)
+    public function show(BlogPost $blogPost): JsonResponse
     {
         return new BlogPostResource($blogPost->load('author'));
     }
 
-    public function update(Request $request, BlogPost $blogPost)
+    public function update(Request $request, BlogPost $blogPost): JsonResponse
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -49,7 +50,7 @@ class BlogController extends Controller
         ]);
 
         if ($validated['title'] !== $blogPost->title) {
-            $validated['slug'] = Str::slug($validated['title']) . '-' . rand(1000, 9999);
+            $validated['slug'] = Str::slug($validated['title']).'-'.rand(1000, 9999);
         }
 
         $blogPost->update($validated);
@@ -57,9 +58,10 @@ class BlogController extends Controller
         return new BlogPostResource($blogPost);
     }
 
-    public function destroy(BlogPost $blogPost)
+    public function destroy(BlogPost $blogPost): JsonResponse
     {
         $blogPost->delete();
+
         return response()->json(['message' => 'Blog post deleted successfully']);
     }
 }

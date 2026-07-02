@@ -23,9 +23,9 @@ import { DashboardPageContainer } from "@/components/shared/DashboardPageContain
 import { DashboardPageSkeleton } from "@/components/shared/DashboardPageSkeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
-import { useApiData } from "@/hooks/useApiData";
-import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
-import { DashboardEmptyState } from "@/components/shared/DashboardEmptyState";
+import { useData } from "@/hooks/useData";
+import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
+import { EmptyState } from "@/components/shared/ui/EmptyState";
 import { AppPill } from "@/components/shared/ui/AppPill";
 import Image from "next/image";
 import type { Testimonial } from "@/types/admin";
@@ -35,7 +35,7 @@ import { TestimonialFormDialog } from "@/components/admin/TestimonialFormDialog"
 import { getMediaUrl } from "@/lib/utils";
 
 export default function TestimonialPage() {
-  const { data: items, isLoading, refetch: fetchItems, setData: setItems } = useApiData<Testimonial[]>(
+  const { data: items, isLoading, refetch: fetchItems, setData: setItems } = useData<Testimonial[]>(
     "/api/admin/testimonials",
     { initialData: [] }
   );
@@ -43,6 +43,7 @@ export default function TestimonialPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editInitial, setEditInitial] = useState<Partial<Testimonial> | undefined>();
+  const [deleteId, setDeleteId] = useState<number | null>(null);
 
   const openCreate = () => {
     setEditingId(null);
@@ -198,19 +199,13 @@ export default function TestimonialPage() {
                             </div>
 
                             <div className="w-20 border-l border-border/10 flex flex-col">
-                                <ConfirmDeleteDialog
-                                  trigger={
-                                    <button 
-                                      className="flex-1 flex items-center justify-center text-muted-foreground/30 hover:text-red-500 hover:bg-red-500/5 transition-all w-full h-full"
-                                      title="Remove Endorsement"
-                                    >
-                                      <Trash2 className="w-5 h-5" />
-                                    </button>
-                                  }
-                                  title="Remove Endorsement?"
-                                  description="Are you sure you want to permanently delete this client testimonial?"
-                                  onConfirm={() => handleDelete(item.id)}
-                                />
+                                <button 
+                                  className="flex-1 flex items-center justify-center text-muted-foreground/30 hover:text-red-500 hover:bg-red-500/5 transition-all w-full h-full"
+                                  title="Remove Endorsement"
+                                  onClick={() => setDeleteId(item.id)}
+                                >
+                                  <Trash2 className="w-5 h-5" />
+                                </button>
                             </div>
                           </CardContent>
                         </Card>
@@ -226,7 +221,8 @@ export default function TestimonialPage() {
       </DragDropContext>
 
       {items.length === 0 && (
-        <DashboardEmptyState
+        <EmptyState
+          variant="dashboard"
           icon={MessageSquare}
           title="Gallery is currently empty"
           description="Start building credibility by adding verified client testimonials to your platform gallery."
@@ -234,8 +230,16 @@ export default function TestimonialPage() {
           <Button onClick={openCreate} variant="outline" className="rounded-xl border-2 mt-4">
             Initialize First Endorsement
           </Button>
-        </DashboardEmptyState>
+        </EmptyState>
       )}
+
+      <AppConfirmDialog
+        open={deleteId !== null}
+        onOpenChange={() => setDeleteId(null)}
+        onConfirm={async () => { if (deleteId !== null) { await handleDelete(deleteId); setDeleteId(null); } }}
+        title="Remove Endorsement?"
+        description="Are you sure you want to permanently delete this client testimonial?"
+      />
 
       <TestimonialFormDialog
         open={dialogOpen}

@@ -3,16 +3,17 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\SiteSetting;
 use App\Http\Resources\SiteSettingResource;
+use App\Models\SiteSetting;
 use App\Services\ImageOptimizationService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class SettingsController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
         $formattedSettings = \Illuminate\Support\Facades\Cache::rememberForever('cms_settings_global', function () {
             $settings = SiteSetting::orderBy('group')->get()->groupBy('group');
@@ -21,6 +22,7 @@ class SettingsController extends Controller
             foreach ($settings as $group => $items) {
                 $formatted[$group] = SiteSettingResource::collection($items);
             }
+
             return $formatted;
         });
 
@@ -30,11 +32,11 @@ class SettingsController extends Controller
                 'environment' => config('app.env'),
                 'version' => '1.2.5-stable',
                 'maintenance_mode' => app()->isDownForMaintenance(),
-            ]
+            ],
         ]);
     }
 
-    public function update(Request $request)
+    public function update(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'settings' => 'required|array',
@@ -47,7 +49,7 @@ class SettingsController extends Controller
             DB::transaction(function () use ($validated) {
                 foreach ($validated['settings'] as $item) {
                     $setting = SiteSetting::find($item['id']);
-                    
+
                     if ($setting->type === 'image' && isset($item['file'])) {
                         $setting->clearMediaCollection('site_settings');
                         $media = $setting->addMedia($item['file'])->toMediaCollection('site_settings');
@@ -71,7 +73,7 @@ class SettingsController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Update failed: ' . $e->getMessage(),
+                'message' => 'Update failed: '.$e->getMessage(),
             ], 500);
         }
     }

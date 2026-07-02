@@ -3,27 +3,27 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
-use App\Models\LoyaltyPoint;
 use App\Http\Resources\LoyaltyPointResource;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class LoyaltyController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
-        $user = Auth::user();
+        $user = Auth::user()->load('loyaltyPoints');
         $rewards = \App\Models\LoyaltyTier::where('is_active', true)->orderBy('min_points')->get();
 
         return response()->json([
             'points' => (int) $user->total_points,
             'tier' => $user->membership_tier,
             'history' => LoyaltyPointResource::collection($user->loyaltyPoints()->latest()->get()),
-            'available_rewards' => $rewards
+            'available_rewards' => $rewards,
         ]);
     }
 
-    public function redeem(Request $request)
+    public function redeem(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'reward_type' => 'required|string',
@@ -33,15 +33,15 @@ class LoyaltyController extends Controller
         try {
             $user = Auth::user();
             $result = app(\App\Services\LoyaltyService::class)->redeemPoints(
-                $user, 
-                $validated['points'], 
+                $user,
+                $validated['points'],
                 $validated['reward_type']
             );
 
             return response()->json([
                 'message' => 'Reward redeemed successfully',
                 'new_balance' => (int) $user->fresh()->total_points,
-                'voucher_code' => $result['voucher_code']
+                'voucher_code' => $result['voucher_code'],
             ]);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 400);

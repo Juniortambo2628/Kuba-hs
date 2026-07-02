@@ -12,16 +12,10 @@ import { toast } from "sonner";
 import { format, isToday, isYesterday } from "date-fns";
 import type { Conversation, Message } from "@/types";
 import { DashboardUserAvatar } from "@/components/dashboard/workspace/DashboardUserAvatar";
-import { workspaceUi } from "@/lib/dashboard-workspace-ui";
+import { workspaceUi } from "@/lib/dashboard-ui";
 import { cn } from "@/lib/utils";
-import {
-  bookingServiceLabel,
-  chatPartner,
-  normalizeConversation,
-  normalizeMessage,
-  unwrapResource,
-  unwrapResourceList,
-} from "@/lib/chat-utils";
+import { normalizeConversation, normalizeMessage, chatPartner, bookingServiceLabel } from "@/lib/chat-utils";
+import { extractApiList } from "@/lib/api-response";
 
 interface ChatInterfaceProps {
   role: "client" | "provider";
@@ -57,7 +51,7 @@ export function ChatInterface({ role, layout = "embedded", className }: ChatInte
   const fetchConversations = async () => {
     try {
       const res = await axiosInstance.get("/api/chat/conversations");
-      const list = unwrapResourceList<Record<string, unknown>>(res.data?.conversations).map(
+      const list = extractApiList(res.data?.conversations).map(
         (row) => normalizeConversation(row)
       );
       setConversations(list);
@@ -76,13 +70,15 @@ export function ChatInterface({ role, layout = "embedded", className }: ChatInte
       setIsLoadingMessages(true);
       try {
         const res = await axiosInstance.get(`/api/chat/conversations/${activeConversationId}`);
-        const conv = unwrapResource<Record<string, unknown>>(res.data?.conversation ?? res.data);
+        const conv = extractApiList(res.data?.conversation ?? res.data).find(
+        (x: Record<string, unknown>) => x.id === activeConversationId
+      );
         const rawMessages = Array.isArray(conv?.messages)
           ? conv.messages
           : Array.isArray(res.data?.messages)
             ? res.data.messages
             : [];
-        const normalized = (rawMessages as Record<string, unknown>[]).map(normalizeMessage);
+        const normalized = extractApiList(rawMessages).map(normalizeMessage);
         setMessages(normalized);
 
         setConversations((prev) =>
@@ -149,7 +145,7 @@ export function ChatInterface({ role, layout = "embedded", className }: ChatInte
         `/api/chat/conversations/${activeConversationId}/messages`,
         { body }
       );
-      const sentRaw = unwrapResource<Record<string, unknown>>(res.data) ?? res.data;
+      const sentRaw = extractApiList(res.data)[0];
       const sentMsg = normalizeMessage(sentRaw as Record<string, unknown>);
 
       setMessages((prev) => (prev.find((m) => m.id === sentMsg.id) ? prev : [...prev, sentMsg]));

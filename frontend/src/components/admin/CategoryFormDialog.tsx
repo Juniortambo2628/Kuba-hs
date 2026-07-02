@@ -1,25 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FieldLabel } from "@/components/shared/ui";
 import { CrudFormDialog } from "@/components/shared/dialog/CrudFormDialog";
 import { DashboardImageUpload } from "@/components/shared/DashboardImageUpload";
-import axiosInstance, { handleApiError } from "@/lib/axios";
-import { toast } from "sonner";
+import { useCrudForm } from "@/hooks/useCrudForm";
 
 export type CategoryFormValues = {
   name: string;
   description: string;
   image_url: string;
 };
-
-const emptyCategory = (): CategoryFormValues => ({
-  name: "",
-  description: "",
-  image_url: "",
-});
 
 interface CategoryFormDialogProps {
   open: boolean;
@@ -36,42 +28,22 @@ export function CategoryFormDialog({
   initial,
   onSuccess,
 }: CategoryFormDialogProps) {
-  const [form, setForm] = useState<CategoryFormValues>(emptyCategory());
-  const [isSaving, setIsSaving] = useState(false);
+  const { form, setForm, isSaving, handleSubmit } = useCrudForm<CategoryFormValues>({
+    empty: () => ({ name: "", description: "", image_url: "" }),
+    endpoint: "/api/admin/categories",
+    editingId: categoryId,
+    initial,
+    preparePayload: (f) => ({
+      name: f.name,
+      description: f.description,
+      image_url: f.image_url || null,
+    }),
+  });
 
-  useEffect(() => {
-    if (!open) return;
-    setForm({
-      ...emptyCategory(),
-      name: initial?.name ?? "",
-      description: initial?.description ?? "",
-      image_url: initial?.image_url ?? "",
-    });
-  }, [open, initial]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSaving(true);
-    try {
-      const payload = {
-        name: form.name,
-        description: form.description,
-        image_url: form.image_url || null,
-      };
-      if (categoryId) {
-        await axiosInstance.put(`/api/admin/categories/${categoryId}`, payload);
-        toast.success("Category updated");
-      } else {
-        await axiosInstance.post("/api/admin/categories", payload);
-        toast.success("Category created");
-      }
-      onOpenChange(false);
-      onSuccess();
-    } catch (err: unknown) {
-      toast.error(handleApiError(err));
-    } finally {
-      setIsSaving(false);
-    }
+  const onSubmit = async (e: React.FormEvent) => {
+    await handleSubmit(e);
+    onOpenChange(false);
+    onSuccess();
   };
 
   return (
@@ -84,7 +56,7 @@ export function CategoryFormDialog({
       submitLabel={categoryId ? "Save category" : "Create category"}
       isSubmitting={isSaving}
     >
-      <form id="admin-category-form" onSubmit={handleSubmit} className="space-y-5">
+      <form id="admin-category-form" onSubmit={onSubmit} className="space-y-5">
         <div className="space-y-2">
           <FieldLabel>Category name</FieldLabel>
           <Input

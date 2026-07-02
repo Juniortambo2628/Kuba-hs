@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import axiosInstance from "@/lib/axios";
+import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -20,6 +19,9 @@ import {
   landingTitleParts,
   LandingGradientTitle,
 } from "@/lib/landing-section-header-copy";
+import { sortCategoriesByOrder } from "@/lib/category-constants";
+import { useLandingFetch } from "@/hooks/useLandingFetch";
+import { LandingSectionFooter } from "@/components/shared/LandingSectionFooter";
 
 interface Category extends ServiceCategoryCardData {
   slug: string;
@@ -30,22 +32,6 @@ interface Category extends ServiceCategoryCardData {
     description?: string;
   }>;
 }
-
-const CATEGORY_ORDER = [
-  "Cleaning & Maintenance",
-  "Electrical",
-  "Health & Wellness",
-  "Personal & Grooming",
-  "Education & Training",
-  "Food & Hospitality",
-  "Professional Services",
-  "Legal Services",
-  "Technology & IT Services",
-  "HR Services",
-  "Financial Services",
-  "Commercial Real Estate",
-  "Commercial Logistics",
-];
 
 const MAX_SERVICES = 8;
 
@@ -113,8 +99,8 @@ function CategoryServicesPanel({ category }: { category: Category }) {
 
 export function Categories() {
   const { getS } = useCMS();
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: rawCategories, isLoading } = useLandingFetch<Category>("/api/categories");
+  const categories = sortCategoriesByOrder(rawCategories);
   const [slideIndex, setSlideIndex] = useState(0);
 
   const categoriesTitle = getS(
@@ -137,30 +123,6 @@ export function Categories() {
   const goNext = useCallback(() => {
     setSlideIndex((i) => (i + 1) % slideCount);
   }, [slideCount]);
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await axiosInstance.get("/api/categories");
-        const data = response.data.data ?? [];
-        const sorted = [...data].sort((a, b) => {
-          const indexA = CATEGORY_ORDER.indexOf(a.name);
-          const indexB = CATEGORY_ORDER.indexOf(b.name);
-          if (indexA !== -1 && indexB !== -1) return indexA - indexB;
-          if (indexA !== -1) return -1;
-          if (indexB !== -1) return 1;
-          return a.name.localeCompare(b.name);
-        });
-        setCategories(sorted);
-        setSlideIndex(0);
-      } catch (error) {
-        console.error("Failed to fetch categories:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchCategories();
-  }, []);
 
   useEffect(() => {
     if (slideIndex >= slideCount && slideCount > 0) {
@@ -232,14 +194,7 @@ export function Categories() {
           </div>
         )}
 
-        <div className="flex justify-center pt-2">
-          <LandingButton asChild variant="secondary" size="md">
-            <Link href="/services">
-              View all services
-              <ChevronRight className="h-4 w-4" />
-            </Link>
-          </LandingButton>
-        </div>
+        <LandingSectionFooter href="/services" label="View all services" />
       </div>
     </LandingSection>
   );

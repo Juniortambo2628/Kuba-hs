@@ -32,8 +32,8 @@ import {
   MarketingFilterCard,
   MarketingViewToggle,
   MarketingListingToolbar,
-  MarketingEmptyState,
 } from "@/components/marketing";
+import { EmptyState } from "@/components/shared/ui/EmptyState";
 import {
   FilterField,
   FilterSelect,
@@ -264,7 +264,8 @@ function ProvidersContent() {
                   ))}
                 </div>
               ) : providers.length === 0 ? (
-                <MarketingEmptyState
+                <EmptyState
+                  variant="marketing"
                   title="No Professionals Found"
                   description="Try adjusting your filters or search terms to explore more possibilities."
                   actionLabel="Clear All Filters"
@@ -284,7 +285,7 @@ function ProvidersContent() {
                       }
                     }))}
                     showRadius={true}
-                    onMarkerClick={(p) => console.log("Clicked pro:", p.business_name)}
+                    onMarkerClick={(p) => {}}
                   />
                 </div>
               ) : (

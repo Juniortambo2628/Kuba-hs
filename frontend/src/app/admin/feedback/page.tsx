@@ -20,10 +20,9 @@ import { Star, Search, Filter, MessageSquare, AlertCircle, ShieldCheck, MoreHori
 import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardListToolbar } from "@/components/shared/DashboardListToolbar";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
-import { DashboardStatusBadge } from "@/components/shared/DashboardStatusBadge";
-import { useApiData } from "@/hooks/useApiData";
+import { StatusBadge } from "@/components/shared/StatusBadge";
+import { useData } from "@/hooks/useData";
 import { toast } from "sonner";
-import { ReviewStatusBadge } from "@/components/shared/ReviewStatusBadge";
 
 interface Review {
  id: string;
@@ -43,7 +42,7 @@ export default function AdminFeedback() {
     const [ratingFilter, setRatingFilter] = useState("");
     const [viewMode, setViewMode] = useState<'grid'|'list'>('grid');
 
-    const { data: feedbackData, isLoading, refetch: fetchFeedback } = useApiData<{
+    const { data: feedbackData, isLoading, refetch: fetchFeedback } = useData<{
       data: Review[];
       stats: { total: number; avg: number; poor_ratings: number };
     }>(`/api/admin/feedback?search=${search}&rating=${ratingFilter}`, { preserveEnvelope: true, initialData: null });
@@ -189,7 +188,7 @@ export default function AdminFeedback() {
                                             <p className="text-xs font-bold text-muted-foreground max-w-sm line-clamp-2">"{review.comment}"</p>
                                         </TableCell>
                                         <TableCell className="py-6 text-center">
-                                            <ReviewStatusBadge status={review.status || 'published'} />
+                                            <StatusBadge status={review.status || 'published'} type="review" />
                                         </TableCell>
                                         <TableCell className="pr-10 py-6 text-right">
                                             <div className="flex items-center justify-end gap-2">
@@ -265,7 +264,7 @@ export default function AdminFeedback() {
 
                                 <div className="flex items-center justify-between border-t border-border/50 pt-4">
                                     <div className="flex items-center gap-2">
-                                        <ReviewStatusBadge status={review.status || 'published'} className="text-[9px] px-1.5 py-0" />
+                                        <StatusBadge status={review.status || 'published'} type="review" className="text-[9px] px-1.5 py-0" />
                                         <select 
                                             onChange={(e) => handleStatusUpdate(review.id, e.target.value)}
                                             value={review.status || 'published'}

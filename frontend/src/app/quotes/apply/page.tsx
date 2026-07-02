@@ -1,50 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { MarketingPage } from "@/components/layout/MarketingPage";
 import { MarketingSection } from "@/components/shared/MarketingSection";
 import { ApplyFormLayout } from "@/components/shared/ApplyFormLayout";
 import { useMarketingHero } from "@/hooks/useMarketingHero";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import Link from "next/link";
-import { Send, CheckCircle2, Loader2, Briefcase, Globe, ShieldCheck } from "lucide-react";
-import axiosInstance from "@/lib/axios";
-import { designSystem } from "@/lib/design-system";
-import { toast } from "sonner";
+import { CheckCircle2, Briefcase, Globe, ShieldCheck } from "lucide-react";
+import { QuoteRequestForm } from "@/components/marketing/QuoteRequestForm";
 
 export default function QuoteRequestPage() {
   const hero = useMarketingHero("quotesApply");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [formData, setFormData] = useState({
-    organization_name: "",
-    contact_person: "",
-    email: "",
-    phone: "",
-    organization_type: "commercial",
-    service_category: "",
-    description: "",
-  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    try {
-      await axiosInstance.post("/api/quotes", formData);
-      setIsSuccess(true);
-      toast.success("Quote request submitted!");
-    } catch (err: unknown) {
-      const message =
-        err && typeof err === "object" && "response" in err
-          ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
-          : undefined;
-      toast.error(message || "Failed to submit request.");
-    } finally {
-      setIsSubmitting(false);
-    }
+  const handleSuccess = () => {
+    setIsSuccess(true);
   };
 
   const sidebar = (
@@ -105,95 +76,12 @@ export default function QuoteRequestPage() {
           successView={successView}
           variant="split-card"
         >
-          <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 gap-6">
-                <div className="space-y-2">
-                  <Label className={designSystem.typography.auth.label}>Organization Name</Label>
-                  <Input
-                    required
-                    className={designSystem.typography.auth.input}
-                    value={formData.organization_name}
-                    onChange={(e) => setFormData({ ...formData, organization_name: e.target.value })}
-                    placeholder="e.g. Acme Corp or Sunshine Coop"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className={designSystem.typography.auth.label}>Contact Person</Label>
-                    <Input
-                      required
-                      className={designSystem.typography.auth.input}
-                      value={formData.contact_person}
-                      onChange={(e) => setFormData({ ...formData, contact_person: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className={designSystem.typography.auth.label}>Entity Type</Label>
-                    <select
-                      className={designSystem.typography.auth.input + " w-full flex"}
-                      value={formData.organization_type}
-                      onChange={(e) => setFormData({ ...formData, organization_type: e.target.value })}
-                    >
-                      <option value="commercial">Commercial Business</option>
-                      <option value="cooperative">Cooperative / Group</option>
-                      <option value="other">Other Organization</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className={designSystem.typography.auth.label}>Corporate Email</Label>
-                    <Input
-                      type="email"
-                      required
-                      className={designSystem.typography.auth.input}
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className={designSystem.typography.auth.label}>Phone Number</Label>
-                    <Input
-                      className={designSystem.typography.auth.input}
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label className={designSystem.typography.auth.label}>Service Categories Interested In</Label>
-                  <Input
-                    required
-                    className={designSystem.typography.auth.input}
-                    value={formData.service_category}
-                    onChange={(e) => setFormData({ ...formData, service_category: e.target.value })}
-                    placeholder="e.g. Facility Management, Wellness, etc."
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className={designSystem.typography.auth.label}>Scope of Requirements</Label>
-                  <Textarea
-                    required
-                    className={designSystem.typography.auth.input + " min-h-[120px] pt-4"}
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Please describe your needs, estimated volume, and any specific locations..."
-                  />
-                </div>
-              </div>
-            </div>
-            <Button disabled={isSubmitting} className={designSystem.typography.auth.button + " group"}>
-              {isSubmitting ? (
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
-              ) : (
-                <>
-                  Submit Quote Request
-                  <Send className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                </>
-              )}
-            </Button>
-          </form>
+          <QuoteRequestForm
+            source="corporate"
+            onSuccess={handleSuccess}
+            submitLabel="Submit Quote Request"
+            compact={false}
+          />
         </ApplyFormLayout>
       </MarketingSection>
     </MarketingPage>

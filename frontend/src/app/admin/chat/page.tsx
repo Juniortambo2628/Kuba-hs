@@ -5,7 +5,7 @@ import axiosInstance from "@/lib/axios";
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
 import { DashboardDataCard, DashboardTableHead, DashboardTableHeaderRow } from "@/components/shared/DashboardTable";
-import { useApiData } from "@/hooks/useApiData";
+import { useData } from "@/hooks/useData";
 import { extractApiList } from "@/lib/api-response";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { toast } from "sonner";
 import { MessageSquare, Trash2, Loader2 } from "lucide-react";
-import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
 
 interface ConversationRow {
   id: string;
@@ -36,8 +36,9 @@ export default function AdminChatModerationPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [detail, setDetail] = useState<{ messages?: ChatMessage[] } | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const { data: envelope, isLoading } = useApiData<unknown>(
+  const { data: envelope, isLoading } = useData<unknown>(
     `/api/admin/chat/conversations?search=${encodeURIComponent(search)}`,
     { preserveEnvelope: true, initialData: null }
   );
@@ -154,16 +155,9 @@ export default function AdminChatModerationPage() {
                     <p className="text-xs font-bold text-muted-foreground">
                       {m.sender?.name ?? "User"} · {new Date(m.created_at).toLocaleString()}
                     </p>
-                    <ConfirmDeleteDialog
-                      trigger={
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-600">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      }
-                      title="Remove message?"
-                      description="This permanently deletes the message from the thread."
-                      onConfirm={() => deleteMessage(m.id)}
-                    />
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-600" onClick={() => setDeleteId(m.id)}>
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   </div>
                   <p className="text-sm">{m.body}</p>
                 </div>
@@ -172,6 +166,13 @@ export default function AdminChatModerationPage() {
           </div>
         </SheetContent>
       </Sheet>
+      <AppConfirmDialog
+        open={deleteId !== null}
+        onOpenChange={() => setDeleteId(null)}
+        onConfirm={async () => { if (deleteId) { await deleteMessage(deleteId); setDeleteId(null); } }}
+        title="Remove message?"
+        description="This permanently deletes the message from the thread."
+      />
     </DashboardPageContainer>
   );
 }

@@ -9,6 +9,7 @@ use App\Http\Resources\ChatMessageResource;
 use App\Models\Booking;
 use App\Models\Conversation;
 use App\Models\Message;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ChatController extends Controller
@@ -16,7 +17,7 @@ class ChatController extends Controller
     /**
      * List all conversations for the authenticated user.
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $user = $request->user();
 
@@ -41,7 +42,7 @@ class ChatController extends Controller
     /**
      * Get a conversation and its messages (marks unread messages as read).
      */
-    public function getConversation(Request $request, $id)
+    public function getConversation(Request $request, $id): JsonResponse
     {
         $user = $request->user();
 
@@ -51,11 +52,11 @@ class ChatController extends Controller
             ->with(['messages.sender', 'customer', 'provider.user', 'booking.service', 'latestMessage'])
             ->first();
 
-        if (!$conversation) {
+        if (! $conversation) {
             return response()->json(['message' => 'Conversation not found'], 404);
         }
 
-        if (!$this->userCanAccessConversation($user->id, $conversation)) {
+        if (! $this->userCanAccessConversation($user->id, $conversation)) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -75,7 +76,7 @@ class ChatController extends Controller
     /**
      * Create or find a conversation for a booking.
      */
-    public function createConversation(Request $request, $bookingId)
+    public function createConversation(Request $request, $bookingId): JsonResponse
     {
         $user = $request->user();
         $booking = Booking::with('provider')->findOrFail($bookingId);
@@ -83,7 +84,7 @@ class ChatController extends Controller
         $isCustomer = $user->id === $booking->customer_id;
         $isProvider = $booking->provider && $user->id === $booking->provider->user_id;
 
-        if (!$isCustomer && !$isProvider) {
+        if (! $isCustomer && ! $isProvider) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -106,7 +107,7 @@ class ChatController extends Controller
     /**
      * Send a message in a conversation.
      */
-    public function sendMessage(Request $request, $conversationId = null)
+    public function sendMessage(Request $request, $conversationId = null): JsonResponse
     {
         $id = $conversationId ?: $request->conversation_id;
         $request->merge(['conversation_id' => $id]);
@@ -119,7 +120,7 @@ class ChatController extends Controller
         $user = $request->user();
         $conversation = Conversation::findOrFail($id);
 
-        if (!$this->userCanAccessConversation($user->id, $conversation)) {
+        if (! $this->userCanAccessConversation($user->id, $conversation)) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -151,12 +152,12 @@ class ChatController extends Controller
     /**
      * Mark messages as read.
      */
-    public function markAsRead(Request $request, $conversationId)
+    public function markAsRead(Request $request, $conversationId): JsonResponse
     {
         $user = $request->user();
         $conversation = Conversation::findOrFail($conversationId);
 
-        if (!$this->userCanAccessConversation($user->id, $conversation)) {
+        if (! $this->userCanAccessConversation($user->id, $conversation)) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 

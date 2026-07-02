@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\EmailTemplate;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class EmailTemplateController extends Controller
@@ -19,17 +20,17 @@ class EmailTemplateController extends Controller
         'investor_inquiry_admin_alert',
     ];
 
-    public function index()
+    public function index(): JsonResponse
     {
-        return EmailTemplate::orderBy('name')->get();
+        return response()->json(EmailTemplate::orderBy('name')->get());
     }
 
-    public function show(EmailTemplate $emailTemplate)
+    public function show(EmailTemplate $emailTemplate): JsonResponse
     {
-        return $emailTemplate;
+        return response()->json($emailTemplate);
     }
 
-    public function update(Request $request, EmailTemplate $emailTemplate)
+    public function update(Request $request, EmailTemplate $emailTemplate): JsonResponse
     {
         $validated = $request->validate([
             'subject' => 'required|string|max:255',
@@ -44,7 +45,7 @@ class EmailTemplateController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'key' => ['required', 'string', 'max:120', 'regex:/^[a-z0-9_]+$/', 'unique:email_templates,key'],
@@ -69,7 +70,7 @@ class EmailTemplateController extends Controller
         ], 201);
     }
 
-    public function destroy(EmailTemplate $emailTemplate)
+    public function destroy(EmailTemplate $emailTemplate): JsonResponse
     {
         if (in_array($emailTemplate->key, self::PROTECTED_KEYS, true)) {
             return response()->json([

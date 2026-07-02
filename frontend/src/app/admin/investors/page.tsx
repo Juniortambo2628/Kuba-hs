@@ -34,16 +34,16 @@ import {
   DashboardTableHeaderRow,
 } from "@/components/shared/DashboardTable";
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
-import { DashboardStatusBadge } from "@/components/shared/DashboardStatusBadge";
-import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { StatusBadge } from "@/components/shared/StatusBadge";
+import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
 import {
   DashboardGreetingBar,
   DashboardFrostedStatCard,
   DashboardFrostedStatGrid,
   DashboardPanelCard,
 } from "@/components/dashboard/workspace";
-import { workspaceUi } from "@/lib/dashboard-workspace-ui";
-import { useApiData } from "@/hooks/useApiData";
+import { workspaceUi } from "@/lib/dashboard-ui";
+import { useData } from "@/hooks/useData";
 import { InvestorInquiry } from "@/types";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -51,7 +51,7 @@ import { cn } from "@/lib/utils";
 export default function AdminInvestorsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<InvestorInquiry | null>(null);
-  const { data: inquiriesRaw, isLoading, refetch } = useApiData<unknown>("/api/admin/investors", {
+  const { data: inquiriesRaw, isLoading, refetch } = useData<unknown>("/api/admin/investors", {
     initialData: [],
   });
   const inquiries = (
@@ -194,7 +194,7 @@ export default function AdminInvestorsPage() {
                       })}
                     </TableCell>
                     <TableCell className="py-4">
-                      <DashboardStatusBadge status={inquiry.status} />
+                      <StatusBadge status={inquiry.status} type="dashboard" />
                     </TableCell>
                     <TableCell className="pr-6 py-4 text-right">
                       <DropdownMenu>
@@ -249,7 +249,7 @@ export default function AdminInvestorsPage() {
                   <p className="font-semibold text-foreground">{inquiry.name}</p>
                   <p className="text-xs text-muted-foreground">{inquiry.email}</p>
                 </div>
-                <DashboardStatusBadge status={inquiry.status} />
+                <StatusBadge status={inquiry.status} type="dashboard" />
               </div>
               <p className="text-sm text-muted-foreground line-clamp-3">{inquiry.message}</p>
             </article>
@@ -257,9 +257,9 @@ export default function AdminInvestorsPage() {
         </div>
       )}
 
-      <ConfirmDeleteDialog
-        isOpen={!!deleteTarget}
-        onClose={() => setDeleteTarget(null)}
+      <AppConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={() => setDeleteTarget(null)}
         onConfirm={async () => {
           if (deleteTarget) await deleteInquiry(deleteTarget.id);
           setDeleteTarget(null);

@@ -7,6 +7,9 @@ use App\Models\Payment;
 use App\Services\BookingActivityLogService;
 use App\Models\SiteSetting;
 use App\Models\User;
+use App\Enums\BookingStatus;
+use App\Enums\BookingPaymentStatus;
+use App\Enums\PaymentStatus;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -37,11 +40,11 @@ class PaymentService
             throw new \Exception('Unauthorized. Only the customer can pay for this booking.', 403);
         }
 
-        if (!in_array($booking->status, ['confirmed', 'completed'])) {
+        if (!in_array($booking->status, [BookingStatus::Confirmed, BookingStatus::Completed])) {
             throw new \Exception('This booking must be confirmed or completed before payment.', 422);
         }
 
-        if ($booking->payment_status === 'paid') {
+        if ($booking->payment_status === BookingPaymentStatus::Paid) {
             throw new \Exception('This booking has already been paid.', 422);
         }
 
@@ -107,7 +110,7 @@ class PaymentService
 
         $booking = Booking::with(['customer', 'provider.user'])->findOrFail($metadata['booking_id']);
 
-        if ($booking->payment_status === 'paid') {
+        if ($booking->payment_status === BookingPaymentStatus::Paid) {
             return $booking;
         }
 
@@ -125,13 +128,13 @@ class PaymentService
             'provider_amount' => $providerAmount,
             'payment_method' => $paymentData['channel'] ?? 'paystack',
             'transaction_id' => $reference,
-            'status' => 'completed',
+            'status' => PaymentStatus::Completed,
             'payment_gateway' => 'paystack',
         ]);
 
         // Update Booking
         $booking->update([
-            'payment_status' => 'paid',
+            'payment_status' => BookingPaymentStatus::Paid,
             'final_price' => $amount,
         ]);
 

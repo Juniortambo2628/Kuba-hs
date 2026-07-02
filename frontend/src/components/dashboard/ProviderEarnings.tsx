@@ -18,7 +18,7 @@ import {
   DashboardTableHeaderRow,
 } from "@/components/shared/DashboardTable";
 import { uiPrimitives } from "@/lib/ui-primitives";
-import { DashboardEmptyState } from "@/components/shared/DashboardEmptyState";
+import { EmptyState } from "@/components/shared/ui/EmptyState";
 
 export function ProviderEarnings() {
   const [transactions, setTransactions] = useState<any[]>([]);
@@ -96,7 +96,8 @@ export function ProviderEarnings() {
           {transactions.length === 0 && (
             <TableRow>
               <TableCell colSpan={6} className="h-48 p-0 border-0">
-                <DashboardEmptyState
+                <EmptyState
+                  variant="dashboard"
                   icon={Wallet}
                   title="No transactions yet"
                   description="Completed bookings will appear here once payouts are processed."

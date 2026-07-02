@@ -22,7 +22,8 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 
 import { getEcho } from "@/lib/echo";
-import { normalizeMessage, unwrapResource, unwrapResourceList } from "@/lib/chat-utils";
+import { normalizeMessage } from "@/lib/chat-utils";
+import { extractApiList } from "@/lib/api-response";
 
 interface Message {
     id: string | number;
@@ -86,12 +87,12 @@ export function ChatUI({ bookingId, onClose }: ChatUIProps) {
     const fetchConversation = async () => {
         try {
             const res = await axiosInstance.get(`/api/chat/conversations/${bookingId}`);
-            const conv = unwrapResource<Conversation>(res.data?.conversation ?? res.data);
+            const conv = extractApiList(res.data?.conversation ? [res.data.conversation] : [res.data])[0];
             if (!conv) {
                 throw new Error("Conversation not found");
             }
             setConversation(conv);
-            const rawMessages = conv.messages ?? unwrapResourceList(res.data?.messages);
+            const rawMessages = conv.messages ?? extractApiList(res.data?.messages);
             setMessages(
                 (Array.isArray(rawMessages) ? rawMessages : []).map((m) =>
                     normalizeMessage(m as unknown as Record<string, unknown>)
@@ -129,7 +130,7 @@ export function ChatUI({ bookingId, onClose }: ChatUIProps) {
                 conversation_id: conversation.id,
                 body: newMessage
             });
-            const sent = unwrapResource<Record<string, unknown>>(res.data) ?? res.data;
+            const sent = extractApiList(res.data)[0];
             setMessages((prev) => [
                 ...prev,
                 normalizeMessage(sent as Record<string, unknown>) as unknown as Message,

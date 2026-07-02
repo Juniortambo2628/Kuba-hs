@@ -15,6 +15,8 @@ class SiteSettingSeeder extends Seeder
         $settings = [
             // General
             ['key' => 'site_name', 'value' => 'KUBA', 'type' => 'text', 'group' => 'general', 'label' => 'Site Name'],
+            ['key' => 'site_description', 'value' => 'Premier Home Services Marketplace', 'type' => 'textarea', 'group' => 'general', 'label' => 'Site Description'],
+            ['key' => 'site_logo', 'value' => null, 'type' => 'image', 'group' => 'general', 'label' => 'Primary Logo'],
             ['key' => 'contact_phone', 'value' => '+254 700 000 000', 'type' => 'text', 'group' => 'general', 'label' => 'Contact Phone'],
             ['key' => 'contact_email', 'value' => 'support@kuba.co.ke', 'type' => 'text', 'group' => 'general', 'label' => 'Contact Email'],
             ['key' => 'contact_address', 'value' => 'Kuba Plaza, Westlands, Nairobi, Kenya', 'type' => 'text', 'group' => 'general', 'label' => 'Contact Address'],
@@ -31,6 +33,7 @@ class SiteSettingSeeder extends Seeder
             // Hero
             ['key' => 'hero_subtitle', 'value' => 'Welcome to KUBA Kenya', 'type' => 'text', 'group' => 'hero', 'label' => 'Hero Subtitle'],
             ['key' => 'hero_title', 'value' => 'The #1 Professional Home Services Marketplace in Nairobi', 'type' => 'text', 'group' => 'hero', 'label' => 'Hero Title'],
+            ['key' => 'hero_button_text', 'value' => 'Get Started', 'type' => 'text', 'group' => 'hero', 'label' => 'Hero Button Text'],
             ['key' => 'hero_bg', 'value' => '/assets/zogin/img/hero/hero-1.jpg', 'type' => 'image', 'group' => 'hero', 'label' => 'Hero Background Image'],
 
             // About

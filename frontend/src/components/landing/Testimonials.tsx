@@ -10,8 +10,6 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { useEffect, useState } from "react";
-import axiosInstance from "@/lib/axios";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getMediaUrl } from "@/lib/utils";
 import { LandingSectionHeader } from "@/components/shared/LandingSectionHeader";
@@ -23,6 +21,8 @@ import {
   landingTitleParts,
   LandingGradientTitle,
 } from "@/lib/landing-section-header-copy";
+import { useLandingFetch } from "@/hooks/useLandingFetch";
+import { FALLBACK_IMAGES } from "@/lib/fallback-images";
 
 interface TestimonialItem {
   id: number;
@@ -33,12 +33,9 @@ interface TestimonialItem {
   image_url: string | null;
 }
 
-const FALLBACK_AVATAR =
-  "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=800&auto=format&fit=crop";
-
 /** Single consistent card: full-bleed image + glass footer (all slides match) */
 function TestimonialCard({ testimonial }: { testimonial: TestimonialItem }) {
-  const imageSrc = getMediaUrl(testimonial.image_url, "testimonial") || FALLBACK_AVATAR;
+  const imageSrc = getMediaUrl(testimonial.image_url, "testimonial") || FALLBACK_IMAGES.testimonialAvatar;
 
   return (
     <article className="relative h-[min(420px,52vh)] min-h-[360px] rounded-[2rem] overflow-hidden shadow-xl border border-border/40">
@@ -80,28 +77,13 @@ function TestimonialCard({ testimonial }: { testimonial: TestimonialItem }) {
 
 export function Testimonials() {
   const { getS } = useCMS();
-  const [testimonials, setTestimonials] = useState<TestimonialItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: testimonials, isLoading } = useLandingFetch<TestimonialItem>("/api/testimonials");
 
   const testimonialsTitle = getS("landing_sections", "testimonials_title", "Loved by customers");
   const { part1: testTitle1, part2: testTitle2 } = landingTitleParts(
     testimonialsTitle,
     "customers"
   );
-
-  useEffect(() => {
-    const fetchTestimonials = async () => {
-      try {
-        const response = await axiosInstance.get("/api/testimonials");
-        setTestimonials(response.data.data ?? response.data);
-      } catch (error) {
-        console.error("Failed to fetch testimonials:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchTestimonials();
-  }, []);
 
   if (!isLoading && testimonials.length === 0) return null;
 

@@ -26,8 +26,8 @@ class ServiceResource extends JsonResource
             'providers_count' => (int) ($this->provider_services_count ?? 0),
             'thumbnail_url' => $this->thumbnail_url,
             'category' => new ServiceCategoryResource($this->whenLoaded('category')),
-            'media' => $this->when($this->relationLoaded('media'), function() {
-                return $this->getMedia('images')->map(fn($m) => [
+            'media' => $this->when($this->relationLoaded('media'), function () {
+                return $this->getMedia('images')->map(fn ($m) => [
                     'id' => $m->id,
                     'url' => $m->getUrl(),
                     'name' => $m->file_name,

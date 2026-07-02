@@ -1,14 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { FieldLabel } from "@/components/shared/ui";
 import { CrudFormDialog } from "@/components/shared/dialog/CrudFormDialog";
 import { DashboardImageUpload } from "@/components/shared/DashboardImageUpload";
-import axiosInstance, { handleApiError } from "@/lib/axios";
-import { toast } from "sonner";
+import { useCrudForm } from "@/hooks/useCrudForm";
 
 export interface FaqFormValues {
   question: string;
@@ -17,14 +15,6 @@ export interface FaqFormValues {
   is_active: boolean;
   order: number;
 }
-
-const emptyFaq = (order = 0): FaqFormValues => ({
-  question: "",
-  answer: "",
-  avatar: "",
-  is_active: true,
-  order,
-});
 
 interface FaqFormDialogProps {
   open: boolean;
@@ -41,40 +31,17 @@ export function FaqFormDialog({
   initial,
   onSuccess,
 }: FaqFormDialogProps) {
-  const [form, setForm] = useState<FaqFormValues>(emptyFaq());
-  const [isSaving, setIsSaving] = useState(false);
+  const { form, setForm, isSaving, handleSubmit } = useCrudForm<FaqFormValues>({
+    empty: () => ({ question: "", answer: "", avatar: "", is_active: true, order: 0 }),
+    endpoint: "/api/admin/faqs",
+    editingId,
+    initial,
+  });
 
-  useEffect(() => {
-    if (!open) return;
-    setForm({
-      ...emptyFaq(initial?.order ?? 0),
-      ...initial,
-      question: initial?.question ?? "",
-      answer: initial?.answer ?? "",
-      avatar: initial?.avatar ?? "",
-      is_active: initial?.is_active ?? true,
-      order: initial?.order ?? 0,
-    });
-  }, [open, initial]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSaving(true);
-    try {
-      if (editingId) {
-        await axiosInstance.put(`/api/admin/faqs/${editingId}`, form);
-        toast.success("FAQ updated");
-      } else {
-        await axiosInstance.post("/api/admin/faqs", form);
-        toast.success("FAQ published");
-      }
-      onOpenChange(false);
-      onSuccess();
-    } catch (err: unknown) {
-      toast.error(handleApiError(err));
-    } finally {
-      setIsSaving(false);
-    }
+  const onSubmit = async (e: React.FormEvent) => {
+    await handleSubmit(e);
+    onOpenChange(false);
+    onSuccess();
   };
 
   return (
@@ -87,7 +54,7 @@ export function FaqFormDialog({
       submitLabel={editingId ? "Save changes" : "Publish entry"}
       isSubmitting={isSaving}
     >
-      <form id="admin-faq-form" onSubmit={handleSubmit} className="space-y-5">
+      <form id="admin-faq-form" onSubmit={onSubmit} className="space-y-5">
         <div className="space-y-2">
           <FieldLabel>Question</FieldLabel>
           <Input

@@ -13,6 +13,7 @@ import { MarketingPage } from "@/components/layout/MarketingPage";
 import { MarketingSection } from "@/components/shared/MarketingSection";
 import { FeatureCardGrid } from "@/components/shared/FeatureCardGrid";
 import { Shield } from "lucide-react";
+import { FALLBACK_IMAGES } from "@/lib/fallback-images";
 
 export default function AboutPage() {
   const { getS, getImg } = useCMS();
@@ -35,7 +36,7 @@ export default function AboutPage() {
                 src={getImg(
                   "about_page",
                   "about_story_image_1",
-                  "https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=2070&auto=format&fit=crop"
+                  FALLBACK_IMAGES.cleaning
                 )}
                 alt="Professional at work"
                 fill
@@ -48,7 +49,7 @@ export default function AboutPage() {
                   src={getImg(
                     "about_page",
                     "about_story_image_2",
-                    "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?q=80&w=2070&auto=format&fit=crop"
+                    FALLBACK_IMAGES.team
                   )}
                   alt="Team collaboration"
                   fill
@@ -60,7 +61,7 @@ export default function AboutPage() {
                   src={getImg(
                     "about_page",
                     "about_story_image_3",
-                    "https://images.unsplash.com/photo-1556741533-6e6a62bd8b49?q=80&w=2070&auto=format&fit=crop"
+                    FALLBACK_IMAGES.support
                   )}
                   alt="Customer service"
                   fill

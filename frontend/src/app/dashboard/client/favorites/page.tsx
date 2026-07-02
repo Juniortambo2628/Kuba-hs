@@ -7,13 +7,13 @@ import { ProviderCard, type ProviderCardData } from "@/components/marketplace";
 import { FavoritesProvider } from "@/contexts/FavoritesContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Heart, Search } from "lucide-react";
-import { DashboardEmptyState } from "@/components/shared/DashboardEmptyState";
+import { EmptyState } from "@/components/shared/ui/EmptyState";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import useSWR from "swr";
 import { providerHref } from "@/lib/provider-urls";
 import { DashboardGreetingBar, DashboardFrostedStatCard } from "@/components/dashboard/workspace";
-import { workspaceUi } from "@/lib/dashboard-workspace-ui";
+import { workspaceUi } from "@/lib/dashboard-ui";
 
 export default function ClientFavoritesPage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -71,7 +71,8 @@ export default function ClientFavoritesPage() {
             ))}
           </div>
         ) : (
-          <DashboardEmptyState
+          <EmptyState
+            variant="dashboard"
             icon={Heart}
             title="No saved providers yet"
             description="When you favorite a provider on the marketplace, they appear here."
@@ -82,7 +83,7 @@ export default function ClientFavoritesPage() {
                 Find providers
               </Link>
             </Button>
-          </DashboardEmptyState>
+          </EmptyState>
         )}
       </DashboardPageContainer>
     </FavoritesProvider>

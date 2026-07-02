@@ -4,20 +4,17 @@ import { DashboardPageContainer } from "@/components/shared/DashboardPageContain
 import { DashboardPageSkeleton } from "@/components/shared/DashboardPageSkeleton";
 
 import { useState } from "react";
-import NextImage from "next/image";
 import axiosInstance, { handleApiError } from "@/lib/axios";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { 
-  Settings as SettingsIcon, 
-  Save, 
-  Loader2, 
-  Layout, 
-  Globe, 
-  CreditCard, 
+import { Accordion } from "@/components/ui/accordion";
+import {
+  Settings as SettingsIcon,
+  Save,
+  Loader2,
+  Layout,
+  Globe,
+  CreditCard,
   Image as ImageIcon,
   Sparkles,
   Navigation,
@@ -29,247 +26,20 @@ import {
   Layers,
   Type,
   FileText,
-  Trash2,
-  X,
-  Plus
 } from "lucide-react";
-import { 
-    Dialog, 
-    DialogContent, 
-    DialogHeader, 
-    DialogTitle, 
-    DialogTrigger,
-    DialogFooter,
-    DialogDescription
-} from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { dashboardUi } from "@/lib/dashboard-ui";
 import { uiPrimitives } from "@/lib/ui-primitives";
 import { cn } from "@/lib/utils";
-import { FieldLabel } from "@/components/shared/ui";
-import { FilePond, registerPlugin } from 'react-filepond';
-import 'filepond/dist/filepond.min.css';
-import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
-import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
-import { useApiData } from "@/hooks/useApiData";
+import { useData } from "@/hooks/useData";
 import { compressImageFile } from "@/lib/image-compression";
 import { useCMS } from "@/contexts/CMSContext";
 import { NavigationManager } from "./components/NavigationManager";
-import { LivePreviewModal } from "./components/LivePreviewModal";
 import { resolveMediaUrl } from "@/lib/utils";
+import { SettingsGroupSection } from "@/components/admin/settings/SettingsGroupSection";
+import { SettingsPageContent } from "@/components/admin/settings/SettingsPageContent";
+import type { Setting } from "@/components/admin/settings/types";
 import type { LucideIcon } from "lucide-react";
-
-registerPlugin(FilePondPluginImagePreview);
-
-interface Setting {
-    id: string;
-    key: string;
-    value: string;
-    label: string;
-    type: string;
-    group: string;
-    description?: string | null;
-    image_url?: string | null;
-}
-
-const ImageSettingCard = ({ 
-    setting, 
-    pendingFile, 
-    onSetFile, 
-    onRemove, 
-    getMediaUrl 
-}: { 
-    setting: Setting, 
-    pendingFile?: File, 
-    onSetFile: (file: File) => void,
-    onRemove: () => void,
-    getMediaUrl: (url: string) => string
-}) => {
-    const [isOpen, setIsOpen] = useState(false);
-    
-    // Resolve what to show
-    const currentUrl = pendingFile ? URL.createObjectURL(pendingFile) : (setting.image_url ? getMediaUrl(setting.image_url) : null);
-
-    return (
-        <Card className="border border-border/40 bg-white dark:bg-zinc-900 rounded-2xl shadow-sm overflow-hidden group/media-card hover:border-primary/20 transition-all flex flex-col">
-            <div className="p-4 border-b border-border/10 bg-muted/5 flex items-center justify-between">
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground truncate max-w-[80%]">
-                    {setting.label || setting.key.replace(/_/g, ' ')}
-                </span>
-                <ImageIcon className="w-3.5 h-3.5 text-muted-foreground/40" />
-            </div>
-            
-            <div className="relative aspect-video group/asset overflow-hidden bg-muted/5">
-                {currentUrl ? (
-                    <NextImage
-                        src={currentUrl}
-                        alt={setting.label}
-                        fill
-                        unoptimized
-                        className="object-cover transition-transform duration-700 group-hover/media-card:scale-105"
-                    />
-                ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-muted-foreground/30">
-                        <Plus className="w-8 h-8" />
-                        <span className="text-[10px] font-bold uppercase tracking-widest">No Visual Set</span>
-                    </div>
-                )}
-                
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/asset:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
-                   <ImageManagementDialog 
-                        setting={setting}
-                        pendingFile={pendingFile}
-                        onSetFile={onSetFile}
-                        onRemove={onRemove}
-                        getMediaUrl={getMediaUrl}
-                        isOpen={isOpen}
-                        onOpenChange={setIsOpen}
-                   />
-                </div>
-            </div>
-
-            {pendingFile && (
-                <div className="p-2 px-4 bg-primary/10 border-t border-primary/10 flex items-center justify-between">
-                    <span className="text-[9px] font-black text-primary uppercase tracking-widest italic">Pending Upload</span>
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                </div>
-            )}
-        </Card>
-    );
-};
-
-const ImageManagementDialog = ({ 
-    setting, 
-    pendingFile, 
-    onSetFile, 
-    onRemove, 
-    getMediaUrl,
-    isOpen,
-    onOpenChange
-}: { 
-    setting: Setting, 
-    pendingFile?: File, 
-    onSetFile: (file: File) => void,
-    onRemove: () => void,
-    getMediaUrl: (url: string) => string,
-    isOpen: boolean,
-    onOpenChange: (open: boolean) => void
-}) => {
-    const savedUrl = setting.image_url ? getMediaUrl(setting.image_url) : null;
-    const previewUrl = pendingFile ? URL.createObjectURL(pendingFile) : null;
-
-    return (
-        <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogTrigger asChild>
-                <Button size="sm" className="bg-white text-black hover:bg-white/90 rounded-full font-bold text-[10px] tracking-widest px-6 h-10 shadow-xl">
-                    MANAGE ASSET
-                </Button>
-            </DialogTrigger>
-            <DialogContent className={dashboardUi.dialog.content}>
-                <DialogHeader className={dashboardUi.dialog.header}>
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                            <ImageIcon className="w-4 h-4" />
-                        </div>
-                        <DialogTitle className="text-xl font-black uppercase tracking-tight">Manage Asset</DialogTitle>
-                    </div>
-                    <DialogDescription className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
-                        {setting.group.replace(/_/g, ' ')} / {setting.label || setting.key}
-                    </DialogDescription>
-                </DialogHeader>
-
-                <div className={dashboardUi.dialog.body}>
-                    {/* Visual Comparison */}
-                    <div className="grid grid-cols-1 gap-6">
-                        <div className="space-y-3">
-                            <FieldLabel>Current State</FieldLabel>
-                            <div className="relative aspect-video rounded-3xl overflow-hidden bg-muted border border-border/10 shadow-inner group">
-                                {previewUrl || savedUrl ? (
-                                    <NextImage
-                                        src={previewUrl || savedUrl || ""}
-                                        alt="Preview"
-                                        fill
-                                        unoptimized
-                                        className="object-cover"
-                                    />
-                                ) : (
-                                    <div className="w-full h-full flex flex-col items-center justify-center gap-3 text-muted-foreground/30">
-                                        <div className="w-12 h-12 rounded-2xl bg-muted-foreground/5 flex items-center justify-center">
-                                            <X className="w-6 h-6" />
-                                        </div>
-                                        <span className="text-[10px] font-bold uppercase tracking-widest">No visual configured</span>
-                                    </div>
-                                )}
-                                {previewUrl && (
-                                     <div className="absolute top-4 right-4 px-3 py-1.5 bg-primary text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-full shadow-lg">
-                                        Unsaved Change
-                                     </div>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="space-y-3">
-                            <FieldLabel>Update Content</FieldLabel>
-                            <div className="premium-dropzone">
-                                <FilePond
-                                    onupdatefiles={(fileItems) => {
-                                        const file = fileItems[0]?.file as File | undefined;
-                                        if (file) {
-                                            onSetFile(file);
-                                        }
-                                    }}
-                                    allowMultiple={false}
-                                    maxFiles={1}
-                                    labelIdle='<div class="flex flex-col items-center gap-2"><div class="w-10 h-10 rounded-full bg-primary/5 flex items-center justify-center border border-primary/10"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-primary"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div><div class="flex flex-col"><span class="text-foreground font-black uppercase text-[10px] tracking-widest mb-1">Upload New Asset</span><span class="text-[9px] text-muted-foreground/50 tracking-tight font-medium">Drag & Drop or <span class="text-primary">Browse Files</span></span></div></div>'
-                                    className="w-full"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <DialogFooter className={dashboardUi.dialog.footer}>
-                    {(previewUrl || savedUrl) && (
-                        <Button 
-                            variant="destructive" 
-                            size="lg"
-                            className="bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white border border-red-500/10 rounded-2xl text-[10px] font-black tracking-widest h-14 px-8 group/trash transition-all"
-                            onClick={() => {
-                                onRemove();
-                                onOpenChange(false);
-                            }}
-                        >
-                            <Trash2 className="w-4 h-4 mr-2 group-hover/trash:animate-bounce" />
-                            REMOVE ASSET
-                        </Button>
-                    )}
-                    <div className="flex-1" />
-                    <Button 
-                        variant="outline" 
-                        size="lg"
-                        className="rounded-2xl text-[10px] font-black tracking-widest h-14 px-10 border-border dark:border-white/10"
-                        onClick={() => onOpenChange(false)}
-                    >
-                        CANCEL
-                    </Button>
-                    <Button 
-                        size="lg"
-                        className="bg-primary hover:bg-primary/90 text-white rounded-2xl text-[10px] font-black tracking-widest h-14 px-12 shadow-xl shadow-primary/20"
-                        onClick={() => {
-                            toast.info("Asset staged! Click 'Save Configuration' at the top to apply changes.", {
-                                duration: 4000,
-                            });
-                            onOpenChange(false);
-                        }}
-                    >
-                        STAGE FOR UPLOAD
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    );
-};
 
 interface Metadata {
     environment: string;
@@ -376,7 +146,7 @@ const getPageForKey = (key: string, group: string) => {
 
 export default function UnifiedSettingsPage() {
     const { refreshSettings } = useCMS();
-    const { data: settingsData, isLoading, refetch: fetchSettings, setData: setSettingsData } = useApiData<SettingsApiResponse>("/api/admin/settings");
+    const { data: settingsData, isLoading, refetch: fetchSettings, setData: setSettingsData } = useData<SettingsApiResponse>("/api/admin/settings");
     const settings = settingsData?.settings ?? ({} as Record<string, Setting[]>);
     const metadata = settingsData?.metadata ?? null;
 
@@ -557,77 +327,16 @@ export default function UnifiedSettingsPage() {
                                     {PAGE_MAPPINGS.map(pageInfo => {
                                         const pageSettings = settingsByPage[pageInfo.id] || [];
                                         return (
-                                        <AccordionItem key={pageInfo.id} value={pageInfo.id} className="border border-border/40 bg-white dark:bg-zinc-900 rounded-2xl shadow-sm px-2">
-                                            <AccordionTrigger className="px-6 py-5 hover:no-underline group h-auto min-h-[5.5rem]">
-                                                <div className="flex items-center gap-4 text-left">
-                                                    <div className="p-3 bg-primary/5 rounded-2xl group-hover:bg-primary group-hover:text-white transition-colors duration-300">
-                                                        <Layers className="w-5 h-5 text-primary group-hover:text-white transition-colors" />
-                                                    </div>
-                                                    <div>
-                                                        <h3 className="text-xl font-bold tracking-tight text-foreground">{pageInfo.label}</h3>
-                                                        <p className="text-sm font-medium text-muted-foreground mt-1">
-                                                            {pageSettings.length} configurations mapped
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </AccordionTrigger>
-                                            <AccordionContent className="px-6 pb-8 pt-2">
-                                                <div className="mb-8 flex items-center justify-between border-b border-border/10 pb-4">
-                                                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Manage Configuration</span>
-                                                    <LivePreviewModal sectionId={pageInfo.id} currentSettings={allPlatformSettings} />
-                                                </div>
-                                                {pageSettings.length === 0 ? (
-                                                    <div className="py-12 text-center bg-muted/10 rounded-2xl border border-dashed border-border/40">
-                                                        <p className="text-muted-foreground text-sm font-medium">No configurations currently mapped for this section.</p>
-                                                    </div>
-                                                ) : (
-                                                    <div className={uiPrimitives.layout.grid3}>
-                                                        {pageSettings.map(setting => (
-                                                            <div key={setting.id}>
-                                                                {setting.type === 'image' ? (
-                                                                    <ImageSettingCard 
-                                                                        setting={setting}
-                                                                        pendingFile={files[setting.id]}
-                                                                        onSetFile={(file: File) => setFiles(prev => ({ ...prev, [setting.id]: file }))}
-                                                                        onRemove={() => handleRemoveImage(setting.group, setting.id)}
-                                                                        getMediaUrl={resolveMediaUrl}
-                                                                    />
-                                                                ) : (
-                                                                    <Card className={cn(dashboardUi.card.padding, "border border-border/40 bg-white dark:bg-zinc-900 rounded-2xl shadow-sm space-y-3 hover:border-primary/20 transition-all h-full")}>
-                                                                        <div className="flex items-center justify-between gap-4">
-                                                                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground truncate" title={setting.label || setting.key.replace(/_/g, ' ')}>
-                                                                                {setting.label || setting.key.replace(/_/g, ' ')}
-                                                                            </label>
-                                                                            <div className="p-1 px-2.5 bg-primary/5 rounded-lg text-[10px] font-bold text-primary/60 border border-primary/10 shrink-0">
-                                                                                {setting.key}
-                                                                            </div>
-                                                                        </div>
-                                                                        {setting.type === 'textarea' ? (
-                                                                            <textarea 
-                                                                                className="w-full min-h-[120px] bg-muted/5 border border-border/40 rounded-xl px-4 py-3 text-foreground text-sm font-semibold outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all resize-none leading-relaxed"
-                                                                                value={setting.value || ""}
-                                                                                onChange={(e) => handleValueChange(setting.group, setting.id, e.target.value)}
-                                                                            />
-                                                                        ) : (
-                                                                            <Input 
-                                                                                className="h-12 bg-muted/5 border-border/40 px-4 font-bold text-foreground focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all rounded-xl"
-                                                                                value={setting.value || ""}
-                                                                                onChange={(e) => handleValueChange(setting.group, setting.id, e.target.value)}
-                                                                            />
-                                                                        )}
-                                                                        {setting.description && (
-                                                                            <p className="text-[10px] font-medium text-muted-foreground/60 italic px-1 pt-1">
-                                                                                {setting.description}
-                                                                            </p>
-                                                                        )}
-                                                                    </Card>
-                                                                )}
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </AccordionContent>
-                                        </AccordionItem>
+                                        <SettingsPageContent
+                                            key={pageInfo.id}
+                                            pageInfo={pageInfo}
+                                            pageSettings={pageSettings}
+                                            allPlatformSettings={allPlatformSettings}
+                                            files={files}
+                                            onValueChange={handleValueChange}
+                                            onRemoveImage={handleRemoveImage}
+                                            onSetFile={(id, file) => setFiles(prev => ({ ...prev, [id]: file }))}
+                                        />
                                     )})}
                                 </Accordion>
                             </TabsContent>
@@ -639,62 +348,14 @@ export default function UnifiedSettingsPage() {
                         <TabsContent key={catId} value={catId} className="mt-0 focus:outline-none">
                             <div className="space-y-12">
                                 {categoryGroups.map(group => (
-                                <section key={group.id} className="space-y-6">
-                                    <div className="flex items-center gap-4">
-                                        <div className={`p-3 rounded-2xl bg-white dark:bg-zinc-900 border border-border/40 shadow-sm text-primary`}>
-                                            <group.icon className="w-5 h-5" />
-                                        </div>
-                                        <div>
-                                            <h3 className="text-xl font-bold tracking-tight text-foreground">{group.label}</h3>
-                                            <p className="text-xs font-medium text-muted-foreground">{group.description}</p>
-                                        </div>
-                                    </div>
-
-                                    <div className={uiPrimitives.layout.grid3}>
-                                        {group.settings.map((setting: Setting) => (
-                                            <div key={setting.id}>
-                                                {setting.type === 'image' ? (
-                                                    <ImageSettingCard 
-                                                        setting={setting}
-                                                        pendingFile={files[setting.id]}
-                                                        onSetFile={(file: File) => setFiles(prev => ({ ...prev, [setting.id]: file }))}
-                                                        onRemove={() => handleRemoveImage(setting.group, setting.id)}
-                                                        getMediaUrl={resolveMediaUrl}
-                                                    />
-                                                ) : (
-                                                    <Card className={cn(dashboardUi.card.padding, "border border-border/40 bg-white dark:bg-zinc-900 rounded-2xl shadow-sm space-y-3 hover:border-primary/20 transition-all")}>
-                                                        <div className="flex items-center justify-between gap-4">
-                                                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground truncate">
-                                                                {setting.label || setting.key.replace(/_/g, ' ')}
-                                                            </label>
-                                                            <div className="p-1 px-2.5 bg-primary/5 rounded-lg text-[10px] font-bold text-primary/60 border border-primary/10">
-                                                                {setting.key}
-                                                            </div>
-                                                        </div>
-                                                        {setting.type === 'textarea' ? (
-                                                            <textarea 
-                                                                className="w-full min-h-[120px] bg-muted/5 border border-border/40 rounded-xl px-4 py-3 text-foreground text-sm font-semibold outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all resize-none leading-relaxed"
-                                                                value={setting.value || ""}
-                                                                onChange={(e) => handleValueChange(setting.group, setting.id, e.target.value)}
-                                                            />
-                                                        ) : (
-                                                            <Input 
-                                                                className="h-12 bg-muted/5 border-border/40 px-4 font-bold text-foreground focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all rounded-xl"
-                                                                value={setting.value || ""}
-                                                                onChange={(e) => handleValueChange(setting.group, setting.id, e.target.value)}
-                                                            />
-                                                        )}
-                                                        {setting.description && (
-                                                            <p className="text-[10px] font-medium text-muted-foreground/60 italic px-1">
-                                                                {setting.description}
-                                                            </p>
-                                                        )}
-                                                    </Card>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </section>
+                                <SettingsGroupSection
+                                    key={group.id}
+                                    group={group}
+                                    files={files}
+                                    onValueChange={handleValueChange}
+                                    onRemoveImage={handleRemoveImage}
+                                    onSetFile={(id, file) => setFiles(prev => ({ ...prev, [id]: file }))}
+                                />
                             ))}
                         </div>
                     </TabsContent>

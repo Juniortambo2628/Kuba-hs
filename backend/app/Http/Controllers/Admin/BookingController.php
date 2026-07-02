@@ -2,48 +2,38 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\BookingStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreAdminBookingRequest;
 use App\Models\Booking;
 use App\Models\User;
 use App\Services\BookingService;
 use App\Support\ApiResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class BookingController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
-        $query = Booking::with(['customer', 'provider.user', 'service']);
+        $bookings = Booking::with(['customer', 'provider.user', 'service'])
+            ->search($request->search)
+            ->byStatus($request->status)
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
 
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function(\Illuminate\Database\Eloquent\Builder $q) use ($search) {
-                $q->where('booking_number', 'like', "%{$search}%")
-                  ->orWhereHas('customer', function($sq) use ($search) {
-                      $sq->where('first_name', 'like', "%{$search}%")
-                          ->orWhere('last_name', 'like', "%{$search}%");
-                  });
-            });
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        return \App\Http\Resources\BookingResource::collection(
-            $query->latest()->paginate(15)->withQueryString()
-        );
+        return \App\Http\Resources\BookingResource::collection($bookings);
     }
 
-    public function show(Booking $booking)
+    public function show(Booking $booking): JsonResponse
     {
         return new \App\Http\Resources\BookingResource(
             $booking->load(['customer', 'provider.user', 'service', 'address', 'review', 'payment'])
         );
     }
 
-    public function store(StoreAdminBookingRequest $request, BookingService $bookingService)
+    public function store(StoreAdminBookingRequest $request, BookingService $bookingService): JsonResponse
     {
         $customer = User::findOrFail($request->validated('customer_id'));
         $data = $request->validated();
@@ -61,10 +51,10 @@ class BookingController extends Controller
         );
     }
 
-    public function updateStatus(Request $request, Booking $booking)
+    public function updateStatus(Request $request, Booking $booking): JsonResponse
     {
         $validated = $request->validate([
-            'status' => 'required|string|in:pending,confirmed,in_progress,completed,cancelled',
+            'status' => 'required|string|in:'.implode(',', array_column(BookingStatus::cases(), 'value')),
             'cancellation_reason' => 'nullable|string',
         ]);
 
@@ -86,7 +76,7 @@ class BookingController extends Controller
         ]);
     }
 
-    public function destroy(Booking $booking)
+    public function destroy(Booking $booking): JsonResponse
     {
         app(\App\Services\BookingActivityLogService::class)->log(
             $booking,
@@ -97,7 +87,7 @@ class BookingController extends Controller
         );
 
         $booking->delete();
+
         return response()->json(['message' => 'Booking record purged.']);
     }
 }
-

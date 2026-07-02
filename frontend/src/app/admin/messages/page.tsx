@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { getMessageTypeClasses } from "@/lib/status-styles";
-import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
 import {
   DashboardGreetingBar,
   DashboardFrostedStatCard,
@@ -29,7 +29,7 @@ import {
   DashboardPanelCard,
   DashboardStatusBadge,
 } from "@/components/dashboard/workspace";
-import { workspaceUi } from "@/lib/dashboard-workspace-ui";
+import { workspaceUi } from "@/lib/dashboard-ui";
 import { formatStatusLabel } from "@/lib/dashboard-copy";
 
 const TYPE_LABELS: Record<UnifiedInboxMessage["type"], string> = {
@@ -294,9 +294,9 @@ export default function MessagingHubPage() {
         </DashboardPanelCard>
       </div>
 
-      <ConfirmDeleteDialog
-        isOpen={!!deleteTarget}
-        onClose={() => setDeleteTarget(null)}
+      <AppConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={() => setDeleteTarget(null)}
         onConfirm={confirmDelete}
         title="Delete this message?"
         description="This permanently removes it from the admin inbox."

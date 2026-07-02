@@ -39,8 +39,8 @@ import {
   DashboardTableHeaderRow,
 } from "@/components/shared/DashboardTable";
 import { dashboardUi } from "@/lib/dashboard-ui";
-import { BookingStatusBadge } from "@/components/shared/BookingStatusBadge";
-import { DashboardEmptyState } from "@/components/shared/DashboardEmptyState";
+import { StatusBadge } from "@/components/shared/StatusBadge";
+import { EmptyState } from "@/components/shared/ui/EmptyState";
 import { BookingCard } from "@/components/shared/BookingCard";
 import { Booking } from "@/types";
 
@@ -53,11 +53,11 @@ import {
 } from "@/components/ui/dialog";
 import { FieldLabel } from "@/components/shared/ui/FilterControls";
 import { Input } from "@/components/ui/input";
-import { useApiData } from "@/hooks/useApiData";
-import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { useData } from "@/hooks/useData";
+import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
 function AdminBookingsContent() {
   const { search, setSearch, status, setStatus } = useSearchState();
-  const { data: bookings, isLoading, refetch: fetchBookings } = useApiData<Booking[]>(
+  const { data: bookings, isLoading, refetch: fetchBookings } = useData<Booking[]>(
     `/api/admin/bookings?search=${search}&status=${status || ''}`,
     { initialData: [] }
   );
@@ -67,6 +67,7 @@ function AdminBookingsContent() {
   const [rescheduleData, setRescheduleData] = useState<{ id: string, date: string } | null>(null);
   const [cancelData, setCancelData] = useState<{ id: string, reason: string } | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const { exportToCSV } = useExport();
 
   const handleStatusChange = async (id: string, newStatus: string, reason?: string) => {
@@ -194,8 +195,9 @@ function AdminBookingsContent() {
                 ) : bookings.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="p-0 border-none">
-                      <DashboardEmptyState 
-                        title="No bookings found" 
+                      <EmptyState
+                        variant="dashboard"
+                        title="No bookings found"
                         description="Adjust your search criteria or clear filters to view more results."
                       />
                     </TableCell>
@@ -224,7 +226,7 @@ function AdminBookingsContent() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <BookingStatusBadge status={booking.status} />
+                        <StatusBadge status={booking.status} type="booking" />
                       </TableCell>
                       <TableCell className="pr-6 text-right">
                         <DropdownMenu>
@@ -252,16 +254,9 @@ function AdminBookingsContent() {
                               <XCircle className="w-4 h-4 text-amber-500" /> Cancel with Reason
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <ConfirmDeleteDialog
-                              trigger={
-                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="rounded-lg py-2.5 font-bold text-xs gap-3 cursor-pointer text-red-500 focus:bg-red-50 focus:text-red-600">
-                                  <Trash2 className="w-4 h-4" /> Purge Record
-                                </DropdownMenuItem>
-                              }
-                              title="Purge Registry Record?"
-                              description="This action is permanent and will remove the booking from all historical marketplace logs. This cannot be undone."
-                              onConfirm={() => handleDelete(booking.id.toString())}
-                            />
+                            <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={() => setDeleteId(booking.id.toString())} className="rounded-lg py-2.5 font-bold text-xs gap-3 cursor-pointer text-red-500 focus:bg-red-50 focus:text-red-600">
+                              <Trash2 className="w-4 h-4" /> Purge Record
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -277,8 +272,9 @@ function AdminBookingsContent() {
           {isLoading ? (
             Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-64 rounded-3xl" />)
           ) : bookings.length === 0 ? (
-            <DashboardEmptyState 
-              title="No bookings found" 
+            <EmptyState
+              variant="dashboard"
+              title="No bookings found"
               className="col-span-full"
             />
           ) : (
@@ -308,14 +304,7 @@ function AdminBookingsContent() {
                       <DropdownMenuItem onClick={() => handleStatusChange(booking.id.toString(), 'completed')} className="rounded-lg py-2.5 font-bold text-xs gap-3 cursor-pointer">Mark Completed</DropdownMenuItem>
                       <DropdownMenuSeparator />
                        <DropdownMenuItem onClick={() => setCancelData({ id: booking.id.toString(), reason: "" })} className="rounded-lg py-2.5 font-bold text-xs gap-3 cursor-pointer text-amber-600">Cancel & Notify</DropdownMenuItem>
-                       <ConfirmDeleteDialog
-                         trigger={
-                           <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="rounded-lg py-2.5 font-bold text-xs gap-3 cursor-pointer text-red-500">Purge</DropdownMenuItem>
-                         }
-                         title="Purge Registry Record?"
-                         description="This action is permanent."
-                         onConfirm={() => handleDelete(booking.id.toString())}
-                       />
+                       <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={() => setDeleteId(booking.id.toString())} className="rounded-lg py-2.5 font-bold text-xs gap-3 cursor-pointer text-red-500">Purge</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 }
@@ -390,6 +379,13 @@ function AdminBookingsContent() {
         </DialogContent>
       </Dialog>
 
+      <AppConfirmDialog
+        open={deleteId !== null}
+        onOpenChange={() => setDeleteId(null)}
+        onConfirm={async () => { if (deleteId) { await handleDelete(deleteId); setDeleteId(null); } }}
+        title="Purge Registry Record?"
+        description="This action is permanent and will remove the booking from all historical marketplace logs. This cannot be undone."
+      />
     </DashboardPageContainer>
   );
 }

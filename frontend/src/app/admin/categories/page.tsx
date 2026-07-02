@@ -10,8 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Plus, Trash2, Edit, Sparkles, ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
-import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
-import { useApiData } from "@/hooks/useApiData";
+import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
+import { useData } from "@/hooks/useData";
 import { uiPrimitives } from "@/lib/ui-primitives";
 import { getMediaUrl } from "@/lib/utils";
 import { CategoryFormDialog } from "@/components/admin/CategoryFormDialog";
@@ -42,7 +42,7 @@ function categoryImagePath(cat: Category): string {
 }
 
 export default function AdminCategories() {
-    const { data: categories, isLoading, refetch: fetchCategories } = useApiData<Category[]>("/api/admin/categories", { 
+    const { data: categories, isLoading, refetch: fetchCategories } = useData<Category[]>("/api/admin/categories", { 
         initialData: [],
         extractKey: 'categories'
     });
@@ -57,6 +57,8 @@ export default function AdminCategories() {
         image_url: '',
     });
     const [svcInitial, setSvcInitial] = useState({ name: '', description: '' });
+    const [deleteCatTarget, setDeleteCatTarget] = useState<Category | null>(null);
+    const [deleteSvcTarget, setDeleteSvcTarget] = useState<{ svc: Service; cat: Category } | null>(null);
 
     const handleDeleteCategory = async (id: string) => {
         try { await axiosInstance.delete(`/api/admin/categories/${id}`); toast.success("Category deleted"); fetchCategories(); }
@@ -164,18 +166,9 @@ export default function AdminCategories() {
                                     <Button variant="ghost" size="icon" onClick={() => openEditCat(cat)} className="h-8 w-8 text-muted-foreground hover:text-foreground">
                                         <Edit className="w-4 h-4" />
                                     </Button>
-                                    <ConfirmDeleteDialog
-                                        trigger={
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-red-500">
-                                                <Trash2 className="w-4 h-4" />
-                                            </Button>
-                                        }
-                                        title="Purge Category?"
-                                        description={
-                                            <>Are you sure you want to delete <span className="font-bold text-foreground">&quot;{cat.name}&quot;</span>? This will also permanently remove all services associated with this category.</>
-                                        }
-                                        onConfirm={() => handleDeleteCategory(cat.id)}
-                                    />
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-red-500" onClick={() => setDeleteCatTarget(cat)}>
+                                        <Trash2 className="w-4 h-4" />
+                                    </Button>
                                 </div>
                             </div>
                         </CardHeader>
@@ -214,20 +207,9 @@ export default function AdminCategories() {
                                                 <Button variant="ghost" size="icon" onClick={() => openEditService(cat, svc)} className="w-7 h-7 text-muted-foreground hover:text-primary">
                                                     <Edit className="w-3 h-3" />
                                                 </Button>
-                                                <ConfirmDeleteDialog
-                                                    trigger={
-                                                        <Button variant="ghost" size="icon" className="w-7 h-7 text-muted-foreground hover:text-red-500">
-                                                            <Trash2 className="w-3 h-3" />
-                                                        </Button>
-                                                    }
-                                                    title="Delete Service?"
-                                                    description={
-                                                        <>Are you sure you want to remove <span className="font-bold text-foreground">&quot;{svc.name}&quot;</span> from the <span className="font-bold text-foreground">{cat.name}</span> category? This action cannot be undone.</>
-                                                    }
-                                                    onConfirm={() => handleDeleteService(svc.id)}
-                                                    confirmLabel="Delete Service"
-                                                    cancelLabel="Abort"
-                                                />
+                                                <Button variant="ghost" size="icon" className="w-7 h-7 text-muted-foreground hover:text-red-500" onClick={() => setDeleteSvcTarget({ svc, cat })}>
+                                                    <Trash2 className="w-3 h-3" />
+                                                </Button>
                                             </div>
                                         </div>
                                     ))}
@@ -241,6 +223,22 @@ export default function AdminCategories() {
                     </Card>
                 ))}
             </div>
+            <AppConfirmDialog
+                open={!!deleteCatTarget}
+                onOpenChange={() => setDeleteCatTarget(null)}
+                onConfirm={async () => { if (deleteCatTarget) { await handleDeleteCategory(deleteCatTarget.id); setDeleteCatTarget(null); } }}
+                title="Purge Category?"
+                description={<>Are you sure you want to delete <span className="font-bold text-foreground">&quot;{deleteCatTarget?.name}&quot;</span>? This will also permanently remove all services associated with this category.</>}
+            />
+            <AppConfirmDialog
+                open={!!deleteSvcTarget}
+                onOpenChange={() => setDeleteSvcTarget(null)}
+                onConfirm={async () => { if (deleteSvcTarget) { await handleDeleteService(deleteSvcTarget.svc.id); setDeleteSvcTarget(null); } }}
+                title="Delete Service?"
+                description={<>Are you sure you want to remove <span className="font-bold text-foreground">&quot;{deleteSvcTarget?.svc.name}&quot;</span> from the <span className="font-bold text-foreground">{deleteSvcTarget?.cat.name}</span> category? This action cannot be undone.</>}
+                confirmLabel="Delete Service"
+                cancelLabel="Abort"
+            />
         </DashboardPageContainer>
     );
 }

@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\UserFavorite;
 use App\Models\Provider;
-use Illuminate\Http\Request;
+use App\Models\UserFavorite;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class FavoriteController extends Controller
 {
@@ -26,7 +26,7 @@ class FavoriteController extends Controller
 
         return response()->json([
             'data' => $favoriteIds,
-            'providers' => \App\Http\Resources\ProviderResource::collection($providers)
+            'providers' => \App\Http\Resources\ProviderResource::collection($providers),
         ]);
     }
 
@@ -43,6 +43,7 @@ class FavoriteController extends Controller
 
         if ($existing) {
             $existing->delete();
+
             return response()->json([
                 'message' => 'Removed from favorites',
                 'is_favorited' => false,

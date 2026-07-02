@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -12,7 +13,7 @@ class GeocodingController extends Controller
      * Proxy address search to OpenStreetMap Nominatim (browser cannot call directly in some networks).
      * Falls back to a local Kenya place list when the remote service is unreachable.
      */
-    public function search(Request $request)
+    public function search(Request $request): JsonResponse
     {
         $request->validate([
             'q' => 'required|string|min:2|max:200',

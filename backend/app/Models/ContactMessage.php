@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Enums\ContactMessageStatus;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
 
 class ContactMessage extends Model
 {
     use HasUuids;
+
     protected $fillable = [
         'name',
         'email',
@@ -15,5 +17,9 @@ class ContactMessage extends Model
         'subject',
         'message',
         'status',
+    ];
+
+    protected $casts = [
+        'status' => ContactMessageStatus::class,
     ];
 }

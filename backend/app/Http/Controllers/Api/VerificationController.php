@@ -2,24 +2,27 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\ProviderApplicationStatus;
+use App\Enums\UserRole;
+use App\Enums\VerificationDocumentStatus;
 use App\Http\Controllers\Controller;
-use App\Models\VerificationDocument;
 use App\Models\Provider;
+use App\Models\VerificationDocument;
 use App\Services\ImageOptimizationService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class VerificationController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        if ($user->role === 'admin') {
+        if ($user->role === UserRole::Admin) {
             return VerificationDocument::with('provider.user')->latest()->get();
         }
 
         $provider = $user->ensureProviderProfile();
-        if (!$provider) {
+        if (! $provider) {
             return response()->json(['message' => 'Not a provider'], 403);
         }
 
@@ -28,11 +31,11 @@ class VerificationController extends Controller
         );
     }
 
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $user = $request->user();
         $provider = $user->ensureProviderProfile();
-        if (!$provider) {
+        if (! $provider) {
             return response()->json(['message' => 'Not a provider'], 403);
         }
 
@@ -64,12 +67,12 @@ class VerificationController extends Controller
             'provider_id' => $provider->id,
             'document_type' => $validated['document_type'],
             'file_path' => $path,
-            'status' => 'pending',
+            'status' => VerificationDocumentStatus::Pending,
         ]);
 
         // Update provider application status to reviewed if it was rejected previously
-        if ($provider->application_status === 'rejected') {
-            $provider->update(['application_status' => 'pending']);
+        if ($provider->application_status === ProviderApplicationStatus::Rejected) {
+            $provider->update(['application_status' => ProviderApplicationStatus::Pending]);
         }
 
         return response()->json([
@@ -78,9 +81,9 @@ class VerificationController extends Controller
         ], 201);
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $id): JsonResponse
     {
-        if ($request->user()->role !== 'admin') {
+        if ($request->user()->role !== UserRole::Admin) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -97,23 +100,23 @@ class VerificationController extends Controller
         // Check if all required docs are approved
         // Simple logic: if at least 2 docs (ID and License) are approved, mark provider as verified
         $approvedCount = $provider->verificationDocuments()->where('status', 'approved')->count();
-        
+
         if ($approvedCount >= 2 && $request->status === 'approved') {
             $provider->update([
                 'is_verified' => true,
-                'application_status' => 'active'
+                'application_status' => 'active',
             ]);
         } elseif ($request->status === 'rejected') {
             $provider->update([
                 'is_verified' => false,
-                'application_status' => 'rejected'
+                'application_status' => 'rejected',
             ]);
         }
 
         return response()->json([
             'message' => 'Verification status updated',
             'document' => $doc,
-            'provider_status' => $provider->application_status
+            'provider_status' => $provider->application_status,
         ]);
     }
 }

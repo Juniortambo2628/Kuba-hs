@@ -4,19 +4,18 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\PageFeature;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
-
-
 class PageFeatureController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
         return response()->json(PageFeature::orderBy('order_index')->get());
     }
 
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'page_name' => 'required|string',
@@ -33,16 +32,17 @@ class PageFeatureController extends Controller
 
         $feature = PageFeature::create($validated);
         Cache::forget('api_page_features_all');
+
         return response()->json($feature, 201);
 
     }
 
-    public function show(PageFeature $pageFeature)
+    public function show(PageFeature $pageFeature): JsonResponse
     {
         return response()->json($pageFeature);
     }
 
-    public function update(Request $request, PageFeature $pageFeature)
+    public function update(Request $request, PageFeature $pageFeature): JsonResponse
     {
         $validated = $request->validate([
             'page_name' => 'sometimes|required|string',
@@ -59,15 +59,16 @@ class PageFeatureController extends Controller
 
         $pageFeature->update($validated);
         Cache::forget('api_page_features_all');
+
         return response()->json($pageFeature);
 
     }
 
-    public function destroy(PageFeature $pageFeature)
+    public function destroy(PageFeature $pageFeature): JsonResponse
     {
         $pageFeature->delete();
         Cache::forget('api_page_features_all');
+
         return response()->json(['message' => 'Feature deleted successfully.']);
     }
-
 }

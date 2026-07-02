@@ -4,16 +4,22 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class LoyaltyPoint extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'user_id',
         'points',
         'description',
         'transaction_type',
+    ];
+
+    protected $casts = [
+        'points' => 'integer',
+        'transaction_type' => 'string',
     ];
 
     public function user()

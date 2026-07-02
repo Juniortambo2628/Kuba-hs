@@ -3,19 +3,19 @@
 namespace App\Http\Controllers\Provider;
 
 use App\Http\Controllers\Controller;
-use App\Models\Booking;
 use App\Http\Resources\BookingResource;
-use Illuminate\Http\Request;
+use App\Models\Booking;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
         $user = Auth::user();
         $provider = $user->ensureProviderProfile();
 
-        if (!$provider) {
+        if (! $provider) {
             return response()->json(['error' => 'Provider profile not found'], 404);
         }
 

@@ -5,14 +5,14 @@ namespace App\Http\Controllers\Api\Marketplace;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProviderResource;
 use App\Models\Provider;
-use App\Models\PromoCode;
 use App\Services\ProviderSearchService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
 class MarketplaceDiscoveryController extends Controller
 {
-    public function providers()
+    public function providers(): JsonResponse
     {
         $providers = Cache::remember('api_providers_latest', 300, function () {
             return Provider::with(['user', 'providerServices.service'])
@@ -22,12 +22,12 @@ class MarketplaceDiscoveryController extends Controller
                 ->paginate(12);
         });
 
-        return ProviderResource::collection($providers);
+        return ProviderResource::collection($providers)->response();
     }
 
-    public function show(Provider $provider)
+    public function show(Provider $provider): JsonResponse
     {
-        return new ProviderResource(
+        return (new ProviderResource(
             $provider->load([
                 'user',
                 'providerServices.service.category',
@@ -37,10 +37,10 @@ class MarketplaceDiscoveryController extends Controller
                 'availability',
                 'scheduleExceptions',
             ])
-        );
+        ))->response();
     }
 
-    public function topProviders()
+    public function topProviders(): JsonResponse
     {
         $providers = Cache::remember('api_top_providers', 86400, function () {
             return Provider::with(['user', 'providerServices.service'])
@@ -52,40 +52,27 @@ class MarketplaceDiscoveryController extends Controller
                 ->get();
         });
 
-        return ProviderResource::collection($providers);
+        return ProviderResource::collection($providers)->response();
     }
 
-    public function search(Request $request, ProviderSearchService $searchService)
+    public function search(Request $request, ProviderSearchService $searchService): JsonResponse
     {
         $perPage = min(max((int) $request->input('per_page', 12), 1), 24);
         $providers = $searchService->search($request->all(), $perPage);
 
-        return ProviderResource::collection($providers);
+        return ProviderResource::collection($providers)->response();
     }
 
-    public function validatePromoCode(Request $request)
+    public function validatePromoCode(Request $request): JsonResponse
     {
         $request->validate([
             'code' => 'required|string',
             'amount' => 'required|numeric',
         ]);
 
-        $promoCode = PromoCode::where('code', $request->code)
-            ->where('is_active', true)
-            ->first();
-
-        if (! $promoCode) {
-            return response()->json(['message' => 'Invalid promo code.'], 404);
-        }
-
-        if (! $promoCode->isValid($request->amount)) {
-            return response()->json(['message' => 'Promo code is not applicable or has expired.'], 422);
-        }
-
-        return response()->json([
-            'valid' => true,
-            'discount_amount' => $promoCode->calculateDiscount($request->amount),
-            'promo_code' => $promoCode,
-        ]);
+        return app(\App\Actions\ValidatePromoCode::class)(
+            $request->code,
+            $request->amount
+        );
     }
 }

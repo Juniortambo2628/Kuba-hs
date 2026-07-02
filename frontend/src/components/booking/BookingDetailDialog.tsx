@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { BookingStatusBadge } from "@/components/shared/BookingStatusBadge";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 import {
   Clock,
   MapPin,
@@ -170,7 +170,7 @@ export function BookingDetailDialog({
                   <p className={crudDialogUi.introDesc}>{introSubtitle}</p>
                 </div>
                 <div className="mt-6">
-                  <BookingStatusBadge status={booking.status} />
+                  <StatusBadge status={booking.status} type="booking" />
                 </div>
                 <BookingStatusProgress
                   status={booking.status}

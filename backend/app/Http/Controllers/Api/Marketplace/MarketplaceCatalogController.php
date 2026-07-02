@@ -9,11 +9,12 @@ use App\Http\Resources\ServiceResource;
 use App\Models\ProviderService;
 use App\Models\Service;
 use App\Models\ServiceCategory;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 
 class MarketplaceCatalogController extends Controller
 {
-    public function categories()
+    public function categories(): JsonResponse
     {
         return ServiceCategoryResource::collection(
             Cache::remember('api_categories_all', 86400, function () {
@@ -39,10 +40,10 @@ class MarketplaceCatalogController extends Controller
                     ->filter(fn ($category) => $category->services_count > 0)
                     ->values();
             })
-        );
+        )->response();
     }
 
-    public function featured()
+    public function featured(): JsonResponse
     {
         $services = Cache::remember('api_featured_services', 86400, function () {
             return ProviderService::where('is_available', true)
@@ -55,17 +56,17 @@ class MarketplaceCatalogController extends Controller
                 ->get();
         });
 
-        return ProviderServiceResource::collection($services);
+        return ProviderServiceResource::collection($services)->response();
     }
 
-    public function showService(ProviderService $providerService)
+    public function showService(ProviderService $providerService): JsonResponse
     {
-        return new ProviderServiceResource(
+        return (new ProviderServiceResource(
             $providerService->load(['service.category', 'provider.user', 'provider.availability', 'media', 'service.media', 'provider.reviews.customer', 'provider.scheduleExceptions'])
-        );
+        ))->response();
     }
 
-    public function similarProviders(ProviderService $providerService)
+    public function similarProviders(ProviderService $providerService): JsonResponse
     {
         $similar = ProviderService::where('id', '!=', $providerService->id)
             ->where('service_id', $providerService->service_id)
@@ -74,10 +75,10 @@ class MarketplaceCatalogController extends Controller
             ->take(5)
             ->get();
 
-        return ProviderServiceResource::collection($similar);
+        return ProviderServiceResource::collection($similar)->response();
     }
 
-    public function showCategory($identifier)
+    public function showCategory($identifier): JsonResponse
     {
         $category = ServiceCategory::with(['services' => function ($q) {
             $q->withMin(['providerServices' => function ($query) {
@@ -105,10 +106,10 @@ class MarketplaceCatalogController extends Controller
             abort(404);
         }
 
-        return new ServiceCategoryResource($category);
+        return (new ServiceCategoryResource($category))->response();
     }
 
-    public function showGeneralService(Service $service)
+    public function showGeneralService(Service $service): JsonResponse
     {
         $service->load(['category', 'media']);
 
@@ -124,7 +125,7 @@ class MarketplaceCatalogController extends Controller
         ]);
     }
 
-    public function showServiceBySlug(string $categorySlug, string $serviceSlug)
+    public function showServiceBySlug(string $categorySlug, string $serviceSlug): JsonResponse
     {
         $categories = ServiceCategory::all();
         $category = $categories->first(function ($cat) use ($categorySlug) {

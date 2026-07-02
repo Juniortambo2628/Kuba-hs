@@ -1,6 +1,6 @@
 "use client";
 
-import { workspaceUi } from "@/lib/dashboard-workspace-ui";
+import { workspaceUi } from "@/lib/dashboard-ui";
 import { formatStatusLabel } from "@/lib/dashboard-copy";
 import { cn } from "@/lib/utils";
 

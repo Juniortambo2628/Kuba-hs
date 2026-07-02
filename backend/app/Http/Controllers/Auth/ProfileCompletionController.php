@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -14,7 +16,7 @@ class ProfileCompletionController extends Controller
     /**
      * Complete the user profile after social login.
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $request->validate([
             'email' => 'required|email',
@@ -27,7 +29,7 @@ class ProfileCompletionController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        if (!$user) {
+        if (! $user) {
             // Create the user if it doesn't exist (though it should have been created or data passed)
             $user = User::create([
                 'first_name' => $request->first_name,
@@ -54,7 +56,7 @@ class ProfileCompletionController extends Controller
         }
 
         // If it's a provider, we might need to create the provider record
-        if ($user->role === 'provider' && !$user->provider) {
+        if ($user->role === UserRole::Provider && ! $user->provider) {
             $user->provider()->create([
                 'business_name' => $user->name,
                 'bio' => 'Professional home service provider.',
@@ -65,7 +67,7 @@ class ProfileCompletionController extends Controller
         return response()->json([
             'message' => 'Profile completed successfully',
             'user' => $user,
-            'redirect' => $user->role === 'admin' ? '/admin' : '/dashboard'
+            'redirect' => $user->role === UserRole::Admin ? '/admin' : '/dashboard',
         ]);
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Client;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\AddressResource;
 use App\Models\Address;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -26,7 +27,7 @@ class AddressController extends Controller
         return $validated;
     }
 
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $addresses = Auth::user()->addresses()->latest()->get();
 
@@ -35,7 +36,18 @@ class AddressController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function show(Address $address): JsonResponse
+    {
+        if ($address->user_id !== Auth::id()) {
+            abort(404);
+        }
+
+        return response()->json([
+            'address' => new AddressResource($address),
+        ]);
+    }
+
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'address_type' => 'nullable|string|in:home,work,other,residential,commercial',
@@ -68,7 +80,7 @@ class AddressController extends Controller
         ], 201);
     }
 
-    public function update(Request $request, Address $address)
+    public function update(Request $request, Address $address): JsonResponse
     {
         if ($address->user_id !== Auth::id()) {
             abort(403);
@@ -101,7 +113,7 @@ class AddressController extends Controller
         ]);
     }
 
-    public function destroy(Address $address)
+    public function destroy(Address $address): JsonResponse
     {
         if ($address->user_id !== Auth::id()) {
             abort(403);
@@ -110,11 +122,11 @@ class AddressController extends Controller
         $address->delete();
 
         return response()->json([
-            'message' => 'Address deleted successfully'
+            'message' => 'Address deleted successfully',
         ]);
     }
 
-    public function setDefault(Address $address)
+    public function setDefault(Address $address): JsonResponse
     {
         if ($address->user_id !== Auth::id()) {
             abort(403);

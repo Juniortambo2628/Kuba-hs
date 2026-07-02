@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { useApiData } from "@/hooks/useApiData";
+import { useData } from "@/hooks/useData";
 
 interface AdminCreateBookingDialogProps {
   open: boolean;
@@ -35,11 +35,11 @@ export function AdminCreateBookingDialog({
   onOpenChange,
   onCreated,
 }: AdminCreateBookingDialogProps) {
-  const { data: clients } = useApiData<{ id: string; name: string; email: string }[]>(
+  const { data: clients } = useData<{ id: string; name: string; email: string }[]>(
     open ? "/api/admin/users?role=client&per_page=100" : "",
     { initialData: [] }
   );
-  const { data: providers } = useApiData<{ id: string; business_name: string }[]>(
+  const { data: providers } = useData<{ id: string; business_name: string }[]>(
     open ? "/api/admin/providers?per_page=100" : "",
     { initialData: [] }
   );

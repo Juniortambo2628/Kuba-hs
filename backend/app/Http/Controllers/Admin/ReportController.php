@@ -5,14 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AdminExportLog;
 use App\Models\Booking;
-use App\Models\User;
 use App\Models\Payment;
+use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReportController extends Controller
 {
-    public function generate(Request $request)
+    public function generate(Request $request): \Symfony\Component\HttpFoundation\Response
     {
         $type = $request->query('type', 'bookings');
 
@@ -33,7 +33,7 @@ class ReportController extends Controller
         };
     }
 
-    public function history(Request $request)
+    public function history(Request $request): JsonResponse
     {
         $logs = AdminExportLog::with('user:id,first_name,last_name,email')
             ->latest()
@@ -45,7 +45,7 @@ class ReportController extends Controller
     private function exportBookings()
     {
         $bookings = Booking::with(['customer', 'service'])->latest()->get();
-        
+
         $headers = [
             'Content-type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename=kuba_bookings_report.csv',
@@ -54,7 +54,7 @@ class ReportController extends Controller
             'Expires' => '0',
         ];
 
-        $callback = function() use ($bookings) {
+        $callback = function () use ($bookings) {
             $file = fopen('php://output', 'w');
             fputcsv($file, ['ID', 'Number', 'Customer', 'Service', 'Date', 'Status', 'Price']);
 
@@ -78,13 +78,13 @@ class ReportController extends Controller
     private function exportUsers()
     {
         $users = User::latest()->get();
-        
+
         $headers = [
             'Content-type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename=kuba_users_report.csv',
         ];
 
-        $callback = function() use ($users) {
+        $callback = function () use ($users) {
             $file = fopen('php://output', 'w');
             fputcsv($file, ['ID', 'Name', 'Email', 'Role', 'Status', 'Joined']);
 
@@ -107,13 +107,13 @@ class ReportController extends Controller
     private function exportRevenue()
     {
         $payments = Payment::with('booking')->where('status', 'completed')->latest()->get();
-        
+
         $headers = [
             'Content-type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename=kuba_revenue_report.csv',
         ];
 
-        $callback = function() use ($payments) {
+        $callback = function () use ($payments) {
             $file = fopen('php://output', 'w');
             fputcsv($file, ['ID', 'Booking Ref', 'Amount', 'Fee', 'Provider Net', 'Date']);
 

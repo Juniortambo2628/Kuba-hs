@@ -17,7 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useSearchState } from "@/hooks/useSearchState";
 import { useExport } from "@/hooks/useExport";
 import { toast } from "sonner";
-import { useApiData } from "@/hooks/useApiData";
+import { useData } from "@/hooks/useData";
 import { DashboardListToolbar } from "@/components/shared/DashboardListToolbar";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
@@ -29,7 +29,7 @@ import {
 import { DashboardSuspenseFallback } from "@/components/shared/DashboardSuspenseFallback";
 import { MetricCard } from "@/components/shared/MetricCard";
 import { PaymentTransactionBadge } from "@/components/shared/PaymentTransactionBadge";
-import { PayoutStatusBadge } from "@/components/shared/PayoutStatusBadge";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 import { PaymentDetailSheet } from "@/components/admin/PaymentDetailSheet";
 import axiosInstance from "@/lib/axios";
 
@@ -140,7 +140,7 @@ function TransactionsView({ exportToCSV, formatKES }: { exportToCSV: any, format
   const [viewMode, setViewMode] = useState<'grid'|'list'>('grid');
   const [detailPaymentId, setDetailPaymentId] = useState<string | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
-  const { data: paymentData, isLoading } = useApiData<any>(
+  const { data: paymentData, isLoading } = useData<any>(
     `/api/admin/payments?search=${search}&status=${status || ''}`,
     { initialData: null }
   );
@@ -274,8 +274,8 @@ function TransactionsView({ exportToCSV, formatKES }: { exportToCSV: any, format
 function PayoutsView({ exportToCSV, formatKES }: { exportToCSV: any, formatKES: any }) {
   const { search, setSearch, status, setStatus } = useSearchState();
 
-  const { data: overview, isLoading: loadingOverview } = useApiData<any>('/api/admin/financials/overview');
-  const { data: payoutsData, isLoading, refetch } = useApiData<any>(
+  const { data: overview, isLoading: loadingOverview } = useData<any>('/api/admin/financials/overview');
+  const { data: payoutsData, isLoading, refetch } = useData<any>(
     `/api/admin/financials/payouts?search=${search}&status=${status || 'all'}`,
     { initialData: null }
   );
@@ -390,7 +390,7 @@ function PayoutsView({ exportToCSV, formatKES }: { exportToCSV: any, formatKES: 
                     <Badge variant="outline" className="capitalize text-[10px] bg-background/50 border-border">{p.payment_method?.replace('_', ' ')}</Badge>
                   </TableCell>
                   <TableCell className="py-4">
-                    <PayoutStatusBadge status={p.status} />
+                    <StatusBadge status={p.status} type="payout" />
                   </TableCell>
                   <TableCell className="py-4 text-xs font-bold text-muted-foreground whitespace-nowrap">
                     {new Date(p.created_at).toLocaleDateString()}
@@ -498,7 +498,7 @@ function PayoutsView({ exportToCSV, formatKES }: { exportToCSV: any, formatKES: 
                   <div className="bg-muted/50 p-4 rounded-xl border border-border space-y-3">
                     <div className="flex justify-between items-center border-b border-border pb-2">
                       <span className="text-xs font-bold text-muted-foreground">Final Status</span>
-                      <PayoutStatusBadge status={selectedPayout.status} />
+                      <StatusBadge status={selectedPayout.status} type="payout" />
                     </div>
                     <div className="flex justify-between items-center border-b border-border pb-2">
                       <span className="text-xs font-bold text-muted-foreground">Reference</span>

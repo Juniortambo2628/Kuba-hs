@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { FALLBACK_IMAGES } from "@/lib/fallback-images"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -9,8 +10,8 @@ export function getMediaUrl(path: string | null | undefined, fallbackType: 'avat
   if (!path) {
     switch (fallbackType) {
       case 'avatar': return '/placeholders/user-placeholder.png';
-      case 'testimonial': return 'https://images.unsplash.com/photo-1542038784456-1ea8e935640e?q=80&w=200&auto=format&fit=crop';
-      default: return 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=800&auto=format&fit=crop';
+      case 'testimonial': return FALLBACK_IMAGES.testimonial;
+      default: return FALLBACK_IMAGES.cleaning;
     }
   }
   

@@ -21,11 +21,11 @@ const REVIEW_STATUS_CLASSES: Record<string, string> = {
 };
 
 const PAYMENT_STATUS_CLASSES: Record<string, string> = {
-  paid: 'bg-emerald-500 text-white',
-  pending: 'bg-amber-500 text-white',
-  failed: 'bg-red-500 text-white',
-  refunded: 'bg-slate-500 text-white',
-  pending_cash: 'bg-amber-500 text-white',
+  paid: 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20',
+  pending: 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20',
+  failed: 'bg-red-50 text-red-600 border-red-100 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20',
+  refunded: 'bg-slate-50 text-slate-600 border-slate-100 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/20',
+  pending_cash: 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20',
 };
 
 export function getBookingStatusClasses(status: BookingStatus, fallback = 'bg-muted text-muted-foreground border-border'): string {

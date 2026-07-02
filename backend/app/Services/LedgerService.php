@@ -2,11 +2,13 @@
 
 namespace App\Services;
 
+use App\Enums\BookingStatus;
+use App\Enums\PayoutStatus;
 use App\Models\Booking;
 use App\Models\Payout;
 use App\Models\Provider;
-use Illuminate\Support\Facades\DB;
 use Exception;
+use Illuminate\Support\Facades\DB;
 
 class LedgerService
 {
@@ -15,7 +17,7 @@ class LedgerService
      */
     public function creditProviderForBooking(Booking $booking): void
     {
-        if ($booking->status !== 'completed' || !$booking->provider_id) {
+        if ($booking->status !== BookingStatus::Completed || ! $booking->provider_id) {
             return;
         }
 
@@ -29,7 +31,7 @@ class LedgerService
 
         DB::transaction(function () use ($booking, $amountOwed) {
             $provider = $booking->provider;
-            
+
             // Atomically increment balances
             $provider->increment('balance', $amountOwed);
             $provider->increment('total_earned', $amountOwed);
@@ -42,11 +44,11 @@ class LedgerService
     public function requestPayout(Provider $provider, float $amount, ?string $paymentMethod = null): Payout
     {
         if ($amount <= 0) {
-            throw new Exception("Payout amount must be greater than zero.");
+            throw new Exception('Payout amount must be greater than zero.');
         }
 
         if ($provider->balance < $amount) {
-            throw new Exception("Insufficient balance to request payout.");
+            throw new Exception('Insufficient balance to request payout.');
         }
 
         return DB::transaction(function () use ($provider, $amount, $paymentMethod) {
@@ -66,12 +68,12 @@ class LedgerService
      */
     public function processPayout(Payout $payout, string $status, ?string $referenceNumber = null, ?string $notes = null): Payout
     {
-        if (!in_array($status, ['approved', 'processing', 'paid', 'rejected'])) {
-            throw new Exception("Invalid status provided.");
+        if (! in_array($status, ['approved', 'processing', 'paid', 'rejected'])) {
+            throw new Exception('Invalid status provided.');
         }
 
-        if ($payout->status === 'paid' || $payout->status === 'rejected') {
-            throw new Exception("Payout cannot be modified once fully paid or rejected.");
+        if ($payout->status === PayoutStatus::Paid || $payout->status === PayoutStatus::Rejected) {
+            throw new Exception('Payout cannot be modified once fully paid or rejected.');
         }
 
         DB::transaction(function () use ($payout, $status, $referenceNumber, $notes) {

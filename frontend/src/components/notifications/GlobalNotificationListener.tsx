@@ -36,8 +36,6 @@ export function GlobalNotificationListener() {
     const channel = echo.private(`App.Models.User.${user.id}`);
 
     channel.notification((notification: any) => {
-      console.log("Real-time notification received:", notification);
-      
       let icon = <Bell className="w-4 h-4 text-sky-600" />;
       
       if (notification.type?.includes('BookingStatusUpdated')) {

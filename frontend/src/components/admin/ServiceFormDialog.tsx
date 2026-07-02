@@ -1,23 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FieldLabel } from "@/components/shared/ui";
 import { CrudFormDialog } from "@/components/shared/dialog/CrudFormDialog";
 import { KubaFilePond } from "@/components/ui/filepond";
-import axiosInstance, { handleApiError } from "@/lib/axios";
+import { useCrudForm } from "@/hooks/useCrudForm";
 import { toast } from "sonner";
 
 export type ServiceFormValues = {
   name: string;
   description: string;
 };
-
-const emptyService = (): ServiceFormValues => ({
-  name: "",
-  description: "",
-});
 
 interface ServiceFormDialogProps {
   open: boolean;
@@ -40,36 +34,18 @@ export function ServiceFormDialog({
   initial,
   onSuccess,
 }: ServiceFormDialogProps) {
-  const [form, setForm] = useState<ServiceFormValues>(emptyService());
-  const [isSaving, setIsSaving] = useState(false);
+  const { form, setForm, isSaving, handleSubmit } = useCrudForm<ServiceFormValues>({
+    empty: () => ({ name: "", description: "" }),
+    endpoint: "/api/admin/services",
+    editingId: serviceId,
+    initial,
+    extraCreatePayload: { category_id: categoryId },
+  });
 
-  useEffect(() => {
-    if (!open) return;
-    setForm({
-      ...emptyService(),
-      name: initial?.name ?? "",
-      description: initial?.description ?? "",
-    });
-  }, [open, initial]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSaving(true);
-    try {
-      if (serviceId) {
-        await axiosInstance.put(`/api/admin/services/${serviceId}`, form);
-        toast.success("Service updated");
-      } else {
-        await axiosInstance.post("/api/admin/services", { ...form, category_id: categoryId });
-        toast.success("Service added");
-      }
-      onOpenChange(false);
-      onSuccess();
-    } catch (err: unknown) {
-      toast.error(handleApiError(err));
-    } finally {
-      setIsSaving(false);
-    }
+  const onSubmit = async (e: React.FormEvent) => {
+    await handleSubmit(e);
+    onOpenChange(false);
+    onSuccess();
   };
 
   return (
@@ -82,7 +58,7 @@ export function ServiceFormDialog({
       submitLabel={serviceId ? "Save service" : "Add service"}
       isSubmitting={isSaving}
     >
-      <form id="admin-service-form" onSubmit={handleSubmit} className="space-y-5">
+      <form id="admin-service-form" onSubmit={onSubmit} className="space-y-5">
         <div className="space-y-2">
           <FieldLabel>Service name</FieldLabel>
           <Input

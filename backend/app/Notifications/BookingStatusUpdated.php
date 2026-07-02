@@ -2,12 +2,11 @@
 
 namespace App\Notifications;
 
+use App\Enums\UserRole;
+use App\Models\Booking;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-
-use App\Models\Booking;
 
 class BookingStatusUpdated extends Notification implements ShouldQueue
 {
@@ -39,19 +38,19 @@ class BookingStatusUpdated extends Notification implements ShouldQueue
         // Check if user is unsubscribed
         if ($notifiable instanceof \App\Models\User && $notifiable->unsubscribed_from_emails) {
             return (new \App\Mail\DynamicMail('empty')) // This is a bit hacky, but better to handle in DynamicMail or Mailer
-                ->to($notifiable->email); 
+                ->to($notifiable->email);
         }
 
-        $templateKey = $notifiable->role === 'provider' ? 'booking_status_updated_provider' : 'booking_status_updated_customer';
-        
-        return (new \App\Mail\DynamicMail($templateKey, [
+        $templateKey = $notifiable->role === UserRole::Provider ? 'booking_status_updated_provider' : 'booking_status_updated_customer';
+
+        return new \App\Mail\DynamicMail($templateKey, [
             'customer_name' => $this->booking->customer->name,
             'provider_name' => $this->booking->provider->user->name,
             'booking_number' => $this->booking->booking_number,
             'service_name' => $this->booking->service->name,
             'status' => strtoupper($this->booking->status),
             'dashboard_url' => url('/dashboard'),
-        ], $notifiable));
+        ], $notifiable);
     }
 
     /**
@@ -61,7 +60,7 @@ class BookingStatusUpdated extends Notification implements ShouldQueue
      */
     public function toArray(object $notifiable): array
     {
-        $dashboardRole = $notifiable->role === 'provider' ? 'provider' : 'client';
+        $dashboardRole = $notifiable->role === UserRole::Provider ? 'provider' : 'client';
 
         return [
             'type' => 'booking_status',

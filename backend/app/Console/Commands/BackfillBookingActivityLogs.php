@@ -16,7 +16,7 @@ class BackfillBookingActivityLogs extends Command
     {
         $query = Booking::query()->with('customer');
 
-        if (!$this->option('force')) {
+        if (! $this->option('force')) {
             $query->whereDoesntHave('activityLogs');
         }
 

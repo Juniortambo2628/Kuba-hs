@@ -16,7 +16,7 @@ import {
   DashboardAlertCancel,
 } from "@/components/shared/DashboardAlertActions";
 import { DashboardStatusBadge } from "./DashboardStatusBadge";
-import { workspaceUi } from "@/lib/dashboard-workspace-ui";
+import { workspaceUi } from "@/lib/dashboard-ui";
 import { cn } from "@/lib/utils";
 
 export interface ClientAddress {

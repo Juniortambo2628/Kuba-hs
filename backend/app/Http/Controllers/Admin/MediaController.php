@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Services\ImageOptimizationService;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 
 class MediaController extends Controller
@@ -16,7 +17,7 @@ class MediaController extends Controller
     /**
      * Handle FilePond uploads.
      */
-    public function upload(Request $request)
+    public function upload(Request $request): Response
     {
         if ($request->hasFile('file')) {
             $type = $request->input('type', 'cms');
@@ -28,7 +29,7 @@ class MediaController extends Controller
                 $preset
             );
 
-            return response('/storage/' . $path, 200, ['Content-Type' => 'text/plain']);
+            return response('/storage/'.$path, 200, ['Content-Type' => 'text/plain']);
         }
 
         return response('No file uploaded', 400);
@@ -37,7 +38,7 @@ class MediaController extends Controller
     /**
      * Handle FilePond revert/delete.
      */
-    public function delete(Request $request)
+    public function delete(Request $request): Response
     {
         $path = str_replace('/storage/', '', $request->getContent());
         if (Storage::disk('public')->exists($path)) {

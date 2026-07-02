@@ -11,7 +11,7 @@ import {
   DashboardPanelCard,
   DashboardStatusBadge,
 } from "@/components/dashboard/workspace";
-import { workspaceUi } from "@/lib/dashboard-workspace-ui";
+import { workspaceUi } from "@/lib/dashboard-ui";
 import { cn } from "@/lib/utils";
 import {
   WeeklyScheduleDialog,

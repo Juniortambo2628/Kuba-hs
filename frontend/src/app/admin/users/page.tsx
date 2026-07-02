@@ -33,12 +33,12 @@ import {
   DropdownMenuLabel
 } from "@/components/ui/dropdown-menu";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
-import { DashboardStatusBadge } from "@/components/shared/DashboardStatusBadge";
-import { DashboardEmptyState } from "@/components/shared/DashboardEmptyState";
+import { StatusBadge } from "@/components/shared/StatusBadge";
+import { EmptyState } from "@/components/shared/ui/EmptyState";
 import { toast } from "sonner";
 import { UserDialog } from "@/components/admin/UserDialog";
-import { useApiData } from "@/hooks/useApiData";
-import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { useData } from "@/hooks/useData";
+import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
 import {
   DashboardAlertCancel,
   DashboardAlertAction,
@@ -58,7 +58,7 @@ function AdminUsersContent() {
   const searchParams = useSearchParams();
   const userId = searchParams.get('id');
 
-  const { data: users, isLoading, refetch: fetchUsers } = useApiData<User[]>(
+  const { data: users, isLoading, refetch: fetchUsers } = useData<User[]>(
     userId ? `/api/admin/users?id=${userId}` : `/api/admin/users?search=${search}`,
     { initialData: [] }
   );
@@ -67,6 +67,7 @@ function AdminUsersContent() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [viewMode, setViewMode] = useState<'grid'|'list'>('grid');
   const [statusId, setStatusId] = useState<{ id: string, active: boolean } | null>(null);
+  const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
   const { exportToCSV } = useExport();
 
   const toggleStatus = async (id: string) => {
@@ -165,8 +166,9 @@ function AdminUsersContent() {
                 ) : users.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} className="p-0">
-                      <DashboardEmptyState 
-                        title="No users found" 
+                      <EmptyState
+                        variant="dashboard"
+                        title="No users found"
                         description="Try adjusting your search or filters to find what you're looking for."
                       />
                     </TableCell>
@@ -185,10 +187,10 @@ function AdminUsersContent() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <DashboardStatusBadge status={u.role} type="role" />
+                      <StatusBadge status={u.role} type="dashboard" dashboardType="role" />
                     </TableCell>
                     <TableCell>
-                      <DashboardStatusBadge status={u.is_active ? "Active" : "Suspended"} />
+                      <StatusBadge status={u.is_active ? "Active" : "Suspended"} type="dashboard" />
                     </TableCell>
                     <TableCell className="text-[10px] font-bold text-muted-foreground">
                       {new Date(u.created_at).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}
@@ -208,16 +210,9 @@ function AdminUsersContent() {
                             {u.is_active ? "Suspend" : "Activate"}
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <ConfirmDeleteDialog
-                            trigger={
-                              <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="cursor-pointer text-xs font-medium text-red-500 focus:text-red-600 focus:bg-red-50 gap-2">
-                                <Trash2 className="w-3.5 h-3.5" /> Permanently Delete
-                              </DropdownMenuItem>
-                            }
-                            title="Purge User Identity?"
-                            description="This action will permanently remove this participant from the Kuba registry. This cannot be undone."
-                            onConfirm={() => deleteUser(u.id)}
-                          />
+                          <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={() => setDeleteUserId(u.id)} className="cursor-pointer text-xs font-medium text-red-500 focus:text-red-600 focus:bg-red-50 gap-2">
+                            <Trash2 className="w-3.5 h-3.5" /> Permanently Delete
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -231,8 +226,9 @@ function AdminUsersContent() {
           {isLoading ? (
             Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-44 rounded-xl" />)
           ) : users.length === 0 ? (
-            <DashboardEmptyState 
-              title="No users found" 
+            <EmptyState
+              variant="dashboard"
+              title="No users found"
               className="col-span-full"
             />
           ) : users.map((u) => (
@@ -254,16 +250,9 @@ function AdminUsersContent() {
                         {u.is_active ? "Suspend User" : "Activate User"}
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <ConfirmDeleteDialog
-                        trigger={
-                          <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="cursor-pointer text-xs font-medium text-red-500 focus:text-red-600 focus:bg-red-50 gap-2">
-                            <Trash2 className="w-3.5 h-3.5" /> Purge Account
-                          </DropdownMenuItem>
-                        }
-                        title="Purge User Account?"
-                        description="This action is irreversible. The account will be permanently removed."
-                        onConfirm={() => deleteUser(u.id)}
-                      />
+                      <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={() => setDeleteUserId(u.id)} className="cursor-pointer text-xs font-medium text-red-500 focus:text-red-600 focus:bg-red-50 gap-2">
+                        <Trash2 className="w-3.5 h-3.5" /> Purge Account
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -272,8 +261,8 @@ function AdminUsersContent() {
                   <p className="text-xs text-muted-foreground flex items-center gap-1.5 truncate"><Mail className="w-3 h-3 flex-shrink-0" /> {u.email}</p>
                 </div>
                 <div className="flex items-center justify-between pt-4 border-t border-border">
-                  <DashboardStatusBadge status={u.role} type="role" showIcon={false} />
-                  <DashboardStatusBadge status={u.is_active ? "Active" : "Suspended"} showIcon={false} />
+                  <StatusBadge status={u.role} type="dashboard" dashboardType="role" showIcon={false} />
+                  <StatusBadge status={u.is_active ? "Active" : "Suspended"} type="dashboard" showIcon={false} />
                 </div>
               </CardContent>
             </Card>
@@ -314,6 +303,13 @@ function AdminUsersContent() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <AppConfirmDialog
+        open={deleteUserId !== null}
+        onOpenChange={() => setDeleteUserId(null)}
+        onConfirm={async () => { if (deleteUserId) { await deleteUser(deleteUserId); setDeleteUserId(null); } }}
+        title="Purge User Identity?"
+        description="This action will permanently remove this participant from the registry. This cannot be undone."
+      />
     </DashboardPageContainer>
   );
 }

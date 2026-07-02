@@ -16,6 +16,8 @@ class AdminExportLog extends Model
         'ip_address',
     ];
 
+    protected $casts = [];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

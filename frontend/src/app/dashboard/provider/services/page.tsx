@@ -14,7 +14,7 @@ import {
 } from "@/components/dashboard/workspace";
 import { ProviderServiceOfferingCard } from "@/components/dashboard/workspace/ProviderServiceOfferingCard";
 import { ProviderServiceFormDialog } from "@/components/dashboard/ProviderServiceFormDialog";
-import { workspaceUi } from "@/lib/dashboard-workspace-ui";
+import { workspaceUi } from "@/lib/dashboard-ui";
 import { useSearchState } from "@/hooks/useSearchState";
 import { DashboardSuspenseFallback } from "@/components/shared/DashboardSuspenseFallback";
 import type { ProviderService, Service } from "@/types";

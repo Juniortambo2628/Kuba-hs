@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, Circle, Clock, CreditCard, Loader2, XCircle } from "lucide-react";
-import { workspaceUi } from "@/lib/dashboard-workspace-ui";
+import { workspaceUi } from "@/lib/dashboard-ui";
 import { cn } from "@/lib/utils";
 
 const STEPS = [

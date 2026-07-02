@@ -4,9 +4,9 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { Plus, Clock, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { BookingStatusBadge } from "@/components/shared/BookingStatusBadge";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 import { DashboardUserAvatar } from "@/components/dashboard/workspace/DashboardUserAvatar";
-import { workspaceUi } from "@/lib/dashboard-workspace-ui";
+import { workspaceUi } from "@/lib/dashboard-ui";
 import { cn } from "@/lib/utils";
 import type { Booking } from "@/types";
 
@@ -61,7 +61,7 @@ export function DashboardSchedulePanel({
                 {featured.service?.name ?? "Service"}
               </p>
               <div className="mt-2">
-                <BookingStatusBadge status={featured.status} />
+                <StatusBadge status={featured.status} type="booking" />
               </div>
             </div>
           </div>

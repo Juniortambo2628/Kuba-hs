@@ -2,14 +2,16 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\ReviewStatus;
 use App\Http\Controllers\Controller;
-use App\Models\Review;
 use App\Http\Resources\ReviewResource;
+use App\Models\Review;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class FeedbackController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $query = Review::with(['customer', 'booking.service', 'booking.provider.user']);
 
@@ -19,12 +21,12 @@ class FeedbackController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function(\Illuminate\Database\Eloquent\Builder $q) use ($search) {
+            $query->where(function (\Illuminate\Database\Eloquent\Builder $q) use ($search) {
                 $q->where('comment', 'like', "%{$search}%")
-                  ->orWhereHas('customer', function($sub) use ($search) {
-                      $sub->where('first_name', 'like', "%{$search}%")
-                          ->orWhere('last_name', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('customer', function ($sub) use ($search) {
+                        $sub->where('first_name', 'like', "%{$search}%")
+                            ->orWhere('last_name', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -46,24 +48,24 @@ class FeedbackController extends Controller
         ]);
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $id): JsonResponse
     {
         $request->validate([
-            'status' => 'required|in:published,hidden,resolved'
+            'status' => 'required|in:'.implode(',', array_column(ReviewStatus::cases(), 'value')),
         ]);
 
         $feedback = Review::findOrFail($id);
         $feedback->update([
-            'status' => $request->status
+            'status' => $request->status,
         ]);
 
         return response()->json([
             'message' => 'Feedback status updated successfully',
-            'data' => new ReviewResource($feedback)
+            'data' => new ReviewResource($feedback),
         ]);
     }
 
-    public function destroy($id)
+    public function destroy($id): JsonResponse
     {
         $feedback = Review::findOrFail($id);
         $feedback->delete();

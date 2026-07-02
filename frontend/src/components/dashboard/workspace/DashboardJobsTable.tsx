@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { BookingStatusBadge } from "@/components/shared/BookingStatusBadge";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 import { DashboardUserAvatar } from "@/components/dashboard/workspace/DashboardUserAvatar";
-import { workspaceUi } from "@/lib/dashboard-workspace-ui";
+import { workspaceUi } from "@/lib/dashboard-ui";
 import { cn } from "@/lib/utils";
 import type { Booking } from "@/types";
 
@@ -72,7 +72,7 @@ export function DashboardJobsTable({
                     {b.service?.name ?? "—"}
                   </td>
                   <td className="px-3 py-4">
-                    <BookingStatusBadge status={b.status} />
+                    <StatusBadge status={b.status} type="booking" />
                   </td>
                   <td className="px-5 py-4 text-right text-xs text-muted-foreground">
                     {b.scheduled_date

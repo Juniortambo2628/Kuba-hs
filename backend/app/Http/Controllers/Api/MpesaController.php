@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\BookingPaymentStatus;
+use App\Enums\BookingStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Payment;
 use App\Services\MpesaService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -21,7 +24,7 @@ class MpesaController extends Controller
     /**
      * Initialize M-Pesa STK Push
      */
-    public function stkPush(Request $request)
+    public function stkPush(Request $request): JsonResponse
     {
         $request->validate([
             'booking_id' => 'required|exists:bookings,id',
@@ -37,11 +40,11 @@ class MpesaController extends Controller
                 return response()->json(['message' => 'Unauthorized'], 403);
             }
 
-            if (!in_array($booking->status, ['confirmed', 'completed'])) {
+            if (! in_array($booking->status, [BookingStatus::Confirmed, BookingStatus::Completed])) {
                 return response()->json(['message' => 'Booking must be confirmed or completed first'], 422);
             }
 
-            if ($booking->payment_status === 'paid') {
+            if ($booking->payment_status === BookingPaymentStatus::Paid) {
                 return response()->json(['message' => 'Already paid'], 422);
             }
 
@@ -59,20 +62,41 @@ class MpesaController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('M-Pesa STK Push Error', ['error' => $e->getMessage()]);
+
             return response()->json(['message' => $e->getMessage()], 500);
         }
     }
 
     /**
      * M-Pesa Callback from Daraja API (no auth required)
+     * Verifies Safaricom signature to prevent forged payment confirmations.
      */
-    public function callback(Request $request)
+    public function callback(Request $request): JsonResponse
     {
+        // Verify Safaricom signature — mandatory to prevent forged payment confirmations
+        $signature = $request->header('X-Safaricom-Signature');
+        if (! $signature) {
+            Log::warning('M-Pesa callback: Missing X-Safaricom-Signature header');
+
+            return response()->json(['ResultCode' => 1, 'ResultDesc' => 'Missing signature'], 401);
+        }
+
+        $expectedSignature = hash_hmac(
+            'sha256',
+            $request->getContent(),
+            config('services.safaricom.callback_secret', '')
+        );
+        if (! hash_equals($expectedSignature, $signature)) {
+            Log::warning('M-Pesa callback: Invalid signature');
+
+            return response()->json(['ResultCode' => 1, 'ResultDesc' => 'Invalid signature'], 401);
+        }
+
         Log::info('M-Pesa Callback Received', $request->all());
 
         $callbackData = $request->input('Body.stkCallback');
 
-        if (!$callbackData) {
+        if (! $callbackData) {
             return response()->json(['ResultCode' => 0, 'ResultDesc' => 'Accepted']);
         }
 
@@ -81,8 +105,9 @@ class MpesaController extends Controller
 
         $booking = Booking::where('mpesa_checkout_id', $checkoutRequestID)->first();
 
-        if (!$booking) {
+        if (! $booking) {
             Log::warning("M-Pesa callback: No booking found for CheckoutRequestID $checkoutRequestID");
+
             return response()->json(['ResultCode' => 0, 'ResultDesc' => 'Accepted']);
         }
 
@@ -94,9 +119,15 @@ class MpesaController extends Controller
             $phoneNumber = '';
 
             foreach ($metadata as $item) {
-                if ($item['Name'] === 'Amount') $amount = $item['Value'];
-                if ($item['Name'] === 'MpesaReceiptNumber') $transactionId = $item['Value'];
-                if ($item['Name'] === 'PhoneNumber') $phoneNumber = $item['Value'];
+                if ($item['Name'] === 'Amount') {
+                    $amount = $item['Value'];
+                }
+                if ($item['Name'] === 'MpesaReceiptNumber') {
+                    $transactionId = $item['Value'];
+                }
+                if ($item['Name'] === 'PhoneNumber') {
+                    $phoneNumber = $item['Value'];
+                }
             }
 
             $serviceAmount = $booking->final_price ?? $booking->estimated_price;
@@ -152,7 +183,7 @@ class MpesaController extends Controller
     /**
      * Check the status of a pending M-Pesa payment.
      */
-    public function checkStatus(Request $request)
+    public function checkStatus(Request $request): JsonResponse
     {
         $request->validate(['booking_id' => 'required|exists:bookings,id']);
         $booking = Booking::findOrFail($request->booking_id);
@@ -162,6 +193,4 @@ class MpesaController extends Controller
             'payment_method' => $booking->payment_method,
         ]);
     }
-
-
 }

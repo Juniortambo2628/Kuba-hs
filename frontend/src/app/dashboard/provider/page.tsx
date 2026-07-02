@@ -25,11 +25,11 @@ import {
   DashboardFrostedStatCard,
   DashboardFrostedStatGrid,
 } from "@/components/dashboard/workspace";
-import { DashboardEmptyState } from "@/components/shared/DashboardEmptyState";
-import { workspaceUi } from "@/lib/dashboard-workspace-ui";
+import { EmptyState } from "@/components/shared/ui/EmptyState";
+import { workspaceUi } from "@/lib/dashboard-ui";
 import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
 import type { Booking, Provider } from "@/types";
-import { unwrapResourceList } from "@/lib/api-resource";
+import { extractApiList } from "@/lib/api-response";
 
 interface ProviderStats {
   total_earnings: number;
@@ -60,7 +60,7 @@ function normalizeDashboard(raw: unknown): ProviderDashboardPayload | null {
   if (!b.stats) return null;
   return {
     stats: b.stats,
-    recent_bookings: unwrapResourceList<Booking>(b.recent_bookings),
+    recent_bookings: extractApiList(b.recent_bookings),
     profile: b.profile,
     verification: b.verification,
   };
@@ -230,7 +230,8 @@ export default function ProviderOverview() {
   if (!data) {
     return (
       <DashboardPageContainer width="xl" className={workspaceUi.page}>
-        <DashboardEmptyState
+        <EmptyState
+          variant="dashboard"
           icon={Briefcase}
           title="Could not load workspace"
           description={
@@ -245,7 +246,7 @@ export default function ProviderOverview() {
           <Button asChild variant="outline" className="rounded-full mt-2">
             <Link href="/dashboard/provider/profile">Set up profile</Link>
           </Button>
-        </DashboardEmptyState>
+        </EmptyState>
       </DashboardPageContainer>
     );
   }

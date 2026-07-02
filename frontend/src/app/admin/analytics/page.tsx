@@ -35,7 +35,7 @@ import { DashboardPageContainer } from "@/components/shared/DashboardPageContain
 import { ChartContainer } from "@/components/shared/ChartContainer";
 import { DashboardPageSkeleton } from "@/components/shared/DashboardPageSkeleton";
 import { MetricCard } from "@/components/shared/MetricCard";
-import { useApiData } from "@/hooks/useApiData";
+import { useData } from "@/hooks/useData";
 
 interface AnalyticsData {
   trends: {
@@ -64,7 +64,7 @@ interface AnalyticsData {
 const MONO_COLORS = ['#71717a', '#a1a1aa', '#d4d4d8', '#52525b', '#e4e4e7'];
 
 export default function AdminAnalytics() {
-  const { data, isLoading, refetch: fetchAnalytics } = useApiData<AnalyticsData>("/api/admin/analytics", { initialData: null });
+  const { data, isLoading, refetch: fetchAnalytics } = useData<AnalyticsData>("/api/admin/analytics", { initialData: null });
   const { exportToCSV } = useExport();
 
 

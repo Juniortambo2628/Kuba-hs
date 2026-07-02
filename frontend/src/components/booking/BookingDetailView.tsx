@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import axiosInstance from "@/lib/axios";
 import { useBookingDetail } from "@/hooks/useBookingDetail";
 import { Button } from "@/components/ui/button";
-import { BookingStatusBadge } from "@/components/shared/BookingStatusBadge";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 import {
   Clock,
   MapPin,
@@ -138,8 +138,9 @@ export function BookingDetailView({
                       #{booking.booking_number}
                     </h2>
                   </div>
-                  <BookingStatusBadge
+                  <StatusBadge
                     status={booking.status}
+                    type="booking"
                     className="rounded-full px-6 py-2 text-[10px]"
                   />
                 </div>

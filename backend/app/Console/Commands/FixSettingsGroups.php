@@ -2,13 +2,14 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\SiteSetting;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 
 class FixSettingsGroups extends Command
 {
     protected $signature = 'settings:fix-groups';
+
     protected $description = 'Fix legacy CMS setting groups';
 
     public function handle()
@@ -72,7 +73,7 @@ class FixSettingsGroups extends Command
         foreach ($settings as $s) {
             SiteSetting::where('key', $s['key'])->update(['group' => $s['group']]);
         }
-        
+
         Cache::forget('cms_settings_global');
         $this->info('Settings groups updated successfully and cache cleared.');
     }

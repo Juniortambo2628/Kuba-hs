@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PromoCode extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'code',
         'discount_type',
@@ -33,14 +36,22 @@ class PromoCode extends Model
      */
     public function isValid(?float $amount = null): bool
     {
-        if (!$this->is_active) return false;
+        if (! $this->is_active) {
+            return false;
+        }
 
         $now = now();
-        if ($now->lt($this->start_date) || $now->gt($this->end_date)) return false;
+        if ($now->lt($this->start_date) || $now->gt($this->end_date)) {
+            return false;
+        }
 
-        if ($this->usage_limit !== null && $this->used_count >= $this->usage_limit) return false;
+        if ($this->usage_limit !== null && $this->used_count >= $this->usage_limit) {
+            return false;
+        }
 
-        if ($amount !== null && $this->min_booking_amount !== null && $amount < $this->min_booking_amount) return false;
+        if ($amount !== null && $this->min_booking_amount !== null && $amount < $this->min_booking_amount) {
+            return false;
+        }
 
         return true;
     }
@@ -55,6 +66,7 @@ class PromoCode extends Model
             if ($this->max_discount_amount !== null) {
                 $discount = min($discount, (float) $this->max_discount_amount);
             }
+
             return $discount;
         }
 

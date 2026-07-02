@@ -7,6 +7,7 @@ use App\Http\Resources\AdminProviderResource;
 use App\Models\Booking;
 use App\Models\Provider;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -14,7 +15,7 @@ use Illuminate\Validation\Rule;
 
 class ProviderController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $query = Provider::query()
             ->with(['user:id,first_name,last_name,email,phone,is_active,avatar_url'])
@@ -50,13 +51,14 @@ class ProviderController extends Controller
 
         $providers->getCollection()->transform(function (Provider $provider) {
             $provider->bookings_count = Booking::where('provider_id', $provider->id)->count();
+
             return $provider;
         });
 
         return AdminProviderResource::collection($providers);
     }
 
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'business_name' => 'required|string|max:255',
@@ -106,7 +108,7 @@ class ProviderController extends Controller
         });
     }
 
-    public function show(Provider $provider)
+    public function show(Provider $provider): JsonResponse
     {
         $provider->load(['user', 'verificationDocuments'])
             ->loadCount(['providerServices', 'reviews'])
@@ -117,7 +119,7 @@ class ProviderController extends Controller
         return new AdminProviderResource($provider);
     }
 
-    public function update(Request $request, Provider $provider)
+    public function update(Request $request, Provider $provider): JsonResponse
     {
         $validated = $request->validate([
             'business_name' => 'sometimes|required|string|max:255',
@@ -172,7 +174,7 @@ class ProviderController extends Controller
         ]);
     }
 
-    public function updateStatus(Request $request, Provider $provider)
+    public function updateStatus(Request $request, Provider $provider): JsonResponse
     {
         $validated = $request->validate([
             'application_status' => ['nullable', Rule::in(['pending', 'approved', 'active', 'rejected', 'suspended'])],
@@ -200,7 +202,7 @@ class ProviderController extends Controller
         ]);
     }
 
-    public function destroy(Provider $provider)
+    public function destroy(Provider $provider): JsonResponse
     {
         if ($provider->user) {
             $provider->user->update(['is_active' => false]);

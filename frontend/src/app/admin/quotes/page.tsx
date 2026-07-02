@@ -31,8 +31,8 @@ import {
   DashboardFrostedStatCard,
   DashboardFrostedStatGrid,
 } from "@/components/dashboard/workspace";
-import { workspaceUi } from "@/lib/dashboard-workspace-ui";
-import { DashboardStatusBadge } from "@/components/shared/DashboardStatusBadge";
+import { workspaceUi } from "@/lib/dashboard-ui";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { 
@@ -47,14 +47,15 @@ import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@
 import { DashboardListToolbar } from "@/components/shared/DashboardListToolbar";
 import { useSearchState } from "@/hooks/useSearchState";
 import { CustomQuote } from "@/types";
-import { useApiData } from "@/hooks/useApiData";
-import { ConfirmDeleteDialog } from "@/components/shared/ConfirmDeleteDialog";
+import { useData } from "@/hooks/useData";
+import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
 import { toast } from "sonner";
 
 export default function AdminQuotesPage() {
   const { search: searchTerm } = useSearchState();
   const [viewMode, setViewMode] = useState<'grid'|'list'>('grid');
-  const { data: quotesData, isLoading, refetch: fetchQuotes } = useApiData<any>("/api/admin/quotes", { initialData: null });
+  const [deleteTarget, setDeleteTarget] = useState<CustomQuote | null>(null);
+  const { data: quotesData, isLoading, refetch: fetchQuotes } = useData<any>("/api/admin/quotes", { initialData: null });
   const quotes = (quotesData?.data || quotesData || []) as CustomQuote[];
 
   const updateStatus = async (id: string, status: string) => {
@@ -189,7 +190,7 @@ export default function AdminQuotesPage() {
                        <p className="text-[10px] text-muted-foreground">{new Date(quote.created_at).toLocaleDateString()}</p>
                     </TableCell>
                     <TableCell>
-                       <DashboardStatusBadge status={quote.status} />
+                       <StatusBadge status={quote.status} type="dashboard" />
                     </TableCell>
                     <TableCell className="pr-6 text-right">
                       <DropdownMenu>
@@ -208,16 +209,9 @@ export default function AdminQuotesPage() {
                           <DropdownMenuItem onClick={() => updateStatus(quote.id, 'contracted')} className="cursor-pointer text-xs font-medium text-green-600">
                             <CheckCircle className="w-4 h-4 mr-2" /> Contract
                           </DropdownMenuItem>
-                          <ConfirmDeleteDialog
-                            trigger={
-                                <button className="w-full text-left px-2 py-1.5 text-xs font-medium text-red-500 hover:text-red-600 hover:bg-red-50 gap-2 flex items-center rounded-md">
-                                    <XCircle className="w-4 h-4" /> Delete Request
-                                </button>
-                            }
-                            title="Delete this quote request?"
-                            description={`Permanently remove the request from ${quote.organization_name}.`}
-                            onConfirm={() => deleteQuote(quote.id)}
-                          />
+                          <button className="w-full text-left px-2 py-1.5 text-xs font-medium text-red-500 hover:text-red-600 hover:bg-red-50 gap-2 flex items-center rounded-md" onClick={() => setDeleteTarget(quote)}>
+                              <XCircle className="w-4 h-4" /> Delete Request
+                          </button>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -254,16 +248,9 @@ export default function AdminQuotesPage() {
                     <DropdownMenuItem onClick={() => updateStatus(quote.id, 'contracted')} className="cursor-pointer text-xs font-medium text-green-600">
                       <CheckCircle className="w-4 h-4 mr-2" /> Contract
                     </DropdownMenuItem>
-                    <ConfirmDeleteDialog
-                      trigger={
-                          <button className="w-full text-left px-2 py-1.5 text-xs font-medium text-red-500 hover:text-red-600 hover:bg-red-50 gap-2 flex items-center rounded-md">
-                              <XCircle className="w-4 h-4" /> Delete Request
-                          </button>
-                      }
-                      title="Delete this quote request?"
-                      description={`Permanently remove the request from ${quote.organization_name}.`}
-                      onConfirm={() => deleteQuote(quote.id)}
-                    />
+                    <button className="w-full text-left px-2 py-1.5 text-xs font-medium text-red-500 hover:text-red-600 hover:bg-red-50 gap-2 flex items-center rounded-md" onClick={() => setDeleteTarget(quote)}>
+                        <XCircle className="w-4 h-4" /> Delete Request
+                    </button>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -305,13 +292,20 @@ export default function AdminQuotesPage() {
                       <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                       <span className="text-[10px] font-bold text-foreground">Active Lead</span>
                    </div>
-                  <DashboardStatusBadge status={quote.status} />
+                  <StatusBadge status={quote.status} type="dashboard" />
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
       )}
+      <AppConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={() => setDeleteTarget(null)}
+        onConfirm={async () => { if (deleteTarget) { await deleteQuote(deleteTarget.id); setDeleteTarget(null); } }}
+        title="Delete this quote request?"
+        description={`Permanently remove the request from ${deleteTarget?.organization_name}.`}
+      />
     </DashboardPageContainer>
   );
 }

@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\BookingStatus;
+use App\Events\BookingStatusUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
-use App\Events\BookingStatusUpdated;
-use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class BookingController extends Controller
 {
@@ -15,26 +17,26 @@ class BookingController extends Controller
     /**
      * Update the status of a booking.
      */
-    public function updateStatus(Request $request, Booking $booking)
+    public function updateStatus(Request $request, Booking $booking): JsonResponse
     {
         $this->authorize('update', $booking);
 
         $request->validate([
-            'status' => 'required|in:confirmed,in_progress,completed,cancelled',
+            'status' => 'required|in:'.implode(',', array_column(BookingStatus::cases(), 'value')),
             'cancellation_reason' => 'required_if:status,cancelled|string|nullable',
         ]);
 
         $booking = app(\App\Services\BookingService::class)->updateBookingStatus(
-            $booking, 
-            $request->user(), 
+            $booking,
+            $request->user(),
             $request->status
         );
 
-        if ($request->status === 'completed') {
+        if ($request->status === BookingStatus::Completed) {
             app(\App\Services\LoyaltyService::class)->awardPointsForBooking($booking);
         }
 
-        if ($request->status === 'cancelled') {
+        if ($request->status === BookingStatus::Cancelled) {
             app(\App\Services\LoyaltyService::class)->revertPointsForBooking($booking);
             if ($request->cancellation_reason) {
                 $booking->update(['cancellation_reason' => $request->cancellation_reason]);
@@ -50,7 +52,7 @@ class BookingController extends Controller
     /**
      * Reschedule a booking.
      */
-    public function reschedule(Request $request, Booking $booking)
+    public function reschedule(Request $request, Booking $booking): JsonResponse
     {
         $this->authorize('update', $booking);
 
@@ -63,7 +65,7 @@ class BookingController extends Controller
         $booking->update([
             'scheduled_date' => $request->scheduled_date,
             'rescheduled_at' => now(),
-            'status' => 'pending', // Revert to pending for re-confirmation if needed
+            'status' => BookingStatus::Pending, // Revert to pending for re-confirmation if needed
         ]);
 
         app(\App\Services\BookingActivityLogService::class)->log(
@@ -88,7 +90,7 @@ class BookingController extends Controller
     /**
      * Display the specified booking.
      */
-    public function show(Booking $booking)
+    public function show(Booking $booking): JsonResponse
     {
         $this->authorize('view', $booking);
 

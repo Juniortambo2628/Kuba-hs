@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Enums\BookingStatus;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreAdminBookingRequest extends FormRequest
@@ -24,7 +25,7 @@ class StoreAdminBookingRequest extends FormRequest
             'quantity' => 'required|integer|min:1',
             'quantity_label' => 'nullable|string',
             'location_name' => 'nullable|string|max:255',
-            'status' => 'nullable|in:pending,confirmed,in_progress,completed,cancelled',
+            'status' => 'nullable|in:'.implode(',', array_column(BookingStatus::cases(), 'value')),
             'promo_code' => 'nullable|string|exists:promo_codes,code',
         ];
     }

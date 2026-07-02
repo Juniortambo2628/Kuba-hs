@@ -4,14 +4,8 @@
  * @returns URL like `/services/deep-cleaning`
  */
 
-export function toSlug(value: string): string {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/[\s_]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
+export { toSlug } from "@/lib/slug";
+import { toSlug } from "@/lib/slug";
 
 interface SlugService {
   id?: string | number;

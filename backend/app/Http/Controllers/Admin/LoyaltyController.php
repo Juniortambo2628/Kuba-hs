@@ -3,20 +3,19 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-
-use App\Models\LoyaltyTier;
-use App\Models\LoyaltyPoint;
-use App\Models\User;
-use App\Http\Resources\LoyaltyTierResource;
 use App\Http\Resources\LoyaltyPointResource;
+use App\Http\Resources\LoyaltyTierResource;
+use App\Models\LoyaltyPoint;
+use App\Models\LoyaltyTier;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class LoyaltyController extends Controller
 {
     /**
      * Get all loyalty tiers.
      */
-    public function index()
+    public function index(): JsonResponse
     {
         return LoyaltyTierResource::collection(LoyaltyTier::orderBy('min_points')->get());
     }
@@ -24,7 +23,7 @@ class LoyaltyController extends Controller
     /**
      * Create a new loyalty tier.
      */
-    public function storeTier(Request $request)
+    public function storeTier(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -42,7 +41,7 @@ class LoyaltyController extends Controller
     /**
      * Update an existing loyalty tier.
      */
-    public function updateTier(Request $request, LoyaltyTier $tier)
+    public function updateTier(Request $request, LoyaltyTier $tier): JsonResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -60,16 +59,17 @@ class LoyaltyController extends Controller
     /**
      * Delete a loyalty tier.
      */
-    public function destroyTier(LoyaltyTier $tier)
+    public function destroyTier(LoyaltyTier $tier): JsonResponse
     {
         $tier->delete();
+
         return response()->json(['message' => 'Tier deleted successfully']);
     }
 
     /**
      * Get recent point transactions.
      */
-    public function transactions(Request $request)
+    public function transactions(Request $request): JsonResponse
     {
         $query = LoyaltyPoint::with('user');
 
@@ -83,7 +83,7 @@ class LoyaltyController extends Controller
     /**
      * Award points to a user.
      */
-    public function awardPoints(Request $request)
+    public function awardPoints(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',

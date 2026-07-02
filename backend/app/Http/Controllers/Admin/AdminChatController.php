@@ -5,11 +5,12 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Conversation;
 use App\Models\Message;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class AdminChatController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $query = Conversation::with(['customer', 'provider.user', 'booking.service', 'latestMessage'])
             ->orderByDesc('last_message_at');
@@ -29,12 +30,10 @@ class AdminChatController extends Controller
             });
         }
 
-        return response()->json([
-            'data' => $query->paginate(20)->withQueryString(),
-        ]);
+        return response()->json($query->paginate(20)->withQueryString());
     }
 
-    public function show(Conversation $conversation)
+    public function show(Conversation $conversation): JsonResponse
     {
         return response()->json([
             'data' => $conversation->load([
@@ -46,7 +45,7 @@ class AdminChatController extends Controller
         ]);
     }
 
-    public function destroyMessage(Message $message)
+    public function destroyMessage(Message $message): JsonResponse
     {
         $message->delete();
 

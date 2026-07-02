@@ -27,9 +27,9 @@ import {
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
-import { DashboardStatusBadge } from "@/components/shared/DashboardStatusBadge";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 import { toast } from "sonner";
-import { useApiData } from "@/hooks/useApiData";
+import { useData } from "@/hooks/useData";
 import { Input } from "@/components/ui/input";
 import { 
   Dialog, 
@@ -50,7 +50,7 @@ import type { WorkforceProposal } from "@/types/admin";
 import { dashboardUi } from "@/lib/dashboard-ui";
 
 function AdminVerificationContent() {
-  const { data: proposals, isLoading, refetch: fetchProposals } = useApiData<WorkforceProposal[]>(
+  const { data: proposals, isLoading, refetch: fetchProposals } = useData<WorkforceProposal[]>(
     "/api/admin/workforce/verification",
     { initialData: [] }
   );

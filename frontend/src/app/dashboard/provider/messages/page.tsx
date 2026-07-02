@@ -13,9 +13,10 @@ import {
 } from "@/components/dashboard/workspace";
 import { ChatInterface } from "@/components/chat/ChatInterface";
 import { Button } from "@/components/ui/button";
-import { workspaceUi } from "@/lib/dashboard-workspace-ui";
+import { workspaceUi } from "@/lib/dashboard-ui";
 import axiosInstance from "@/lib/axios";
-import { unwrapResourceList, normalizeConversation } from "@/lib/chat-utils";
+import { extractApiList } from "@/lib/api-response";
+import { normalizeConversation } from "@/lib/chat-utils";
 
 export default function ProviderMessagesPage() {
   const { data, isLoading } = useSWR("/api/chat/conversations", (url) =>
@@ -23,7 +24,7 @@ export default function ProviderMessagesPage() {
   );
 
   const conversations = useMemo(() => {
-    const list = unwrapResourceList<Record<string, unknown>>(data?.conversations);
+    const list = extractApiList(data?.conversations);
     return list.map((row) => normalizeConversation(row));
   }, [data]);
 

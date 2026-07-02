@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useApiData } from "@/hooks/useApiData";
+import { useData } from "@/hooks/useData";
 import axiosInstance from "@/lib/axios";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -24,8 +24,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { getMediaUrl, cn } from "@/lib/utils";
-import { ComplianceStatusBadge } from "@/components/shared/ComplianceStatusBadge";
-import { VerificationDocStatusBadge } from "@/components/shared/VerificationDocStatusBadge";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
 import { MetricCard } from "@/components/shared/MetricCard";
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
@@ -33,14 +32,14 @@ import { DashboardPageContainer } from "@/components/shared/DashboardPageContain
 export default function ComplianceDashboard() {
   const [activeTab, setActiveTab] = useState<"all" | "pending" | "expiring_soon" | "non_compliant">("all");
   
-  const { data: overview, isLoading: loadingOverview, refetch: refetchOverview } = useApiData<any>('/api/admin/compliance/overview');
+  const { data: overview, isLoading: loadingOverview, refetch: refetchOverview } = useData<any>('/api/admin/compliance/overview');
   
-  const { data: providersResponse, isLoading: loadingProviders, refetch: refetchProviders } = useApiData<any>(
+  const { data: providersResponse, isLoading: loadingProviders, refetch: refetchProviders } = useData<any>(
     `/api/admin/compliance/providers${activeTab !== 'all' ? `?status=${activeTab}` : ''}`
   );
 
   const [selectedProvider, setSelectedProvider] = useState<any | null>(null);
-  const { data: documentsResponse, isLoading: loadingDocs, refetch: refetchDocs } = useApiData<any>(
+  const { data: documentsResponse, isLoading: loadingDocs, refetch: refetchDocs } = useData<any>(
     selectedProvider ? `/api/admin/compliance/providers/${selectedProvider.id}/documents` : ''
   );
 
@@ -185,7 +184,7 @@ export default function ComplianceDashboard() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <ComplianceStatusBadge status={provider.compliance_status} />
+                      <StatusBadge status={provider.compliance_status} type="compliance" />
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
@@ -279,7 +278,7 @@ export default function ComplianceDashboard() {
                   </div>
                   <div className="p-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10">
                     <p className="text-xs font-bold text-gray-400 uppercase">Current Status</p>
-                    <div className="mt-2"><ComplianceStatusBadge status={selectedProvider.compliance_status} /></div>
+                    <div className="mt-2"><StatusBadge status={selectedProvider.compliance_status} type="compliance" /></div>
                   </div>
                 </div>
 
@@ -303,7 +302,7 @@ export default function ComplianceDashboard() {
                               <div>
                                 <p className="font-bold text-gray-900 dark:text-white capitalize">{doc.document_type.replace('_', ' ')}</p>
                                 <div className="flex items-center gap-3 mt-1.5">
-                                  <VerificationDocStatusBadge status={doc.status} isExpired={doc.is_expired} />
+                                  <StatusBadge status={doc.status} type="verification" isExpired={doc.is_expired} />
                                   <span className="text-xs font-medium text-gray-400 flex items-center gap-1">
                                     <Clock className="w-3 h-3" />
                                     {format(new Date(doc.created_at), 'MMM d, yyyy')}

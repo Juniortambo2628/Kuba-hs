@@ -22,9 +22,9 @@ Route::get('/dashboard/search', \App\Http\Controllers\Api\DashboardSearchControl
 /** SPA session auth — must live under /api so Next.js rewrites reach Laravel */
 Route::prefix('auth')->group(function () {
     Route::middleware('guest')->group(function () {
-        Route::post('/login', [AuthenticatedSessionController::class, 'store']);
-        Route::post('/register', [RegisteredUserController::class, 'store']);
-        Route::post('/forgot-password', [PasswordResetLinkController::class, 'store']);
+        Route::post('/login', [AuthenticatedSessionController::class, 'store'])->middleware('throttle:10,1');
+        Route::post('/register', [RegisteredUserController::class, 'store'])->middleware('throttle:5,1');
+        Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])->middleware('throttle:5,1');
         Route::post('/reset-password', [NewPasswordController::class, 'store']);
     });
 
@@ -47,7 +47,7 @@ Route::get('/featured-services/{providerService}/similar', [MarketplaceCatalogCo
 Route::get('/categories/{category}', [MarketplaceCatalogController::class, 'showCategory']);
 Route::get('/categories/{categorySlug}/{serviceSlug}', [MarketplaceCatalogController::class, 'showServiceBySlug']);
 Route::get('/trust-partners', [MarketplaceContentController::class, 'trustPartners']);
-Route::post('/promo-codes/validate', [MarketplaceDiscoveryController::class, 'validatePromoCode']);
+Route::post('/promo-codes/validate', [MarketplaceDiscoveryController::class, 'validatePromoCode'])->middleware('throttle:10,1');
 Route::get('/providers', [MarketplaceDiscoveryController::class, 'providers']);
 Route::get('/providers/{provider}', [MarketplaceDiscoveryController::class, 'show']);
 Route::get('/top-providers', [MarketplaceDiscoveryController::class, 'topProviders']);
@@ -56,39 +56,27 @@ Route::get('/settings', [\App\Http\Controllers\Admin\SettingsController::class, 
 Route::get('/geocode/search', [\App\Http\Controllers\Api\GeocodingController::class, 'search']);
 Route::post('/contact', [\App\Http\Controllers\Api\ContactController::class, 'store']);
 Route::post('/investors/inquire', [\App\Http\Controllers\Api\InvestorInquiryController::class, 'store']);
-Route::post('/auth/register-provider', [\App\Http\Controllers\Api\ProviderApplicationController::class, 'register']);
+Route::post('/auth/register-provider', [\App\Http\Controllers\Api\ProviderApplicationController::class, 'register'])->middleware('throttle:5,1');
 Route::post('/quotes', [\App\Http\Controllers\Api\QuoteController::class, 'store']);
 Route::get('/unsubscribe', [\App\Http\Controllers\Api\UnsubscribeController::class, 'unsubscribe'])->name('api.unsubscribe');
 
 // M-Pesa Callback (public, no auth - called by Safaricom)
 Route::post('/payments/mpesa/callback', [\App\Http\Controllers\Api\MpesaController::class, 'callback']);
-Route::post('/auth/complete-profile', [\App\Http\Controllers\Auth\ProfileCompletionController::class, 'store']);
+Route::post('/auth/complete-profile', [\App\Http\Controllers\Auth\ProfileCompletionController::class, 'store'])
+    ->middleware('auth:sanctum');
 
 // Public Blog Routes
 Route::get('/blog', [\App\Http\Controllers\Api\BlogController::class, 'index']);
 Route::get('/blog/{slug}', [\App\Http\Controllers\Api\BlogController::class, 'show']);
 // Authenticated dashboard routes
 Route::middleware('auth:sanctum')->group(function () {
-    // Client/Provider Dashboard
-    Route::get('/dashboard', function (Request $request) {
+    // Client/Provider Dashboard — delegates to role-specific controllers
+    Route::get('/dashboard', function (\Illuminate\Http\Request $request) {
         $user = $request->user();
-        
-        if ($user->role === 'provider' && $user->provider) {
-            $bookings = \App\Models\Booking::where('provider_id', $user->provider->id)
-                ->with(['customer', 'service', 'address', 'review', 'payment'])
-                ->latest()
-                ->get();
-        } else {
-            $bookings = \App\Models\Booking::where('customer_id', $user->id)
-                ->with(['provider.user', 'service', 'address', 'review', 'payment'])
-                ->latest()
-                ->get();
+        if ($user->role === \App\Enums\UserRole::Provider && $user->provider) {
+            return app(\App\Http\Controllers\Provider\DashboardController::class)->index($request);
         }
-
-        return response()->json([
-            'bookings' => $bookings,
-            'userRole' => $user->role,
-        ]);
+        return app(\App\Http\Controllers\Client\DashboardController::class)->index($request);
     });
 
     // Booking management
@@ -111,6 +99,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Provider routes (provider role required)
     Route::middleware('provider')->prefix('provider')->group(function () {
         Route::get('/bookings', [\App\Http\Controllers\Provider\BookingController::class, 'index']);
+        Route::get('/bookings/{booking}', [\App\Http\Controllers\Provider\BookingController::class, 'show']);
         Route::get('/verification', [\App\Http\Controllers\Api\VerificationController::class, 'index']);
         Route::post('/verification', [\App\Http\Controllers\Api\VerificationController::class, 'store']);
         Route::get('/dashboard', [\App\Http\Controllers\Provider\DashboardController::class, 'index']);
@@ -131,7 +120,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('customer')->group(function () {
         Route::get('/client/dashboard', [\App\Http\Controllers\Client\DashboardController::class, 'index']);
         Route::get('/client/bookings', [\App\Http\Controllers\Client\BookingController::class, 'index']);
+        Route::get('/client/bookings/{booking}', [\App\Http\Controllers\Client\BookingController::class, 'show']);
         Route::post('/client/bookings', [\App\Http\Controllers\Client\BookingController::class, 'store']);
+        Route::patch('/client/bookings/{booking}/cancel', [\App\Http\Controllers\Client\BookingController::class, 'cancel']);
         Route::apiResource('/client/addresses', \App\Http\Controllers\Client\AddressController::class);
         Route::get('/client/loyalty', [\App\Http\Controllers\Client\LoyaltyController::class, 'index']);
         Route::post('/client/loyalty/redeem', [\App\Http\Controllers\Client\LoyaltyController::class, 'redeem']);
@@ -180,9 +171,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/payments/{payment}', [\App\Http\Controllers\Admin\PaymentController::class, 'show']);
         Route::get('/finance', [\App\Http\Controllers\Admin\FinanceController::class, 'index']);
         Route::get('/finance/transactions', [\App\Http\Controllers\Admin\FinanceController::class, 'transactions']);
-        // Unified financials namespace (preferred)
-        Route::get('/financials/charts', [\App\Http\Controllers\Admin\FinanceController::class, 'index']);
-        Route::get('/financials/transactions', [\App\Http\Controllers\Admin\FinanceController::class, 'transactions']);
         
         // Configuration & Content
         Route::get('/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'index']);

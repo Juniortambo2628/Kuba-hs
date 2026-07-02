@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
 class NotificationController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
         $user = Auth::user();
         $notifications = $user->notifications()->take(20)->get();
@@ -19,7 +19,7 @@ class NotificationController extends Controller
         ]);
     }
 
-    public function markAsRead($id)
+    public function markAsRead($id): JsonResponse
     {
         $user = Auth::user();
         $notification = $user->notifications()->findOrFail($id);
@@ -28,9 +28,10 @@ class NotificationController extends Controller
         return response()->json(['message' => 'Notification marked as read']);
     }
 
-    public function markAllAsRead()
+    public function markAllAsRead(): JsonResponse
     {
         Auth::user()->unreadNotifications->markAsRead();
+
         return response()->json(['message' => 'All notifications marked as read']);
     }
 }
