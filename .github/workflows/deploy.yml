@@ -30,14 +30,16 @@ jobs:
         env:
           CPANEL_USER: ${{ secrets.CPANEL_USER }}
           CPANEL_HOST: ${{ secrets.CPANEL_HOST }}
+          CPANEL_PORT: ${{ secrets.CPANEL_PORT || '1624' }}
         run: |
           # Sync everything in backend except the public directory
-          rsync -avz -e "ssh -o StrictHostKeyChecking=no" --delete --exclude 'public' ./backend/ $CPANEL_USER@$CPANEL_HOST:/home/$CPANEL_USER/kuba_backend/
+          rsync -avz -e "ssh -p $CPANEL_PORT -o StrictHostKeyChecking=no" --delete --exclude 'public' ./backend/ $CPANEL_USER@$CPANEL_HOST:/home/$CPANEL_USER/kuba_backend/
 
       - name: Deploy Public Files (public_html/api)
         env:
           CPANEL_USER: ${{ secrets.CPANEL_USER }}
           CPANEL_HOST: ${{ secrets.CPANEL_HOST }}
+          CPANEL_PORT: ${{ secrets.CPANEL_PORT || '1624' }}
         run: |
           # Sync the public directory to public_html/api
-          rsync -avz -e "ssh -o StrictHostKeyChecking=no" --delete ./backend/public/ $CPANEL_USER@$CPANEL_HOST:/home/$CPANEL_USER/public_html/api/
+          rsync -avz -e "ssh -p $CPANEL_PORT -o StrictHostKeyChecking=no" --delete ./backend/public/ $CPANEL_USER@$CPANEL_HOST:/home/$CPANEL_USER/public_html/api/
