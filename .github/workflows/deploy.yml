@@ -69,6 +69,7 @@ jobs:
             fi
 
             echo "Running Artisan commands..."
+            touch database/database.sqlite
             php artisan down || true
             php artisan optimize:clear
             php artisan migrate --force
