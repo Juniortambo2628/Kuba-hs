@@ -1,0 +1,42 @@
+name: Deploy Backend to cPanel
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          CPANEL_HOST: ${{ secrets.CPANEL_HOST }}
+          CPANEL_USER: ${{ secrets.CPANEL_USER }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H $CPANEL_HOST >> ~/.ssh/known_hosts
+
+      - name: Deploy Core Files (kuba_backend)
+        env:
+          CPANEL_USER: ${{ secrets.CPANEL_USER }}
+          CPANEL_HOST: ${{ secrets.CPANEL_HOST }}
+        run: |
+          # Sync everything in backend except the public directory
+          rsync -avz --delete --exclude 'public' ./backend/ $CPANEL_USER@$CPANEL_HOST:/home/$CPANEL_USER/kuba_backend/
+
+      - name: Deploy Public Files (public_html/api)
+        env:
+          CPANEL_USER: ${{ secrets.CPANEL_USER }}
+          CPANEL_HOST: ${{ secrets.CPANEL_HOST }}
+        run: |
+          # Sync the public directory to public_html/api
+          rsync -avz --delete ./backend/public/ $CPANEL_USER@$CPANEL_HOST:/home/$CPANEL_USER/public_html/api/
