@@ -50,7 +50,7 @@ jobs:
           CPANEL_HOST: ${{ secrets.CPANEL_HOST }}
           CPANEL_PORT: ${{ secrets.CPANEL_PORT || '1624' }}
         run: |
-          ssh -p $CPANEL_PORT -o StrictHostKeyChecking=no $CPANEL_USER@$CPANEL_HOST << 'EOF'
+          ssh -p $CPANEL_PORT -o StrictHostKeyChecking=no $CPANEL_USER@$CPANEL_HOST << EOF
             set -e
             cd /home/$CPANEL_USER/kuba_backend
 
