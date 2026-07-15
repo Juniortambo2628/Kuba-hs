@@ -19,6 +19,9 @@ export const metadata: Metadata = {
   title: "Kuba - Elite Home Services Marketplace",
   description: "Premium on-demand home professional services with precision and care.",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/logos/login-logo-light.png"
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

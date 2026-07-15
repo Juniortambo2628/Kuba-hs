@@ -5,7 +5,7 @@ import { useEffect } from "react";
 
 export function DynamicFavicon() {
   const { getImg } = useCMS();
-  const favicon = getImg('identity', 'favicon', '/favicon.ico');
+  const favicon = getImg('identity', 'favicon', '/logos/login-logo-light.png');
 
   useEffect(() => {
     const link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
