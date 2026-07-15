@@ -261,7 +261,7 @@ function ProvidersContent() {
               {isPageLoading ? (
                 <div className={view === "grid" ? marketingUi.listing.grid : marketingUi.listing.list}>
                   {Array.from({ length: 4 }).map((_, i) => (
-                    <Skeleton key={i} className="aspect-[4/3] w-full rounded-2xl" />
+                    <Skeleton key={i} className="aspect-4/3 w-full rounded-2xl" />
                   ))}
                 </div>
               ) : providers.length === 0 ? (
