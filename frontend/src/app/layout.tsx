@@ -40,6 +40,8 @@ export const viewport = {
 import { CookieConsent } from "@/components/shared/CookieConsent";
 import { LegalModals } from "@/components/shared/LegalModals";
 import { DynamicFavicon } from "@/components/shared/DynamicFavicon";
+import { RouteLoader } from "@/components/shared/RouteLoader";
+import { Suspense } from "react";
 
 import { getSSRSettings } from "@/lib/ssr-settings";
 
@@ -72,6 +74,9 @@ export default async function RootLayout({
           <CookieConsent />
           <LegalModals />
           <DynamicFavicon />
+          <Suspense fallback={null}>
+            <RouteLoader />
+          </Suspense>
         </Providers>
       </body>
     </html>
