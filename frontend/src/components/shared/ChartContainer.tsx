@@ -27,13 +27,15 @@ export function ChartContainer({
 
   return (
     <div
-      className={cn("w-full", className)}
-      style={{ height, minWidth: 1, minHeight: height }}
+      className={cn("w-full relative", className)}
+      style={{ height, minWidth: 0 }}
     >
       {ready ? (
-        <ResponsiveContainer width="99%" height="100%" minWidth={1} minHeight={1} debounce={50}>
-          {children}
-        </ResponsiveContainer>
+        <div className="absolute inset-0">
+          <ResponsiveContainer width="100%" height="100%">
+            {children}
+          </ResponsiveContainer>
+        </div>
       ) : null}
     </div>
   );
