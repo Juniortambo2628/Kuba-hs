@@ -27,7 +27,6 @@ const defaultCounts: ActivityCounts = {
 export function useActivityCounts() {
   const { user } = useAuth();
   const [counts, setCounts] = useState<ActivityCounts>(defaultCounts);
-  const echo = getEcho();
 
   const fetchCounts = useCallback(async () => {
     if (!user) return;
@@ -119,7 +118,10 @@ export function useActivityCounts() {
 
   // Listen for real-time updates
   useEffect(() => {
-    if (!user || !echo) return;
+    if (!user) return;
+
+    const echo = getEcho();
+    if (!echo) return;
 
     const channel = echo.private(`App.Models.User.${user.id}`);
     channel.notification(() => {
@@ -132,7 +134,7 @@ export function useActivityCounts() {
     return () => {
       echo.leave(`App.Models.User.${user.id}`);
     };
-  }, [user, echo, fetchCounts]);
+  }, [user, fetchCounts]);
 
   return { counts, refresh: fetchCounts };
 }
