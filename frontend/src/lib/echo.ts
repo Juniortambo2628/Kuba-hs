@@ -13,7 +13,7 @@ if (typeof window !== 'undefined') {
 }
 
 /**
- * Singleton instance of Laravel Echo configured for Reverb
+ * Singleton instance of Laravel Echo configured for Pusher Channels
  */
 let echoInstance: Echo<any> | null = null;
 
@@ -21,21 +21,19 @@ export const getEcho = () => {
     if (typeof window === 'undefined') return null;
     
     if (!echoInstance) {
-        const key = process.env.NEXT_PUBLIC_REVERB_APP_KEY;
+        const key = process.env.NEXT_PUBLIC_PUSHER_APP_KEY;
+        const cluster = process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTER;
         
         if (!key) {
-            console.warn('Laravel Echo: NEXT_PUBLIC_REVERB_APP_KEY is not defined. Real-time features (Chat/Notifications) will be disabled.');
+            console.warn('Laravel Echo: NEXT_PUBLIC_PUSHER_APP_KEY is not defined. Real-time features (Chat/Notifications) will be disabled.');
             return null;
         }
 
         echoInstance = new Echo({
-            broadcaster: 'reverb',
+            broadcaster: 'pusher',
             key: key,
-            wsHost: process.env.NEXT_PUBLIC_REVERB_HOST,
-            wsPort: Number(process.env.NEXT_PUBLIC_REVERB_PORT ?? 8080),
-            wssPort: Number(process.env.NEXT_PUBLIC_REVERB_PORT ?? 8080),
-            forceTLS: (process.env.NEXT_PUBLIC_REVERB_SCHEME ?? 'https') === 'https',
-            enabledTransports: ['ws', 'wss'],
+            cluster: cluster ?? 'mt1',
+            forceTLS: true,
             authorizer: (channel: any, options: any) => {
                 return {
                     authorize: (socketId: string, callback: Function) => {
