@@ -5,12 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PageFeatureResource;
 use App\Models\PageFeature;
-use Illuminate\Http\JsonResponse;
+
 use Illuminate\Http\Request;
 
 class PageFeatureController extends Controller
 {
-    public function index(Request $request): JsonResponse
+    public function index(Request $request)
     {
         $query = PageFeature::where('is_active', true);
 
