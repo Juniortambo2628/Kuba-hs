@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { DynamicImage as Image } from "@/components/ui/dynamic-image";
 import Link from "next/link";
 import { MapPin, Shield, Star, Calendar, ArrowRight } from "lucide-react";
 import { marketplaceUi } from "@/lib/marketplace-ui";
