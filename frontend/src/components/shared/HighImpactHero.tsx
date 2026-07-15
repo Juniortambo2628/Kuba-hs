@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useCMS } from "@/contexts/CMSContext";
 import { AppPill } from "@/components/shared/ui/AppPill";
 import { designSystem } from "@/lib/design-system";
-import { DynamicImage as Image } from "@/components/ui/dynamic-image";
+import Image from "next/image";
 import { getMediaUrl } from "@/lib/utils";
 import { MarketingHeroLogoFallback } from "@/components/marketing/MarketingHeroLogoFallback";
 
