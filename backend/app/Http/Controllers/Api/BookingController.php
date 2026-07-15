@@ -17,8 +17,7 @@ class BookingController extends Controller
     /**
      * Update the status of a booking.
      */
-    public function updateStatus(Request $request, Booking $booking): JsonResponse
-    {
+    public function updateStatus(Request $request, Booking $booking) {
         $this->authorize('update', $booking);
 
         $request->validate([
@@ -52,8 +51,7 @@ class BookingController extends Controller
     /**
      * Reschedule a booking.
      */
-    public function reschedule(Request $request, Booking $booking): JsonResponse
-    {
+    public function reschedule(Request $request, Booking $booking) {
         $this->authorize('update', $booking);
 
         $request->validate([
@@ -90,8 +88,7 @@ class BookingController extends Controller
     /**
      * Display the specified booking.
      */
-    public function show(Booking $booking): JsonResponse
-    {
+    public function show(Booking $booking) {
         $this->authorize('view', $booking);
 
         return response()->json([

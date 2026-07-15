@@ -11,8 +11,7 @@ use Illuminate\Support\Facades\Auth;
 
 class BookingController extends Controller
 {
-    public function index(Request $request): JsonResponse
-    {
+    public function index(Request $request) {
         $user = Auth::user();
         $provider = $user->ensureProviderProfile();
 
@@ -30,8 +29,7 @@ class BookingController extends Controller
         return BookingResource::collection($bookings);
     }
 
-    public function show(Booking $booking): JsonResponse
-    {
+    public function show(Booking $booking) {
         $user = Auth::user();
         $provider = $user->ensureProviderProfile();
 

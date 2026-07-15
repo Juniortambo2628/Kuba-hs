@@ -9,8 +9,7 @@ use Illuminate\Http\Request;
 
 class ContactController extends Controller
 {
-    public function store(Request $request): JsonResponse
-    {
+    public function store(Request $request) {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',

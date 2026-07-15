@@ -17,8 +17,7 @@ class ChatController extends Controller
     /**
      * List all conversations for the authenticated user.
      */
-    public function index(Request $request): JsonResponse
-    {
+    public function index(Request $request) {
         $user = $request->user();
 
         $conversations = Conversation::query()
@@ -42,8 +41,7 @@ class ChatController extends Controller
     /**
      * Get a conversation and its messages (marks unread messages as read).
      */
-    public function getConversation(Request $request, $id): JsonResponse
-    {
+    public function getConversation(Request $request, $id) {
         $user = $request->user();
 
         $conversation = Conversation::query()
@@ -76,8 +74,7 @@ class ChatController extends Controller
     /**
      * Create or find a conversation for a booking.
      */
-    public function createConversation(Request $request, $bookingId): JsonResponse
-    {
+    public function createConversation(Request $request, $bookingId) {
         $user = $request->user();
         $booking = Booking::with('provider')->findOrFail($bookingId);
 
@@ -107,8 +104,7 @@ class ChatController extends Controller
     /**
      * Send a message in a conversation.
      */
-    public function sendMessage(Request $request, $conversationId = null): JsonResponse
-    {
+    public function sendMessage(Request $request, $conversationId = null) {
         $id = $conversationId ?: $request->conversation_id;
         $request->merge(['conversation_id' => $id]);
 
@@ -152,8 +148,7 @@ class ChatController extends Controller
     /**
      * Mark messages as read.
      */
-    public function markAsRead(Request $request, $conversationId): JsonResponse
-    {
+    public function markAsRead(Request $request, $conversationId) {
         $user = $request->user();
         $conversation = Conversation::findOrFail($conversationId);
 

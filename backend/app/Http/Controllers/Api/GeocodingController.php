@@ -13,8 +13,7 @@ class GeocodingController extends Controller
      * Proxy address search to OpenStreetMap Nominatim (browser cannot call directly in some networks).
      * Falls back to a local Kenya place list when the remote service is unreachable.
      */
-    public function search(Request $request): JsonResponse
-    {
+    public function search(Request $request) {
         $request->validate([
             'q' => 'required|string|min:2|max:200',
             'limit' => 'nullable|integer|min:1|max:10',

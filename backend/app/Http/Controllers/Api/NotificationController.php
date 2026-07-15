@@ -8,8 +8,7 @@ use Illuminate\Support\Facades\Auth;
 
 class NotificationController extends Controller
 {
-    public function index(): JsonResponse
-    {
+    public function index() {
         $user = Auth::user();
         $notifications = $user->notifications()->take(20)->get();
 
@@ -19,8 +18,7 @@ class NotificationController extends Controller
         ]);
     }
 
-    public function markAsRead($id): JsonResponse
-    {
+    public function markAsRead($id) {
         $user = Auth::user();
         $notification = $user->notifications()->findOrFail($id);
         $notification->markAsRead();
@@ -28,8 +26,7 @@ class NotificationController extends Controller
         return response()->json(['message' => 'Notification marked as read']);
     }
 
-    public function markAllAsRead(): JsonResponse
-    {
+    public function markAllAsRead() {
         Auth::user()->unreadNotifications->markAsRead();
 
         return response()->json(['message' => 'All notifications marked as read']);

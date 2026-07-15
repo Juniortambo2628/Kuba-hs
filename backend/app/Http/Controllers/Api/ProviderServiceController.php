@@ -14,8 +14,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ProviderServiceController extends Controller
 {
-    public function index(): JsonResponse
-    {
+    public function index() {
         $user = Auth::user();
         $provider = $user->ensureProviderProfile();
 
@@ -39,8 +38,7 @@ class ProviderServiceController extends Controller
         ]);
     }
 
-    public function store(StoreProviderServiceRequest $request, ProviderManagementService $serviceManager): JsonResponse
-    {
+    public function store(StoreProviderServiceRequest $request, ProviderManagementService $serviceManager) {
         $user = Auth::user();
         $provider = $user->ensureProviderProfile();
 
@@ -62,8 +60,7 @@ class ProviderServiceController extends Controller
         ], 201);
     }
 
-    public function update(Request $request, string $id, ProviderManagementService $serviceManager): JsonResponse
-    {
+    public function update(Request $request, string $id, ProviderManagementService $serviceManager) {
         $user = Auth::user();
         $provider = $user->ensureProviderProfile();
 
@@ -89,8 +86,7 @@ class ProviderServiceController extends Controller
         ]);
     }
 
-    public function destroy(string $id): JsonResponse
-    {
+    public function destroy(string $id) {
         $user = Auth::user();
         $provider = $user->ensureProviderProfile();
 

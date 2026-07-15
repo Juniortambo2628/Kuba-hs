@@ -13,8 +13,7 @@ class FavoriteController extends Controller
     /**
      * List the authenticated user's favorite provider IDs.
      */
-    public function index(Request $request): JsonResponse
-    {
+    public function index(Request $request) {
         $favorites = UserFavorite::where('user_id', $request->user()->id)->get();
         $favoriteIds = $favorites->pluck('provider_id');
 
@@ -33,8 +32,7 @@ class FavoriteController extends Controller
     /**
      * Toggle a provider as favorite (add if missing, remove if exists).
      */
-    public function toggle(Request $request, Provider $provider): JsonResponse
-    {
+    public function toggle(Request $request, Provider $provider) {
         $userId = $request->user()->id;
 
         $existing = UserFavorite::where('user_id', $userId)

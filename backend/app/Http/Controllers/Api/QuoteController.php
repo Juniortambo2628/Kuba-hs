@@ -10,8 +10,7 @@ use Illuminate\Support\Facades\Validator;
 
 class QuoteController extends Controller
 {
-    public function store(Request $request): JsonResponse
-    {
+    public function store(Request $request) {
         $validator = Validator::make($request->all(), [
             'organization_name' => 'required|string|max:255',
             'contact_person' => 'required|string|max:255',

@@ -15,8 +15,7 @@ use Illuminate\Validation\Rule;
 
 class ProviderController extends Controller
 {
-    public function index(Request $request): JsonResponse
-    {
+    public function index(Request $request) {
         $query = Provider::query()
             ->with(['user:id,first_name,last_name,email,phone,is_active,avatar_url'])
             ->withCount(['providerServices', 'reviews'])
@@ -58,8 +57,7 @@ class ProviderController extends Controller
         return AdminProviderResource::collection($providers);
     }
 
-    public function store(Request $request): JsonResponse
-    {
+    public function store(Request $request) {
         $validated = $request->validate([
             'business_name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email',
@@ -108,8 +106,7 @@ class ProviderController extends Controller
         });
     }
 
-    public function show(Provider $provider): JsonResponse
-    {
+    public function show(Provider $provider) {
         $provider->load(['user', 'verificationDocuments'])
             ->loadCount(['providerServices', 'reviews'])
             ->loadAvg('reviews', 'rating');
@@ -119,8 +116,7 @@ class ProviderController extends Controller
         return new AdminProviderResource($provider);
     }
 
-    public function update(Request $request, Provider $provider): JsonResponse
-    {
+    public function update(Request $request, Provider $provider) {
         $validated = $request->validate([
             'business_name' => 'sometimes|required|string|max:255',
             'bio' => 'nullable|string',
@@ -174,8 +170,7 @@ class ProviderController extends Controller
         ]);
     }
 
-    public function updateStatus(Request $request, Provider $provider): JsonResponse
-    {
+    public function updateStatus(Request $request, Provider $provider) {
         $validated = $request->validate([
             'application_status' => ['nullable', Rule::in(['pending', 'approved', 'active', 'rejected', 'suspended'])],
             'is_verified' => 'nullable|boolean',
@@ -202,8 +197,7 @@ class ProviderController extends Controller
         ]);
     }
 
-    public function destroy(Provider $provider): JsonResponse
-    {
+    public function destroy(Provider $provider) {
         if ($provider->user) {
             $provider->user->update(['is_active' => false]);
         }

@@ -14,8 +14,7 @@ use Illuminate\Support\Facades\Auth;
 
 class BookingController extends Controller
 {
-    public function index(Request $request): JsonResponse
-    {
+    public function index(Request $request) {
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
@@ -29,8 +28,7 @@ class BookingController extends Controller
         return BookingResource::collection($bookings);
     }
 
-    public function show(Booking $booking): JsonResponse
-    {
+    public function show(Booking $booking) {
         $user = Auth::user();
 
         if ($booking->customer_id !== $user->id) {
@@ -44,8 +42,7 @@ class BookingController extends Controller
         ]);
     }
 
-    public function store(StoreBookingRequest $request, BookingService $bookingService): JsonResponse
-    {
+    public function store(StoreBookingRequest $request, BookingService $bookingService) {
         $user = Auth::user();
 
         $images = $request->hasFile('images') ? $request->file('images') : null;
@@ -58,8 +55,7 @@ class BookingController extends Controller
         ], 201);
     }
 
-    public function cancel(Booking $booking, Request $request): JsonResponse
-    {
+    public function cancel(Booking $booking, Request $request) {
         $user = Auth::user();
 
         if ($booking->customer_id !== $user->id) {

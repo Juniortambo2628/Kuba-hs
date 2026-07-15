@@ -14,8 +14,7 @@ use Illuminate\Support\Facades\Cache;
 
 class MarketplaceCatalogController extends Controller
 {
-    public function categories(): JsonResponse
-    {
+    public function categories() {
         return ServiceCategoryResource::collection(
             Cache::remember('api_categories_all', 86400, function () {
                 return ServiceCategory::query()
@@ -43,8 +42,7 @@ class MarketplaceCatalogController extends Controller
         )->response();
     }
 
-    public function featured(): JsonResponse
-    {
+    public function featured() {
         $services = Cache::remember('api_featured_services', 86400, function () {
             return ProviderService::where('is_available', true)
                 ->whereHas('service', function ($q) {
@@ -59,15 +57,13 @@ class MarketplaceCatalogController extends Controller
         return ProviderServiceResource::collection($services)->response();
     }
 
-    public function showService(ProviderService $providerService): JsonResponse
-    {
+    public function showService(ProviderService $providerService) {
         return (new ProviderServiceResource(
             $providerService->load(['service.category', 'provider.user', 'provider.availability', 'media', 'service.media', 'provider.reviews.customer', 'provider.scheduleExceptions'])
         ))->response();
     }
 
-    public function similarProviders(ProviderService $providerService): JsonResponse
-    {
+    public function similarProviders(ProviderService $providerService) {
         $similar = ProviderService::where('id', '!=', $providerService->id)
             ->where('service_id', $providerService->service_id)
             ->where('is_available', true)
@@ -78,8 +74,7 @@ class MarketplaceCatalogController extends Controller
         return ProviderServiceResource::collection($similar)->response();
     }
 
-    public function showCategory($identifier): JsonResponse
-    {
+    public function showCategory($identifier) {
         $category = ServiceCategory::with(['services' => function ($q) {
             $q->withMin(['providerServices' => function ($query) {
                 $query->where('is_available', true);
@@ -109,8 +104,7 @@ class MarketplaceCatalogController extends Controller
         return (new ServiceCategoryResource($category))->response();
     }
 
-    public function showGeneralService(Service $service): JsonResponse
-    {
+    public function showGeneralService(Service $service) {
         $service->load(['category', 'media']);
 
         $providerServices = ProviderService::where('service_id', $service->id)
@@ -125,8 +119,7 @@ class MarketplaceCatalogController extends Controller
         ]);
     }
 
-    public function showServiceBySlug(string $categorySlug, string $serviceSlug): JsonResponse
-    {
+    public function showServiceBySlug(string $categorySlug, string $serviceSlug) {
         $categories = ServiceCategory::all();
         $category = $categories->first(function ($cat) use ($categorySlug) {
             return \Illuminate\Support\Str::slug($cat->name) === $categorySlug;

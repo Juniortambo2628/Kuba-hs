@@ -9,8 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ProviderAvailabilityController extends Controller
 {
-    public function index(): JsonResponse
-    {
+    public function index() {
         $user = Auth::user();
         $provider = $user->provider;
 
@@ -24,8 +23,7 @@ class ProviderAvailabilityController extends Controller
         ]);
     }
 
-    public function update(Request $request): JsonResponse
-    {
+    public function update(Request $request) {
         $user = Auth::user();
         $provider = $user->provider;
 
@@ -54,8 +52,7 @@ class ProviderAvailabilityController extends Controller
         ]);
     }
 
-    public function updateExceptions(Request $request): JsonResponse
-    {
+    public function updateExceptions(Request $request) {
         $user = Auth::user();
         $provider = $user->provider;
 

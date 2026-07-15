@@ -15,16 +15,14 @@ class LoyaltyController extends Controller
     /**
      * Get all loyalty tiers.
      */
-    public function index(): JsonResponse
-    {
+    public function index() {
         return LoyaltyTierResource::collection(LoyaltyTier::orderBy('min_points')->get());
     }
 
     /**
      * Create a new loyalty tier.
      */
-    public function storeTier(Request $request): JsonResponse
-    {
+    public function storeTier(Request $request) {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'min_points' => 'required|integer|min:0',
@@ -41,8 +39,7 @@ class LoyaltyController extends Controller
     /**
      * Update an existing loyalty tier.
      */
-    public function updateTier(Request $request, LoyaltyTier $tier): JsonResponse
-    {
+    public function updateTier(Request $request, LoyaltyTier $tier) {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'min_points' => 'required|integer|min:0',
@@ -59,8 +56,7 @@ class LoyaltyController extends Controller
     /**
      * Delete a loyalty tier.
      */
-    public function destroyTier(LoyaltyTier $tier): JsonResponse
-    {
+    public function destroyTier(LoyaltyTier $tier) {
         $tier->delete();
 
         return response()->json(['message' => 'Tier deleted successfully']);
@@ -69,8 +65,7 @@ class LoyaltyController extends Controller
     /**
      * Get recent point transactions.
      */
-    public function transactions(Request $request): JsonResponse
-    {
+    public function transactions(Request $request) {
         $query = LoyaltyPoint::with('user');
 
         if ($request->filled('user_id')) {
@@ -83,8 +78,7 @@ class LoyaltyController extends Controller
     /**
      * Award points to a user.
      */
-    public function awardPoints(Request $request): JsonResponse
-    {
+    public function awardPoints(Request $request) {
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
             'points' => 'required|integer|min:1',

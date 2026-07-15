@@ -10,13 +10,11 @@ use Illuminate\Support\Facades\Cache;
 
 class PageFeatureController extends Controller
 {
-    public function index(): JsonResponse
-    {
+    public function index() {
         return response()->json(PageFeature::orderBy('order_index')->get());
     }
 
-    public function store(Request $request): JsonResponse
-    {
+    public function store(Request $request) {
         $validated = $request->validate([
             'page_name' => 'required|string',
             'section_name' => 'required|string',
@@ -37,13 +35,11 @@ class PageFeatureController extends Controller
 
     }
 
-    public function show(PageFeature $pageFeature): JsonResponse
-    {
+    public function show(PageFeature $pageFeature) {
         return response()->json($pageFeature);
     }
 
-    public function update(Request $request, PageFeature $pageFeature): JsonResponse
-    {
+    public function update(Request $request, PageFeature $pageFeature) {
         $validated = $request->validate([
             'page_name' => 'sometimes|required|string',
             'section_name' => 'sometimes|required|string',
@@ -64,8 +60,7 @@ class PageFeatureController extends Controller
 
     }
 
-    public function destroy(PageFeature $pageFeature): JsonResponse
-    {
+    public function destroy(PageFeature $pageFeature) {
         $pageFeature->delete();
         Cache::forget('api_page_features_all');
 

@@ -18,8 +18,7 @@ class ReviewController extends Controller
     /**
      * Store a new review for a booking.
      */
-    public function store(StoreReviewRequest $request): JsonResponse
-    {
+    public function store(StoreReviewRequest $request) {
         $booking = Booking::findOrFail($request->booking_id);
         $user = $request->user();
 
@@ -80,8 +79,7 @@ class ReviewController extends Controller
     /**
      * Get reviews for a provider.
      */
-    public function providerReviews($providerId): JsonResponse
-    {
+    public function providerReviews($providerId) {
         $reviews = Review::with(['user', 'media'])
             ->where('provider_id', $providerId)
             ->latest()

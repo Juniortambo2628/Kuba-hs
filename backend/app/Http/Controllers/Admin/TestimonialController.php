@@ -10,15 +10,13 @@ use Illuminate\Support\Facades\Cache;
 
 class TestimonialController extends Controller
 {
-    public function index(): JsonResponse
-    {
+    public function index() {
         $testimonials = Testimonial::orderBy('order')->latest()->paginate(20);
 
         return response()->json($testimonials);
     }
 
-    public function store(Request $request): JsonResponse
-    {
+    public function store(Request $request) {
         $validated = $request->validate([
             'client_name' => 'required|string|max:255',
             'client_role' => 'nullable|string|max:255',
@@ -36,13 +34,11 @@ class TestimonialController extends Controller
 
     }
 
-    public function show(Testimonial $testimonial): JsonResponse
-    {
+    public function show(Testimonial $testimonial) {
         return response()->json($testimonial);
     }
 
-    public function update(Request $request, Testimonial $testimonial): JsonResponse
-    {
+    public function update(Request $request, Testimonial $testimonial) {
         $validated = $request->validate([
             'client_name' => 'sometimes|required|string|max:255',
             'client_role' => 'nullable|string|max:255',
@@ -60,8 +56,7 @@ class TestimonialController extends Controller
 
     }
 
-    public function destroy(Testimonial $testimonial): JsonResponse
-    {
+    public function destroy(Testimonial $testimonial) {
         $testimonial->delete();
         Cache::forget('api_testimonials_all');
 
@@ -69,8 +64,7 @@ class TestimonialController extends Controller
 
     }
 
-    public function reorder(Request $request): JsonResponse
-    {
+    public function reorder(Request $request) {
         $validated = $request->validate([
             'items' => 'required|array',
             'items.*.id' => 'required|exists:testimonials,id',

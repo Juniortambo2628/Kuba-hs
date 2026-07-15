@@ -11,13 +11,11 @@ use Illuminate\Support\Str;
 
 class BlogController extends Controller
 {
-    public function index(): JsonResponse
-    {
+    public function index() {
         return BlogPostResource::collection(BlogPost::with('author')->latest()->paginate(10));
     }
 
-    public function store(Request $request): JsonResponse
-    {
+    public function store(Request $request) {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
@@ -34,13 +32,11 @@ class BlogController extends Controller
         return new BlogPostResource($post);
     }
 
-    public function show(BlogPost $blogPost): JsonResponse
-    {
+    public function show(BlogPost $blogPost) {
         return new BlogPostResource($blogPost->load('author'));
     }
 
-    public function update(Request $request, BlogPost $blogPost): JsonResponse
-    {
+    public function update(Request $request, BlogPost $blogPost) {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
@@ -58,8 +54,7 @@ class BlogController extends Controller
         return new BlogPostResource($blogPost);
     }
 
-    public function destroy(BlogPost $blogPost): JsonResponse
-    {
+    public function destroy(BlogPost $blogPost) {
         $blogPost->delete();
 
         return response()->json(['message' => 'Blog post deleted successfully']);

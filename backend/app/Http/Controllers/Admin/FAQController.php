@@ -10,13 +10,11 @@ use Illuminate\Support\Facades\Cache;
 
 class FAQController extends Controller
 {
-    public function index(): JsonResponse
-    {
+    public function index() {
         return response()->json(FAQ::orderBy('order')->orderBy('id', 'desc')->get());
     }
 
-    public function store(Request $request): JsonResponse
-    {
+    public function store(Request $request) {
         $validated = $request->validate([
             'question' => 'required|string|max:255',
             'answer' => 'required|string',
@@ -32,13 +30,11 @@ class FAQController extends Controller
 
     }
 
-    public function show(FAQ $faq): JsonResponse
-    {
+    public function show(FAQ $faq) {
         return response()->json($faq);
     }
 
-    public function update(Request $request, FAQ $faq): JsonResponse
-    {
+    public function update(Request $request, FAQ $faq) {
         $validated = $request->validate([
             'question' => 'sometimes|required|string|max:255',
             'answer' => 'sometimes|required|string',
@@ -54,8 +50,7 @@ class FAQController extends Controller
 
     }
 
-    public function destroy(FAQ $faq): JsonResponse
-    {
+    public function destroy(FAQ $faq) {
         $faq->delete();
         Cache::forget('api_faqs_all');
 
@@ -63,8 +58,7 @@ class FAQController extends Controller
 
     }
 
-    public function reorder(Request $request): JsonResponse
-    {
+    public function reorder(Request $request) {
         $validated = $request->validate([
             'items' => 'required|array',
             'items.*.id' => 'required|exists:faqs,id',

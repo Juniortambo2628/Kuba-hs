@@ -20,18 +20,15 @@ class EmailTemplateController extends Controller
         'investor_inquiry_admin_alert',
     ];
 
-    public function index(): JsonResponse
-    {
+    public function index() {
         return response()->json(EmailTemplate::orderBy('name')->get());
     }
 
-    public function show(EmailTemplate $emailTemplate): JsonResponse
-    {
+    public function show(EmailTemplate $emailTemplate) {
         return response()->json($emailTemplate);
     }
 
-    public function update(Request $request, EmailTemplate $emailTemplate): JsonResponse
-    {
+    public function update(Request $request, EmailTemplate $emailTemplate) {
         $validated = $request->validate([
             'subject' => 'required|string|max:255',
             'body' => 'required|string',
@@ -45,8 +42,7 @@ class EmailTemplateController extends Controller
         ]);
     }
 
-    public function store(Request $request): JsonResponse
-    {
+    public function store(Request $request) {
         $validated = $request->validate([
             'key' => ['required', 'string', 'max:120', 'regex:/^[a-z0-9_]+$/', 'unique:email_templates,key'],
             'name' => 'required|string|max:255',
@@ -70,8 +66,7 @@ class EmailTemplateController extends Controller
         ], 201);
     }
 
-    public function destroy(EmailTemplate $emailTemplate): JsonResponse
-    {
+    public function destroy(EmailTemplate $emailTemplate) {
         if (in_array($emailTemplate->key, self::PROTECTED_KEYS, true)) {
             return response()->json([
                 'message' => 'This system template cannot be deleted. You may edit its content instead.',

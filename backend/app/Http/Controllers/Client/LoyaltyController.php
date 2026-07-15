@@ -10,8 +10,7 @@ use Illuminate\Support\Facades\Auth;
 
 class LoyaltyController extends Controller
 {
-    public function index(): JsonResponse
-    {
+    public function index() {
         $user = Auth::user()->load('loyaltyPoints');
         $rewards = \App\Models\LoyaltyTier::where('is_active', true)->orderBy('min_points')->get();
 
@@ -23,8 +22,7 @@ class LoyaltyController extends Controller
         ]);
     }
 
-    public function redeem(Request $request): JsonResponse
-    {
+    public function redeem(Request $request) {
         $validated = $request->validate([
             'reward_type' => 'required|string',
             'points' => 'required|integer|min:1',

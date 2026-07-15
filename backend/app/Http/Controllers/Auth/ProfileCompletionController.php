@@ -16,8 +16,7 @@ class ProfileCompletionController extends Controller
     /**
      * Complete the user profile after social login.
      */
-    public function store(Request $request): JsonResponse
-    {
+    public function store(Request $request) {
         $request->validate([
             'email' => 'required|email',
             'role' => ['required', Rule::in(['customer', 'provider'])],

@@ -21,8 +21,7 @@ class FinancialController extends Controller
         $this->ledgerService = $ledgerService;
     }
 
-    public function overview(): JsonResponse
-    {
+    public function overview() {
         // Calculate Total Revenue (completed bookings)
         $totalRevenue = Booking::where('status', BookingStatus::Completed)
             ->selectRaw('COALESCE(SUM(final_price), SUM(estimated_price)) as total')
@@ -40,8 +39,7 @@ class FinancialController extends Controller
         ]);
     }
 
-    public function payouts(Request $request): JsonResponse
-    {
+    public function payouts(Request $request) {
         $query = Payout::with('provider.user')
             ->when($request->status, function ($q, $status) {
                 if ($status !== 'all') {
@@ -60,8 +58,7 @@ class FinancialController extends Controller
         return response()->json($query->latest()->paginate(15));
     }
 
-    public function process(Request $request, Payout $payout): JsonResponse
-    {
+    public function process(Request $request, Payout $payout) {
         $request->validate([
             'status' => 'required|in:'.implode(',', array_column(PayoutStatus::cases(), 'value')),
             'reference_number' => 'nullable|string',

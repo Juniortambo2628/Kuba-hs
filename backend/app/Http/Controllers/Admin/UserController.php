@@ -11,8 +11,7 @@ use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
-    public function index(Request $request): JsonResponse
-    {
+    public function index(Request $request) {
         $query = User::query();
 
         if ($request->filled('id')) {
@@ -41,8 +40,7 @@ class UserController extends Controller
         );
     }
 
-    public function store(Request $request): JsonResponse
-    {
+    public function store(Request $request) {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
@@ -63,13 +61,11 @@ class UserController extends Controller
         return new UserResource($user);
     }
 
-    public function show(User $user): JsonResponse
-    {
+    public function show(User $user) {
         return new UserResource($user);
     }
 
-    public function update(Request $request, User $user): JsonResponse
-    {
+    public function update(Request $request, User $user) {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
@@ -95,8 +91,7 @@ class UserController extends Controller
         return new UserResource($user);
     }
 
-    public function destroy(User $user): JsonResponse
-    {
+    public function destroy(User $user) {
         // Prevent deleting self
         if ($user->id === auth()->id()) {
             return response()->json(['message' => 'You cannot delete your own account.'], 403);
@@ -107,8 +102,7 @@ class UserController extends Controller
         return response()->json(['message' => 'User deleted successfully.']);
     }
 
-    public function toggleStatus(User $user): JsonResponse
-    {
+    public function toggleStatus(User $user) {
         $user->update([
             'is_active' => ! $user->is_active,
         ]);
