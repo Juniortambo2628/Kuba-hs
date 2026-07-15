@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Map } from "lucide-react";
 import { useCMS } from "@/contexts/CMSContext";
-import Image from "next/image";
+import { DynamicImage as Image } from "@/components/ui/dynamic-image";
 import { HeroSearchModal } from "./HeroSearchModal";
 import { HeroBookingBar } from "./HeroBookingBar";
 import { LandingButton } from "@/components/shared/LandingButton";
