@@ -31,7 +31,7 @@ export function ChartContainer({
       style={{ height, minWidth: 0, minHeight: height }}
     >
       {ready ? (
-        <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={50}>
+        <ResponsiveContainer width="99%" height="100%" minWidth={0} debounce={50}>
           {children}
         </ResponsiveContainer>
       ) : null}
