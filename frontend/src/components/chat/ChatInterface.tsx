@@ -42,7 +42,6 @@ export function ChatInterface({ role, layout = "embedded", className }: ChatInte
   const [isSending, setIsSending] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
-  const echo = getEcho();
 
   useEffect(() => {
     fetchConversations();
@@ -94,6 +93,7 @@ export function ChatInterface({ role, layout = "embedded", className }: ChatInte
 
     fetchMessages();
 
+    const echo = getEcho();
     if (echo) {
       const channel = echo.private(`conversation.${activeConversationId}`);
 
@@ -124,7 +124,7 @@ export function ChatInterface({ role, layout = "embedded", className }: ChatInte
         echo.leave(`conversation.${activeConversationId}`);
       };
     }
-  }, [activeConversationId, echo, user?.id]);
+  }, [activeConversationId, user?.id]);
 
   useEffect(() => {
     if (scrollRef.current) {

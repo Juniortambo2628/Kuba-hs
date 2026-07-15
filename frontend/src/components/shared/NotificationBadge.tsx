@@ -41,17 +41,18 @@ export function NotificationBadge() {
   const router = useRouter();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const echo = getEcho();
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    audioRef.current = new Audio("/assets/notification.mp3");
+    // audioRef.current = new Audio("/assets/notification.mp3");
   }, []);
 
   useEffect(() => {
     if (!user) return;
 
     fetchNotifications();
+
+    const echo = getEcho();
 
     if (echo) {
       const channel = echo.private(`App.Models.User.${user.id}`);
@@ -92,7 +93,7 @@ export function NotificationBadge() {
         echo.leave(`App.Models.User.${user.id}`);
       };
     }
-  }, [user, echo, router]);
+  }, [user, router]);
 
   const fetchNotifications = async () => {
     try {

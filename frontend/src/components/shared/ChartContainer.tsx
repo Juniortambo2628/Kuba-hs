@@ -28,10 +28,10 @@ export function ChartContainer({
   return (
     <div
       className={cn("w-full", className)}
-      style={{ height, minWidth: 0, minHeight: height }}
+      style={{ height, minWidth: 1, minHeight: height }}
     >
       {ready ? (
-        <ResponsiveContainer width="99%" height="100%" minWidth={0} debounce={50}>
+        <ResponsiveContainer width="99%" height="100%" minWidth={1} minHeight={1} debounce={50}>
           {children}
         </ResponsiveContainer>
       ) : null}
