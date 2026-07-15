@@ -10,13 +10,11 @@ use Illuminate\Http\Request;
 
 class InvestorInquiryController extends Controller
 {
-    public function index(): JsonResponse
-    {
+    public function index() {
         return \App\Http\Resources\InvestorInquiryResource::collection(InvestorInquiry::latest()->get());
     }
 
-    public function show(InvestorInquiry $investorInquiry): JsonResponse
-    {
+    public function show(InvestorInquiry $investorInquiry) {
         if ($investorInquiry->status === InvestorInquiryStatus::Pending) {
             $investorInquiry->update(['status' => InvestorInquiryStatus::Reviewed]);
         }
@@ -24,8 +22,7 @@ class InvestorInquiryController extends Controller
         return new \App\Http\Resources\InvestorInquiryResource($investorInquiry);
     }
 
-    public function updateStatus(Request $request, InvestorInquiry $investorInquiry): JsonResponse
-    {
+    public function updateStatus(Request $request, InvestorInquiry $investorInquiry) {
         $validated = $request->validate([
             'status' => 'required|string|in:'.implode(',', array_column(InvestorInquiryStatus::cases(), 'value')),
         ]);
@@ -38,8 +35,7 @@ class InvestorInquiryController extends Controller
         ]);
     }
 
-    public function destroy(InvestorInquiry $investorInquiry): JsonResponse
-    {
+    public function destroy(InvestorInquiry $investorInquiry) {
         $investorInquiry->delete();
 
         return response()->json(['message' => 'Inquiry deleted successfully']);

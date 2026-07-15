@@ -7,8 +7,7 @@ use Illuminate\Http\JsonResponse;
 
 class AnalyticsController extends Controller
 {
-    public function index(): JsonResponse
-    {
+    public function index() {
         $now = now();
         $last30Days = $now->copy()->subDays(30);
         $prev30Days = $now->copy()->subDays(60);

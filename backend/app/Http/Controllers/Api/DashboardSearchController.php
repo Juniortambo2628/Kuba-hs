@@ -17,8 +17,7 @@ use Illuminate\Support\Facades\Auth;
 
 class DashboardSearchController extends Controller
 {
-    public function __invoke(Request $request): JsonResponse
-    {
+    public function __invoke(Request $request) {
         $user = Auth::user();
         $q = trim((string) ($request->query('search') ?? $request->query('q') ?? ''));
 

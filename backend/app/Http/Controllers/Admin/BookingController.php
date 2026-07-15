@@ -14,8 +14,7 @@ use Illuminate\Http\Request;
 
 class BookingController extends Controller
 {
-    public function index(Request $request): JsonResponse
-    {
+    public function index(Request $request) {
         $bookings = Booking::with(['customer', 'provider.user', 'service'])
             ->search($request->search)
             ->byStatus($request->status)
@@ -26,15 +25,13 @@ class BookingController extends Controller
         return \App\Http\Resources\BookingResource::collection($bookings);
     }
 
-    public function show(Booking $booking): JsonResponse
-    {
+    public function show(Booking $booking) {
         return new \App\Http\Resources\BookingResource(
             $booking->load(['customer', 'provider.user', 'service', 'address', 'review', 'payment'])
         );
     }
 
-    public function store(StoreAdminBookingRequest $request, BookingService $bookingService): JsonResponse
-    {
+    public function store(StoreAdminBookingRequest $request, BookingService $bookingService) {
         $customer = User::findOrFail($request->validated('customer_id'));
         $data = $request->validated();
         $status = $data['status'] ?? 'pending';
@@ -51,8 +48,7 @@ class BookingController extends Controller
         );
     }
 
-    public function updateStatus(Request $request, Booking $booking): JsonResponse
-    {
+    public function updateStatus(Request $request, Booking $booking) {
         $validated = $request->validate([
             'status' => 'required|string|in:'.implode(',', array_column(BookingStatus::cases(), 'value')),
             'cancellation_reason' => 'nullable|string',
@@ -76,8 +72,7 @@ class BookingController extends Controller
         ]);
     }
 
-    public function destroy(Booking $booking): JsonResponse
-    {
+    public function destroy(Booking $booking) {
         app(\App\Services\BookingActivityLogService::class)->log(
             $booking,
             'deleted',

@@ -24,8 +24,7 @@ class MpesaController extends Controller
     /**
      * Initialize M-Pesa STK Push
      */
-    public function stkPush(Request $request): JsonResponse
-    {
+    public function stkPush(Request $request) {
         $request->validate([
             'booking_id' => 'required|exists:bookings,id',
             'phone_number' => 'required|string',
@@ -71,8 +70,7 @@ class MpesaController extends Controller
      * M-Pesa Callback from Daraja API (no auth required)
      * Verifies Safaricom signature to prevent forged payment confirmations.
      */
-    public function callback(Request $request): JsonResponse
-    {
+    public function callback(Request $request) {
         // Verify Safaricom signature — mandatory to prevent forged payment confirmations
         $signature = $request->header('X-Safaricom-Signature');
         if (! $signature) {
@@ -183,8 +181,7 @@ class MpesaController extends Controller
     /**
      * Check the status of a pending M-Pesa payment.
      */
-    public function checkStatus(Request $request): JsonResponse
-    {
+    public function checkStatus(Request $request) {
         $request->validate(['booking_id' => 'required|exists:bookings,id']);
         $booking = Booking::findOrFail($request->booking_id);
 

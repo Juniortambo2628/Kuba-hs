@@ -9,8 +9,7 @@ use Illuminate\Support\Facades\Hash;
 
 class ProfileController extends Controller
 {
-    public function update(Request $request): JsonResponse
-    {
+    public function update(Request $request) {
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
             'first_name' => 'sometimes|string|max:255',
@@ -28,8 +27,7 @@ class ProfileController extends Controller
         ]);
     }
 
-    public function changePassword(Request $request): JsonResponse
-    {
+    public function changePassword(Request $request) {
         $validated = $request->validate([
             'current_password' => 'required|string',
             'password' => 'required|string|min:8|confirmed',

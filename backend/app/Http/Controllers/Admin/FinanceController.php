@@ -14,8 +14,7 @@ class FinanceController extends Controller
     /**
      * Get financial overview and payout statistics.
      */
-    public function index(): JsonResponse
-    {
+    public function index() {
         $stats = [
             'total_volume' => Payment::where('status', 'completed')->sum('amount'),
             'total_platform_fees' => Payment::where('status', 'completed')->sum('platform_fee'),

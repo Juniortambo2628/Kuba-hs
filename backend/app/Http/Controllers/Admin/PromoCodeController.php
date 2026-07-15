@@ -12,8 +12,7 @@ class PromoCodeController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): JsonResponse
-    {
+    public function index() {
         return response()->json([
             'data' => PromoCode::latest()->get(),
         ]);
@@ -22,16 +21,14 @@ class PromoCodeController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(PromoCode $promoCode): JsonResponse
-    {
+    public function show(PromoCode $promoCode) {
         return response()->json(['data' => $promoCode]);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request): JsonResponse
-    {
+    public function store(Request $request) {
         $validated = $request->validate([
             'code' => 'required|string|unique:promo_codes',
             'discount_type' => 'required|in:fixed,percentage',
@@ -55,8 +52,7 @@ class PromoCodeController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, PromoCode $promoCode): JsonResponse
-    {
+    public function update(Request $request, PromoCode $promoCode) {
         $validated = $request->validate([
             'code' => 'required|string|unique:promo_codes,code,'.$promoCode->id,
             'discount_type' => 'required|in:fixed,percentage',
@@ -80,8 +76,7 @@ class PromoCodeController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(PromoCode $promoCode): JsonResponse
-    {
+    public function destroy(PromoCode $promoCode) {
         $promoCode->delete();
 
         return response()->json([
@@ -92,8 +87,7 @@ class PromoCodeController extends Controller
     /**
      * Toggle active status.
      */
-    public function toggleStatus(PromoCode $promoCode): JsonResponse
-    {
+    public function toggleStatus(PromoCode $promoCode) {
         $promoCode->update(['is_active' => ! $promoCode->is_active]);
 
         return response()->json([
@@ -105,8 +99,7 @@ class PromoCodeController extends Controller
     /**
      * Validate a promo code for a client.
      */
-    public function validateCode(Request $request): JsonResponse
-    {
+    public function validateCode(Request $request) {
         $request->validate([
             'code' => 'required|string',
             'amount' => 'required|numeric',

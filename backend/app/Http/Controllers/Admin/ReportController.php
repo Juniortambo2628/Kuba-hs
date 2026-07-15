@@ -33,8 +33,7 @@ class ReportController extends Controller
         };
     }
 
-    public function history(Request $request): JsonResponse
-    {
+    public function history(Request $request) {
         $logs = AdminExportLog::with('user:id,first_name,last_name,email')
             ->latest()
             ->paginate(25);

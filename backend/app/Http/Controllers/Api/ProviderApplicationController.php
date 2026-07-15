@@ -13,8 +13,7 @@ use Illuminate\Validation\Rules;
 
 class ProviderApplicationController extends Controller
 {
-    public function register(Request $request): JsonResponse
-    {
+    public function register(Request $request) {
         $request->validate([
             'business_name' => 'required|string|max:255',
             'experience_years' => 'required|numeric|min:0',

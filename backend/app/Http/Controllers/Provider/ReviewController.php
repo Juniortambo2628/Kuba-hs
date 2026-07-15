@@ -10,8 +10,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ReviewController extends Controller
 {
-    public function index(Request $request): JsonResponse
-    {
+    public function index(Request $request) {
         $user = Auth::user();
         $provider = $user->provider;
 

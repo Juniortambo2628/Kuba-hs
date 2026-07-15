@@ -23,8 +23,7 @@ class ComplianceController extends Controller
     /**
      * Get aggregate overview of compliance stats.
      */
-    public function overview(): JsonResponse
-    {
+    public function overview() {
         $pendingReviews = VerificationDocument::where('status', VerificationDocumentStatus::Pending)->count();
 
         $expiringSoon = Provider::where('compliance_status', ProviderComplianceStatus::ExpiringSoon)->count();
@@ -47,8 +46,7 @@ class ComplianceController extends Controller
     /**
      * Get paginated list of providers with their compliance details.
      */
-    public function providers(Request $request): JsonResponse
-    {
+    public function providers(Request $request) {
         $status = $request->query('status'); // e.g., 'pending', 'non_compliant'
 
         $query = Provider::with(['user:id,first_name,last_name,email,avatar_url', 'verificationDocuments'])
@@ -74,8 +72,7 @@ class ComplianceController extends Controller
     /**
      * Get documents for a specific provider.
      */
-    public function providerDocuments(Provider $provider): JsonResponse
-    {
+    public function providerDocuments(Provider $provider) {
         $documents = $provider->verificationDocuments()->orderBy('created_at', 'desc')->get();
 
         return response()->json([
@@ -87,8 +84,7 @@ class ComplianceController extends Controller
     /**
      * Review/Update a specific document.
      */
-    public function reviewDocument(Request $request, VerificationDocument $document): JsonResponse
-    {
+    public function reviewDocument(Request $request, VerificationDocument $document) {
         $validated = $request->validate([
             'status' => 'required|in:'.implode(',', array_column(VerificationDocumentStatus::cases(), 'value')),
             'expires_at' => 'nullable|date',

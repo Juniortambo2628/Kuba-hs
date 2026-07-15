@@ -12,8 +12,7 @@ class BookingActivityController extends Controller
 {
     use AuthorizesRequests;
 
-    public function index(Booking $booking): JsonResponse
-    {
+    public function index(Booking $booking) {
         $this->authorize('view', $booking);
 
         $logs = $booking->activityLogs()

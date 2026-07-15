@@ -18,8 +18,7 @@ class MediaController extends Controller
     /**
      * Handle generic media upload for authorized models.
      */
-    public function upload(Request $request): JsonResponse
-    {
+    public function upload(Request $request) {
         $request->validate([
             'file' => 'required|image|max:10240',
             'collection' => 'required|string',
@@ -72,8 +71,7 @@ class MediaController extends Controller
     /**
      * Delete a media item.
      */
-    public function destroy($id): JsonResponse
-    {
+    public function destroy($id) {
         $media = \Spatie\MediaLibrary\MediaCollections\Models\Media::findOrFail($id);
 
         $model = $media->model;

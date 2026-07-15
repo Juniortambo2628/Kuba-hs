@@ -10,8 +10,7 @@ use Illuminate\Http\Request;
 
 class PaymentController extends Controller
 {
-    public function index(Request $request): JsonResponse
-    {
+    public function index(Request $request) {
         $query = Payment::with(['customer', 'provider.user', 'booking.service']);
 
         if ($request->filled('search')) {
@@ -43,8 +42,7 @@ class PaymentController extends Controller
         ]);
     }
 
-    public function show(Payment $payment): JsonResponse
-    {
+    public function show(Payment $payment) {
         $payment->load([
             'customer',
             'provider.user',

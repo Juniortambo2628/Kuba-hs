@@ -13,8 +13,7 @@ use Illuminate\Support\Facades\DB;
 
 class SettingsController extends Controller
 {
-    public function index(): JsonResponse
-    {
+    public function index() {
         $formattedSettings = \Illuminate\Support\Facades\Cache::rememberForever('cms_settings_global', function () {
             $settings = SiteSetting::orderBy('group')->get()->groupBy('group');
 
@@ -36,8 +35,7 @@ class SettingsController extends Controller
         ]);
     }
 
-    public function update(Request $request): JsonResponse
-    {
+    public function update(Request $request) {
         $validated = $request->validate([
             'settings' => 'required|array',
             'settings.*.id' => 'required|exists:site_settings,id',

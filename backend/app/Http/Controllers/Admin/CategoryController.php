@@ -12,8 +12,7 @@ use Illuminate\Support\Facades\Storage;
 
 class CategoryController extends Controller
 {
-    public function index(): JsonResponse
-    {
+    public function index() {
         return response()->json([
             'categories' => ServiceCategoryResource::collection(
                 ServiceCategory::with('services')->orderBy('name')->get()
@@ -21,8 +20,7 @@ class CategoryController extends Controller
         ]);
     }
 
-    public function show(ServiceCategory $category): JsonResponse
-    {
+    public function show(ServiceCategory $category) {
         $category->load('services');
 
         return response()->json([
@@ -30,8 +28,7 @@ class CategoryController extends Controller
         ]);
     }
 
-    public function store(Request $request): JsonResponse
-    {
+    public function store(Request $request) {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
@@ -57,8 +54,7 @@ class CategoryController extends Controller
         ], 201);
     }
 
-    public function update(Request $request, ServiceCategory $category): JsonResponse
-    {
+    public function update(Request $request, ServiceCategory $category) {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
@@ -121,8 +117,7 @@ class CategoryController extends Controller
         }
     }
 
-    public function destroy(ServiceCategory $category): JsonResponse
-    {
+    public function destroy(ServiceCategory $category) {
         // Clean up provider_services for all services in this category
         $serviceIds = $category->services()->pluck('id');
         \App\Models\ProviderService::whereIn('service_id', $serviceIds)->delete();

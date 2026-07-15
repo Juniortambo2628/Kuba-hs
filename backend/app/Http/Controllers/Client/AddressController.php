@@ -27,8 +27,7 @@ class AddressController extends Controller
         return $validated;
     }
 
-    public function index(Request $request): JsonResponse
-    {
+    public function index(Request $request) {
         $addresses = Auth::user()->addresses()->latest()->get();
 
         return response()->json([
@@ -36,8 +35,7 @@ class AddressController extends Controller
         ]);
     }
 
-    public function show(Address $address): JsonResponse
-    {
+    public function show(Address $address) {
         if ($address->user_id !== Auth::id()) {
             abort(404);
         }
@@ -47,8 +45,7 @@ class AddressController extends Controller
         ]);
     }
 
-    public function store(Request $request): JsonResponse
-    {
+    public function store(Request $request) {
         $validated = $request->validate([
             'address_type' => 'nullable|string|in:home,work,other,residential,commercial',
             'street_address' => 'required|string|max:255',
@@ -80,8 +77,7 @@ class AddressController extends Controller
         ], 201);
     }
 
-    public function update(Request $request, Address $address): JsonResponse
-    {
+    public function update(Request $request, Address $address) {
         if ($address->user_id !== Auth::id()) {
             abort(403);
         }
@@ -113,8 +109,7 @@ class AddressController extends Controller
         ]);
     }
 
-    public function destroy(Address $address): JsonResponse
-    {
+    public function destroy(Address $address) {
         if ($address->user_id !== Auth::id()) {
             abort(403);
         }
@@ -126,8 +121,7 @@ class AddressController extends Controller
         ]);
     }
 
-    public function setDefault(Address $address): JsonResponse
-    {
+    public function setDefault(Address $address) {
         if ($address->user_id !== Auth::id()) {
             abort(403);
         }

@@ -9,8 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ProviderProfileController extends Controller
 {
-    public function update(UpdateProviderProfileRequest $request): JsonResponse
-    {
+    public function update(UpdateProviderProfileRequest $request) {
         $user = Auth::user();
         $provider = $user->ensureProviderProfile();
 

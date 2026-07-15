@@ -10,8 +10,7 @@ use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
-    public function index(): JsonResponse
-    {
+    public function index() {
         $user = Auth::user();
         $provider = $user->ensureProviderProfile();
 

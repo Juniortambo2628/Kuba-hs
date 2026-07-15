@@ -11,8 +11,7 @@ use Illuminate\Http\Request;
 
 class FeedbackController extends Controller
 {
-    public function index(Request $request): JsonResponse
-    {
+    public function index(Request $request) {
         $query = Review::with(['customer', 'booking.service', 'booking.provider.user']);
 
         if ($request->filled('rating')) {
@@ -48,8 +47,7 @@ class FeedbackController extends Controller
         ]);
     }
 
-    public function update(Request $request, $id): JsonResponse
-    {
+    public function update(Request $request, $id) {
         $request->validate([
             'status' => 'required|in:'.implode(',', array_column(ReviewStatus::cases(), 'value')),
         ]);
@@ -65,8 +63,7 @@ class FeedbackController extends Controller
         ]);
     }
 
-    public function destroy($id): JsonResponse
-    {
+    public function destroy($id) {
         $feedback = Review::findOrFail($id);
         $feedback->delete();
 

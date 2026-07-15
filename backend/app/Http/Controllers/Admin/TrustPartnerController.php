@@ -10,15 +10,13 @@ use Illuminate\Support\Facades\Cache;
 
 class TrustPartnerController extends Controller
 {
-    public function index(): JsonResponse
-    {
+    public function index() {
         $partners = TrustPartner::latest()->paginate(20);
 
         return response()->json($partners);
     }
 
-    public function store(Request $request): JsonResponse
-    {
+    public function store(Request $request) {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'logo_path' => 'required|string', // URL or path
@@ -32,13 +30,11 @@ class TrustPartnerController extends Controller
 
     }
 
-    public function show(TrustPartner $trustPartner): JsonResponse
-    {
+    public function show(TrustPartner $trustPartner) {
         return response()->json($trustPartner);
     }
 
-    public function update(Request $request, TrustPartner $trustPartner): JsonResponse
-    {
+    public function update(Request $request, TrustPartner $trustPartner) {
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255',
             'logo_path' => 'sometimes|required|string',
@@ -52,8 +48,7 @@ class TrustPartnerController extends Controller
 
     }
 
-    public function destroy(TrustPartner $trustPartner): JsonResponse
-    {
+    public function destroy(TrustPartner $trustPartner) {
         $trustPartner->delete();
         Cache::forget('api_trust_partners');
 

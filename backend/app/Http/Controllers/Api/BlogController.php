@@ -12,8 +12,7 @@ class BlogController extends Controller
     /**
      * Display a listing of published blog posts.
      */
-    public function index(Request $request): JsonResponse
-    {
+    public function index(Request $request) {
         $query = BlogPost::where('is_published', true)
             ->with(['author:id,name,avatar_url'])
             ->orderByDesc('created_at');
@@ -43,8 +42,7 @@ class BlogController extends Controller
     /**
      * Display the specified published blog post by slug.
      */
-    public function show($slug): JsonResponse
-    {
+    public function show($slug) {
         $post = BlogPost::where('slug', $slug)
             ->where('is_published', true)
             ->with(['author:id,name,avatar_url'])

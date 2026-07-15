@@ -10,8 +10,7 @@ use Illuminate\Http\Request;
 
 class AdminChatController extends Controller
 {
-    public function index(Request $request): JsonResponse
-    {
+    public function index(Request $request) {
         $query = Conversation::with(['customer', 'provider.user', 'booking.service', 'latestMessage'])
             ->orderByDesc('last_message_at');
 
@@ -33,8 +32,7 @@ class AdminChatController extends Controller
         return response()->json($query->paginate(20)->withQueryString());
     }
 
-    public function show(Conversation $conversation): JsonResponse
-    {
+    public function show(Conversation $conversation) {
         return response()->json([
             'data' => $conversation->load([
                 'messages.sender',
@@ -45,8 +43,7 @@ class AdminChatController extends Controller
         ]);
     }
 
-    public function destroyMessage(Message $message): JsonResponse
-    {
+    public function destroyMessage(Message $message) {
         $message->delete();
 
         return response()->json(['message' => 'Message removed from conversation.']);

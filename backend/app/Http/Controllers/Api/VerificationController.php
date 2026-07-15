@@ -14,8 +14,7 @@ use Illuminate\Http\Request;
 
 class VerificationController extends Controller
 {
-    public function index(Request $request): JsonResponse
-    {
+    public function index(Request $request) {
         $user = $request->user();
         if ($user->role === UserRole::Admin) {
             return VerificationDocument::with('provider.user')->latest()->get();
@@ -31,8 +30,7 @@ class VerificationController extends Controller
         );
     }
 
-    public function store(Request $request): JsonResponse
-    {
+    public function store(Request $request) {
         $user = $request->user();
         $provider = $user->ensureProviderProfile();
         if (! $provider) {
@@ -81,8 +79,7 @@ class VerificationController extends Controller
         ], 201);
     }
 
-    public function update(Request $request, $id): JsonResponse
-    {
+    public function update(Request $request, $id) {
         if ($request->user()->role !== UserRole::Admin) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }

@@ -15,8 +15,7 @@ use Illuminate\Http\JsonResponse;
 
 class DashboardController extends Controller
 {
-    public function index(): JsonResponse
-    {
+    public function index() {
         $userCount = User::count();
         $providerCount = Provider::count();
         $bookingCount = Booking::count();
@@ -44,8 +43,7 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function messagesSummary(): JsonResponse
-    {
+    public function messagesSummary() {
         $contactCount = ContactMessage::where('status', 'new')->count();
         $feedbackCount = Review::where('status', 'hidden')->count();
         $quoteCount = CustomQuote::where('status', 'pending')->count();

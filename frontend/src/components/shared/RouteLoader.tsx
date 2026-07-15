@@ -30,10 +30,10 @@ export function RouteLoader() {
     setIsLoading(true);
     setPrevPath(currentKey);
 
-    // Show for at least 400ms to prevent a single-frame flash
+    // Show for at least 1200ms to prevent a single-frame flash and allow content to load
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 400);
+    }, 1200);
 
     return () => clearTimeout(timer);
   }, [pathname, searchParams]);
@@ -47,7 +47,7 @@ export function RouteLoader() {
     >
       <div className="relative w-20 h-20 sm:w-28 sm:h-28 animate-pulse">
         <Image
-          src="/logo.png"
+          src="/logos/Kuba-Header-footter-Logo-for-Light-Mode.png"
           alt="Loading..."
           fill
           className="object-contain"

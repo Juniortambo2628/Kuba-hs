@@ -12,8 +12,7 @@ use Illuminate\Support\Facades\Cache;
 
 class MarketplaceDiscoveryController extends Controller
 {
-    public function providers(): JsonResponse
-    {
+    public function providers() {
         $providers = Cache::remember('api_providers_latest', 300, function () {
             return Provider::with(['user', 'providerServices.service'])
                 ->withCount('reviews')
@@ -25,8 +24,7 @@ class MarketplaceDiscoveryController extends Controller
         return ProviderResource::collection($providers)->response();
     }
 
-    public function show(Provider $provider): JsonResponse
-    {
+    public function show(Provider $provider) {
         return (new ProviderResource(
             $provider->load([
                 'user',
@@ -40,8 +38,7 @@ class MarketplaceDiscoveryController extends Controller
         ))->response();
     }
 
-    public function topProviders(): JsonResponse
-    {
+    public function topProviders() {
         $providers = Cache::remember('api_top_providers', 86400, function () {
             return Provider::with(['user', 'providerServices.service'])
                 ->withCount('reviews')
@@ -55,16 +52,14 @@ class MarketplaceDiscoveryController extends Controller
         return ProviderResource::collection($providers)->response();
     }
 
-    public function search(Request $request, ProviderSearchService $searchService): JsonResponse
-    {
+    public function search(Request $request, ProviderSearchService $searchService) {
         $perPage = min(max((int) $request->input('per_page', 12), 1), 24);
         $providers = $searchService->search($request->all(), $perPage);
 
         return ProviderResource::collection($providers)->response();
     }
 
-    public function validatePromoCode(Request $request): JsonResponse
-    {
+    public function validatePromoCode(Request $request) {
         $request->validate([
             'code' => 'required|string',
             'amount' => 'required|numeric',

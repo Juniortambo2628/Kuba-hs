@@ -9,20 +9,17 @@ use Illuminate\Http\Request;
 
 class ServiceController extends Controller
 {
-    public function index(): JsonResponse
-    {
+    public function index() {
         $services = Service::with('category')->latest()->paginate(20);
 
         return response()->json($services);
     }
 
-    public function show(Service $service): JsonResponse
-    {
+    public function show(Service $service) {
         return response()->json($service->load('category'));
     }
 
-    public function store(Request $request): JsonResponse
-    {
+    public function store(Request $request) {
         $validated = $request->validate([
             'category_id' => 'required|exists:service_categories,id',
             'name' => 'required|string|max:255',
@@ -37,8 +34,7 @@ class ServiceController extends Controller
         ], 201);
     }
 
-    public function update(Request $request, Service $service): JsonResponse
-    {
+    public function update(Request $request, Service $service) {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
@@ -52,8 +48,7 @@ class ServiceController extends Controller
         ]);
     }
 
-    public function destroy(Service $service): JsonResponse
-    {
+    public function destroy(Service $service) {
         // Prevent deleting if providers are offering it in the real world
         if ($service->providerServices()->exists()) {
             return response()->json(['message' => 'Cannot delete service that is currently offered by providers.'], 400);
