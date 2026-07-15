@@ -71,7 +71,7 @@ export function Hero({ initialData }: HeroProps) {
   return (
     <section className={cn(marketingSection.section, "pt-6 md:pt-8 pb-10 md:pb-14 bg-muted/40 dark:bg-muted/20")}>
       <div className="w-full max-w-[min(100%,96rem)] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10">
-        <div className="relative min-h-[min(68vh,620px)] sm:min-h-[min(72vh,700px)] md:min-h-[min(78vh,820px)] rounded-[2rem] md:rounded-[3rem] overflow-hidden bg-muted shadow-xl">
+        <div className="relative min-h-[min(68vh,620px)] sm:min-h-[min(72vh,700px)] md:min-h-[min(78vh,820px)] rounded-dashboard md:rounded-[3rem] overflow-hidden bg-muted shadow-xl">
           <motion.div
             key={activeImage}
             initial={{ opacity: 0.85 }}
@@ -89,7 +89,7 @@ export function Hero({ initialData }: HeroProps) {
             />
           </motion.div>
           <div
-            className="absolute inset-0 bg-gradient-to-br from-black/55 via-black/40 to-black/65 pointer-events-none"
+            className="absolute inset-0 bg-linear-to-br from-black/55 via-black/40 to-black/65 pointer-events-none"
             aria-hidden
           />
 
