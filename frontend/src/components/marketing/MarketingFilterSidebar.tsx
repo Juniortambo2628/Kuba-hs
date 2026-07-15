@@ -393,6 +393,7 @@ export function MarketingFilterSidebar() {
                 setInstantBook(next);
                 applyFilters({ instant_book: next ? "1" : "" });
               }}
+              aria-label="Toggle Instant Book"
               className={cn(
                 "w-9 h-5 rounded-full p-0.5 transition-colors duration-200 cursor-pointer relative flex items-center",
                 instantBook ? "bg-primary" : "bg-muted dark:bg-zinc-800"
@@ -413,6 +414,7 @@ export function MarketingFilterSidebar() {
                 setEqIncluded(next);
                 applyFilters({ equipment_included: next ? "1" : "" });
               }}
+              aria-label="Toggle Equipment Included"
               className={cn(
                 "w-9 h-5 rounded-full p-0.5 transition-colors duration-200 cursor-pointer relative flex items-center",
                 eqIncluded ? "bg-primary" : "bg-muted dark:bg-zinc-800"

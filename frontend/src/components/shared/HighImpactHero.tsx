@@ -86,13 +86,13 @@ export function HighImpactHero({
               className="object-cover transition-opacity duration-700" 
             />
           </motion.div>
-          <div className="absolute inset-0 bg-white/40 dark:bg-black/75 z-[1]" />
-          <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-black via-transparent to-transparent z-[1]" />
+          <div className="absolute inset-0 bg-white/40 dark:bg-black/75 z-1" />
+          <div className="absolute inset-0 bg-linear-to-t from-white dark:from-black via-transparent to-transparent z-1" />
         </div>
       ) : logoFallback ? (
         <MarketingHeroLogoFallback />
       ) : (
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-500/10 dark:from-blue-500/20 via-transparent to-transparent -z-10" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] from-blue-500/10 dark:from-blue-500/20 via-transparent to-transparent -z-10" />
       )}
 
       <div className={designSystem.layouts.container + " relative z-10 flex flex-col items-center justify-center mx-auto"}>
