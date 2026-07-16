@@ -11,14 +11,15 @@ export default defineConfig({
   workers: 1,
   reporter: [['html', { open: 'never' }], ['list']],
 
+  snapshotDir: './tests/visual',
+  snapshotPathTemplate: '{testFileName}-snapshots/{arg}-{projectName}{ext}',
+
   use: {
     baseURL: BASE_URL,
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
     video: 'off',
   },
-
-  snapshotPathTemplate: '{testFileName}-snapshots/{arg}-{projectName}{ext}',
 
   projects: [
     {
