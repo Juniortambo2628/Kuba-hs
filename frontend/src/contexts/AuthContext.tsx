@@ -49,7 +49,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Skip auth check if no session cookie exists (anonymous visitor)
+    // Check for both the default Laravel cookie name and custom session names
     const hasSession = document.cookie.includes('laravel_session') || 
+                       document.cookie.includes('kuba-session') ||
                        document.cookie.includes('XSRF-TOKEN');
     if (hasSession) {
       checkAuth().catch(() => {});

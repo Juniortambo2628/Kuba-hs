@@ -191,7 +191,7 @@ export default function AdminCategories() {
                                             <div className="flex items-center gap-4">
                                                 <div className="w-14 h-14 rounded-2xl bg-white border border-border overflow-hidden shrink-0 shadow-sm">
                                                     {svc.thumbnail_url ? (
-                                                        <img src={svc.thumbnail_url} alt={svc.name} className="w-full h-full object-cover" />
+                                                        <img src={getMediaUrl(svc.thumbnail_url, "service")} alt={svc.name} className="w-full h-full object-cover" />
                                                     ) : (
                                                         <div className="w-full h-full flex items-center justify-center">
                                                             <Sparkles className="w-6 h-6 text-muted-foreground/30" />
