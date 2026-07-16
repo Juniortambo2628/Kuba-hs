@@ -18,11 +18,13 @@ export function getMediaUrl(path: string | null | undefined, fallbackType: 'avat
   if (path.startsWith('http')) {
     try {
       const url = new URL(path);
-      if (
-        (url.hostname === '127.0.0.1' || url.hostname === 'localhost') &&
-        url.pathname.includes('/storage/')
-      ) {
-        return url.pathname.replace('/storage/', '/cms-assets/');
+      if (url.pathname.includes('/storage/')) {
+        if (
+          url.hostname === '127.0.0.1' || url.hostname === 'localhost' ||
+          url.hostname === 'api.kuba.co.ke'
+        ) {
+          return url.pathname.replace('/storage/', '/cms-assets/');
+        }
       }
     } catch {
       /* fall through */

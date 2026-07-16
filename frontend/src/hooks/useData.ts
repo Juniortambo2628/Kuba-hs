@@ -59,7 +59,7 @@ export function useData<T>(
       revalidateIfStale: false,
       onErrorRetry: (err, _key, _config, revalidate, { retryCount }) => {
         const status = (err as AxiosError)?.response?.status;
-        if (status === 404 || status === 403) return;
+        if (status === 401 || status === 403 || status === 404) return;
         if (retryCount >= 3) return;
         setTimeout(() => revalidate({ retryCount }), 5000);
       },

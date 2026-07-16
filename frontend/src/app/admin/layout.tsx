@@ -25,11 +25,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <DashboardShell
       headerAdmin
-      headerSlot={<AdminCommandPalette />}
+      headerSlot={!showLoader ? <AdminCommandPalette /> : undefined}
       contentClassName="admin-content-area"
       isLoading={showLoader}
     >
-      {children}
+      {showLoader ? null : children}
     </DashboardShell>
   );
 }
