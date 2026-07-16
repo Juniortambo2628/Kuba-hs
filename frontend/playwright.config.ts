@@ -18,7 +18,7 @@ export default defineConfig({
     video: 'off',
   },
 
-  snapshotPathTemplate: '{testFileDir}/{testFileName}-snapshots/{arg}-{projectName}{ext}',
+  snapshotPathTemplate: '{testFileName}-snapshots/{arg}-{projectName}{ext}',
 
   projects: [
     {
