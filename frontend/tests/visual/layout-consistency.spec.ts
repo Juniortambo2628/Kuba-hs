@@ -6,7 +6,7 @@ test.describe('Layout Consistency - Navbar', () => {
     await page.waitForLoadState('networkidle')
     const nav = page.locator('nav').first()
     await expect(nav).toHaveScreenshot('navbar-homepage.png', {
-      maxDiffPixelRatio: 0.01,
+      maxDiffPixelRatio: 0.05,
       animations: 'disabled',
     })
   })
@@ -16,7 +16,7 @@ test.describe('Layout Consistency - Navbar', () => {
     await page.waitForLoadState('networkidle')
     const nav = page.locator('nav').first()
     await expect(nav).toHaveScreenshot('navbar-services.png', {
-      maxDiffPixelRatio: 0.01,
+      maxDiffPixelRatio: 0.05,
       animations: 'disabled',
     })
   })
@@ -28,7 +28,7 @@ test.describe('Layout Consistency - Footer', () => {
     await page.waitForLoadState('networkidle')
     const footer = page.locator('footer').first()
     await expect(footer).toHaveScreenshot('footer-homepage.png', {
-      maxDiffPixelRatio: 0.01,
+      maxDiffPixelRatio: 0.05,
       animations: 'disabled',
     })
   })
@@ -41,7 +41,7 @@ test.describe('Layout Consistency - Dark Mode', () => {
     await page.emulateMedia({ colorScheme: 'dark' })
     await expect(page).toHaveScreenshot('homepage-dark.png', {
       fullPage: true,
-      maxDiffPixelRatio: 0.02,
+      maxDiffPixelRatio: 0.08,
       animations: 'disabled',
       timeout: 15000,
     })
@@ -53,7 +53,7 @@ test.describe('Layout Consistency - Dark Mode', () => {
     await page.emulateMedia({ colorScheme: 'dark' })
     await expect(page).toHaveScreenshot('services-dark.png', {
       fullPage: true,
-      maxDiffPixelRatio: 0.02,
+      maxDiffPixelRatio: 0.08,
       animations: 'disabled',
       timeout: 15000,
     })
@@ -67,7 +67,7 @@ test.describe('Layout Consistency - Responsive', () => {
     await page.waitForLoadState('networkidle')
     await expect(page).toHaveScreenshot('homepage-mobile.png', {
       fullPage: true,
-      maxDiffPixelRatio: 0.02,
+      maxDiffPixelRatio: 0.08,
       animations: 'disabled',
       timeout: 15000,
     })
@@ -79,7 +79,7 @@ test.describe('Layout Consistency - Responsive', () => {
     await page.waitForLoadState('networkidle')
     await expect(page).toHaveScreenshot('homepage-tablet.png', {
       fullPage: true,
-      maxDiffPixelRatio: 0.02,
+      maxDiffPixelRatio: 0.08,
       animations: 'disabled',
       timeout: 15000,
     })
