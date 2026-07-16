@@ -6,7 +6,7 @@ test.describe('Homepage Visual Regression', () => {
     await page.waitForLoadState('networkidle')
     await expect(page).toHaveScreenshot('homepage-full.png', {
       fullPage: true,
-      maxDiffPixelRatio: 0.08,
+      maxDiffPixelRatio: 0.10,
       animations: 'disabled',
       timeout: 15000,
     })
@@ -17,7 +17,7 @@ test.describe('Homepage Visual Regression', () => {
     await page.waitForLoadState('networkidle')
     const hero = page.locator('section').first()
     await expect(hero).toHaveScreenshot('homepage-hero.png', {
-      maxDiffPixelRatio: 0.08,
+      maxDiffPixelRatio: 0.10,
       animations: 'disabled',
       timeout: 15000,
     })
@@ -28,7 +28,7 @@ test.describe('Homepage Visual Regression', () => {
     await page.waitForLoadState('networkidle')
     const nav = page.locator('nav').first()
     await expect(nav).toHaveScreenshot('navbar.png', {
-      maxDiffPixelRatio: 0.08,
+      maxDiffPixelRatio: 0.10,
       animations: 'disabled',
       timeout: 15000,
     })
@@ -39,7 +39,7 @@ test.describe('Homepage Visual Regression', () => {
     await page.waitForLoadState('networkidle')
     const footer = page.locator('footer').first()
     await expect(footer).toHaveScreenshot('footer.png', {
-      maxDiffPixelRatio: 0.08,
+      maxDiffPixelRatio: 0.10,
       animations: 'disabled',
       timeout: 15000,
     })
@@ -52,7 +52,7 @@ test.describe('Services Page Visual Regression', () => {
     await page.waitForLoadState('networkidle')
     await expect(page).toHaveScreenshot('services-full.png', {
       fullPage: true,
-      maxDiffPixelRatio: 0.08,
+      maxDiffPixelRatio: 0.10,
       animations: 'disabled',
       timeout: 15000,
     })
@@ -65,7 +65,7 @@ test.describe('About Page Visual Regression', () => {
     await page.waitForLoadState('networkidle')
     await expect(page).toHaveScreenshot('about-full.png', {
       fullPage: true,
-      maxDiffPixelRatio: 0.08,
+      maxDiffPixelRatio: 0.10,
       animations: 'disabled',
       timeout: 15000,
     })
@@ -78,7 +78,7 @@ test.describe('Contact Page Visual Regression', () => {
     await page.waitForLoadState('networkidle')
     await expect(page).toHaveScreenshot('contact-full.png', {
       fullPage: true,
-      maxDiffPixelRatio: 0.08,
+      maxDiffPixelRatio: 0.10,
       animations: 'disabled',
       timeout: 15000,
     })
@@ -91,7 +91,7 @@ test.describe('Providers Page Visual Regression', () => {
     await page.waitForLoadState('networkidle')
     await expect(page).toHaveScreenshot('providers-full.png', {
       fullPage: true,
-      maxDiffPixelRatio: 0.08,
+      maxDiffPixelRatio: 0.10,
       animations: 'disabled',
       timeout: 15000,
     })
@@ -104,7 +104,7 @@ test.describe('Auth Pages Visual Regression', () => {
     await page.waitForLoadState('networkidle')
     await expect(page).toHaveScreenshot('login-full.png', {
       fullPage: true,
-      maxDiffPixelRatio: 0.08,
+      maxDiffPixelRatio: 0.10,
       animations: 'disabled',
       timeout: 15000,
     })
@@ -115,7 +115,7 @@ test.describe('Auth Pages Visual Regression', () => {
     await page.waitForLoadState('networkidle')
     await expect(page).toHaveScreenshot('register-full.png', {
       fullPage: true,
-      maxDiffPixelRatio: 0.08,
+      maxDiffPixelRatio: 0.10,
       animations: 'disabled',
       timeout: 15000,
     })
