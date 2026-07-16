@@ -13,7 +13,7 @@ export const dashboardUi = {
     containerDefault: "max-w-6xl mx-auto space-y-8 pb-12",
   },
   shell: {
-    main: "flex-1 bg-[#f4f6f8] dark:bg-background min-h-screen flex flex-col",
+    main: "flex-1 bg-muted/30 dark:bg-background min-h-screen flex flex-col",
     content: "flex-1 overflow-y-auto kuba-scroll",
     contentPadding: "p-4 md:p-6",
     contentPaddingLg: "p-4 md:p-8",

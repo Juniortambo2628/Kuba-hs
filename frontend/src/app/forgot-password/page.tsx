@@ -62,7 +62,7 @@ export default function ForgotPasswordPage() {
         </AuthPrimaryButton>
 
         <p className="text-center text-sm text-muted-foreground">
-          <Link href={footerHref} className="font-medium text-[#0d9488] hover:underline">
+          <Link href={footerHref} className="font-medium text-teal-600 hover:underline">
             Return to sign in
           </Link>
         </p>

@@ -35,7 +35,7 @@ export function KubaSidebar() {
         : CLIENT_SIDEBAR_ITEMS;
 
   return (
-    <Sidebar className="border-r border-gray-200 dark:border-white/5 bg-slate-50 dark:bg-[#0B0F19] transition-colors duration-300">
+    <Sidebar className="border-r border-gray-200 dark:border-white/5 bg-slate-50 dark:bg-background transition-colors duration-300">
       <SidebarHeader className="px-6 py-8">
         <Link href="/" className="flex items-center gap-2.5 group transition-transform hover:scale-105 duration-300">
           <div className="relative h-8 w-32 dark:hidden">

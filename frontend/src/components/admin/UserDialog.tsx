@@ -91,9 +91,9 @@ export function UserDialog({ isOpen, onClose, onSave, user }: UserDialogProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px] bg-[#F8FAFC]">
+      <DialogContent className="sm:max-w-[500px] bg-slate-50">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-black uppercase text-[#1E293B] tracking-tight">
+          <DialogTitle className="text-2xl font-black uppercase text-slate-800 tracking-tight">
             {user ? "Modify User" : "Provision New Account"}
           </DialogTitle>
           <DialogDescription className="font-bold text-gray-400 italic text-xs">
@@ -171,7 +171,7 @@ export function UserDialog({ isOpen, onClose, onSave, user }: UserDialogProps) {
             <Button
               type="submit"
               disabled={isSaving}
-              className="w-full h-14 bg-[#1E293B] hover:bg-sky-600 text-white rounded-xl font-black uppercase tracking-widest text-[11px] transition-all"
+              className="w-full h-14 bg-slate-800 hover:bg-sky-600 text-white rounded-xl font-black uppercase tracking-widest text-[11px] transition-all"
             >
               {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : user ? "Update Account" : "Provision Account"}
             </Button>

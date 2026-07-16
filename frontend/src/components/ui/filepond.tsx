@@ -102,7 +102,7 @@ export function KubaFilePond({
                     border: 2px dashed #e2e8f0;
                 }
                 .premium-filepond .filepond--drop-label {
-                    color: #64748b;
+                    color: #475569;
                     font-family: inherit;
                     font-weight: 700;
                     text-transform: uppercase;

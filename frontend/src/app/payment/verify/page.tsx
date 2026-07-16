@@ -46,7 +46,7 @@ function VerifyContent() {
   };
 
   return (
-    <Card className="max-w-md w-full rounded-[2.5rem] border-border shadow-2xl relative overflow-hidden bg-white dark:bg-[#0B0F19]">
+        <Card className="max-w-md w-full rounded-[2.5rem] border-border shadow-2xl relative overflow-hidden bg-white dark:bg-background">
       {status === 'verifying' && (
          <div className="absolute top-0 left-0 right-0 h-1 bg-muted">
            <div className="h-full bg-primary w-2/3 animate-pulse"></div>
@@ -104,7 +104,7 @@ export default function PaystackVerifyPage() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Suspense fallback={
-        <Card className="max-w-md w-full rounded-[2.5rem] border-border shadow-2xl relative overflow-hidden bg-white dark:bg-[#0B0F19]">
+    <Card className="max-w-md w-full rounded-[2.5rem] border-border shadow-2xl relative overflow-hidden bg-white dark:bg-background">
           <CardContent className="p-10 text-center flex flex-col items-center">
             <div className="w-20 h-20 bg-muted/50 rounded-full flex items-center justify-center mb-6 text-muted-foreground border border-border">
               <Loader2 className="w-10 h-10 animate-spin" />

@@ -8,7 +8,7 @@ interface AuthSocialProofBannerProps {
   subtitle: string;
 }
 
-const AVATAR_COLORS = ["#0d9488", "#14b8a6", "#2dd4bf"];
+const AVATAR_COLORS = ["bg-teal-600", "bg-teal-500", "bg-teal-400"];
 
 export function AuthSocialProofBanner({ title, subtitle }: AuthSocialProofBannerProps) {
   return (
@@ -17,8 +17,7 @@ export function AuthSocialProofBanner({ title, subtitle }: AuthSocialProofBanner
         {AVATAR_COLORS.map((bg, i) => (
           <div
             key={i}
-            className="h-9 w-9 rounded-full border-2 border-card flex items-center justify-center text-[10px] font-bold text-white"
-            style={{ backgroundColor: bg }}
+            className={`h-9 w-9 rounded-full border-2 border-card flex items-center justify-center text-[10px] font-bold text-white ${bg}`}
           >
             {String.fromCharCode(65 + i)}
           </div>

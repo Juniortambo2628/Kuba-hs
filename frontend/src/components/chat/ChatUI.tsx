@@ -155,7 +155,7 @@ export function ChatUI({ bookingId, onClose }: ChatUIProps) {
     return (
         <div className="flex flex-col h-[600px] bg-white dark:bg-zinc-950 rounded-[2.5rem] border border-gray-100 dark:border-white/5 shadow-2xl overflow-hidden">
             {/* Header */}
-            <div className="p-6 bg-[#F8FAFC] dark:bg-white/5 flex items-center justify-between border-b border-gray-100 dark:border-white/5">
+            <div className="p-6 bg-slate-50 dark:bg-white/5 flex items-center justify-between border-b border-gray-100 dark:border-white/5">
                 <div className="flex items-center gap-4">
                     <div className="relative">
                         <Avatar className="w-12 h-12 border-2 border-white dark:border-zinc-900 shadow-sm">
@@ -166,7 +166,7 @@ export function ChatUI({ bookingId, onClose }: ChatUIProps) {
                         <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white dark:border-zinc-900 rounded-full shadow-sm"></div>
                     </div>
                     <div>
-                        <h3 className="text-sm font-black text-[#1E293B] dark:text-white tracking-tight">
+                        <h3 className="text-sm font-black text-slate-800 dark:text-white tracking-tight">
                             {conversation?.booking?.provider?.business_name || "Support Chat"}
                         </h3>
                         <div className="text-[10px] font-bold text-emerald-500 tracking-widest flex items-center gap-1.5">
@@ -175,7 +175,7 @@ export function ChatUI({ bookingId, onClose }: ChatUIProps) {
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon" className="text-gray-400 hover:text-[#1E293B] dark:hover:text-white rounded-xl">
+                    <Button variant="ghost" size="icon" className="text-gray-400 hover:text-slate-800 dark:hover:text-white rounded-xl">
                         <MoreVertical className="w-5 h-5" />
                     </Button>
                 </div>
@@ -206,7 +206,7 @@ export function ChatUI({ bookingId, onClose }: ChatUIProps) {
                                     <div className={`p-4 rounded-3xl text-sm font-medium shadow-sm transition-all duration-300 ${
                                         isMe 
                                         ? "bg-sky-600 text-white rounded-br-none hover:bg-sky-700" 
-                                        : "bg-[#F8FAFC] dark:bg-white/5 text-[#1E293B] dark:text-gray-300 rounded-bl-none hover:bg-gray-100 dark:hover:bg-white/10"
+                                        : "bg-slate-50 dark:bg-white/5 text-slate-800 dark:text-gray-300 rounded-bl-none hover:bg-gray-100 dark:hover:bg-white/10"
                                     }`}>
                                         {msg.body}
                                     </div>
@@ -224,7 +224,7 @@ export function ChatUI({ bookingId, onClose }: ChatUIProps) {
             </div>
 
             {/* Input Area */}
-            <div className="p-6 bg-[#F8FAFC] dark:bg-white/5 border-t border-gray-100 dark:border-white/5">
+            <div className="p-6 bg-slate-50 dark:bg-white/5 border-t border-gray-100 dark:border-white/5">
                 <form onSubmit={handleSendMessage} className="flex items-center gap-4">
                     <Button type="button" variant="ghost" size="icon" className="text-gray-400 hover:text-sky-600 rounded-xl shrink-0">
                         <Paperclip className="w-5 h-5" />

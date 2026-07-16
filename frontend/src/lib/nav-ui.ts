@@ -2,7 +2,7 @@
  * Public header & megamenu — Attio-inspired minimal navigation tokens.
  */
 export const navUi = {
-  bar: "w-full border-b border-border/40 bg-[#fafaf9]/95 dark:bg-[#0c0e12]/95 backdrop-blur-md supports-[backdrop-filter]:bg-[#fafaf9]/90 transition-shadow duration-200",
+  bar: "w-full border-b border-border/40 bg-background/95 dark:bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/90 transition-shadow duration-200",
   barScrolled: "shadow-md shadow-black/5 border-border/60",
   inner: "flex h-[4.25rem] sm:h-[4.5rem] items-center justify-between gap-6",
   brand: "relative h-11 w-44 sm:h-12 sm:w-52 md:h-14 md:w-60 shrink-0",

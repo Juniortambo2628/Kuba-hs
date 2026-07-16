@@ -28,7 +28,7 @@ export function CTA() {
     <LandingSection variant="default" className="relative transition-colors duration-300">
       <div className={uiPrimitives.layout.page + " w-full"}>
         <motion.div
-          className="relative rounded-[3rem] overflow-hidden shadow-2xl bg-gray-50 dark:bg-[#0f1523] border border-gray-200 dark:border-white/10"
+          className="relative rounded-[3rem] overflow-hidden shadow-2xl bg-gray-50 dark:bg-background border border-gray-200 dark:border-white/10"
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.2 }}
@@ -75,7 +75,7 @@ export function CTA() {
 
             {/* Right Rich Media Collage */}
             <div className="max-lg:hidden relative h-full w-full min-h-[500px]">
-                <div className="absolute inset-0 bg-gradient-to-l from-transparent to-gray-50 dark:to-[#0f1523] z-10 w-24" />
+                <div className="absolute inset-0 bg-gradient-to-l from-transparent to-gray-50 dark:to-background z-10 w-24" />
                 <Image
                     src={FALLBACK_IMAGES.cleaning}
                     alt="Professionals"

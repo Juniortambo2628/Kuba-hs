@@ -125,7 +125,7 @@ function Switch({
         aria-label={`Toggle ${label}`}
         className={cn(
           "w-10 h-6 rounded-full p-0.5 transition-colors duration-200 cursor-pointer focus:outline-none relative flex items-center",
-          checked ? "bg-[#4F46E5]" : "bg-muted dark:bg-zinc-800"
+          checked ? "bg-indigo-600" : "bg-muted dark:bg-zinc-800"
         )}
       >
         <div

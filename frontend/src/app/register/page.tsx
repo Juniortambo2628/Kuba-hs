@@ -9,7 +9,7 @@ import { designSystem } from "@/lib/design-system";
 
 export default function RegisterChoicePage() {
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0B0F19] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-white dark:bg-background flex items-center justify-center p-4">
       <Link href="/" className="absolute top-8 left-8 flex items-center gap-2 text-[10px] font-bold tracking-widest capitalize text-muted-foreground hover:text-gray-900 dark:hover:text-white transition-colors z-10">
         <ChevronLeft className="w-4 h-4" /> Return to Home
       </Link>

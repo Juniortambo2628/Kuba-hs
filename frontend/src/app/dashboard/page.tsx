@@ -24,7 +24,7 @@ export default function DashboardPage() {
   }, [authLoading, user, router]);
 
   return (
-    <main className="min-h-screen bg-white dark:bg-[#0B0F19] flex items-center justify-center">
+    <main className="min-h-screen bg-white dark:bg-background flex items-center justify-center">
       <Loader2 className="w-10 h-10 animate-spin text-blue-500" />
     </main>
   );
