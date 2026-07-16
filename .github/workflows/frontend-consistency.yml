@@ -70,17 +70,19 @@ jobs:
       - name: Wait for Dev Server
         run: npx wait-on http://localhost:3000 --timeout 120000
 
-      - name: Run Visual Regression Tests
-        run: npx playwright test --project=desktop-chrome
-        continue-on-error: true
+      - name: Generate Linux VRT Baselines
+        run: npx playwright test --project=desktop-chrome --update-snapshots
 
-      - name: Commit Updated Snapshots
+      - name: Commit Updated Baselines
         if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add frontend/tests/visual/*-snapshots/
-          git diff --cached --quiet || git commit -m "chore: update VRT baselines for Linux CI [skip ci]" && git push
+          git diff --cached --quiet || git commit -m "chore: update VRT baselines for Linux [skip ci]" && git push
+
+      - name: Run Visual Regression Tests
+        run: npx playwright test --project=desktop-chrome
 
       - name: Upload Test Results
         if: failure()
