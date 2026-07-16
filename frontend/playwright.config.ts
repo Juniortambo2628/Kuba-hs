@@ -18,7 +18,8 @@ export default defineConfig({
     video: 'off',
   },
 
-  snapshotsDir: './tests/visual/baselines',
+  snapshotDir: './tests/visual/baselines',
+  snapshotPathTemplate: '{snapshotDir}/{testFileDir}/{testFileName}-snapshots/{arg}-{projectName}{ext}',
 
   projects: [
     {

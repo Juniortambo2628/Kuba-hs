@@ -59,7 +59,7 @@ export function VirtualReceipt({ booking, onClose, transactionId, paymentMethod 
           <div class="receipt">
             <div class="header">
               <div class="logo">KUBA</div>
-              <p style="font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 3px; margin-top: 4px;">Payment Receipt</p>
+              <p style="font-size: 11px; color: var(--muted-foreground, #475569); text-transform: uppercase; letter-spacing: 3px; margin-top: 4px;">Payment Receipt</p>
               <div style="margin-top: 12px;"><span class="badge">✓ PAID</span></div>
             </div>
             <hr class="divider" />
