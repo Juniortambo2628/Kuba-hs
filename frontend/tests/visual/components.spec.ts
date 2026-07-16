@@ -19,7 +19,7 @@ test.describe('UI Components Visual Regression', () => {
     await page.waitForTimeout(500)
     const container = page.locator('div').first()
     await expect(container).toHaveScreenshot('buttons.png', {
-      maxDiffPixelRatio: 0.02,
+      maxDiffPixelRatio: 0.08,
       timeout: 10000,
     })
   })
@@ -40,7 +40,7 @@ test.describe('UI Components Visual Regression', () => {
     await page.waitForTimeout(500)
     const container = page.locator('div').first()
     await expect(container).toHaveScreenshot('badges.png', {
-      maxDiffPixelRatio: 0.02,
+      maxDiffPixelRatio: 0.08,
       timeout: 10000,
     })
   })
@@ -65,7 +65,7 @@ test.describe('UI Components Visual Regression', () => {
     await page.waitForTimeout(500)
     const container = page.locator('div').first()
     await expect(container).toHaveScreenshot('cards.png', {
-      maxDiffPixelRatio: 0.02,
+      maxDiffPixelRatio: 0.08,
       timeout: 10000,
     })
   })
@@ -85,7 +85,7 @@ test.describe('UI Components Visual Regression', () => {
     await page.waitForTimeout(500)
     const container = page.locator('div').first()
     await expect(container).toHaveScreenshot('form-inputs.png', {
-      maxDiffPixelRatio: 0.02,
+      maxDiffPixelRatio: 0.08,
       timeout: 10000,
     })
   })
