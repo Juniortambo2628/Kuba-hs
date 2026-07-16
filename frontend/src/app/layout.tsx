@@ -56,7 +56,7 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head />
       <body
-        className={`${inter.variable} ${geistMono.variable} antialiased bg-white dark:bg-[#0B0F19] text-gray-900 dark:text-white transition-colors duration-300`}
+        className={`${inter.variable} ${geistMono.variable} antialiased bg-white dark:bg-background text-gray-900 dark:text-white transition-colors duration-300`}
       >
         <Providers
           initialSettings={initialSettings}

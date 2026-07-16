@@ -251,7 +251,7 @@ export default function PromotionsPage() {
             </div>
 
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-                <SheetContent side="right" className="w-full sm:max-w-xl bg-white dark:bg-[#0B0F19] border-l border-border/40 p-0 overflow-y-auto kuba-scroll">
+                <SheetContent side="right" className="w-full sm:max-w-xl bg-white dark:bg-background border-l border-border/40 p-0 overflow-y-auto kuba-scroll">
                     <div className="p-10 border-b border-border/10 space-y-2">
                         <SheetTitle className="text-3xl font-black text-foreground tracking-tighter uppercase italic">
                             {currentCode.id ? 'Refine Strategy' : 'Initialize Campaign'}

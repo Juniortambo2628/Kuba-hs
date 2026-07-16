@@ -89,7 +89,7 @@ export default function BookingActions({ booking, userEmail, onRefresh, onMessag
                 <Button 
                    variant="ghost" 
                    onClick={handleDownloadInvoice}
-                   className="text-gray-500 hover:text-[#1E293B] hover:bg-gray-100 h-8 rounded-lg px-3 flex items-center gap-1.5 transition-colors ml-1"
+                   className="text-gray-500 hover:text-slate-800 hover:bg-gray-100 h-8 rounded-lg px-3 flex items-center gap-1.5 transition-colors ml-1"
                 >
                    <DownloadCloud className="w-4 h-4" />
                    <span className="text-[10px] font-bold tracking-widest hidden md:inline">Invoice</span>

@@ -83,7 +83,7 @@ export function LiveServiceTimer({
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
                 {timerActive ? "Service Live" : "Session Summary"}
               </p>
-              <h3 className="font-black text-lg text-[#1E293B] dark:text-white tracking-tighter">
+              <h3 className="font-black text-lg text-slate-800 dark:text-white tracking-tighter">
                 {timerActive ? "Execution in Progress" : "Service Completed"}
               </h3>
             </div>
@@ -101,7 +101,7 @@ export function LiveServiceTimer({
           <div className="space-y-1">
             <p className="text-[9px] font-black uppercase tracking-widest text-gray-400">Duration Elapsed</p>
             <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-black italic tracking-tighter text-[#1E293B] dark:text-white tabular-nums">
+              <span className="text-4xl font-black italic tracking-tighter text-slate-800 dark:text-white tabular-nums">
                 {formatTime(elapsed)}
               </span>
             </div>

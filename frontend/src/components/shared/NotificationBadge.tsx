@@ -169,7 +169,7 @@ export function NotificationBadge() {
 
       <DropdownMenuContent
         align="end"
-        className="w-80 sm:w-96 rounded-2xl shadow-xl border-gray-100 dark:border-white/5 p-0 overflow-hidden bg-white dark:bg-[#0f1423]"
+        className="w-80 sm:w-96 rounded-2xl shadow-xl border-gray-100 dark:border-white/5 p-0 overflow-hidden bg-white dark:bg-background"
       >
         <div className="flex items-center justify-between px-4 py-3 bg-gray-50/50 dark:bg-white/5 border-b border-gray-100 dark:border-white/5">
           <DropdownMenuLabel className="p-0 m-0 font-black text-xs tracking-widest uppercase text-gray-500">

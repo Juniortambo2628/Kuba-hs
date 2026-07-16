@@ -42,7 +42,7 @@ export function RouteLoader() {
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-white dark:bg-[#0B0F19] transition-opacity duration-300"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-white dark:bg-background transition-opacity duration-300"
       aria-label="Loading page"
     >
       <div className="relative w-20 h-20 sm:w-28 sm:h-28 animate-pulse">

@@ -5,7 +5,7 @@ import { uiPrimitives } from "@/lib/ui-primitives";
  */
 export const marketingUi = {
   listing: {
-    body: "flex-1 py-10 md:py-16 bg-white dark:bg-[#0B0F19] transition-colors duration-300",
+    body: "flex-1 py-10 md:py-16 bg-white dark:bg-background transition-colors duration-300",
     inner: "flex flex-col lg:flex-row gap-8",
     sidebar: "lg:w-72 shrink-0",
     sidebarWide: "lg:w-80 shrink-0",
@@ -39,7 +39,7 @@ export const marketingUi = {
       "text-center py-24 bg-slate-50 dark:bg-zinc-900 border border-border/40 rounded-[3rem]",
   },
   detail: {
-    body: "flex-1 py-10 md:py-16 bg-white dark:bg-[#0B0F19] transition-colors duration-300",
+    body: "flex-1 py-10 md:py-16 bg-white dark:bg-background transition-colors duration-300",
     container: "relative z-10",
     grid: "grid grid-cols-1 lg:grid-cols-3 gap-10 lg:gap-12",
     main: "lg:col-span-2 space-y-10 md:space-y-12",

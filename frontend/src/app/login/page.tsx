@@ -96,7 +96,7 @@ function LoginForm() {
         <div className="flex items-center justify-end">
           <Link
             href="/forgot-password"
-            className="text-sm font-medium text-[#0d9488] hover:underline underline-offset-2"
+            className="text-sm font-medium text-teal-600 hover:underline underline-offset-2"
           >
             Forgot password?
           </Link>

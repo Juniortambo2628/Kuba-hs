@@ -80,7 +80,7 @@ export function WriteReviewDialog({ isOpen, onClose, booking, onSuccess }: Write
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="sm:max-w-lg rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl bg-white dark:bg-[#0B0F19]">
+            <DialogContent className="sm:max-w-lg rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl bg-white dark:bg-background">
                 <div className="h-2 w-full bg-primary/20">
                     <div className="h-full bg-primary" style={{ width: `${(rating / 5) * 100}%`, transition: 'width 0.3s ease' }} />
                 </div>

@@ -91,7 +91,7 @@ export function VirtualReceipt({ booking, onClose, transactionId, paymentMethod 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
       <div 
-        className="bg-white dark:bg-[#0B0F19] rounded-[2.5rem] shadow-2xl border border-border max-w-md w-full overflow-hidden relative"
+        className="bg-white dark:bg-background rounded-[2.5rem] shadow-2xl border border-border max-w-md w-full overflow-hidden relative"
       >
         {/* Close button */}
         <button 

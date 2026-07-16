@@ -108,7 +108,7 @@ export default function ComplianceDashboard() {
       </div>
 
       {/* Main Content Area */}
-      <div className="bg-white dark:bg-[#0B0F19] rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden flex flex-col min-h-[500px]">
+      <div className="bg-white dark:bg-background rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden flex flex-col min-h-[500px]">
         {/* Filters */}
         <div className="p-4 border-b border-gray-100 dark:border-white/5 flex flex-col sm:flex-row gap-4 justify-between items-center bg-gray-50/50 dark:bg-white/[0.02]">
           <div className="flex gap-2 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0 kuba-scroll-hidden">
@@ -136,7 +136,7 @@ export default function ComplianceDashboard() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input 
               placeholder="Search providers..." 
-              className="pl-9 bg-white dark:bg-[#0B0F19] border-gray-200 dark:border-white/10 rounded-xl"
+              className="pl-9 bg-white dark:bg-background border-gray-200 dark:border-white/10 rounded-xl"
             />
           </div>
         </div>
@@ -246,7 +246,7 @@ export default function ComplianceDashboard() {
             <motion.div 
               initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 h-full w-full max-w-xl bg-white dark:bg-[#0B0F19] z-[101] shadow-2xl border-l border-gray-200 dark:border-white/10 flex flex-col"
+              className="fixed top-0 right-0 h-full w-full max-w-xl bg-white dark:bg-background z-[101] shadow-2xl border-l border-gray-200 dark:border-white/10 flex flex-col"
             >
               {/* Drawer Header */}
               <div className="p-6 border-b border-gray-100 dark:border-white/5 flex items-center justify-between bg-gray-50/50 dark:bg-white/[0.02]">
@@ -293,7 +293,7 @@ export default function ComplianceDashboard() {
                   ) : (
                     <div className="space-y-4">
                       {documentsResponse?.data?.map((doc: any) => (
-                        <div key={doc.id} className="p-4 rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#0B0F19] hover:border-primary/50 transition-colors shadow-sm">
+                        <div key={doc.id} className="p-4 rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-background hover:border-primary/50 transition-colors shadow-sm">
                           <div className="flex items-start justify-between">
                             <div className="flex gap-4">
                               <div className="w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-500/10 flex items-center justify-center text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-500/20">
@@ -371,7 +371,7 @@ export default function ComplianceDashboard() {
               <motion.div 
                 initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-white dark:bg-[#111827] rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-gray-200 dark:border-white/10"
+                className="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-gray-200 dark:border-white/10"
               >
                 <div className="p-6 border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02]">
                   <h3 className="text-xl font-black text-gray-900 dark:text-white capitalize">Audit {reviewingDoc.document_type.replace('_', ' ')}</h3>

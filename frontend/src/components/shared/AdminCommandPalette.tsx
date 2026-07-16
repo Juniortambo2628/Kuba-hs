@@ -181,7 +181,7 @@ export function AdminCommandPalette() {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   onClick={() => setPaletteOpen(false)}
-                  className="absolute inset-0 bg-[#0B0F19]/60 backdrop-blur-md"
+                  className="absolute inset-0 bg-background/60 backdrop-blur-md"
                 />
 
                 <motion.div
@@ -189,7 +189,7 @@ export function AdminCommandPalette() {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.98, y: -10 }}
                   transition={{ duration: 0.2, ease: "circOut" }}
-                  className="relative w-full max-w-2xl bg-white dark:bg-[#0B0F19] border border-gray-200 dark:border-white/10 rounded-3xl shadow-[0_24px_48px_-12px_rgba(0,0,0,0.5)] overflow-hidden m-4 flex flex-col max-h-[70vh]"
+                  className="relative w-full max-w-2xl bg-white dark:bg-background border border-gray-200 dark:border-white/10 rounded-3xl shadow-[0_24px_48px_-12px_rgba(0,0,0,0.5)] overflow-hidden m-4 flex flex-col max-h-[70vh]"
                   onKeyDown={handleKeyDown}
                 >
                   <div className="flex items-center px-6 border-b border-gray-100 dark:border-white/5">

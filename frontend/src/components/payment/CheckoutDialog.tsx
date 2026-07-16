@@ -193,7 +193,7 @@ export function CheckoutDialog({ isOpen, onClose, booking, userEmail, onSuccess 
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="max-w-md p-0 overflow-hidden bg-white dark:bg-[#0B0F19] rounded-[2.5rem] border border-border shadow-2xl">
+            <DialogContent className="max-w-md p-0 overflow-hidden bg-white dark:bg-background rounded-[2.5rem] border border-border shadow-2xl">
                 {/* Progress Bar */}
                 <div className="h-1.5 w-full bg-muted overflow-hidden">
                     <div className={`h-full bg-primary transition-all duration-700 ease-out ${progressWidth}`} />

@@ -174,8 +174,9 @@ export function MarketingFilterSidebar() {
     >
       {/* Category Dropdown */}
       <div className="py-3">
-        <label className="text-xs font-bold text-foreground block mb-1.5">Service Category</label>
+        <label htmlFor="filter-category" className="text-xs font-bold text-foreground block mb-1.5">Service Category</label>
         <select
+          id="filter-category"
           value={selectedCategory}
           onChange={(e) => handleCategoryChange(e.target.value)}
           className="w-full h-9 bg-card border border-border rounded-xl px-3 text-xs font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -219,8 +220,9 @@ export function MarketingFilterSidebar() {
 
       {/* Default Sorting */}
       <div className="py-3 border-t border-border/40">
-        <label className="text-xs font-bold text-foreground block mb-1.5">Sort Results</label>
+        <label htmlFor="filter-sort" className="text-xs font-bold text-foreground block mb-1.5">Sort Results</label>
         <select
+          id="filter-sort"
           value={sortOrder}
           onChange={(e) => {
             setSortOrder(e.target.value);
@@ -263,7 +265,7 @@ export function MarketingFilterSidebar() {
 
       {/* Price range with histogram */}
       <div className="py-3 border-t border-border/40">
-        <span className="text-xs font-bold text-foreground block mb-1.5">Price range</span>
+        <label htmlFor="filter-price-range" className="text-xs font-bold text-foreground block mb-1.5">Price range</label>
         <div className="flex items-end justify-between gap-[3px] h-8 px-1 mb-1.5">
           {[15, 25, 45, 30, 20, 35, 55, 70, 85, 90, 60, 40, 50, 65, 30, 20, 15, 10, 5, 2].map((height, i) => (
             <div
@@ -279,6 +281,7 @@ export function MarketingFilterSidebar() {
           ))}
         </div>
         <input
+          id="filter-price-range"
           type="range"
           min="500"
           max="50000"
