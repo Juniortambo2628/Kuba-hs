@@ -12,7 +12,7 @@ export default defineConfig({
   reporter: [['html', { open: 'never' }], ['list']],
 
   snapshotDir: './tests/visual',
-  snapshotPathTemplate: '{testFileName}-snapshots/{arg}-{projectName}{ext}',
+  snapshotPathTemplate: '{snapshotDir}/{testFileName}-snapshots/{arg}-{projectName}{ext}',
 
   use: {
     baseURL: BASE_URL,
