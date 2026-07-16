@@ -10,7 +10,7 @@ export const marketplaceUi = {
       "relative aspect-[4/5] w-full min-h-[16rem] sm:min-h-[18rem] md:min-h-[20rem] overflow-hidden rounded-2xl bg-muted",
     /** Inset frame: border follows image radius; use with gridCard shell padding */
     mediaBordered:
-      "border border-border/[0.08] dark:border-white/[0.07] shadow-[0_1px_3px_rgba(15,23,42,0.04)]",
+      "border border-border/[0.08] dark:border-white/[0.07] shadow-sm",
     mediaImage:
       "object-cover transition-transform duration-500 group-hover:scale-[1.03]",
     /** List layout thumbnail (services, categories, providers) */
@@ -60,7 +60,7 @@ export const marketplaceUi = {
     /** Padding so bordered media + footer info sit inset from the card edge */
     gridShell: "p-3",
     gridOutline:
-      "border border-border/[0.08] dark:border-white/[0.07] shadow-[0_1px_3px_rgba(15,23,42,0.04)]",
+      "border border-border/[0.08] dark:border-white/[0.07] shadow-sm",
     hover: "hover:opacity-[0.98]",
     radiusLg: "rounded-2xl",
     radiusMd: "rounded-2xl",

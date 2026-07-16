@@ -16,38 +16,38 @@ const path = require('path')
 
 const SRC_DIR = path.join(__dirname, '..', 'src')
 const ALLOWED_PATTERNS = [
-  /transparent/g,
-  /currentColor/g,
-  /inherit/g,
-  /theme\(/g,
-  /oklch\(/g,
-  /oklab\(/g,
+  /transparent/,
+  /currentColor/,
+  /inherit/,
+  /theme\(/,
+  /oklch\(/,
+  /oklab\(/,
 ]
 
 const IGNORED_CONTEXTS = [
-  /<path /g,                    // SVG paths (logos, icons)
-  /d="M/g,                      // SVG path data
-  /themeColor:/g,               // Next.js metadata (requires hex)
-  /printWindow/g,               // Print document CSS
-  /document\.write/g,           // Dynamic HTML injection
-  /recharts/gi,                 // Chart library props
-  /<Area /g,                    // Recharts components
-  /<Bar /g,                     // Recharts components
-  /<Line /g,                    // Recharts components
-  /<Pie /g,                     // Recharts components
-  /MONO_COLORS/g,               // Chart color arrays
-  /color:/g,                    // CSS color property in strings
-  /background-color:/g,         // CSS background in strings
-  /border.*dashed/g,            // Dashed borders in CSS strings
-  /radial-gradient/g,           // Gradient functions
-  /shadow-\[/g,                 // Tailwind shadow arbitrary values
-  /fillColor:/g,                // Map marker fill colors (Leaflet)
-  /color.*=.*["']#/g,           // Map marker stroke colors
-  /boxShadow:/g,                // CSS box-shadow in JS
-  /filepond/gi,                 // Third-party file upload component
-  /#F8FAFC/g,                   // Slate-50 used as card backgrounds
-  /#F8f9FB/g,                   // Variant of slate-50
-  /#111/g,                      // Near-black for dark backgrounds
+  /<path /,                    // SVG paths (logos, icons)
+  /d="M/,                      // SVG path data
+  /themeColor:/,               // Next.js metadata (requires hex)
+  /printWindow/,               // Print document CSS
+  /document\.write/,           // Dynamic HTML injection
+  /recharts/i,                 // Chart library props
+  /<Area /,                    // Recharts components
+  /<Bar /,                     // Recharts components
+  /<Line /,                    // Recharts components
+  /<Pie /,                     // Recharts components
+  /MONO_COLORS/,               // Chart color arrays
+  /color:/,                    // CSS color property in strings
+  /background-color:/,         // CSS background in strings
+  /border.*dashed/,            // Dashed borders in CSS strings
+  /radial-gradient/,           // Gradient functions
+  /shadow-\[/,                 // Tailwind shadow arbitrary values
+  /fillColor:/,                // Map marker fill colors (Leaflet)
+  /color.*=.*["']#/,           // Map marker stroke colors
+  /boxShadow:/,                // CSS box-shadow in JS
+  /filepond/i,                 // Third-party file upload component
+  /#F8FAFC/,                   // Slate-50 used as card backgrounds
+  /#F8f9FB/,                   // Variant of slate-50
+  /#111/,                      // Near-black for dark backgrounds
   /#0B0F19/g,                   // Dark mode background (legacy)
   /#a1a1aa/g,                   // Zinc-400 for chart colors
   /#52525b/g,                   // Zinc-600 for chart colors
@@ -81,6 +81,7 @@ const IGNORED_CONTEXTS = [
 const IGNORED_FILES = [
   'globals.css',
   'tailwind.css',
+  'VirtualReceipt.tsx', // Print template — inline styles required for HTML rendering
 ]
 
 const IGNORED_DIRS = [
@@ -94,6 +95,8 @@ let filesChecked = 0
 
 function scanFile(filePath) {
   const relativePath = path.relative(SRC_DIR, filePath)
+  const fileName = path.basename(filePath)
+  if (IGNORED_FILES.includes(fileName)) return
   const content = fs.readFileSync(filePath, 'utf-8')
   const lines = content.split('\n')
 
