@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('icon_url', 500)->nullable();
             $table->integer('sort_order')->default(0);
             $table->timestamps();
+            $table->softDeletes();
 
             $table->foreign('parent_category_id')->references('id')->on('service_categories')->onDelete('set null');
         });

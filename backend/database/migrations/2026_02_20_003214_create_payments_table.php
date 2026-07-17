@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string('status', 20)->default('pending'); // pending, processing, completed, failed, refunded
             $table->string('payment_gateway', 50)->nullable();
             $table->timestamps();
+            $table->softDeletes();
 
             $table->foreign('booking_id')->references('id')->on('bookings')->onDelete('cascade');
             $table->foreign('provider_id')->references('id')->on('providers')->onDelete('cascade');

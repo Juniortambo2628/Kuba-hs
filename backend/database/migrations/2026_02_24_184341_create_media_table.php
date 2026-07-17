@@ -11,7 +11,9 @@ return new class extends Migration
         Schema::create('media', function (Blueprint $table) {
             $table->id();
 
-            $table->morphs('model');
+            $table->string('model_type');
+            $table->char('model_id', 36);
+            $table->index(['model_type', 'model_id']);
             $table->uuid()->nullable()->unique();
             $table->string('collection_name');
             $table->string('name');
@@ -28,5 +30,10 @@ return new class extends Migration
 
             $table->nullableTimestamps();
         });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('media');
     }
 };

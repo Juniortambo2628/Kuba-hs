@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('providers', function (Blueprint $table) {
-            $table->string('application_status')->default('pending')->after('is_verified');
+            $table->string('application_status')->default('pending');
             // pending, reviewed, active, suspended, rejected
         });
     }
@@ -23,7 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('providers', function (Blueprint $table) {
-            //
+            $table->dropColumn('application_status');
         });
     }
 };

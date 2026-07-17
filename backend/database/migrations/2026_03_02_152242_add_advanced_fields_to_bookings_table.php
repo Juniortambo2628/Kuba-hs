@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('bookings', function (Blueprint $table) {
-            $table->enum('service_type', ['residential', 'commercial', 'large_scale'])->default('residential')->after('service_id');
-            $table->integer('quantity')->nullable()->after('service_type');
-            $table->string('quantity_label')->nullable()->after('quantity');
+            $table->string('service_type')->default('residential');
+            $table->integer('quantity')->nullable();
+            $table->string('quantity_label')->nullable();
         });
     }
 
@@ -24,7 +24,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('bookings', function (Blueprint $table) {
-            //
+            $table->dropColumn(['service_type', 'quantity', 'quantity_label']);
         });
     }
 };

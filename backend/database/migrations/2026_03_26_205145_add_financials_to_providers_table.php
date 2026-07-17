@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('providers', function (Blueprint $table) {
-            $table->decimal('balance', 10, 2)->default(0.00)->after('quality_score');
-            $table->decimal('total_earned', 10, 2)->default(0.00)->after('balance');
+            $table->decimal('balance', 10, 2)->default(0.00);
+            $table->decimal('total_earned', 10, 2)->default(0.00);
         });
     }
 

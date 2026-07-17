@@ -26,7 +26,7 @@ import {
 } from "@/components/dashboard/workspace";
 import { formatDocumentType } from "@/lib/dashboard-copy";
 import { workspaceUi } from "@/lib/dashboard-ui";
-import { cn } from "@/lib/utils";
+import { cn, getMediaUrl } from "@/lib/utils";
 import type { VerificationDocument } from "@/types";
 
 function statusIcon(status: string) {
@@ -187,7 +187,7 @@ export default function ProviderVerification() {
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="h-12 w-12 rounded-xl bg-muted flex items-center justify-center overflow-hidden border border-border/50 shrink-0">
                     {doc.url?.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
-                      <img src={doc.url} alt="" className="h-full w-full object-cover" />
+                      <img src={getMediaUrl(doc.url)} alt="" className="h-full w-full object-cover" />
                     ) : (
                       <FileText className="h-5 w-5 text-muted-foreground" />
                     )}

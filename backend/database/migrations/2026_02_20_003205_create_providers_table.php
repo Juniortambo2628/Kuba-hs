@@ -27,6 +27,7 @@ return new class extends Migration
             $table->json('verification_documents')->nullable();
             $table->string('availability_status')->default('available');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

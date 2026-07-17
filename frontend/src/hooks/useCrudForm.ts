@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import axiosInstance, { handleApiError } from "@/lib/axios";
 import { toast } from "sonner";
 
@@ -34,13 +34,15 @@ export function useCrudForm<T extends object>({
   preparePayload,
   extraCreatePayload,
 }: UseCrudFormOptions<T>): UseCrudFormReturn<T> {
+  const emptyRef = useRef(empty);
+  emptyRef.current = empty;
+
   const [form, setForm] = useState<T>(empty);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (!open) return;
-    setForm({ ...empty(), ...initial } as T);
-  }, [open, initial, empty]);
+    setForm({ ...emptyRef.current(), ...initial } as T);
+  }, [editingId, initial]);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {

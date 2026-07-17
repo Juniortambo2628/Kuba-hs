@@ -19,6 +19,10 @@ return new class extends Migration
             return;
         }
 
+        if (Schema::getConnection()->getDriverName() !== 'mysql') {
+            return;
+        }
+
         $database = Schema::getConnection()->getDatabaseName();
         $existing = collect(DB::select(
             'SELECT CONSTRAINT_NAME FROM information_schema.TABLE_CONSTRAINTS
