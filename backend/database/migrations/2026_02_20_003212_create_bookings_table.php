@@ -27,6 +27,7 @@ return new class extends Migration
             $table->string('payment_status', 20)->default('pending'); // pending, paid, refunded
             $table->text('cancellation_reason')->nullable();
             $table->timestamps();
+            $table->softDeletes();
 
             $table->foreign('provider_id')->references('id')->on('providers')->onDelete('cascade');
             $table->foreign('service_id')->references('id')->on('services')->onDelete('cascade');

@@ -27,8 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('verification_documents', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('verification_documents');
     }
 };

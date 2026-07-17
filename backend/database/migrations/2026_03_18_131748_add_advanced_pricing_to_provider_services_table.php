@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('provider_services', function (Blueprint $table) {
-            $table->integer('min_hours')->default(1)->after('pricing_type');
-            $table->decimal('travel_fee', 10, 2)->default(0)->after('min_hours');
-            $table->boolean('equipment_included')->default(false)->after('travel_fee');
-            $table->json('extra_configs')->nullable()->after('equipment_included');
+            $table->integer('min_hours')->default(1);
+            $table->decimal('travel_fee', 10, 2)->default(0);
+            $table->boolean('equipment_included')->default(false);
+            $table->json('extra_configs')->nullable();
         });
     }
 

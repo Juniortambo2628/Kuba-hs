@@ -15,6 +15,7 @@ return new class extends Migration
             $table->foreignUuid('provider_id')->constrained('providers')->onDelete('cascade');
             $table->timestamp('last_message_at')->nullable();
             $table->timestamps();
+            $table->softDeletes();
 
             $table->foreign('booking_id')->references('id')->on('bookings')->onDelete('cascade');
             $table->unique(['booking_id']); // One conversation per booking

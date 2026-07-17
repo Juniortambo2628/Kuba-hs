@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
             ProductionDataSeeder::class,
             LoyaltyTierSeeder::class,
             EmailTemplateSeeder::class,
+            AdminSeeder::class,
         ]);
     }
 }

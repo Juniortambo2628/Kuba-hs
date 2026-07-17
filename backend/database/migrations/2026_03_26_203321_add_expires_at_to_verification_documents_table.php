@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('verification_documents', function (Blueprint $table) {
-            $table->date('expires_at')->nullable()->after('rejection_reason');
+            $table->date('expires_at')->nullable();
         });
     }
 

@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('provider_availability', function (Blueprint $table) {
-            $table->boolean('is_available')->default(true)->after('end_time');
+            $table->boolean('is_available')->default(true);
         });
     }
 

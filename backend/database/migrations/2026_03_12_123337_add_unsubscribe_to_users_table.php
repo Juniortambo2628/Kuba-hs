@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Illuminate\Database\Schema\Blueprint $table) {
-            $table->boolean('unsubscribed_from_emails')->default(false)->after('is_active');
+            $table->boolean('unsubscribed_from_emails')->default(false);
         });
     }
 

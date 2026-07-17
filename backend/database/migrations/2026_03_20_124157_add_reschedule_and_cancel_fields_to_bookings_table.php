@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::table('bookings', function (Blueprint $table) {
             if (!Schema::hasColumn('bookings', 'rescheduled_at')) {
-                $table->timestamp('rescheduled_at')->nullable()->after('scheduled_date');
+                $table->timestamp('rescheduled_at')->nullable();
             }
             if (!Schema::hasColumn('bookings', 'cancellation_reason')) {
-                $table->text('cancellation_reason')->nullable()->after('status');
+                $table->text('cancellation_reason')->nullable();
             }
         });
     }
@@ -27,7 +27,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('bookings', function (Blueprint $table) {
-            //
+            $table->dropColumn(['rescheduled_at', 'cancellation_reason']);
         });
     }
 };

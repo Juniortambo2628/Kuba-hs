@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('bookings', function (Blueprint $table) {
-            $table->foreignId('promo_code_id')->nullable()->after('status')->constrained('promo_codes')->onDelete('set null');
-            $table->decimal('discount_amount', 12, 2)->default(0)->after('final_price');
+            $table->foreignId('promo_code_id')->nullable()->constrained('promo_codes')->onDelete('set null');
+            $table->decimal('discount_amount', 12, 2)->default(0);
         });
     }
 

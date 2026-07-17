@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('icon_url', 500)->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
+            $table->softDeletes();
 
             $table->foreign('category_id')->references('id')->on('service_categories')->onDelete('cascade');
         });

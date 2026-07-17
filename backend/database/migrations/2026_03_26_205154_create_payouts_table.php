@@ -22,6 +22,7 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->timestamp('processed_at')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('bookings', function (Blueprint $table) {
-            $table->string('mpesa_checkout_id')->nullable()->after('payment_status');
-            $table->string('payment_method')->nullable()->default('paystack')->after('payment_status');
+            $table->string('mpesa_checkout_id')->nullable();
+            $table->string('payment_method')->nullable()->default('paystack');
         });
     }
 

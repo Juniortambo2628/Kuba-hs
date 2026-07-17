@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('type', 20)->default('text'); // text, image, system
             $table->timestamp('read_at')->nullable();
             $table->timestamps();
+            $table->softDeletes();
 
             $table->foreign('conversation_id')->references('id')->on('conversations')->onDelete('cascade');
             $table->index(['conversation_id', 'created_at']);

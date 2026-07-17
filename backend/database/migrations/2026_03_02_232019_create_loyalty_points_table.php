@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('description')->nullable();
             $table->enum('transaction_type', ['earn', 'redeem'])->default('earn');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

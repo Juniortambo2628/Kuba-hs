@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('providers', function (Blueprint $table) {
-            $table->decimal('quality_score', 5, 2)->default(100.00)->after('rating_avg');
-            $table->string('compliance_status')->default('pending')->after('quality_score');
+            $table->decimal('quality_score', 5, 2)->default(100.00);
+            $table->string('compliance_status')->default('pending');
         });
     }
 
