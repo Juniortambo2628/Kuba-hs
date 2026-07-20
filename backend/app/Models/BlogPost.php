@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class BlogPost extends Model implements \Spatie\MediaLibrary\HasMedia
 {
-    use HasUuids, \Spatie\MediaLibrary\InteractsWithMedia;
+    use HasFactory, HasUuids, \Spatie\MediaLibrary\InteractsWithMedia;
 
     protected $fillable = [
         'title',

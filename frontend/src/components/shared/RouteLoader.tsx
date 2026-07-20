@@ -4,33 +4,40 @@ import { useEffect, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import Image from "next/image";
 
+function getRouteGroup(pathname: string): "public" | "auth" {
+  if (pathname.startsWith("/dashboard") || pathname.startsWith("/admin")) {
+    return "auth";
+  }
+  return "public";
+}
+
 /**
- * Shows a pulsing Kuba logo on a clean background during client-side route changes.
- * Works by detecting pathname/searchParams changes and showing for a brief minimum duration.
+ * Shows a pulsing Kuba logo on a clean background when crossing between
+ * public and authenticated route groups. Does NOT show when navigating
+ * within the same group (e.g. between dashboard sub-pages).
  */
 export function RouteLoader() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
-  const [prevPath, setPrevPath] = useState("");
+  const [prevGroup, setPrevGroup] = useState<"public" | "auth" | null>(null);
 
   useEffect(() => {
-    const currentKey = `${pathname}?${searchParams.toString()}`;
+    const currentGroup = getRouteGroup(pathname);
 
-    // First mount — just record path, no loader
-    if (!prevPath) {
-      setPrevPath(currentKey);
+    // First mount — just record group, no loader
+    if (prevGroup === null) {
+      setPrevGroup(currentGroup);
       return;
     }
 
-    // Same path — no loader
-    if (currentKey === prevPath) return;
+    // Same group — no loader (e.g. navigating between dashboard sub-pages)
+    if (currentGroup === prevGroup) return;
 
-    // Route changed — show loader
+    // Crossing the public/auth boundary — show loader
     setIsLoading(true);
-    setPrevPath(currentKey);
+    setPrevGroup(currentGroup);
 
-    // Show for at least 1200ms to prevent a single-frame flash and allow content to load
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 1200);

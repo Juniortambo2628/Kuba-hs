@@ -11,11 +11,13 @@ describe('public marketplace endpoints', function () {
 
         $response->assertOk();
         $response->assertJsonStructure([
-            '*' => [
-                'id',
-                'name',
-                'slug',
-                'services_count',
+            'data' => [
+                '*' => [
+                    'id',
+                    'name',
+                    'slug',
+                    'services_count',
+                ],
             ],
         ]);
     });
@@ -31,10 +33,12 @@ describe('public marketplace endpoints', function () {
 
         $response->assertOk();
         $response->assertJsonStructure([
-            '*' => [
-                'id',
-                'question',
-                'answer',
+            'data' => [
+                '*' => [
+                    'id',
+                    'question',
+                    'answer',
+                ],
             ],
         ]);
     });
