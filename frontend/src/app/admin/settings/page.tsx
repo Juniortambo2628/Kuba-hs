@@ -39,7 +39,7 @@ import { resolveMediaUrl } from "@/lib/utils";
 import { SettingsGroupSection } from "@/components/admin/settings/SettingsGroupSection";
 import { SettingsPageContent } from "@/components/admin/settings/SettingsPageContent";
 import type { Setting } from "@/components/admin/settings/types";
-import type { LucideIcon } from "lucide-react";
+import type { ComponentType } from "react";
 
 interface Metadata {
     environment: string;
@@ -52,7 +52,7 @@ interface SettingsApiResponse {
     metadata?: Metadata | null;
 }
 
-const GROUP_CONFIG: Record<string, { label: string; icon: LucideIcon; category: string; description: string }> = {
+const GROUP_CONFIG: Record<string, { label: string; icon: ComponentType<{ className?: string }>; category: string; description: string }> = {
     // ── Brand & Identity ──
     'identity': { label: 'Brand Identity', icon: Globe, category: 'brand', description: 'Logos, favicons, and site branding.' },
     'social_links': { label: 'Social Links', icon: Share2, category: 'brand', description: 'Social media handles and platform links.' },

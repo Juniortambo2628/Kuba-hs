@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ShieldCheck, CheckCircle2, Briefcase, Star, Users, ChevronRight } from "lucide-react";
 import Link from "next/link";
-import axiosInstance from "@/lib/axios";
+import axiosInstance, { handleApiError } from "@/lib/axios";
 import { designSystem } from "@/lib/design-system";
 import { toast } from "sonner";
 
@@ -43,11 +43,7 @@ export default function ProviderApplyPage() {
       setIsSuccess(true);
       toast.success("Application submitted!");
     } catch (err: unknown) {
-      const message =
-        err && typeof err === "object" && "response" in err
-          ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
-          : undefined;
-      toast.error(message || "Application failed.");
+      toast.error(handleApiError(err));
     } finally {
       setIsSubmitting(false);
     }
