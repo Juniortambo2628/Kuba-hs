@@ -169,6 +169,23 @@ class Booking extends Model implements HasMedia
     }
 
     /**
+     * Scope: filter bookings owned by or assigned to a user based on their role.
+     */
+    public function scopeForUser($query, User $user)
+    {
+        if ($user->role === \App\Enums\UserRole::Admin) {
+            return $query;
+        }
+
+        if ($user->role === \App\Enums\UserRole::Provider) {
+            $provider = $user->provider;
+            return $provider ? $query->where('provider_id', $provider->id) : $query->whereRaw('1 = 0');
+        }
+
+        return $query->where('customer_id', $user->id);
+    }
+
+    /**
      * Get the indexable data array for the model.
      *
      * @return array<string, mixed>

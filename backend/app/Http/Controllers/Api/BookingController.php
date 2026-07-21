@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Enums\BookingStatus;
 use App\Events\BookingStatusUpdated;
+use App\Http\Requests\RescheduleBookingRequest;
+use App\Http\Requests\UpdateBookingStatusRequest;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -17,28 +19,25 @@ class BookingController extends Controller
     /**
      * Update the status of a booking.
      */
-    public function updateStatus(Request $request, Booking $booking) {
+    public function updateStatus(UpdateBookingStatusRequest $request, Booking $booking) {
         $this->authorize('update', $booking);
 
-        $request->validate([
-            'status' => 'required|in:'.implode(',', array_column(BookingStatus::cases(), 'value')),
-            'cancellation_reason' => 'required_if:status,cancelled|string|nullable',
-        ]);
+        $validated = $request->validated();
 
         $booking = app(\App\Services\BookingService::class)->updateBookingStatus(
             $booking,
             $request->user(),
-            $request->status
+            $validated['status']
         );
 
-        if ($request->status === BookingStatus::Completed) {
+        if ($validated['status'] === BookingStatus::Completed->value || $validated['status'] === BookingStatus::Completed) {
             app(\App\Services\LoyaltyService::class)->awardPointsForBooking($booking);
         }
 
-        if ($request->status === BookingStatus::Cancelled) {
+        if ($validated['status'] === BookingStatus::Cancelled->value || $validated['status'] === BookingStatus::Cancelled) {
             app(\App\Services\LoyaltyService::class)->revertPointsForBooking($booking);
-            if ($request->cancellation_reason) {
-                $booking->update(['cancellation_reason' => $request->cancellation_reason]);
+            if (!empty($validated['cancellation_reason'])) {
+                $booking->update(['cancellation_reason' => $validated['cancellation_reason']]);
             }
         }
 
@@ -51,17 +50,15 @@ class BookingController extends Controller
     /**
      * Reschedule a booking.
      */
-    public function reschedule(Request $request, Booking $booking) {
+    public function reschedule(RescheduleBookingRequest $request, Booking $booking) {
         $this->authorize('update', $booking);
 
-        $request->validate([
-            'scheduled_date' => 'required|date|after:now',
-        ]);
+        $validated = $request->validated();
 
         $previousDate = $booking->scheduled_date?->toIso8601String();
 
         $booking->update([
-            'scheduled_date' => $request->scheduled_date,
+            'scheduled_date' => $validated['scheduled_date'],
             'rescheduled_at' => now(),
             'status' => BookingStatus::Pending, // Revert to pending for re-confirmation if needed
         ]);
