@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+#
+# Pre-push hook — runs backend and frontend tests before pushing.
+# If any test fails, the push is blocked.
+#
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+FAILED=0
+
+echo ""
+echo "${YELLOW}Running pre-push checks...${NC}"
+echo ""
+
+# Backend tests
+if [ -d "backend" ]; then
+  echo "${YELLOW}→ Backend tests${NC}"
+  cd backend
+  php artisan test 2>&1
+  if [ $? -ne 0 ]; then
+    echo "${RED}✗ Backend tests failed${NC}"
+    FAILED=1
+  else
+    echo "${GREEN}✓ Backend tests passed${NC}"
+  fi
+  cd ..
+  echo ""
+fi
+
+# Frontend tests
+if [ -d "frontend" ]; then
+  echo "${YELLOW}→ Frontend tests${NC}"
+  cd frontend
+  npx jest --ci 2>&1
+  if [ $? -ne 0 ]; then
+    echo "${RED}✗ Frontend tests failed${NC}"
+    FAILED=1
+  else
+    echo "${GREEN}✓ Frontend tests passed${NC}"
+  fi
+  cd ..
+  echo ""
+fi
+
+if [ $FAILED -ne 0 ]; then
+  echo "${RED}Push blocked — fix failing tests before pushing.${NC}"
+  exit 1
+fi
+
+echo "${GREEN}All tests passed. Pushing...${NC}"
+exit 0
