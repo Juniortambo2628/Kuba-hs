@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { Eye, EyeOff, type LucideIcon } from "lucide-react";
+import { useState, ComponentType } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { authUi } from "@/lib/auth-ui";
 import { cn } from "@/lib/utils";
 
 interface AuthIconInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  icon: LucideIcon;
+  icon: ComponentType<{ className?: string }>;
   showToggle?: boolean;
 }
 
