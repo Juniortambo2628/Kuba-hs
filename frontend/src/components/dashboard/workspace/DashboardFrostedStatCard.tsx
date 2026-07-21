@@ -1,7 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
-import type { LucideIcon } from "lucide-react";
+import type { ReactNode, ComponentType } from "react";
 import { workspaceUi } from "@/lib/dashboard-ui";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -18,7 +17,7 @@ const iconTone: Record<FrostedStatTone, string> = {
 interface DashboardFrostedStatCardProps {
   label: string;
   value: string | number;
-  icon: LucideIcon;
+  icon: ComponentType<{ className?: string; strokeWidth?: number | string }>;
   tone?: FrostedStatTone;
   badge?: string;
   badgeTone?: "good" | "info" | "muted";

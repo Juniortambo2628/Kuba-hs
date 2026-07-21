@@ -5,7 +5,7 @@ import { useScroll, useSpring } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowLeft, User, Calendar, Share2, Twitter, Linkedin } from "lucide-react";
+import { ArrowLeft, User, Calendar, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Post } from "@/types";
 import { getMediaUrl } from "@/lib/utils";
@@ -86,10 +86,10 @@ export default function BlogClient({ params }: { params: Promise<{ slug: string 
                 <div className="flex items-center gap-2">
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mr-2">Share</span>
                     <Button variant="outline" size="icon" className="w-8 h-8 rounded-lg border-border" onClick={() => window.open(`https://twitter.com/intent/tweet?url=${currentUrl}&text=${post.title}`, '_blank')}>
-                        <Twitter className="w-3.5 h-3.5" />
+                        <Share2 className="w-3.5 h-3.5" />
                     </Button>
                     <Button variant="outline" size="icon" className="w-8 h-8 rounded-lg border-border" onClick={() => window.open(`https://www.linkedin.com/shareArticle?mini=true&url=${currentUrl}&title=${post.title}`, '_blank')}>
-                        <Linkedin className="w-3.5 h-3.5" />
+                        <Share2 className="w-3.5 h-3.5" />
                     </Button>
                 </div>
             </div>
