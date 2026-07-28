@@ -20,5 +20,7 @@ frontend/.next/
 frontend/node_modules/
 frontend_v2_deprecated/
 *.zip
-github-actions-kuba-home-service*  
- 
+github-actions-kuba-home-service*
+.ssh/
+frontend/.lighthouseci/
+frontend/dev-server.log

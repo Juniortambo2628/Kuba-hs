@@ -1,7 +1,5 @@
 <?php
 
-use App\Models\Service;
-use App\Models\ServiceCategory;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -9,7 +7,6 @@ use Illuminate\Support\Str;
 
 return new class extends Migration
 {
-    /** Canonical category order for megamenu (residential then commercial). */
     private const TAXONOMY = [
         'Cleaning & Maintenance' => ['type' => 'residential', 'icon' => 'sparkles', 'sort' => 10],
         'Health & Wellness' => ['type' => 'residential', 'icon' => 'heart', 'sort' => 20],
@@ -26,14 +23,12 @@ return new class extends Migration
         'Commercial Logistics' => ['type' => 'commercial', 'icon' => 'building', 'sort' => 170],
     ];
 
-    /** Services to move from Commercial Logistics into the right category. */
     private const SERVICE_REASSIGNMENTS = [
         'IT & Tech Support' => 'Technology & IT Services',
         'HR & Staffing Support' => 'HR Services',
     ];
 
-    /** Legacy category — services are split then category removed. */
-    private const RETIRED_CATEGORIES = ['Financial & Legal', 'Plumbing'];
+    private const RETIRED_CATEGORIES = ['Plumbing'];
 
     public function up(): void
     {
@@ -56,102 +51,112 @@ return new class extends Migration
 
     private function consolidateFinancialAndLegal(): void
     {
-        $legacy = ServiceCategory::where('name', 'Financial & Legal')->first();
+        $legacy = DB::table('service_categories')->where('name', 'Financial & Legal')->first();
         if (! $legacy) {
             return;
         }
 
-        $legal = ServiceCategory::firstOrCreate(
-            ['name' => 'Legal Services'],
-            ['type' => 'commercial', 'icon_url' => 'briefcase', 'description' => 'Professional Legal Services services in Kenya.', 'sort_order' => 110]
-        );
-        $financial = ServiceCategory::firstOrCreate(
-            ['name' => 'Financial Services'],
-            ['type' => 'commercial', 'icon_url' => 'building', 'description' => 'Professional Financial Services services in Kenya.', 'sort_order' => 120]
-        );
-        $professional = ServiceCategory::firstOrCreate(
-            ['name' => 'Professional Services'],
-            ['type' => 'commercial', 'icon_url' => 'briefcase', 'description' => 'Professional Professional Services services in Kenya.', 'sort_order' => 140]
-        );
+        $now = now()->toDateTimeString();
 
-        $services = Service::where('category_id', $legacy->id)->get();
+        $legalId = $this->findOrCreateCategory('Legal Services', 'commercial', 'briefcase', 'Professional Legal Services services in Kenya.', 110, $now);
+        $financialId = $this->findOrCreateCategory('Financial Services', 'commercial', 'building', 'Professional Financial Services services in Kenya.', 120, $now);
+        $professionalId = $this->findOrCreateCategory('Professional Services', 'commercial', 'briefcase', 'Professional Professional Services services in Kenya.', 140, $now);
+
+        $services = DB::table('services')->where('category_id', $legacy->id)->get();
         foreach ($services as $service) {
             $name = Str::lower($service->name);
-            $target = $professional->id;
+            $target = $professionalId;
             if (Str::contains($name, ['legal', 'law', 'documentation', 'compliance'])) {
-                $target = $legal->id;
+                $target = $legalId;
             } elseif (Str::contains($name, ['tax', 'sacco', 'banking', 'insurance', 'wealth', 'financial', 'advisory'])) {
-                $target = $financial->id;
+                $target = $financialId;
             }
-            $service->update(['category_id' => $target]);
+            DB::table('services')->where('id', $service->id)->update(['category_id' => $target]);
         }
 
-        $legacy->delete();
+        DB::table('service_categories')->where('id', $legacy->id)->delete();
+    }
+
+    private function findOrCreateCategory(string $name, string $type, string $icon, string $description, int $sort, string $now): string
+    {
+        $existing = DB::table('service_categories')->where('name', $name)->first();
+        if ($existing) {
+            return $existing->id;
+        }
+
+        $id = Str::uuid()->toString();
+        DB::table('service_categories')->insert([
+            'id' => $id,
+            'name' => $name,
+            'type' => $type,
+            'icon_url' => $icon,
+            'description' => $description,
+            'sort_order' => $sort,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        return $id;
     }
 
     private function reassignMisplacedServices(): void
     {
         foreach (self::SERVICE_REASSIGNMENTS as $serviceName => $categoryName) {
-            $category = ServiceCategory::where('name', $categoryName)->first();
+            $category = DB::table('service_categories')->where('name', $categoryName)->first();
             if (! $category) {
                 continue;
             }
-            Service::where('name', $serviceName)->update(['category_id' => $category->id]);
+            DB::table('services')->where('name', $serviceName)->update(['category_id' => $category->id]);
         }
     }
 
     private function retireLegacyCategories(): void
     {
-        $cleaning = ServiceCategory::where('name', 'Cleaning & Maintenance')->first();
+        $cleaning = DB::table('service_categories')->where('name', 'Cleaning & Maintenance')->first();
 
         foreach (self::RETIRED_CATEGORIES as $name) {
-            if ($name === 'Financial & Legal') {
-                continue;
-            }
-            $cat = ServiceCategory::where('name', $name)->first();
+            $cat = DB::table('service_categories')->where('name', $name)->first();
             if (! $cat || ! $cleaning) {
                 continue;
             }
-            Service::where('category_id', $cat->id)->update(['category_id' => $cleaning->id]);
-            $cat->delete();
+            DB::table('services')->where('category_id', $cat->id)->update(['category_id' => $cleaning->id]);
+            DB::table('service_categories')->where('id', $cat->id)->delete();
         }
     }
 
     private function applyTaxonomy(): void
     {
         foreach (self::TAXONOMY as $name => $meta) {
-            ServiceCategory::where('name', $name)->update([
+            DB::table('service_categories')->where('name', $name)->update([
                 'type' => $meta['type'],
                 'icon_url' => $meta['icon'],
                 'sort_order' => $meta['sort'],
             ]);
         }
 
-        ServiceCategory::query()
-            ->whereNotIn('name', array_keys(self::TAXONOMY))
-            ->orderBy('name')
-            ->get()
-            ->each(function (ServiceCategory $cat, int $index) {
-                $cat->update(['sort_order' => 900 + $index]);
-            });
+        $knownNames = array_keys(self::TAXONOMY);
+        $others = DB::table('service_categories')->whereNotIn('name', $knownNames)->orderBy('name')->get();
+        foreach ($others as $index => $cat) {
+            DB::table('service_categories')->where('id', $cat->id)->update(['sort_order' => 900 + $index]);
+        }
     }
 
     private function dedupeServicesByName(): void
     {
-        $duplicates = Service::query()
+        $duplicates = DB::table('services')
             ->select('name')
             ->groupBy('name')
             ->havingRaw('COUNT(*) > 1')
             ->pluck('name');
 
         foreach ($duplicates as $name) {
-            $rows = Service::where('name', $name)->orderBy('created_at')->get();
+            $rows = DB::table('services')->where('name', $name)->orderBy('created_at')->get();
             $keep = $rows->first();
             foreach ($rows->slice(1) as $duplicate) {
                 DB::table('provider_services')
                     ->where('service_id', $duplicate->id)
                     ->update(['service_id' => $keep->id]);
-                $duplicate->delete();
+                DB::table('services')->where('id', $duplicate->id)->delete();
             }
         }
     }

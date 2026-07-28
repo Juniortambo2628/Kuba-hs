@@ -196,7 +196,7 @@ class DashboardSearchController extends Controller
             ->map(fn (User $u) => [
                 'id' => 'user-'.$u->id,
                 'title' => $u->name ?: trim("{$u->first_name} {$u->last_name}"),
-                'description' => $u->email.' · '.$u->role,
+                'description' => $u->email.' · '.$u->role->value,
                 'url' => '/admin/users?search='.urlencode($q),
                 'category' => 'Users',
             ])
