@@ -19,18 +19,23 @@ return new class extends Migration
             return;
         }
 
-        if (Schema::getConnection()->getDriverName() !== 'mysql') {
-            return;
+        $driver = Schema::getConnection()->getDriverName();
+        $hasFK = false;
+
+        if ($driver === 'sqlite') {
+            $indexes = DB::select("PRAGMA foreign_key_list('loyalty_points')");
+            $hasFK = collect($indexes)->contains('from', 'user_id');
+        } else {
+            $database = Schema::getConnection()->getDatabaseName();
+            $existing = collect(DB::select(
+                'SELECT CONSTRAINT_NAME FROM information_schema.TABLE_CONSTRAINTS
+                 WHERE CONSTRAINT_SCHEMA = ? AND TABLE_NAME = ? AND CONSTRAINT_TYPE = ?',
+                [$database, 'loyalty_points', 'FOREIGN KEY']
+            ))->pluck('CONSTRAINT_NAME')->all();
+            $hasFK = in_array('loyalty_points_user_id_foreign', $existing, true);
         }
 
-        $database = Schema::getConnection()->getDatabaseName();
-        $existing = collect(DB::select(
-            'SELECT CONSTRAINT_NAME FROM information_schema.TABLE_CONSTRAINTS
-             WHERE CONSTRAINT_SCHEMA = ? AND TABLE_NAME = ? AND CONSTRAINT_TYPE = ?',
-            [$database, 'loyalty_points', 'FOREIGN KEY']
-        ))->pluck('CONSTRAINT_NAME')->all();
-
-        if (!in_array('loyalty_points_user_id_foreign', $existing, true)) {
+        if (!$hasFK) {
             Schema::table('loyalty_points', function (Blueprint $table) {
                 $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
             });

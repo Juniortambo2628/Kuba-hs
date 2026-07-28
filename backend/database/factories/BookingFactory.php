@@ -25,7 +25,7 @@ class BookingFactory extends Factory
             'scheduled_date' => fake()->dateTimeBetween('+1 week', '+1 month'),
             'scheduled_time' => fake()->time('H:i'),
             'status' => BookingStatus::Pending,
-            'address_id' => null,
+            'address_id' => Address::factory(),
             'description' => fake()->sentence(),
             'service_type' => fake()->randomElement(['residential', 'commercial']),
             'quantity' => fake()->numberBetween(1, 5),

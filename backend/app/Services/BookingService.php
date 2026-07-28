@@ -226,7 +226,7 @@ class BookingService
             abort(403, 'Customers can only cancel bookings.');
         }
 
-        $previousStatus = $booking->status;
+        $previousStatus = is_string($booking->status) ? $booking->status : $booking->status->value;
         $updateData = ['status' => $status];
 
         // Record started_at when service begins

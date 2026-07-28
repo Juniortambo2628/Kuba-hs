@@ -68,7 +68,7 @@ class BookingStatusUpdated extends Notification implements ShouldQueue
             'booking_number' => $this->booking->booking_number,
             'status' => $this->booking->status,
             'title' => 'Booking Update',
-            'message' => "Booking #{$this->booking->booking_number} status updated to {$this->booking->status}",
+            'message' => "Booking #{$this->booking->booking_number} status updated to {$this->booking->status->value}",
             'url' => "/dashboard/{$dashboardRole}/bookings/{$this->booking->id}",
         ];
     }
