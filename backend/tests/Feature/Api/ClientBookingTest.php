@@ -99,6 +99,49 @@ describe('client bookings API', function () {
 
         $response->assertForbidden();
     });
+
+    it('allows customer to create a booking', function () {
+        $address = \App\Models\Address::factory()->create(['user_id' => $this->customer->id]);
+        
+        $response = $this->actingAs($this->customer)
+            ->postJson("/api/client/bookings", [
+                'provider_id' => $this->provider->id,
+                'service_id' => $this->service->id,
+                'address_id' => $address->id,
+                'scheduled_date' => now()->addDays(2)->format('Y-m-d'),
+                'scheduled_time' => '10:00',
+                'notes' => 'Please bring your own equipment'
+            ]);
+
+        $response->assertCreated();
+        $this->assertDatabaseHas('bookings', [
+            'customer_id' => $this->customer->id,
+            'provider_id' => $this->provider->id,
+            'service_id' => $this->service->id,
+        ]);
+    });
+
+    it('allows customer to reschedule a booking', function () {
+        $booking = Booking::factory()->create([
+            'customer_id' => $this->customer->id,
+            'provider_id' => $this->provider->id,
+            'service_id' => $this->service->id,
+            'status' => 'pending',
+            'scheduled_date' => now()->addDays(2)->format('Y-m-d'),
+        ]);
+
+        $newDate = now()->addDays(5)->format('Y-m-d');
+
+        $response = $this->actingAs($this->customer)
+            ->patchJson("/api/client/bookings/{$booking->id}/reschedule", [
+                'scheduled_date' => $newDate,
+                'scheduled_time' => '14:00',
+                'reason' => 'Schedule conflict',
+            ]);
+
+        $response->assertOk();
+        expect($booking->fresh()->scheduled_date->format('Y-m-d'))->toBe($newDate);
+    });
 });
 
 describe('provider bookings API', function () {
