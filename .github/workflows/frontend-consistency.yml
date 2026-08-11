@@ -34,8 +34,8 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Run Unit Tests
-        run: npm test
+      - name: Run Unit Tests & Contract Tests
+        run: npm run test:ci
 
   visual-regression:
     name: Visual Regression Tests

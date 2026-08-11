@@ -1,0 +1,22 @@
+name: Test and Deploy Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  backend-tests:
+    name: Backend Tests
+    uses: ./.github/workflows/backend-tests.yml
+
+  frontend-tests:
+    name: Frontend Tests
+    uses: ./.github/workflows/frontend-consistency.yml
+
+  deploy:
+    name: Deploy to Production
+    needs: [backend-tests, frontend-tests]
+    uses: ./.github/workflows/deploy.yml
+    secrets: inherit

@@ -4,11 +4,6 @@
 |--------------------------------------------------------------------------
 | Test Case
 |--------------------------------------------------------------------------
-|
-| The closure you provide to your test functions is always bound to a specific PHPUnit test
-| case class. By default, that class is "PHPUnit\Framework\TestCase". Of course, you may
-| need to change it using the "pest()" function to bind a different classes or traits.
-|
 */
 
 pest()->extend(Tests\TestCase::class)
@@ -19,29 +14,107 @@ pest()->extend(Tests\TestCase::class)
 |--------------------------------------------------------------------------
 | Expectations
 |--------------------------------------------------------------------------
-|
-| When you're writing tests, you often need to check that values meet certain conditions. The
-| "expect()" function gives you access to a set of "expectations" methods that you can use
-| to assert different things. Of course, you may extend the Expectation API at any time.
-|
 */
 
 expect()->extend('toBeOne', function () {
     return $this->toBe(1);
 });
 
+expect()->extend('toBeJsonApiResponse', function () {
+    return $this->toBeArray()
+        ->and($this->value)->toHaveKey('data');
+});
+
 /*
 |--------------------------------------------------------------------------
-| Functions
+| Functions — Shared Test Helpers
 |--------------------------------------------------------------------------
-|
-| While Pest is very powerful out-of-the-box, you may have some testing code specific to your
-| project that you don't want to repeat in every file. Here you can also expose helpers as
-| global functions to help you to reduce the number of lines of code in your test files.
-|
 */
 
-function something()
+use App\Enums\UserRole;
+use App\Models\User;
+use App\Models\Provider;
+use App\Models\Service;
+use App\Models\ServiceCategory;
+use App\Models\ProviderService;
+use App\Models\Booking;
+use App\Models\Address;
+
+/**
+ * Create a customer user.
+ */
+function createCustomer(array $overrides = []): User
 {
-    // ..
+    return User::factory()->create(array_merge([
+        'role' => UserRole::Customer,
+    ], $overrides));
+}
+
+/**
+ * Create a provider user with associated Provider profile.
+ */
+function createProviderUser(array $userOverrides = [], array $providerOverrides = []): User
+{
+    $user = User::factory()->create(array_merge([
+        'role' => UserRole::Provider,
+    ], $userOverrides));
+
+    Provider::factory()->create(array_merge([
+        'user_id' => $user->id,
+    ], $providerOverrides));
+
+    return $user->load('provider');
+}
+
+/**
+ * Create an admin user.
+ */
+function createAdmin(array $overrides = []): User
+{
+    return User::factory()->create(array_merge([
+        'role' => UserRole::Admin,
+    ], $overrides));
+}
+
+/**
+ * Create a full service catalog chain: category → service → provider service.
+ */
+function createServiceCatalog(Provider $provider = null): array
+{
+    $category = ServiceCategory::factory()->create();
+    $service = Service::factory()->create(['category_id' => $category->id]);
+
+    $providerUser = null;
+    if (!$provider) {
+        $providerUser = createProviderUser();
+        $provider = $providerUser->provider;
+    }
+
+    $providerService = ProviderService::factory()->create([
+        'provider_id' => $provider->id,
+        'service_id' => $service->id,
+    ]);
+
+    return compact('category', 'service', 'provider', 'providerService', 'providerUser');
+}
+
+/**
+ * Create a full booking workflow: customer + provider + service + address + booking.
+ */
+function createBookingWorkflow(array $bookingOverrides = []): array
+{
+    $customer = createCustomer();
+    $providerUser = createProviderUser();
+    $provider = $providerUser->provider;
+    $catalog = createServiceCatalog($provider);
+    $address = Address::factory()->create(['user_id' => $customer->id]);
+
+    $booking = Booking::factory()->create(array_merge([
+        'customer_id' => $customer->id,
+        'provider_id' => $provider->id,
+        'service_id' => $catalog['service']->id,
+        'address_id' => $address->id,
+    ], $bookingOverrides));
+
+    return array_merge($catalog, compact('customer', 'providerUser', 'address', 'booking'));
 }

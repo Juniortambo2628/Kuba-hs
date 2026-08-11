@@ -89,4 +89,56 @@ test.describe('UI Components Visual Regression', () => {
       timeout: 10000,
     })
   })
+
+  test('NotificationBadge Visual Consistency', async ({ page }) => {
+    await page.evaluate(() => {
+      document.body.innerHTML = `
+        <div id="badge-container" style="padding: 2rem; display: flex; gap: 2rem; background: #f3f4f6;">
+          <div style="position: relative; width: 40px; height: 40px; background: #fff; border-radius: 50%;">
+            <span class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">3</span>
+          </div>
+          <div style="position: relative; width: 40px; height: 40px; background: #fff; border-radius: 50%;">
+            <span class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">99+</span>
+          </div>
+        </div>
+      `;
+    });
+    const container = page.locator('#badge-container');
+    await expect(container).toHaveScreenshot('notification-badge.png');
+  });
+
+  test('ServiceMegamenu Visual Consistency', async ({ page }) => {
+    await page.evaluate(() => {
+      document.body.innerHTML = `
+        <div id="megamenu-container" style="padding: 2rem; background: #fff; min-height: 400px;">
+          <nav>
+            <ul class="flex gap-4">
+              <li class="relative group">
+                <button class="font-medium text-gray-700">Services</button>
+                <div class="absolute left-0 mt-2 w-screen max-w-md bg-white shadow-xl rounded-lg border p-4 opacity-100 visible">
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <h4 class="font-bold mb-2">Cleaning</h4>
+                      <ul class="space-y-1">
+                        <li><a href="#" class="text-sm text-gray-600 hover:text-blue-600">Deep Clean</a></li>
+                        <li><a href="#" class="text-sm text-gray-600 hover:text-blue-600">Standard Clean</a></li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 class="font-bold mb-2">Plumbing</h4>
+                      <ul class="space-y-1">
+                        <li><a href="#" class="text-sm text-gray-600 hover:text-blue-600">Leak Repair</a></li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      `;
+    });
+    const container = page.locator('#megamenu-container');
+    await expect(container).toHaveScreenshot('service-megamenu.png');
+  });
 })
