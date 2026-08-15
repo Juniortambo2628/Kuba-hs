@@ -31,6 +31,9 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
 
+      - name: Install rsync
+        run: sudo apt-get update && sudo apt-get install -y rsync
+
       - name: Deploy Core Files (kuba_backend)
         env:
           CPANEL_USER: ${{ secrets.CPANEL_USER }}
