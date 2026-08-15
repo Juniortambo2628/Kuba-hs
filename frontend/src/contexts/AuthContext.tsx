@@ -20,6 +20,8 @@ interface AuthContextType {
   }) => Promise<string>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
+  twoFactorChallenge: (code: string) => Promise<User>;
+  passkeyLogin: (userId: string) => Promise<User>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -63,6 +65,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (data: any): Promise<User | null> => {
     await axiosInstance.get("/sanctum/csrf-cookie");
     const response = await axiosInstance.post("/api/auth/login", data);
+
+    // Check if 2FA is required
+    if (response.data?.two_factor_required) {
+      // Store 2FA state and redirect to challenge page
+      const error = new Error("2FA required") as Error & { twoFactorRequired: true; challengeMethods: string[] };
+      error.twoFactorRequired = true;
+      error.challengeMethods = response.data.challenge_methods || ["totp", "recovery_code"];
+      throw error;
+    }
+
     await checkAuth();
     const fromLogin = response.data?.user;
     if (fromLogin?.role) {
@@ -74,6 +86,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       return null;
     }
+  };
+
+  const twoFactorChallenge = async (code: string): Promise<User> => {
+    const response = await axiosInstance.post("/api/auth/two-factor/challenge", { code });
+    await checkAuth();
+    return (response.data?.user ?? response.data?.data) as User;
+  };
+
+  const passkeyLogin = async (userId: string): Promise<User> => {
+    const response = await axiosInstance.post("/api/auth/login", { passkey_user_id: userId });
+    await checkAuth();
+    return (response.data?.user ?? response.data?.data) as User;
   };
 
   const register = async (data: any) => {
@@ -112,7 +136,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, isLoading, login, register, forgotPassword, resetPassword, logout, checkAuth }}
+      value={{ user, isLoading, login, register, forgotPassword, resetPassword, logout, checkAuth, twoFactorChallenge, passkeyLogin }}
     >
       {children}
     </AuthContext.Provider>

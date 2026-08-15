@@ -37,6 +37,7 @@ class RegisteredUserController extends Controller
             'role' => $request->role,
             'phone' => $request->phone,
             'google_id' => $request->google_id,
+            'two_factor_setup_required' => true,
         ]);
 
         event(new Registered($user));

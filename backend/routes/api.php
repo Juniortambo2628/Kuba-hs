@@ -30,7 +30,27 @@ Route::prefix('auth')->group(function () {
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AuthenticatedSessionController::class, 'destroy']);
+
+        // Passkey management
+        Route::get('/passkeys', [\App\Http\Controllers\Auth\PasskeyController::class, 'index']);
+        Route::post('/passkey/register/options', [\App\Http\Controllers\Auth\PasskeyController::class, 'registerOptions']);
+        Route::post('/passkey/register/verify', [\App\Http\Controllers\Auth\PasskeyController::class, 'registerVerify']);
+        Route::delete('/passkey/{id}', [\App\Http\Controllers\Auth\PasskeyController::class, 'destroy']);
+
+        // Two-factor authentication
+        Route::get('/two-factor', [\App\Http\Controllers\Auth\TwoFactorController::class, 'show']);
+        Route::post('/two-factor', [\App\Http\Controllers\Auth\TwoFactorController::class, 'store']);
+        Route::post('/two-factor/confirm', [\App\Http\Controllers\Auth\TwoFactorController::class, 'confirm']);
+        Route::delete('/two-factor', [\App\Http\Controllers\Auth\TwoFactorController::class, 'destroy']);
+        Route::get('/two-factor/recovery-codes', [\App\Http\Controllers\Auth\TwoFactorController::class, 'recoveryCodes']);
     });
+
+    // Passkey authentication (public — user not yet logged in)
+    Route::post('/passkey/authenticate/options', [\App\Http\Controllers\Auth\PasskeyController::class, 'authenticateOptions']);
+    Route::post('/passkey/authenticate/verify', [\App\Http\Controllers\Auth\PasskeyController::class, 'authenticateVerify']);
+
+    // Two-factor challenge (public — during login flow)
+    Route::post('/two-factor/challenge', [\App\Http\Controllers\Auth\TwoFactorChallengeController::class, 'verify']);
 });
 
 
@@ -69,7 +89,7 @@ Route::post('/auth/complete-profile', [\App\Http\Controllers\Auth\ProfileComplet
 Route::get('/blog', [\App\Http\Controllers\Api\BlogController::class, 'index']);
 Route::get('/blog/{slug}', [\App\Http\Controllers\Api\BlogController::class, 'show']);
 // Authenticated dashboard routes
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'two-factor-setup'])->group(function () {
     // Client/Provider Dashboard — delegates to role-specific controllers
     Route::get('/dashboard', function (\Illuminate\Http\Request $request) {
         $user = $request->user();
