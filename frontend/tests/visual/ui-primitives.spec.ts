@@ -39,6 +39,9 @@ test.describe('UI Primitives Visual Consistency', () => {
 
   test('Buttons render consistently', async ({ page }) => {
     const container = page.locator('#test-container');
-    await expect(container).toHaveScreenshot('ui-primitives-buttons.png');
+    await container.waitFor({ state: 'visible' });
+    // Give injected HTML + Tailwind time to settle in CI
+    await page.waitForTimeout(1000);
+    await expect(container).toHaveScreenshot('ui-primitives-buttons.png', { timeout: 15000 });
   });
 });

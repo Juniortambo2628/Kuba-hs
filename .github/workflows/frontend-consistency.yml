@@ -11,6 +11,11 @@ on:
       - main
     paths:
       - 'frontend/**'
+  workflow_call:
+  workflow_dispatch:
+      - main
+    paths:
+      - 'frontend/**'
   workflow_dispatch:
 
 jobs:
