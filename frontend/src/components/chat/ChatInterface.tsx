@@ -70,8 +70,8 @@ export function ChatInterface({ role, layout = "embedded", className }: ChatInte
       try {
         const res = await axiosInstance.get(`/api/chat/conversations/${activeConversationId}`);
         const conv = extractApiList(res.data?.conversation ?? res.data).find(
-        (x: Record<string, unknown>) => x.id === activeConversationId
-      );
+          (x: Record<string, unknown>) => x.id === activeConversationId
+        );
         const rawMessages = Array.isArray(conv?.messages)
           ? conv.messages
           : Array.isArray(res.data?.messages)
@@ -424,9 +424,9 @@ export function ChatInterface({ role, layout = "embedded", className }: ChatInte
                               isMe
                                 ? "rounded-[20px] rounded-br-md bg-foreground text-background shadow-md"
                                 : cn(
-                                    workspaceUi.frosted.inset,
-                                    "rounded-[20px] rounded-bl-md text-foreground shadow-sm"
-                                  )
+                                  workspaceUi.frosted.inset,
+                                  "rounded-[20px] rounded-bl-md text-foreground shadow-sm"
+                                )
                             )}
                           >
                             <p className="whitespace-pre-wrap">{msg.body}</p>
