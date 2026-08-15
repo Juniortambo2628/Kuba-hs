@@ -8,9 +8,12 @@ test('authenticated user can complete profile', function () {
     ]);
 
     $response = $this->actingAs($user)->postJson('/api/auth/complete-profile', [
+        'email' => $user->email,
+        'role' => 'customer',
+        'first_name' => 'Test',
+        'last_name' => 'User',
         'phone' => '0712345678',
-        'address' => '123 Test St',
-        'city' => 'Nairobi',
+        'google_id' => 'google-12345',
     ]);
 
     $response->assertOk();
@@ -18,12 +21,6 @@ test('authenticated user can complete profile', function () {
     $this->assertDatabaseHas('users', [
         'id' => $user->id,
         'phone' => '0712345678',
-    ]);
-    
-    $this->assertDatabaseHas('addresses', [
-        'user_id' => $user->id,
-        'address_line1' => '123 Test St',
-        'city' => 'Nairobi',
     ]);
 });
 

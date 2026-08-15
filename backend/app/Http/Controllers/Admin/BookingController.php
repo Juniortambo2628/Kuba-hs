@@ -57,11 +57,11 @@ class BookingController extends Controller
         $previousStatus = $booking->status;
         $booking->update($validated);
 
-        if ($previousStatus !== $validated['status']) {
+        if ($previousStatus->value !== $validated['status']) {
             app(\App\Services\BookingActivityLogService::class)->logStatusChange(
                 $booking,
                 $request->user(),
-                $previousStatus,
+                $previousStatus->value,
                 $validated['status']
             );
         }

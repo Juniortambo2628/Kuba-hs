@@ -6,9 +6,9 @@ test('customer can view receipt for completed booking', function () {
     // Create a payment record to ensure receipt can be generated
     \App\Models\Payment::factory()->create([
         'booking_id' => $workflow['booking']->id,
-        'user_id' => $workflow['customer']->id,
+        'customer_id' => $workflow['customer']->id,
         'amount' => 5000,
-        'status' => 'successful'
+        'status' => 'completed'
     ]);
 
     $response = $this->actingAs($workflow['customer'])

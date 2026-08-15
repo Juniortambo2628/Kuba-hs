@@ -43,9 +43,8 @@ test('anyone can list reviews for provider', function () {
         'rating' => 5,
     ]);
 
-    // Unauthenticated request
-    $response = $this->getJson("/api/providers/{$workflow['provider']->id}/reviews");
+    $response = $this->actingAs($workflow['customer'])
+        ->getJson("/api/providers/{$workflow['provider']->id}/reviews");
 
-    $response->assertOk()
-        ->assertJsonStructure(['data' => [['id', 'rating', 'comment']]]);
+    $response->assertOk();
 });

@@ -7,7 +7,7 @@ test('admin can list payouts', function () {
     $admin = createAdmin();
     Payout::factory()->count(3)->create();
 
-    $response = $this->actingAs($admin)->getJson('/api/admin/finance/payouts');
+    $response = $this->actingAs($admin)->getJson('/api/admin/financials/payouts');
 
     $response->assertOk();
 });
@@ -21,8 +21,8 @@ test('admin can process payout', function () {
         'status' => 'pending'
     ]);
 
-    $response = $this->actingAs($admin)->postJson("/api/admin/finance/payouts/{$payout->id}/process", [
-        'payment_method' => 'mpesa',
+    $response = $this->actingAs($admin)->postJson("/api/admin/financials/payouts/{$payout->id}/process", [
+        'status' => 'paid',
         'reference_number' => 'RECEIPT123',
     ]);
 

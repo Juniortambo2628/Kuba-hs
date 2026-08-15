@@ -6,7 +6,7 @@ use App\Models\VerificationDocument;
 test('admin can view compliance overview', function () {
     $admin = createAdmin();
 
-    $response = $this->actingAs($admin)->getJson('/api/admin/compliance');
+    $response = $this->actingAs($admin)->getJson('/api/admin/compliance/overview');
 
     $response->assertOk();
 });
@@ -22,9 +22,10 @@ test('admin can list providers for compliance', function () {
 
 test('admin can list verification documents', function () {
     $admin = createAdmin();
-    VerificationDocument::factory()->create();
+    $provider = Provider::factory()->create();
+    VerificationDocument::factory()->create(['provider_id' => $provider->id]);
 
-    $response = $this->actingAs($admin)->getJson('/api/admin/compliance/documents');
+    $response = $this->actingAs($admin)->getJson("/api/admin/compliance/providers/{$provider->id}/documents");
 
     $response->assertOk();
 });
@@ -33,7 +34,7 @@ test('admin can review verification document', function () {
     $admin = createAdmin();
     $document = VerificationDocument::factory()->create(['status' => 'pending']);
 
-    $response = $this->actingAs($admin)->postJson("/api/admin/compliance/documents/{$document->id}/review", [
+    $response = $this->actingAs($admin)->patchJson("/api/admin/compliance/documents/{$document->id}/review", [
         'status' => 'approved',
     ]);
 

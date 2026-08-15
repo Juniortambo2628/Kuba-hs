@@ -33,8 +33,8 @@ test('trust partners endpoint returns active partners', function () {
     $response = $this->getJson('/api/trust-partners');
 
     $response->assertOk()
-        ->assertJsonCount(1, 'data')
-        ->assertJsonPath('data.0.id', $partner->id);
+        ->assertJsonCount(1)
+        ->assertJsonFragment(['id' => $partner->id]);
 });
 
 test('page features endpoint returns grouped features', function () {

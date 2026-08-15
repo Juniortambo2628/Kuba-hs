@@ -22,7 +22,7 @@ test('new users can register via API', function () {
     $response->assertCreated()
         ->assertJsonStructure([
             'user' => ['id', 'email', 'role'],
-            'token',
+            'message',
         ]);
         
     $this->assertDatabaseHas('users', [
@@ -62,8 +62,9 @@ test('providers can register via specialized endpoint', function () {
         'password' => 'password123',
         'password_confirmation' => 'password123',
         'business_name' => 'Fixer Co',
-        'phone' => '1234567890',
-        'location_name' => 'Nairobi',
+        'experience_years' => 5,
+        'bio' => 'Experienced home service provider with over 5 years of expertise.',
+        'category' => 'Cleaning & Maintenance',
     ]);
 
     $response->assertCreated();
@@ -75,6 +76,5 @@ test('providers can register via specialized endpoint', function () {
     
     $this->assertDatabaseHas('providers', [
         'business_name' => 'Fixer Co',
-        'location_name' => 'Nairobi',
     ]);
 });

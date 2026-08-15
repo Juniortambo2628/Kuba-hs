@@ -21,10 +21,10 @@ test('provider can upload verification documents', function () {
 
     $response = $this->actingAs($providerUser)->postJson('/api/provider/verification', [
         'document_type' => 'id_card',
-        'document_file' => $file,
+        'file' => $file,
     ]);
 
-    $response->assertOk(); // Or created
+    $response->assertCreated();
     $this->assertDatabaseHas('verification_documents', [
         'provider_id' => $providerUser->provider->id,
         'document_type' => 'id_card',

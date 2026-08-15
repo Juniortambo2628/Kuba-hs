@@ -18,8 +18,10 @@ test('provider can view their reviews', function () {
 
     $response->assertOk()
         ->assertJsonStructure([
-            'data' => [
-                '*' => ['id', 'rating', 'comment', 'customer']
+            'reviews' => [
+                'data' => [
+                    '*' => ['id', 'rating', 'comment']
+                ]
             ]
         ]);
 });

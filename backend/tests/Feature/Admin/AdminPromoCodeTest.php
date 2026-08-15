@@ -20,7 +20,7 @@ test('admin can manage promo codes', function () {
     ])->assertCreated();
 
     // Update status
-    $this->actingAs($admin)->patchJson("/api/admin/promo-codes/{$promo->id}/status", [
+    $this->actingAs($admin)->patchJson("/api/admin/promo-codes/{$promo->id}/toggle-status", [
         'is_active' => false
     ])->assertOk();
 

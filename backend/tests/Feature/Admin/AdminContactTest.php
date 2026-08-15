@@ -7,16 +7,16 @@ test('admin can manage contact messages', function () {
     $message = ContactMessage::factory()->create();
 
     // List
-    $this->actingAs($admin)->getJson('/api/admin/contacts')->assertOk();
+    $this->actingAs($admin)->getJson('/api/admin/contact')->assertOk();
 
     // Show
-    $this->actingAs($admin)->getJson("/api/admin/contacts/{$message->id}")->assertOk();
+    $this->actingAs($admin)->getJson("/api/admin/contact/{$message->id}")->assertOk();
 
     // Update Status
-    $this->actingAs($admin)->patchJson("/api/admin/contacts/{$message->id}/status", [
-        'status' => 'resolved'
+    $this->actingAs($admin)->patchJson("/api/admin/contact/{$message->id}/status", [
+        'status' => 'replied'
     ])->assertOk();
 
     // Delete
-    $this->actingAs($admin)->deleteJson("/api/admin/contacts/{$message->id}")->assertOk();
+    $this->actingAs($admin)->deleteJson("/api/admin/contact/{$message->id}")->assertOk();
 });

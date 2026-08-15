@@ -25,7 +25,7 @@ test('admin can toggle user status', function () {
     $admin = createAdmin();
     $user = createCustomer(['is_active' => true]);
 
-    $response = $this->actingAs($admin)->patchJson("/api/admin/users/{$user->id}/status", [
+    $response = $this->actingAs($admin)->patchJson("/api/admin/users/{$user->id}/toggle-status", [
         'is_active' => false
     ]);
 

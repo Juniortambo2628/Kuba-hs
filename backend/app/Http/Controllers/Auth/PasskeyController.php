@@ -424,13 +424,20 @@ class PasskeyController extends Controller
         return match ($majorType) {
             0 => $length, // Unsigned integer
             1 => -1 - $length, // Negative integer
-            2 => substr($data, $offset, $length) & ($offset += $length, true), // Byte string
-            3 => substr($data, $offset, $length) & ($offset += $length, true), // Text string
+            2, 3 => $this->parseCBORString($data, $offset, $length),
             4 => $this->parseCBORArray($data, $offset, $length), // Array
             5 => $this->parseCBORMap($data, $offset, $length), // Map
             7 => $length === 21 ? true : ($length === 22 ? false : null), // Simple/Float
             default => null,
         };
+    }
+
+    private function parseCBORString(string $data, int &$offset, int $length): string
+    {
+        $result = substr($data, $offset, $length);
+        $offset += $length;
+
+        return $result;
     }
 
     private function parseCBORArray(string $data, int &$offset, int $length): array

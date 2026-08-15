@@ -13,11 +13,11 @@ test('admin can view site settings', function () {
 
 test('admin can update site settings', function () {
     $admin = createAdmin();
+    $setting = SiteSetting::factory()->create(['key' => 'site_name', 'value' => 'Old Kuba']);
     
     $response = $this->actingAs($admin)->postJson('/api/admin/settings', [
         'settings' => [
-            'site_name' => 'New Kuba',
-            'contact_email' => 'support@newkuba.com'
+            ['id' => $setting->id, 'value' => 'New Kuba'],
         ]
     ]);
 

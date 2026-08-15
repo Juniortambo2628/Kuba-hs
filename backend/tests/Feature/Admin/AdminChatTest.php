@@ -43,7 +43,7 @@ test('admin can delete inappropriate message', function () {
     $message = Message::factory()->create([
         'conversation_id' => $conversation->id,
         'sender_id' => $workflow['customer']->id,
-        'content' => 'Inappropriate content',
+        'body' => 'Inappropriate content',
     ]);
 
     $response = $this->actingAs($admin)->deleteJson("/api/admin/chat/messages/{$message->id}");
