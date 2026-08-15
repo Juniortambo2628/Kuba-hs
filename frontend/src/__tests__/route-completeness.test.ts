@@ -14,7 +14,7 @@ describe('Route Completeness Validation', () => {
   });
 
   it('validates admin dashboard routes exist', () => {
-    const adminDashboardDir = path.resolve(__dirname, '../app/dashboard/admin');
+    const adminDashboardDir = path.resolve(__dirname, '../app/admin');
     expect(fs.existsSync(adminDashboardDir)).toBeTruthy();
   });
 });
