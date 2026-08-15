@@ -14,6 +14,8 @@ jobs:
   frontend-tests:
     name: Frontend Tests
     uses: ./.github/workflows/frontend-consistency.yml
+    permissions:
+      contents: write
 
   deploy:
     name: Deploy to Production
