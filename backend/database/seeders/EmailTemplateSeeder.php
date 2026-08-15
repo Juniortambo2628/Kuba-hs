@@ -53,11 +53,32 @@ class EmailTemplateSeeder extends Seeder
                 'variables' => ['provider_name', 'rating', 'booking_number', 'reviews_url', 'comment']
             ],
             [
+                'key' => 'new_booking_request_provider',
+                'name' => 'New Booking Request (Provider)',
+                'subject' => 'New Request: Booking #{{booking_number}}',
+                'body' => "# New Booking Request\n\nHi {{provider_name}},\n\nYou have received a new booking request for **{{service_name}}**.\n\n**Request Details:**\n- **Number:** {{booking_number}}\n- **Date:** {{scheduled_date}}\n- **Client:** {{customer_name}}\n\nPlease sign in to your dashboard to accept or decline this request.\n\n[View Dashboard]({{dashboard_url}})",
+                'variables' => ['provider_name', 'service_name', 'booking_number', 'scheduled_date', 'customer_name', 'dashboard_url']
+            ],
+            [
                 'key' => 'investor_inquiry_admin_alert',
                 'name' => 'Investor Inquiry Admin Alert',
                 'subject' => 'URGENT: New Investor Inquiry from {{name}}',
                 'body' => "# New Investor Inquiry\n\n**Name:** {{name}}\n**Email:** {{email}}\n**Company:** {{company}}\n**Investment Range:** {{investment_range}}\n\n**Message:**\n{{message}}",
                 'variables' => ['name', 'email', 'company', 'investment_range', 'message']
+            ],
+            [
+                'key' => 'passkey_created',
+                'name' => 'Passkey Created',
+                'subject' => 'New Passkey Added to Your Account',
+                'body' => "# New Passkey Added\n\nHi {{user_name}},\n\nA new passkey has been added to your Kuba account:\n\n**Passkey Name:** {{passkey_name}}\n**Added On:** {{created_at}}\n\nIf you did not add this passkey, please remove it immediately from your security settings.\n\n[Manage Passkeys]({{dashboard_url}})",
+                'variables' => ['user_name', 'passkey_name', 'created_at', 'dashboard_url']
+            ],
+            [
+                'key' => 'sign_in_log',
+                'name' => 'Sign-In Log',
+                'subject' => 'New Sign-In to Your Account',
+                'body' => "# New Sign-In Detected\n\nHi {{user_name}},\n\nA new sign-in was detected on your account:\n\n**Method:** {{sign_in_method}}\n**Time:** {{sign_in_time}}\n**IP Address:** {{ip_address}}\n**Device:** {{device}}\n\nIf this was you, no action is needed. If you don't recognize this sign-in, please change your password immediately.\n\n[Review Account]({{dashboard_url}})",
+                'variables' => ['user_name', 'sign_in_method', 'sign_in_time', 'ip_address', 'device', 'dashboard_url']
             ],
         ];
 

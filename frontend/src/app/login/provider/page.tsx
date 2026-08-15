@@ -4,11 +4,12 @@ import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Mail, Lock, Loader2 } from "lucide-react";
+import { Mail, Lock, Loader2, Fingerprint } from "lucide-react";
 import { AuthPageShell, AuthFormDivider, AuthPrimaryButton } from "@/components/auth/AuthPageShell";
 import { AuthIconInput } from "@/components/auth/AuthIconInput";
 import { AuthSocialButtons } from "@/components/auth/AuthSocialButtons";
 import { useAuthPageContent } from "@/hooks/useAuthPageContent";
+import { usePasskeys } from "@/hooks/usePasskeys";
 
 function ProviderLoginForm() {
   const { login, user, isLoading: authLoading } = useAuth();
@@ -16,11 +17,13 @@ function ProviderLoginForm() {
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get("redirect") || "";
   const { content, footerHref, showSocialProof } = useAuthPageContent("provider_login");
+  const { isSupported: passkeySupported, authenticateWithPasskey } = usePasskeys();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isPasskeyLoading, setIsPasskeyLoading] = useState(false);
   const googleError = searchParams.get("error");
 
   useEffect(() => {
@@ -31,7 +34,9 @@ function ProviderLoginForm() {
 
   useEffect(() => {
     if (!authLoading && user) {
-      if (redirectPath && redirectPath.startsWith("/")) {
+      if (user.two_factor_setup_required) {
+        router.push("/auth/two-factor/setup");
+      } else if (redirectPath && redirectPath.startsWith("/")) {
         router.push(redirectPath);
       } else {
         router.push(user.role === "admin" ? "/admin" : "/dashboard/provider");
@@ -46,13 +51,34 @@ function ProviderLoginForm() {
     try {
       await login({ email, password });
     } catch (err: unknown) {
-      const message =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-        (err as Error)?.message ||
-        "Authentication rejected.";
+      const typedErr = err as { twoFactorRequired?: boolean; response?: { data?: { message?: string } }; message?: string };
+      if (typedErr.twoFactorRequired) {
+        router.push("/auth/two-factor/challenge");
+        return;
+      }
+      const message = typedErr?.response?.data?.message || typedErr?.message || "Authentication rejected.";
       setError(message);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handlePasskeyLogin = async () => {
+    setError("");
+    setIsPasskeyLoading(true);
+    try {
+      const result = await authenticateWithPasskey();
+      if (result.user_id) {
+        await login({ passkey_user_id: result.user_id });
+      }
+    } catch (err: unknown) {
+      const message =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+        (err as Error)?.message ||
+        "Passkey sign-in failed. Try again.";
+      setError(message);
+    } finally {
+      setIsPasskeyLoading(false);
     }
   };
 
@@ -99,6 +125,26 @@ function ProviderLoginForm() {
         <AuthPrimaryButton accent={content.accent} isLoading={isLoading}>
           {content.submitLabel}
         </AuthPrimaryButton>
+
+        {/* Passkey sign-in option */}
+        {passkeySupported && (
+          <>
+            <AuthFormDivider />
+            <button
+              type="button"
+              onClick={handlePasskeyLogin}
+              disabled={isLoading || isPasskeyLoading}
+              className="w-full flex items-center justify-center gap-2 rounded-xl border border-border px-4 py-3 text-sm font-medium hover:bg-muted transition-colors disabled:opacity-50"
+            >
+              {isPasskeyLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Fingerprint className="h-4 w-4" />
+              )}
+              Sign in with Passkey
+            </button>
+          </>
+        )}
 
         <AuthFormDivider />
         <AuthSocialButtons role="provider" isLoading={isLoading} />

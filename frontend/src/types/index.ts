@@ -14,6 +14,34 @@ export interface User {
   roles?: string[];
   membership_tier?: LoyaltyTier;
   total_points?: number;
+  two_factor_setup_required?: boolean;
+  two_factor_confirmed_at?: string | null;
+}
+
+export interface Passkey {
+  id: string;
+  name: string;
+  authenticator_type: string;
+  backup_eligible: boolean;
+  last_used_at: string | null;
+  created_at: string;
+}
+
+export interface TwoFactorStatus {
+  enabled: boolean;
+  setup_required: boolean;
+  confirmed_at: string | null;
+}
+
+export interface TwoFactorSetupResponse {
+  qr_code: string;
+  secret: string;
+  recovery_codes: string[];
+}
+
+export interface TwoFactorChallengeResponse {
+  two_factor_required: boolean;
+  challenge_methods: string[];
 }
 
 export interface Category {

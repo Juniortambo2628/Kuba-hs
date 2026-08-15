@@ -17,7 +17,10 @@ class EmailTemplateController extends Controller
         'booking_status_updated_provider',
         'payment_received_customer',
         'new_review_received_provider',
+        'new_booking_request_provider',
         'investor_inquiry_admin_alert',
+        'passkey_created',
+        'sign_in_log',
     ];
 
     public function index() {

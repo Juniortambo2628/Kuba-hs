@@ -27,7 +27,13 @@ class BookingStatusUpdated extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['database', 'broadcast'];
+        $channels = ['database', 'broadcast'];
+
+        if (config('mail.default') !== 'log' && config('mail.default') !== 'array') {
+            $channels[] = 'mail';
+        }
+
+        return $channels;
     }
 
     /**

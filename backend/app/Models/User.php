@@ -51,6 +51,10 @@ class User extends Authenticatable implements HasMedia
         'is_verified',
         'is_active',
         'unsubscribed_from_emails',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
+        'two_factor_confirmed_at',
+        'two_factor_setup_required',
     ];
 
     /**
@@ -76,6 +80,8 @@ class User extends Authenticatable implements HasMedia
             'is_verified' => 'boolean',
             'is_active' => 'boolean',
             'unsubscribed_from_emails' => 'boolean',
+            'two_factor_confirmed_at' => 'datetime',
+            'two_factor_setup_required' => 'boolean',
             'role' => UserRole::class,
         ];
     }
@@ -196,6 +202,22 @@ class User extends Authenticatable implements HasMedia
     public function favoriteProviders()
     {
         return $this->belongsToMany(Provider::class, 'user_favorites')->withTimestamps();
+    }
+
+    /**
+     * WebAuthn passkey credentials.
+     */
+    public function webauthnCredentials()
+    {
+        return $this->hasMany(WebauthnCredential::class);
+    }
+
+    /**
+     * Check if the user has 2FA enabled.
+     */
+    public function hasTwoFactorEnabled(): bool
+    {
+        return $this->two_factor_confirmed_at !== null;
     }
 
     /**

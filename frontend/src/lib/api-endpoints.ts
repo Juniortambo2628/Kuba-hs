@@ -13,6 +13,19 @@ export const API = {
     resetPassword: "/api/auth/reset-password",
     completeProfile: "/api/auth/complete-profile",
     registerProvider: "/api/auth/register-provider",
+
+    // Passkeys
+    passkeys: "/api/auth/passkeys",
+    passkeyRegisterOptions: "/api/auth/passkey/register/options",
+    passkeyRegisterVerify: "/api/auth/passkey/register/verify",
+    passkeyAuthenticateOptions: "/api/auth/passkey/authenticate/options",
+    passkeyAuthenticateVerify: "/api/auth/passkey/authenticate/verify",
+
+    // Two-factor authentication
+    twoFactor: "/api/auth/two-factor",
+    twoFactorConfirm: "/api/auth/two-factor/confirm",
+    twoFactorRecoveryCodes: "/api/auth/two-factor/recovery-codes",
+    twoFactorChallenge: "/api/auth/two-factor/challenge",
   },
 
   // Public marketplace

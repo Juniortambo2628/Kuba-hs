@@ -74,7 +74,7 @@ export default function ProviderRegisterPage() {
         role: "provider",
       });
       toast.success("Welcome aboard! Let's set up your profile.");
-      router.push("/dashboard/provider/profile");
+      router.push("/auth/two-factor/setup");
     } catch (err: unknown) {
       const message =
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||

@@ -23,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => \App\Http\Middleware\EnsureAdmin::class,
             'provider' => \App\Http\Middleware\EnsureProvider::class,
             'customer' => \App\Http\Middleware\EnsureCustomer::class,
+            'two-factor-setup' => \App\Http\Middleware\EnsureTwoFactorSetup::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
