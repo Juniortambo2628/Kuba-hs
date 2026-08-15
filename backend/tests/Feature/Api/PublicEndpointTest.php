@@ -14,7 +14,7 @@ test('can submit contact form', function () {
         'subject' => 'Inquiry',
     ]);
 
-    $response->assertOk();
+    $response->assertCreated();
     $this->assertDatabaseHas('contact_messages', ['email' => 'test@example.com']);
 });
 
@@ -27,7 +27,7 @@ test('can submit investor inquiry', function () {
         'message' => 'Interested',
     ]);
 
-    $response->assertOk();
+    $response->assertCreated();
     $this->assertDatabaseHas('investor_inquiries', ['email' => 'investor@example.com']);
 });
 
@@ -40,18 +40,16 @@ test('can request custom quote', function () {
         'organization_type' => 'commercial',
         'service_category' => 'Cleaning',
         'estimated_volume' => 10,
-        'description' => 'Need quote',
+        'description' => 'We need a detailed cleaning quote for our office space that covers all areas including restrooms and common areas.',
     ]);
 
-    $response->assertOk();
+    $response->assertCreated();
     $this->assertDatabaseHas('custom_quotes', ['email' => 'quote@example.com']);
 });
 
 test('can unsubscribe from emails', function () {
-    $user = createCustomer(['unsubscribed_at' => null]);
+    $user = createCustomer(['unsubscribed_from_emails' => false]);
 
-    // Usually unsubscribe is a GET with a signed route or token, mock basic if simple
-    // Just testing the endpoint exists
     $response = $this->getJson(route('api.unsubscribe', ['email' => $user->email]));
 
     $response->assertOk();

@@ -12,12 +12,10 @@ test('client dashboard returns stats', function () {
 
     $response->assertOk()
         ->assertJsonStructure([
-            'data' => [
+            'stats' => [
                 'total_bookings',
                 'active_bookings',
-                'completed_bookings',
-                'total_spent',
-                'recent_activity'
+                'loyalty_points',
             ]
         ]);
 });

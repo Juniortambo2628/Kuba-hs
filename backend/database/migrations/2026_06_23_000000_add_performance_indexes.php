@@ -72,51 +72,43 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('bookings', function (Blueprint $table) {
-            $table->dropIndex(['provider_id']);
-            $table->dropIndex(['customer_id']);
-            $table->dropIndex(['status']);
-            $table->dropIndex(['created_at']);
-        });
+        $dropIndexSafely = function (string $table, $columns) {
+            try {
+                Schema::table($table, function (Blueprint $table) use ($columns) {
+                    $table->dropIndex($columns);
+                });
+            } catch (\Exception $e) {
+                // Index may not exist (e.g., SQLite behaves differently with composite indexes)
+            }
+        };
 
-        Schema::table('providers', function (Blueprint $table) {
-            $table->dropIndex(['user_id']);
-            $table->dropIndex(['application_status']);
-            $table->dropIndex(['availability_status']);
-        });
+        $dropIndexSafely('bookings', ['provider_id']);
+        $dropIndexSafely('bookings', ['customer_id']);
+        $dropIndexSafely('bookings', ['status']);
+        $dropIndexSafely('bookings', ['created_at']);
 
-        Schema::table('services', function (Blueprint $table) {
-            $table->dropIndex(['is_active']);
-            $table->dropIndex(['is_featured']);
-        });
+        $dropIndexSafely('providers', ['user_id']);
+        $dropIndexSafely('providers', ['application_status']);
+        $dropIndexSafely('providers', ['availability_status']);
 
-        Schema::table('provider_services', function (Blueprint $table) {
-            $table->dropIndex(['provider_id']);
-            $table->dropIndex(['service_id']);
-            $table->dropIndex(['provider_id', 'service_id']);
-        });
+        $dropIndexSafely('services', ['is_active']);
+        $dropIndexSafely('services', ['is_featured']);
 
-        Schema::table('payments', function (Blueprint $table) {
-            $table->dropIndex(['booking_id']);
-            $table->dropIndex(['status']);
-        });
+        $dropIndexSafely('provider_services', ['provider_id']);
+        $dropIndexSafely('provider_services', ['service_id']);
+        $dropIndexSafely('provider_services', ['provider_id', 'service_id']);
 
-        Schema::table('reviews', function (Blueprint $table) {
-            $table->dropIndex(['provider_id']);
-            $table->dropIndex(['status']);
-        });
+        $dropIndexSafely('payments', ['booking_id']);
+        $dropIndexSafely('payments', ['status']);
 
-        Schema::table('faqs', function (Blueprint $table) {
-            $table->dropIndex(['is_active']);
-        });
+        $dropIndexSafely('reviews', ['provider_id']);
+        $dropIndexSafely('reviews', ['status']);
 
-        Schema::table('blog_posts', function (Blueprint $table) {
-            $table->dropIndex(['is_published']);
-        });
+        $dropIndexSafely('faqs', ['is_active']);
+        $dropIndexSafely('blog_posts', ['is_published']);
+        $dropIndexSafely('contact_messages', ['status']);
 
-        Schema::table('contact_messages', function (Blueprint $table) {
-            $table->dropIndex(['status']);
-        });
+        $dropIndexSafely('user_favorites', ['user_id']);
 
         Schema::table('user_favorites', function (Blueprint $table) {
             $table->index('user_id');

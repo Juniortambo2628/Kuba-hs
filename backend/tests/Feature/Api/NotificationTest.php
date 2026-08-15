@@ -20,7 +20,7 @@ test('user can list notifications', function () {
     $response = $this->actingAs($user)->getJson('/api/notifications');
 
     $response->assertOk()
-        ->assertJsonStructure(['data' => [['id', 'data', 'read_at']]]);
+        ->assertJsonStructure(['notifications' => [['id', 'data', 'read_at']]]);
 });
 
 test('user can mark notification as read', function () {

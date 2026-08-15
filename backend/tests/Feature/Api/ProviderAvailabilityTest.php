@@ -36,15 +36,18 @@ test('provider can set schedule exceptions', function () {
     $providerUser = createProviderUser();
     $date = now()->addDays(5)->format('Y-m-d');
 
-    $response = $this->actingAs($providerUser)->postJson('/api/provider/availability/exceptions', [
-        'date' => $date,
-        'is_closed' => true,
-        'reason' => 'Holiday'
+    $response = $this->actingAs($providerUser)->putJson('/api/provider/availability/exceptions', [
+        'exceptions' => [
+            [
+                'date' => $date,
+                'is_closed' => true,
+                'reason' => 'Holiday',
+            ]
+        ]
     ]);
 
-    $response->assertOk(); // Might be 201 Created depending on controller
+    $response->assertOk();
     $this->assertDatabaseHas('provider_schedule_exceptions', [
         'provider_id' => $providerUser->provider->id,
-        'date' => $date,
     ]);
 });

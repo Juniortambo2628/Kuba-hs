@@ -23,7 +23,7 @@ test('user can toggle favorite provider', function () {
 
     // Toggle ON
     $response = $this->actingAs($customer)->postJson("/api/favorites/{$provider->id}");
-    $response->assertOk();
+    $response->assertCreated();
     $this->assertDatabaseHas('user_favorites', [
         'user_id' => $customer->id,
         'provider_id' => $provider->id,

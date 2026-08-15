@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Hash;
 test('client can view profile', function () {
     $customer = createCustomer();
 
-    $response = $this->actingAs($customer)->getJson('/api/client/profile');
+    $response = $this->actingAs($customer)->getJson('/api/user');
 
     $response->assertOk()
         ->assertJsonPath('data.email', $customer->email);

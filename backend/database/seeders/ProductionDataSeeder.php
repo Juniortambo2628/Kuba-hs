@@ -21,7 +21,11 @@ class ProductionDataSeeder extends Seeder
 {
     public function run(): void
     {
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        $isMySQL = DB::getDriverName() === 'mysql';
+
+        if ($isMySQL) {
+            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        }
         User::truncate();
         Provider::truncate();
         Service::truncate();
@@ -32,7 +36,9 @@ class ProductionDataSeeder extends Seeder
         // SiteSetting::truncate(); // REMOVED: Never truncate the CMS configurations automatically
         Review::truncate();
         Address::truncate();
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        if ($isMySQL) {
+            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        }
 
         // 1. Admin & Test Users
         $admin = User::create([

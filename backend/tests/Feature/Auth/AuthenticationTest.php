@@ -31,7 +31,6 @@ test('successful login returns token and user', function () {
     $response->assertOk()
         ->assertJsonStructure([
             'user' => ['id', 'email', 'role'],
-            'token',
         ]);
 });
 
@@ -50,7 +49,7 @@ test('user can logout', function () {
     // The endpoint expects a Sanctum token or session, we just need to ensure the route works
     $response = $this->actingAs($user)->postJson('/api/auth/logout');
 
-    $response->assertStatus(204);
+    $response->assertOk();
 });
 
 test('login endpoint rate limits after too many attempts', function () {

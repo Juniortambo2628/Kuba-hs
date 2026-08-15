@@ -34,16 +34,17 @@ test('admin can award points to user', function () {
     $admin = createAdmin();
     $user = createCustomer();
 
-    $response = $this->actingAs($admin)->postJson('/api/admin/loyalty/award', [
+    $response = $this->actingAs($admin)->postJson('/api/admin/loyalty/reward', [
         'user_id' => $user->id,
         'points' => 100,
-        'description' => 'Bonus points'
+        'description' => 'Bonus points',
+        'type' => 'earn'
     ]);
 
-    $response->assertOk();
+    $response->assertCreated();
     $this->assertDatabaseHas('loyalty_points', [
         'user_id' => $user->id,
         'points' => 100,
-        'transaction_type' => 'earned'
+        'transaction_type' => 'earn'
     ]);
 });

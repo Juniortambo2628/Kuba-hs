@@ -10,10 +10,13 @@ test('authenticated user can upload media', function () {
 
     $response = $this->actingAs($user)->postJson('/api/media/upload', [
         'file' => $file,
+        'collection' => 'avatar',
+        'model_type' => 'user',
+        'model_id' => $user->id,
     ]);
 
     $response->assertOk()
-        ->assertJsonStructure(['url', 'id']); // Assuming it returns the URL and/or ID
+        ->assertJsonStructure(['url', 'id']);
 });
 
 test('unauthenticated user cannot upload media', function () {

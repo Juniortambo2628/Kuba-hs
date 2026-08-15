@@ -24,6 +24,13 @@ class AuthenticatedSessionController extends Controller
 
         // Check if 2FA is enabled — return challenge instead of completing login
         if ($user->hasTwoFactorEnabled()) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'two_factor_required' => true,
+                    'challenge_methods' => ['totp', 'recovery_code'],
+                ]);
+            }
+
             Auth::guard('web')->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
@@ -36,21 +43,26 @@ class AuthenticatedSessionController extends Controller
             ]);
         }
 
-        $request->session()->regenerate();
+        if ($request->wantsJson()) {
+            $user->notify(new SignInLog(
+                ip: $request->ip(),
+                user_agent: $request->userAgent(),
+                timestamp: now()
+            ));
 
-        // Send sign-in notification
-        $user->notify(new SignInLog(
-            ip: $request->ip(),
-            user_agent: $request->userAgent(),
-            timestamp: now()
-        ));
-
-        if ($request->wantsJson() || $request->expectsJson()) {
             return response()->json([
                 'message' => 'Logged in successfully',
                 'user' => new UserResource($user),
             ]);
         }
+
+        $request->session()->regenerate();
+
+        $user->notify(new SignInLog(
+            ip: $request->ip(),
+            user_agent: $request->userAgent(),
+            timestamp: now()
+        ));
 
         return redirect()->intended(route('dashboard', absolute: false));
     }
@@ -111,13 +123,13 @@ class AuthenticatedSessionController extends Controller
     {
         Auth::guard('web')->logout();
 
-        $request->session()->invalidate();
-
-        $request->session()->regenerateToken();
-
         if ($request->wantsJson()) {
             return response()->json(['message' => 'Logged out successfully']);
         }
+
+        $request->session()->invalidate();
+
+        $request->session()->regenerateToken();
 
         return redirect('/');
     }

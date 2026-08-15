@@ -57,7 +57,7 @@ class ReviewController extends Controller
             // Update Provider stats
             $this->updateProviderStats($booking->provider_id);
 
-            return new ReviewResource($review->load(['user', 'media']));
+            return new ReviewResource($review->load(['customer', 'media']));
         });
     }
 
@@ -80,7 +80,7 @@ class ReviewController extends Controller
      * Get reviews for a provider.
      */
     public function providerReviews($providerId) {
-        $reviews = Review::with(['user', 'media'])
+        $reviews = Review::with(['customer', 'media'])
             ->where('provider_id', $providerId)
             ->latest()
             ->paginate(10);

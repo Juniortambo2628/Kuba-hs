@@ -18,11 +18,11 @@ test('admin can view finance overview', function () {
 
     $response->assertOk()
         ->assertJsonStructure([
-            'data' => [
-                'total_revenue',
-                'total_payouts',
+            'stats' => [
+                'total_volume',
+                'total_platform_fees',
+                'total_provider_payouts',
                 'pending_payouts',
-                'platform_fees'
             ]
         ]);
 });

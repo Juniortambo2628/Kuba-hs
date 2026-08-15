@@ -7,12 +7,12 @@ test('admin dashboard returns analytics', function () {
 
     $response->assertOk()
         ->assertJsonStructure([
-            'data' => [
-                'total_users',
-                'total_providers',
-                'active_bookings',
-                'total_revenue',
-                'recent_activity'
+            'stats' => [
+                'users',
+                'providers',
+                'bookings',
+                'completed_bookings',
+                'revenue',
             ]
         ]);
 });

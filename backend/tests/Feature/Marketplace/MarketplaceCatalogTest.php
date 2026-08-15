@@ -22,7 +22,7 @@ test('categories endpoint returns structured catalog', function () {
             'data' => [
                 '*' => [
                     'id', 'name', 'services' => [
-                        '*' => ['id', 'name', 'base_price', 'provider_services_count']
+                        '*' => ['id', 'name', 'starting_price', 'providers_count']
                     ]
                 ]
             ]

@@ -19,9 +19,9 @@ test('migrations can be rolled back', function () {
     // Assert successful rollback (exit code 0)
     $this->assertEquals(0, $exitCode);
     
-    // Check that a table was removed
-    // We use a later table so we don't break early ones if it rolls back in batches
-    // The safest is to check that we can run migrate again
+    // The safest check is to verify we can re-migrate successfully
     Artisan::call('migrate');
     $this->assertTrue(Schema::hasTable('users'));
+    $this->assertTrue(Schema::hasTable('providers'));
+    $this->assertTrue(Schema::hasTable('bookings'));
 });

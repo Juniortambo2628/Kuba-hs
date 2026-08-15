@@ -3,13 +3,13 @@
 test('admin can generate reports', function () {
     $admin = createAdmin();
 
-    $response = $this->actingAs($admin)->postJson('/api/admin/reports/generate', [
+    $response = $this->actingAs($admin)->getJson('/api/admin/reports/generate', [
         'type' => 'financial',
         'date_range' => 'last_30_days',
         'format' => 'pdf'
     ]);
 
-    $response->assertOk(); // Might be accepted or created depending on async handling
+    $response->assertOk();
 });
 
 test('admin can view report history', function () {
