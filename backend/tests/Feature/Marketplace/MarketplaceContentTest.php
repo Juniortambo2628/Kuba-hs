@@ -52,5 +52,5 @@ test('public settings endpoint returns site settings', function () {
     $response = $this->getJson('/api/settings');
 
     $response->assertOk()
-        ->assertJsonFragment(['site_name' => 'Kuba']);
+        ->assertJsonFragment(['key' => 'site_name', 'value' => 'Kuba']);
 });
