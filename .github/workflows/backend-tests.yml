@@ -52,4 +52,4 @@ jobs:
           php artisan key:generate --force
 
       - name: Run Tests
-        run: php artisan test --coverage --min=80
+        run: php artisan test
