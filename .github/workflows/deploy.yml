@@ -1,12 +1,6 @@
 name: Deploy Backend to cPanel
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'backend/**'
-      - '.github/workflows/deploy.yml'
   workflow_call:
   workflow_dispatch:
 
