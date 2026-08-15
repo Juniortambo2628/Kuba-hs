@@ -31,26 +31,29 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
 
-      - name: Install rsync
-        run: sudo apt-get update && sudo apt-get install -y rsync
-
       - name: Deploy Core Files (kuba_backend)
         env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           CPANEL_USER: ${{ secrets.CPANEL_USER }}
           CPANEL_HOST: ${{ secrets.CPANEL_HOST }}
           CPANEL_PORT: ${{ secrets.CPANEL_PORT || '1624' }}
         run: |
-          # Sync everything in backend except public and other dynamic/ignored directories
-          rsync -avz -e "ssh -p $CPANEL_PORT -o StrictHostKeyChecking=no" --delete --exclude 'public' --exclude 'vendor' --exclude 'storage' --exclude 'bootstrap/cache' --exclude '.env' ./backend/ $CPANEL_USER@$CPANEL_HOST:/home/$CPANEL_USER/kuba_backend/
+          # Tar backend excluding public, vendor, storage, cache, and .env, then extract on remote
+          tar czf - -C ./backend --exclude='public' --exclude='vendor' --exclude='storage' --exclude='bootstrap/cache' --exclude='.env' . \
+            | ssh -p $CPANEL_PORT -o StrictHostKeyChecking=no $CPANEL_USER@$CPANEL_HOST \
+              "cd /home/$CPANEL_USER/kuba_backend && tar xzf -"
 
       - name: Deploy Public Files (public_html/api)
         env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           CPANEL_USER: ${{ secrets.CPANEL_USER }}
           CPANEL_HOST: ${{ secrets.CPANEL_HOST }}
           CPANEL_PORT: ${{ secrets.CPANEL_PORT || '1624' }}
         run: |
           # Sync the public directory to public_html/api
-          rsync -avz -e "ssh -p $CPANEL_PORT -o StrictHostKeyChecking=no" --delete ./backend/public/ $CPANEL_USER@$CPANEL_HOST:/home/$CPANEL_USER/public_html/api/
+          tar czf - -C ./backend/public . \
+            | ssh -p $CPANEL_PORT -o StrictHostKeyChecking=no $CPANEL_USER@$CPANEL_HOST \
+              "rm -rf /home/$CPANEL_USER/public_html/api/* && cd /home/$CPANEL_USER/public_html/api && tar xzf -"
 
       - name: Post-deployment Setup (Composer, Migrations, Artisan)
         env:
