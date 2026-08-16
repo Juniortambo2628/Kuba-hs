@@ -124,8 +124,7 @@ export default function AdminEmailTestPage() {
     <DashboardPageContainer>
       <DashboardPageHeader
         title="Email Testing"
-        description="Send test emails to verify your email configuration is working correctly."
-        icon={Mail}
+        subtitle="Send test emails to verify your email configuration is working correctly."
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
