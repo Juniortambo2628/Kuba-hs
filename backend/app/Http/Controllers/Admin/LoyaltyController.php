@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StoreLoyaltyTierRequest;
 use App\Http\Resources\LoyaltyPointResource;
 use App\Http\Resources\LoyaltyTierResource;
 use App\Models\LoyaltyPoint;
@@ -22,14 +23,8 @@ class LoyaltyController extends Controller
     /**
      * Create a new loyalty tier.
      */
-    public function storeTier(Request $request) {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'min_points' => 'required|integer|min:0',
-            'benefits' => 'nullable|array',
-            'icon' => 'nullable|string',
-            'is_active' => 'boolean',
-        ]);
+    public function storeTier(StoreLoyaltyTierRequest $request) {
+        $validated = $request->validated();
 
         $tier = LoyaltyTier::create($validated);
 
@@ -39,14 +34,8 @@ class LoyaltyController extends Controller
     /**
      * Update an existing loyalty tier.
      */
-    public function updateTier(Request $request, LoyaltyTier $tier) {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'min_points' => 'required|integer|min:0',
-            'benefits' => 'nullable|array',
-            'icon' => 'nullable|string',
-            'is_active' => 'boolean',
-        ]);
+    public function updateTier(StoreLoyaltyTierRequest $request, LoyaltyTier $tier) {
+        $validated = $request->validated();
 
         $tier->update($validated);
 

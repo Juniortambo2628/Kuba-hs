@@ -13,7 +13,7 @@ export interface FaqFormValues {
   answer: string;
   avatar: string;
   is_active: boolean;
-  order: number;
+  sort_order: number;
 }
 
 interface FaqFormDialogProps {
@@ -32,7 +32,7 @@ export function FaqFormDialog({
   onSuccess,
 }: FaqFormDialogProps) {
   const { form, setForm, isSaving, handleSubmit } = useCrudForm<FaqFormValues>({
-    empty: () => ({ question: "", answer: "", avatar: "", is_active: true, order: 0 }),
+    empty: () => ({ question: "", answer: "", avatar: "", is_active: true, sort_order: 0 }),
     endpoint: "/api/admin/faqs",
     editingId,
     initial,
@@ -89,9 +89,9 @@ export function FaqFormDialog({
             <FieldLabel>Display order</FieldLabel>
             <Input
               type="number"
-              value={form.order}
+              value={form.sort_order}
               onChange={(e) =>
-                setForm({ ...form, order: parseInt(e.target.value, 10) || 0 })
+                setForm({ ...form, sort_order: parseInt(e.target.value, 10) || 0 })
               }
               className="h-11 rounded-xl"
             />

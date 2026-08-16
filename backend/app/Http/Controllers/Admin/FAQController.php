@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StoreFAQRequest;
 use App\Models\FAQ;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -11,17 +12,11 @@ use Illuminate\Support\Facades\Cache;
 class FAQController extends Controller
 {
     public function index() {
-        return response()->json(FAQ::orderBy('order')->orderBy('id', 'desc')->get());
+        return response()->json(FAQ::orderBy('sort_order')->orderBy('id', 'desc')->get());
     }
 
-    public function store(Request $request) {
-        $validated = $request->validate([
-            'question' => 'required|string|max:255',
-            'answer' => 'required|string',
-            'category' => 'nullable|string',
-            'is_active' => 'boolean',
-            'order' => 'integer',
-        ]);
+    public function store(StoreFAQRequest $request) {
+        $validated = $request->validated();
 
         $faq = FAQ::create($validated);
         Cache::forget('api_faqs_all');
@@ -34,14 +29,8 @@ class FAQController extends Controller
         return response()->json($faq);
     }
 
-    public function update(Request $request, FAQ $faq) {
-        $validated = $request->validate([
-            'question' => 'sometimes|required|string|max:255',
-            'answer' => 'sometimes|required|string',
-            'category' => 'nullable|string',
-            'is_active' => 'boolean',
-            'order' => 'integer',
-        ]);
+    public function update(StoreFAQRequest $request, FAQ $faq) {
+        $validated = $request->validated();
 
         $faq->update($validated);
         Cache::forget('api_faqs_all');
@@ -62,11 +51,11 @@ class FAQController extends Controller
         $validated = $request->validate([
             'items' => 'required|array',
             'items.*.id' => 'required|exists:faqs,id',
-            'items.*.order' => 'required|integer',
+            'items.*.sort_order' => 'required|integer',
         ]);
 
         foreach ($validated['items'] as $item) {
-            FAQ::where('id', $item['id'])->update(['order' => $item['order']]);
+            FAQ::where('id', $item['id'])->update(['sort_order' => $item['sort_order']]);
         }
 
         Cache::forget('api_faqs_all');

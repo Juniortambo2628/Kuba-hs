@@ -78,10 +78,10 @@ describe('Marketplace public API', function () {
         $response->assertJsonCount(1, 'data');
     });
 
-    it('returns active FAQs ordered by order', function () {
-        FAQ::create(['question' => 'Q2', 'answer' => 'A2', 'is_active' => true, 'order' => 2]);
-        FAQ::create(['question' => 'Q1', 'answer' => 'A1', 'is_active' => true, 'order' => 1]);
-        FAQ::create(['question' => 'Inactive', 'answer' => 'A', 'is_active' => false, 'order' => 0]);
+    it('returns active FAQs ordered by sort_order', function () {
+        FAQ::create(['question' => 'Q2', 'answer' => 'A2', 'is_active' => true, 'sort_order' => 2]);
+        FAQ::create(['question' => 'Q1', 'answer' => 'A1', 'is_active' => true, 'sort_order' => 1]);
+        FAQ::create(['question' => 'Inactive', 'answer' => 'A', 'is_active' => false, 'sort_order' => 0]);
 
         $response = $this->getJson('/api/faqs');
 
@@ -96,10 +96,10 @@ describe('Marketplace public API', function () {
         expect($json[1]['question'])->toBe('Q2');
     });
 
-    it('returns active testimonials ordered by order', function () {
-        Testimonial::create(['client_name' => 'T2', 'client_role' => 'Owner', 'content' => 'Good', 'rating' => 5, 'is_active' => true, 'order' => 2]);
-        Testimonial::create(['client_name' => 'T1', 'client_role' => 'Manager', 'content' => 'Great', 'rating' => 5, 'is_active' => true, 'order' => 1]);
-        Testimonial::create(['client_name' => 'Inactive', 'client_role' => 'X', 'content' => 'Hidden', 'rating' => 3, 'is_active' => false, 'order' => 0]);
+    it('returns active testimonials ordered by sort_order', function () {
+        Testimonial::create(['client_name' => 'T2', 'client_role' => 'Owner', 'content' => 'Good', 'rating' => 5, 'is_active' => true, 'sort_order' => 2]);
+        Testimonial::create(['client_name' => 'T1', 'client_role' => 'Manager', 'content' => 'Great', 'rating' => 5, 'is_active' => true, 'sort_order' => 1]);
+        Testimonial::create(['client_name' => 'Inactive', 'client_role' => 'X', 'content' => 'Hidden', 'rating' => 3, 'is_active' => false, 'sort_order' => 0]);
 
         $response = $this->getJson('/api/testimonials');
 

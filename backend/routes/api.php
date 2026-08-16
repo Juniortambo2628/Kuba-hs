@@ -203,6 +203,7 @@ Route::middleware(['auth:sanctum', 'two-factor-setup'])->group(function () {
         Route::get('/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'index']);
         Route::post('/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'update']);
         Route::get('/feedback', [\App\Http\Controllers\Admin\FeedbackController::class, 'index']);
+        Route::get('/feedback/{id}', [\App\Http\Controllers\Admin\FeedbackController::class, 'show']);
         Route::put('/feedback/{id}', [\App\Http\Controllers\Admin\FeedbackController::class, 'update']);
         Route::delete('/feedback/{id}', [\App\Http\Controllers\Admin\FeedbackController::class, 'destroy']);
 

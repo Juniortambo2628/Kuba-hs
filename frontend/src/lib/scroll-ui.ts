@@ -14,12 +14,3 @@ export const scrollUi = {
   xHidden: "overflow-x-auto kuba-scroll-hidden",
   bothHidden: "overflow-auto kuba-scroll-hidden",
 } as const;
-
-/** @deprecated Use scrollUi — old class names → replacement tokens */
-export const legacyScrollClassMap = {
-  "custom-scrollbar": scrollUi.scroll,
-  "premium-scrollbar": scrollUi.scroll,
-  "scrollbar-hide": scrollUi.hidden,
-  "hide-scrollbar": scrollUi.hidden,
-  "no-scrollbar": scrollUi.hidden,
-} as const;

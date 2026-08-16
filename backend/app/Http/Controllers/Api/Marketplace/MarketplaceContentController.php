@@ -16,7 +16,7 @@ class MarketplaceContentController extends Controller
     public function faqs() {
         return FAQResource::collection(
             Cache::remember('api_faqs_all', 86400, function () {
-                return FAQ::where('is_active', true)->orderBy('order', 'asc')->get();
+                return FAQ::where('is_active', true)->orderBy('sort_order', 'asc')->get();
             })
         )->response();
     }
@@ -24,7 +24,7 @@ class MarketplaceContentController extends Controller
     public function testimonials() {
         return TestimonialResource::collection(
             Cache::remember('api_testimonials_all', 86400, function () {
-                return Testimonial::where('is_active', true)->orderBy('order', 'asc')->get();
+                return Testimonial::where('is_active', true)->orderBy('sort_order', 'asc')->get();
             })
         )->response();
     }

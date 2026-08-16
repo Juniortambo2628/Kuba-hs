@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StoreTestimonialRequest;
 use App\Models\Testimonial;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -11,21 +12,13 @@ use Illuminate\Support\Facades\Cache;
 class TestimonialController extends Controller
 {
     public function index() {
-        $testimonials = Testimonial::orderBy('order')->latest()->paginate(20);
+        $testimonials = Testimonial::orderBy('sort_order')->latest()->paginate(20);
 
         return response()->json($testimonials);
     }
 
-    public function store(Request $request) {
-        $validated = $request->validate([
-            'client_name' => 'required|string|max:255',
-            'client_role' => 'nullable|string|max:255',
-            'content' => 'required|string',
-            'rating' => 'integer|min:1|max:5',
-            'image_url' => 'nullable|string',
-            'is_active' => 'boolean',
-            'order' => 'integer',
-        ]);
+    public function store(StoreTestimonialRequest $request) {
+        $validated = $request->validated();
 
         $testimonial = Testimonial::create($validated);
         Cache::forget('api_testimonials_all');
@@ -38,16 +31,8 @@ class TestimonialController extends Controller
         return response()->json($testimonial);
     }
 
-    public function update(Request $request, Testimonial $testimonial) {
-        $validated = $request->validate([
-            'client_name' => 'sometimes|required|string|max:255',
-            'client_role' => 'nullable|string|max:255',
-            'content' => 'sometimes|required|string',
-            'rating' => 'integer|min:1|max:5',
-            'image_url' => 'nullable|string',
-            'is_active' => 'boolean',
-            'order' => 'integer',
-        ]);
+    public function update(StoreTestimonialRequest $request, Testimonial $testimonial) {
+        $validated = $request->validated();
 
         $testimonial->update($validated);
         Cache::forget('api_testimonials_all');
@@ -68,11 +53,11 @@ class TestimonialController extends Controller
         $validated = $request->validate([
             'items' => 'required|array',
             'items.*.id' => 'required|exists:testimonials,id',
-            'items.*.order' => 'required|integer',
+            'items.*.sort_order' => 'required|integer',
         ]);
 
         foreach ($validated['items'] as $item) {
-            Testimonial::where('id', $item['id'])->update(['order' => $item['order']]);
+            Testimonial::where('id', $item['id'])->update(['sort_order' => $item['sort_order']]);
         }
 
         Cache::forget('api_testimonials_all');

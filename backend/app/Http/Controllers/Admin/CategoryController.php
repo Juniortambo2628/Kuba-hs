@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StoreCategoryRequest;
 use App\Http\Resources\ServiceCategoryResource;
 use App\Models\ServiceCategory;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
@@ -28,14 +28,8 @@ class CategoryController extends Controller
         ]);
     }
 
-    public function store(Request $request) {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'icon_url' => 'nullable|string',
-            'image' => 'nullable|image|max:5120',
-            'image_url' => 'nullable|string',
-        ]);
+    public function store(StoreCategoryRequest $request) {
+        $validated = $request->validated();
 
         if ($request->hasFile('image')) {
             $validated['image_url'] = $this->storeCategoryImage($request->file('image'));
@@ -54,14 +48,8 @@ class CategoryController extends Controller
         ], 201);
     }
 
-    public function update(Request $request, ServiceCategory $category) {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'icon_url' => 'nullable|string',
-            'image' => 'nullable|image|max:5120',
-            'image_url' => 'nullable|string',
-        ]);
+    public function update(StoreCategoryRequest $request, ServiceCategory $category) {
+        $validated = $request->validated();
 
         if ($request->hasFile('image')) {
             $this->deleteCategoryImage($category->image_url);

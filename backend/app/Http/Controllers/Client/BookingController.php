@@ -45,9 +45,9 @@ class BookingController extends Controller
     public function store(StoreBookingRequest $request, BookingService $bookingService) {
         $user = Auth::user();
 
-        $images = $request->hasFile('images') ? $request->file('images') : null;
-
-        $booking = $bookingService->createBooking($user, $request->validated(), $images);
+        $booking = $bookingService->createBooking($user, $request->validated(), [
+            'images' => $request->hasFile('images') ? $request->file('images') : null,
+        ]);
 
         return response()->json([
             'message' => 'Booking request sent successfully!',
@@ -55,7 +55,7 @@ class BookingController extends Controller
         ], 201);
     }
 
-    public function cancel(Booking $booking, Request $request) {
+    public function cancel(Booking $booking, Request $request, BookingService $bookingService) {
         $user = Auth::user();
 
         if ($booking->customer_id !== $user->id) {
@@ -68,24 +68,9 @@ class BookingController extends Controller
             ], 422);
         }
 
-        $booking->update([
-            'status' => 'cancelled',
-            'cancellation_reason' => $request->input('cancellation_reason'),
-        ]);
-
-        app(\App\Services\BookingActivityLogService::class)->log(
-            $booking,
-            'cancelled',
-            $user,
-            'Booking cancelled by customer',
-            ['reason' => $request->input('cancellation_reason')]
-        );
+        $bookingService->updateBookingStatus($booking, $user, 'cancelled', $request->input('cancellation_reason'));
 
         app(\App\Services\LoyaltyService::class)->revertPointsForBooking($booking);
-
-        if ($booking->provider && $booking->provider->user) {
-            $booking->provider->user->notify(new \App\Notifications\BookingStatusUpdated($booking));
-        }
 
         return response()->json([
             'message' => 'Booking cancelled successfully.',

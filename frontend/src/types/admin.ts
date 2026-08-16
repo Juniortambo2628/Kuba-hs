@@ -4,7 +4,7 @@ export interface Testimonial {
   client_role: string;
   content: string;
   rating: number;
-  order: number;
+  sort_order: number;
   avatar?: string;
   image_url?: string;
 }

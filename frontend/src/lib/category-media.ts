@@ -39,21 +39,6 @@ export function resolveCategoryCardImageUrl(category: CategoryMediaFields): stri
   return null;
 }
 
-/** Hero/cover: uploaded category thumbnail only (no stock placeholders). */
-export function resolveCategoryHeroImage(
-  category: CategoryMediaFields,
-  fallback?: string | null
-): string | null {
-  const card = resolveCategoryCardImageUrl(category);
-  if (card) {
-    return getMediaUrl(card, "service");
-  }
-  if (fallback && isCategoryMediaUrl(fallback)) {
-    return getMediaUrl(fallback, "service");
-  }
-  return null;
-}
-
 export function resolveCategoryCardImageSrc(category: CategoryMediaFields): string | null {
   const path = resolveCategoryCardImageUrl(category);
   return path ? getMediaUrl(path, "service") : null;

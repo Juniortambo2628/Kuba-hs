@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Client\StoreAddressRequest;
 use App\Http\Resources\AddressResource;
 use App\Models\Address;
 use Illuminate\Http\JsonResponse;
@@ -45,19 +46,8 @@ class AddressController extends Controller
         ]);
     }
 
-    public function store(Request $request) {
-        $validated = $request->validate([
-            'address_type' => 'nullable|string|in:home,work,other,residential,commercial',
-            'street_address' => 'required|string|max:255',
-            'apartment' => 'nullable|string|max:255',
-            'city' => 'required|string|max:255',
-            'state' => 'nullable|string|max:255',
-            'postal_code' => 'required|string|max:20',
-            'country' => 'nullable|string|max:255',
-            'latitude' => 'nullable|numeric',
-            'longitude' => 'nullable|numeric',
-            'is_default' => 'sometimes|boolean',
-        ]);
+    public function store(StoreAddressRequest $request) {
+        $validated = $request->validated();
 
         $validated = $this->normalizeAddressPayload($validated);
 
@@ -77,23 +67,12 @@ class AddressController extends Controller
         ], 201);
     }
 
-    public function update(Request $request, Address $address) {
+    public function update(StoreAddressRequest $request, Address $address) {
         if ($address->user_id !== Auth::id()) {
             abort(403);
         }
 
-        $validated = $request->validate([
-            'address_type' => 'nullable|string|in:home,work,other,residential,commercial',
-            'street_address' => 'sometimes|string|max:255',
-            'apartment' => 'nullable|string|max:255',
-            'city' => 'sometimes|string|max:255',
-            'state' => 'nullable|string|max:255',
-            'postal_code' => 'sometimes|string|max:20',
-            'country' => 'nullable|string|max:255',
-            'latitude' => 'nullable|numeric',
-            'longitude' => 'nullable|numeric',
-            'is_default' => 'sometimes|boolean',
-        ]);
+        $validated = $request->validated();
 
         $validated = $this->normalizeAddressPayload($validated, $address);
 

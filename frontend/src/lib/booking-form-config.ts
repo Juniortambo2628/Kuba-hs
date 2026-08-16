@@ -19,8 +19,7 @@ export function resolveServiceCategoryName(service: {
   return null;
 }
 
-/** Legacy or merged categories → active form config key */
-export const BOOKING_CATEGORY_ALIASES: Record<string, string> = {
+const BOOKING_CATEGORY_ALIASES: Record<string, string> = {
   "Financial & Legal": "Professional Services",
   Plumbing: "Cleaning & Maintenance",
 };

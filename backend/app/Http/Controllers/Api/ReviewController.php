@@ -7,7 +7,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreReviewRequest;
 use App\Http\Resources\ReviewResource;
 use App\Models\Booking;
-use App\Models\Provider;
 use App\Models\Review;
 use App\Services\ImageOptimizationService;
 use Illuminate\Http\JsonResponse;
@@ -54,26 +53,10 @@ class ReviewController extends Controller
                 }
             }
 
-            // Update Provider stats
-            $this->updateProviderStats($booking->provider_id);
+            // Provider stats are auto-updated by ReviewObserver
 
             return new ReviewResource($review->load(['customer', 'media']));
         });
-    }
-
-    /**
-     * Update Provider average rating and review count.
-     */
-    protected function updateProviderStats($providerId)
-    {
-        $stats = Review::where('provider_id', $providerId)
-            ->selectRaw('AVG(rating) as avg_rating, COUNT(*) as count')
-            ->first();
-
-        Provider::where('id', $providerId)->update([
-            'rating_avg' => round($stats->avg_rating, 1),
-            'review_count' => $stats->count,
-        ]);
     }
 
     /**

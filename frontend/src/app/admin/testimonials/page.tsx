@@ -87,7 +87,7 @@ export default function TestimonialPage() {
     const [reorderedItem] = itemsCopy.splice(result.source.index, 1);
     itemsCopy.splice(result.destination.index, 0, reorderedItem);
     
-    const updatedItems = itemsCopy.map((item, index) => ({ ...item, order: index }));
+    const updatedItems = itemsCopy.map((item, index) => ({ ...item, sort_order: index }));
     setItems(updatedItems);
 
     try {
@@ -246,7 +246,7 @@ export default function TestimonialPage() {
         onOpenChange={setDialogOpen}
         editingId={editingId}
         initial={editInitial}
-        order={items.length}
+        sort_order={items.length}
         onSuccess={handleDialogSuccess}
       />
     </DashboardPageContainer>

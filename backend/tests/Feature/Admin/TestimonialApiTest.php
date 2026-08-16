@@ -69,19 +69,19 @@ describe('Admin Testimonial API', function () {
     });
 
     it('reorders testimonials', function () {
-        $t1 = Testimonial::factory()->create(['order' => 1]);
-        $t2 = Testimonial::factory()->create(['order' => 2]);
+        $t1 = Testimonial::factory()->create(['sort_order' => 1]);
+        $t2 = Testimonial::factory()->create(['sort_order' => 2]);
 
         $response = $this->postJson('/api/admin/testimonials/reorder', [
             'items' => [
-                ['id' => $t1->id, 'order' => 2],
-                ['id' => $t2->id, 'order' => 1],
+                ['id' => $t1->id, 'sort_order' => 2],
+                ['id' => $t2->id, 'sort_order' => 1],
             ],
         ]);
 
         $response->assertOk();
         $response->assertJsonFragment(['message' => 'Reordered successfully']);
-        $this->assertDatabaseHas('testimonials', ['id' => $t1->id, 'order' => 2]);
-        $this->assertDatabaseHas('testimonials', ['id' => $t2->id, 'order' => 1]);
+        $this->assertDatabaseHas('testimonials', ['id' => $t1->id, 'sort_order' => 2]);
+        $this->assertDatabaseHas('testimonials', ['id' => $t2->id, 'sort_order' => 1]);
     });
 });
