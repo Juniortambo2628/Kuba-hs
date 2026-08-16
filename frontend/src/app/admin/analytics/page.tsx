@@ -64,7 +64,7 @@ interface AnalyticsData {
   };
 }
 
-const CHART_COLORS = ['#18181b', '#3f3f46', '#71717a', '#a1a1aa', '#d4d4d8'];
+const CHART_COLORS = ['var(--foreground)', 'var(--muted-foreground)', 'var(--muted)', 'var(--border)', 'var(--accent)'];
 
 export default function AdminAnalytics() {
   const { data, isLoading } = useData<AnalyticsData>("/api/admin/analytics", { initialData: null });
@@ -77,9 +77,9 @@ export default function AdminAnalytics() {
   if (!data) return null;
 
   const userDistributionData = [
-    { name: 'Customers', value: data.distribution.users.customers, fill: '#18181b' },
-    { name: 'Providers', value: data.distribution.users.providers, fill: '#71717a' },
-    { name: 'Admins', value: data.distribution.users.admins, fill: '#d4d4d8' },
+    { name: 'Customers', value: data.distribution.users.customers, fill: 'var(--foreground)' },
+    { name: 'Providers', value: data.distribution.users.providers, fill: 'var(--muted-foreground)' },
+    { name: 'Admins', value: data.distribution.users.admins, fill: 'var(--border)' },
   ].filter(d => d.value > 0);
 
   const serviceDistributionData = data.distribution.services.map((s, i) => ({
@@ -208,8 +208,8 @@ export default function AdminAnalytics() {
               <AreaChart data={data.trends.revenue} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#18181b" stopOpacity={0.15}/>
-                    <stop offset="95%" stopColor="#18181b" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="var(--foreground)" stopOpacity={0.15}/>
+                    <stop offset="95%" stopColor="var(--foreground)" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
@@ -219,7 +219,7 @@ export default function AdminAnalytics() {
                   contentStyle={{ borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--foreground)', fontSize: 13 }}
                   formatter={(value) => [`KES ${Number(value).toLocaleString()}`, 'Revenue']}
                 />
-                <Area type="monotone" dataKey="count" stroke="#18181b" strokeWidth={2} fillOpacity={1} fill="url(#colorRevenue)" />
+                <Area type="monotone" dataKey="count" stroke="var(--foreground)" strokeWidth={2} fillOpacity={1} fill="url(#colorRevenue)" />
               </AreaChart>
             </ChartContainer>
           </CardContent>
@@ -269,7 +269,7 @@ export default function AdminAnalytics() {
                 <XAxis dataKey="date" tick={{fontSize: 11}} tickLine={false} axisLine={false} stroke="var(--muted-foreground)" />
                 <YAxis tick={{fontSize: 11}} tickLine={false} axisLine={false} stroke="var(--muted-foreground)" />
                 <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--foreground)', fontSize: 13 }} />
-                <Bar dataKey="count" name="Bookings" fill="#3f3f46" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="count" name="Bookings" fill="var(--muted-foreground)" radius={[3, 3, 0, 0]} />
               </RechartsBarChart>
             </ChartContainer>
           </CardContent>
@@ -292,7 +292,7 @@ export default function AdminAnalytics() {
                 <XAxis dataKey="date" tick={{fontSize: 11}} tickLine={false} axisLine={false} stroke="var(--muted-foreground)" />
                 <YAxis tick={{fontSize: 11}} tickLine={false} axisLine={false} stroke="var(--muted-foreground)" />
                 <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--foreground)', fontSize: 13 }} />
-                <Line type="monotone" dataKey="count" name="Users" stroke="#18181b" strokeWidth={2} dot={{ fill: '#18181b', strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                <Line type="monotone" dataKey="count" name="Users" stroke="var(--foreground)" strokeWidth={2} dot={{ fill: 'var(--foreground)', strokeWidth: 2 }} activeDot={{ r: 6 }} />
               </LineChart>
             </ChartContainer>
           </CardContent>
@@ -316,7 +316,7 @@ export default function AdminAnalytics() {
               <XAxis type="number" tick={{fontSize: 11}} tickLine={false} axisLine={false} stroke="var(--muted-foreground)" />
               <YAxis dataKey="name" type="category" tick={{fontSize: 11}} tickLine={false} axisLine={false} stroke="var(--muted-foreground)" width={80} />
               <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--foreground)', fontSize: 13 }} />
-              <Bar dataKey="count" name="Providers" fill="#71717a" radius={[0, 3, 3, 0]} />
+              <Bar dataKey="count" name="Providers" fill="var(--muted-foreground)" radius={[0, 3, 3, 0]} />
             </RechartsBarChart>
           </ChartContainer>
         </CardContent>
