@@ -8,19 +8,16 @@ use App\Http\Resources\ProviderServiceResource;
 use App\Http\Resources\ServiceResource;
 use App\Models\Service;
 use App\Services\ProviderManagementService;
+use App\Traits\HasProviderAuthorization;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class ProviderServiceController extends Controller
 {
-    public function index() {
-        $user = Auth::user();
-        $provider = $user->ensureProviderProfile();
+    use HasProviderAuthorization;
 
-        if (! $provider) {
-            return response()->json(['error' => 'Provider profile not found'], 404);
-        }
+    public function index() {
+        $provider = $this->getProviderOrFail();
 
         $services = $provider->providerServices()
             ->with(['service.category'])
@@ -39,12 +36,7 @@ class ProviderServiceController extends Controller
     }
 
     public function store(StoreProviderServiceRequest $request, ProviderManagementService $serviceManager) {
-        $user = Auth::user();
-        $provider = $user->ensureProviderProfile();
-
-        if (! $provider) {
-            return response()->json(['error' => 'Provider profile not found'], 404);
-        }
+        $provider = $this->getProviderOrFail();
 
         if ($provider->providerServices()->where('service_id', $request->service_id)->exists()) {
             return response()->json([
@@ -61,12 +53,7 @@ class ProviderServiceController extends Controller
     }
 
     public function update(Request $request, string $id, ProviderManagementService $serviceManager) {
-        $user = Auth::user();
-        $provider = $user->ensureProviderProfile();
-
-        if (! $provider) {
-            return response()->json(['error' => 'Provider profile not found'], 404);
-        }
+        $provider = $this->getProviderOrFail();
 
         $validated = $request->validate([
             'base_price' => 'required|numeric|min:0',
@@ -87,12 +74,7 @@ class ProviderServiceController extends Controller
     }
 
     public function destroy(string $id) {
-        $user = Auth::user();
-        $provider = $user->ensureProviderProfile();
-
-        if (! $provider) {
-            return response()->json(['error' => 'Provider profile not found'], 404);
-        }
+        $provider = $this->getProviderOrFail();
 
         $providerService = $provider->providerServices()->findOrFail($id);
         $providerService->delete();

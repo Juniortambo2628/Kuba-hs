@@ -2,11 +2,20 @@ import { getMediaUrl } from "@/lib/utils";
 
 const PLACEHOLDER_HOSTS = ["ui-avatars.com", "dicebear.com"];
 
+/** True if URL points to an auto-generated placeholder (ui-avatars, dicebear, local placeholders). */
+export function isPlaceholderAvatarUrl(url: string | null | undefined): boolean {
+  if (!url?.trim()) return true;
+  const v = url.trim();
+  return (
+    PLACEHOLDER_HOSTS.some((h) => v.includes(h)) ||
+    v.startsWith("/placeholders")
+  );
+}
+
 /** True uploaded avatar only — no auto-generated placeholder URLs */
 export function getAvatarDisplayUrl(path: string | null | undefined): string | undefined {
   if (!path?.trim()) return undefined;
-  if (PLACEHOLDER_HOSTS.some((h) => path.includes(h))) return undefined;
-  if (path.startsWith("/placeholders")) return undefined;
+  if (isPlaceholderAvatarUrl(path)) return undefined;
 
   const resolved = getMediaUrl(path, "avatar");
   if (!resolved || resolved.includes("/placeholders/")) return undefined;

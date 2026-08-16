@@ -1,15 +1,7 @@
 import { getMediaUrl } from "@/lib/utils";
 
-/** Auto-generated avatars (ui-avatars, dicebear, local placeholders) — not real uploads. */
-export function isPlaceholderAvatarUrl(url: string | null | undefined): boolean {
-  if (!url || !url.trim()) return true;
-  const v = url.trim();
-  return (
-    v.includes("ui-avatars.com") ||
-    v.includes("dicebear.com") ||
-    v.startsWith("/placeholders/")
-  );
-}
+export { isPlaceholderAvatarUrl } from "./avatar-url";
+import { isPlaceholderAvatarUrl } from "./avatar-url";
 
 export interface ProviderImageFields {
   logo?: string | null;

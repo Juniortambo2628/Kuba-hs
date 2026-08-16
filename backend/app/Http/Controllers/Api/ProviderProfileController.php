@@ -4,18 +4,17 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateProviderProfileRequest;
+use App\Traits\HasProviderAuthorization;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
 class ProviderProfileController extends Controller
 {
+    use HasProviderAuthorization;
+
     public function update(UpdateProviderProfileRequest $request) {
         $user = Auth::user();
-        $provider = $user->ensureProviderProfile();
-
-        if (! $provider) {
-            return response()->json(['error' => 'Provider profile not found'], 404);
-        }
+        $provider = $this->getProviderOrFail();
 
         $validated = $request->validated();
 
