@@ -74,7 +74,8 @@ export function KubaFilePond({
                             },
                         })
                         .then((res) => {
-                            load(res.data.id);
+                            const { id, url } = res.data;
+                            load(String(id));
                             if (onSuccess) onSuccess(res.data);
                         })
                         .catch((err) => {
