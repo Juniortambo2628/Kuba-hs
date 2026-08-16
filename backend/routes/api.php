@@ -27,10 +27,12 @@ Route::prefix('auth')->group(function () {
         Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])->middleware('throttle:5,1');
         Route::post('/reset-password', [NewPasswordController::class, 'store']);
 
-        // Email code login
+        // Email code: only the request endpoint belongs in guest (verify is the auth step)
         Route::post('/email-code/request', [\App\Http\Controllers\Auth\EmailCodeController::class, 'requestCode'])->middleware('throttle:5,1');
-        Route::post('/email-code/verify', [\App\Http\Controllers\Auth\EmailCodeController::class, 'verifyCode'])->middleware('throttle:10,1');
     });
+
+    // Email code verify (public — this IS the authentication step, not a guest action)
+    Route::post('/email-code/verify', [\App\Http\Controllers\Auth\EmailCodeController::class, 'verifyCode'])->middleware('throttle:10,1');
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AuthenticatedSessionController::class, 'destroy']);

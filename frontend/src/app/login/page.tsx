@@ -115,6 +115,7 @@ function LoginForm() {
     if (emailCode.length !== 6) return;
     setIsEmailCodeLoading(true);
     try {
+      await axiosInstance.get("/sanctum/csrf-cookie");
       const res = await axiosInstance.post("/api/auth/email-code/verify", { email: emailCodeEmail, code: emailCode });
       if (res.data?.two_factor_required) {
         router.push("/auth/two-factor/challenge");
