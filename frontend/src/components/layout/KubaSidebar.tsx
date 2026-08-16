@@ -76,21 +76,21 @@ export function KubaSidebar() {
                         h-12 px-4 rounded-xl transition-all duration-300 border border-transparent
                         ${
                           isActive
-                            ? "bg-primary text-primary-foreground font-black shadow-lg shadow-primary/20"
-                            : "text-gray-600 dark:text-gray-400 hover:bg-gray-200/50 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white"
+                            ? "bg-black dark:bg-white text-white dark:text-black font-black shadow-lg"
+                            : "text-gray-600 dark:text-gray-400 hover:bg-gray-700 dark:hover:bg-gray-800 hover:text-white dark:hover:text-white"
                         }
                       `}
                     >
                       <Link href={item.url} className="flex items-center gap-3.5">
                         <item.icon
-                          className={`h-5 w-5 shrink-0 ${isActive ? "scale-110 text-white" : ""} transition-transform`}
+                          className={`h-5 w-5 shrink-0 ${isActive ? "scale-110 text-white dark:text-black" : ""} transition-transform`}
                         />
                         <span className="text-[13px] font-bold tracking-tight flex-1">{item.title}</span>
                         {badgeCount > 0 && (
                           <span
                             className={`
                             min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-black flex items-center justify-center shrink-0 tabular-nums
-                            ${isActive ? "bg-white/20 text-white" : "bg-primary/10 text-primary"}
+                            ${isActive ? "bg-white/20 text-white dark:bg-black/20 dark:text-black" : "bg-primary/10 text-primary"}
                           `}
                           >
                             {badgeCount > 99 ? "99+" : badgeCount}
