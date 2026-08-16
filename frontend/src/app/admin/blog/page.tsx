@@ -8,25 +8,20 @@ import {
 } from "@/components/shared/DashboardTable";
 import { DashboardPageSkeleton } from "@/components/shared/DashboardPageSkeleton";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import axiosInstance, { handleApiError } from "@/lib/axios";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Plus, FileText, ShieldCheck, Zap, PenTool, Calendar, User as UserIcon, Trash2, Edit3, Loader2, Image as ImageIcon } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Plus, FileText, Zap, PenTool, Calendar, User as UserIcon, Trash2, Edit3, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardListToolbar } from "@/components/shared/DashboardListToolbar";
 import { useSearchState } from "@/hooks/useSearchState";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
 import { useData } from "@/hooks/useData";
 import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
+import { BlogPostFormDialog, BlogPostFormValues } from "@/components/admin/BlogPostFormDialog";
 
 interface Post {
  id: string;
@@ -44,65 +39,31 @@ export default function AdminBlog() {
   const { search: searchTerm } = useSearchState();
   const [viewMode, setViewMode] = useState<'grid'|'list'>('grid');
 
-  // Dialog state
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [form, setForm] = useState({
-   title: "",
-   content: "",
-   excerpt: "",
-   is_published: false,
-  });
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Post | null>(null);
 
   const { data: posts, isLoading, refetch: fetchPosts } = useData<Post[]>("/api/admin/blog", { initialData: [] });
 
- const openCreate = () => {
-  setSelectedPost(null);
-  setForm({ title: "", content: "", excerpt: "", is_published: false });
-  setIsDialogOpen(true);
- };
+  const openCreate = () => {
+    setEditingPost(null);
+    setIsDialogOpen(true);
+  };
 
- const openEdit = (post: Post) => {
-  setSelectedPost(post);
-  setForm({
-   title: post.title,
-   content: post.content || "",
-   excerpt: post.excerpt || "",
-   is_published: post.is_published,
-  });
-  setIsDialogOpen(true);
- };
+  const openEdit = (post: Post) => {
+    setEditingPost(post);
+    setIsDialogOpen(true);
+  };
 
- const handleSave = async () => {
-  setIsSubmitting(true);
-  try {
-   if (selectedPost) {
-    await axiosInstance.put(`/api/admin/blog/${selectedPost.id}`, form);
-    toast.success("Article updated successfully");
-   } else {
-    await axiosInstance.post("/api/admin/blog", form);
-    toast.success("Article created successfully");
-   }
-   setIsDialogOpen(false);
-   fetchPosts();
-  } catch (err: any) {
-   toast.error(handleApiError(err));
-  } finally {
-   setIsSubmitting(false);
-  }
- };
-
- const handleDelete = async (id: string) => {
-  try {
-   await axiosInstance.delete(`/api/admin/blog/${id}`);
-   toast.success("Article deleted");
-   fetchPosts();
-  } catch (err: any) {
-   toast.error(handleApiError(err));
-  }
- };
+  const handleDelete = async (id: string) => {
+    try {
+      await axiosInstance.delete(`/api/admin/blog/${id}`);
+      toast.success("Article deleted");
+      fetchPosts();
+    } catch (err: any) {
+      toast.error(handleApiError(err));
+    }
+  };
 
  const filteredPosts = posts.filter(p =>
   p.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -128,59 +89,13 @@ export default function AdminBlog() {
     </Button>
    </DashboardPageHeader>
 
-   {/* Create/Edit Dialog */}
-   <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-    <DialogContent className="sm:max-w-2xl rounded-3xl p-6 bg-white outline-none border-none shadow-2xl">
-     <DialogHeader>
-      <DialogTitle className="text-xl font-bold text-foreground">
-       {selectedPost ? "Edit Article" : "New Article"}
-      </DialogTitle>
-     </DialogHeader>
-     <div className="space-y-5 py-4">
-      <div className="space-y-2">
-       <Label className="text-xs font-bold text-muted-foreground tracking-tight">Title</Label>
-       <Input
-        className="bg-muted border-none rounded-xl h-14 font-bold"
-        value={form.title}
-        onChange={(e) => setForm({ ...form, title: e.target.value })}
-        placeholder="Article title..."
-       />
-      </div>
-      <div className="space-y-2">
-       <Label className="text-xs font-bold text-muted-foreground tracking-tight">Excerpt</Label>
-       <Input
-        className="bg-muted border-none rounded-xl h-14 font-bold"
-        value={form.excerpt}
-        onChange={(e) => setForm({ ...form, excerpt: e.target.value })}
-        placeholder="Brief summary..."
-       />
-      </div>
-      <div className="space-y-2">
-       <Label className="text-xs font-bold text-muted-foreground tracking-tight">Content</Label>
-       <Textarea
-        className="bg-muted border-none rounded-xl min-h-[200px] font-bold"
-        value={form.content}
-        onChange={(e) => setForm({ ...form, content: e.target.value })}
-        placeholder="Write your article content..."
-       />
-      </div>
-      <div className="flex items-center justify-between p-4 bg-muted rounded-xl">
-       <Label className="text-xs font-bold text-muted-foreground tracking-tight">Publish immediately</Label>
-       <Switch
-        checked={form.is_published}
-        onCheckedChange={(checked) => setForm({ ...form, is_published: checked })}
-       />
-      </div>
-      <Button
-       onClick={handleSave}
-       disabled={isSubmitting || !form.title || !form.content}
-       className="w-full h-14 rounded-xl bg-primary hover:bg-black text-white font-bold mt-4"
-      >
-       {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : selectedPost ? "Update Article" : "Publish Article"}
-      </Button>
-     </div>
-    </DialogContent>
-   </Dialog>
+   <BlogPostFormDialog
+    open={isDialogOpen}
+    onOpenChange={setIsDialogOpen}
+    editingId={editingPost?.id ?? null}
+    initial={editingPost ? { title: editingPost.title, content: editingPost.content || "", excerpt: editingPost.excerpt || "", is_published: editingPost.is_published } : undefined}
+    onSuccess={fetchPosts}
+   />
 
    {searchTerm && (
     <p className="text-xs text-muted-foreground">Results for &quot;{searchTerm}&quot;</p>
