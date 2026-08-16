@@ -11,6 +11,7 @@ import {
   ClipboardList,
   ShieldCheck,
   Heart,
+  Shield,
 } from "lucide-react";
 import type { ActivityCounts } from "@/hooks/useActivityCounts";
 
@@ -34,6 +35,7 @@ export const CLIENT_SIDEBAR_ITEMS: DashboardNavItem[] = [
   { title: "Messages", url: "/dashboard/client/messages", icon: MessageSquare, badgeKey: "messages" },
   { title: "Billing", url: "/dashboard/client/billing", icon: DollarSign, badgeKey: null },
   { title: "Loyalty", url: "/dashboard/client/loyalty", icon: Star, badgeKey: null },
+  { title: "Security", url: "/dashboard/client/security", icon: Shield, badgeKey: null },
   { title: "Profile", url: "/dashboard/client/profile", icon: User, badgeKey: null },
 ];
 
@@ -45,5 +47,6 @@ export const PROVIDER_SIDEBAR_ITEMS: DashboardNavItem[] = [
   { title: "Verification", url: "/dashboard/provider/verification", icon: ShieldCheck, badgeKey: "verification" },
   { title: "Messages", url: "/dashboard/provider/messages", icon: MessageSquare, badgeKey: "messages" },
   { title: "Reviews", url: "/dashboard/provider/reviews", icon: Star, badgeKey: null },
+  { title: "Security", url: "/dashboard/provider/security", icon: Shield, badgeKey: null },
   { title: "Profile", url: "/dashboard/provider/profile", icon: User, badgeKey: null },
 ];

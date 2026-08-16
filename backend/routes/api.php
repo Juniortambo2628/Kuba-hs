@@ -26,6 +26,10 @@ Route::prefix('auth')->group(function () {
         Route::post('/register', [RegisteredUserController::class, 'store'])->middleware('throttle:5,1');
         Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])->middleware('throttle:5,1');
         Route::post('/reset-password', [NewPasswordController::class, 'store']);
+
+        // Email code login
+        Route::post('/email-code/request', [\App\Http\Controllers\Auth\EmailCodeController::class, 'requestCode'])->middleware('throttle:5,1');
+        Route::post('/email-code/verify', [\App\Http\Controllers\Auth\EmailCodeController::class, 'verifyCode'])->middleware('throttle:10,1');
     });
 
     Route::middleware('auth:sanctum')->group(function () {
@@ -48,6 +52,9 @@ Route::prefix('auth')->group(function () {
     // Passkey authentication (public — user not yet logged in)
     Route::post('/passkey/authenticate/options', [\App\Http\Controllers\Auth\PasskeyController::class, 'authenticateOptions']);
     Route::post('/passkey/authenticate/verify', [\App\Http\Controllers\Auth\PasskeyController::class, 'authenticateVerify']);
+
+    // Email code login (public — after code verification)
+    Route::post('/email-code/login', [AuthenticatedSessionController::class, 'emailCodeLogin']);
 
     // Two-factor challenge (public — during login flow)
     Route::post('/two-factor/challenge', [\App\Http\Controllers\Auth\TwoFactorChallengeController::class, 'verify']);

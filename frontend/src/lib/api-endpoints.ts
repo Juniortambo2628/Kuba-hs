@@ -14,6 +14,11 @@ export const API = {
     completeProfile: "/api/auth/complete-profile",
     registerProvider: "/api/auth/register-provider",
 
+    // Email code login
+    emailCodeRequest: "/api/auth/email-code/request",
+    emailCodeVerify: "/api/auth/email-code/verify",
+    emailCodeLogin: "/api/auth/email-code/login",
+
     // Passkeys
     passkeys: "/api/auth/passkeys",
     passkeyRegisterOptions: "/api/auth/passkey/register/options",

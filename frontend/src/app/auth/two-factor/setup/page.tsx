@@ -10,7 +10,7 @@ import { useAuthPageContent } from "@/hooks/useAuthPageContent";
 import { Shield, KeyRound, Copy, Check, Loader2 } from "lucide-react";
 
 export default function TwoFactorSetupPage() {
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, isLoading: authLoading, checkAuth } = useAuth();
   const router = useRouter();
   const { content, footerHref, showSocialProof } = useAuthPageContent("client_login");
 
@@ -78,6 +78,15 @@ export default function TwoFactorSetupPage() {
 
   const handleContinue = () => {
     router.push("/dashboard");
+  };
+
+  const handleSkipForNow = async () => {
+    try {
+      await checkAuth();
+      router.push("/dashboard");
+    } catch {
+      router.push("/dashboard");
+    }
   };
 
   if (authLoading || isLoading) {
@@ -148,6 +157,14 @@ export default function TwoFactorSetupPage() {
               <AuthPrimaryButton accent="client" isLoading={isVerifying}>
                 Verify & Enable
               </AuthPrimaryButton>
+
+              <button
+                type="button"
+                onClick={handleSkipForNow}
+                className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+              >
+                Skip for now
+              </button>
             </form>
           </>
         )}
