@@ -117,6 +117,43 @@ class AuthenticatedSessionController extends Controller
     }
 
     /**
+     * Handle email-code-based sign-in (after code verification).
+     */
+    public function emailCodeLogin(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $request->validate([
+            'user_id' => 'required|integer|exists:users,id',
+        ]);
+
+        $user = \App\Models\User::find($request->input('user_id'));
+        if (!$user) {
+            return response()->json(['message' => 'User not found.'], 404);
+        }
+
+        Auth::guard('web')->login($user);
+        $request->session()->regenerate();
+
+        $user->notify(new SignInLog(
+            ip: $request->ip(),
+            user_agent: $request->userAgent(),
+            timestamp: now(),
+            method: 'email_code'
+        ));
+
+        if ($user->hasTwoFactorEnabled()) {
+            return response()->json([
+                'two_factor_required' => true,
+                'challenge_methods' => ['totp', 'recovery_code'],
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Logged in successfully via email code.',
+            'user' => new UserResource($user),
+        ]);
+    }
+
+    /**
      * Destroy an authenticated session.
      */
     public function destroy(Request $request): \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse

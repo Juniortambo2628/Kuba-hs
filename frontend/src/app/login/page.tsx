@@ -4,15 +4,16 @@ import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Mail, Lock, Loader2, Fingerprint } from "lucide-react";
+import { Mail, Lock, Loader2, Fingerprint, KeyRound } from "lucide-react";
 import { AuthPageShell, AuthFormDivider, AuthPrimaryButton } from "@/components/auth/AuthPageShell";
 import { AuthIconInput } from "@/components/auth/AuthIconInput";
 import { AuthSocialButtons } from "@/components/auth/AuthSocialButtons";
 import { useAuthPageContent } from "@/hooks/useAuthPageContent";
 import { usePasskeys } from "@/hooks/usePasskeys";
+import axiosInstance from "@/lib/axios";
 
 function LoginForm() {
-  const { login, user, isLoading: authLoading } = useAuth();
+  const { login, user, isLoading: authLoading, checkAuth } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get("redirect") || "";
@@ -26,6 +27,14 @@ function LoginForm() {
   const [isPasskeyLoading, setIsPasskeyLoading] = useState(false);
   const googleError = searchParams.get("error");
   const resetStatus = searchParams.get("reset");
+
+  // Email code login states
+  const [emailCodeMode, setEmailCodeMode] = useState(false);
+  const [emailCodeStep, setEmailCodeStep] = useState<"email" | "code">("email");
+  const [emailCodeEmail, setEmailCodeEmail] = useState("");
+  const [emailCode, setEmailCode] = useState("");
+  const [isEmailCodeLoading, setIsEmailCodeLoading] = useState(false);
+  const [emailCodeError, setEmailCodeError] = useState("");
 
   useEffect(() => {
     if (googleError === "google_auth_failed") {
@@ -80,6 +89,46 @@ function LoginForm() {
       setError(message);
     } finally {
       setIsPasskeyLoading(false);
+    }
+  };
+
+  // Email code login handlers
+  const handleRequestEmailCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setEmailCodeError("");
+    if (!emailCodeEmail) return;
+    setIsEmailCodeLoading(true);
+    try {
+      await axiosInstance.post("/api/auth/email-code/request", { email: emailCodeEmail });
+      setEmailCodeStep("code");
+    } catch (err: unknown) {
+      const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Failed to send code";
+      setEmailCodeError(message);
+    } finally {
+      setIsEmailCodeLoading(false);
+    }
+  };
+
+  const handleVerifyEmailCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setEmailCodeError("");
+    if (emailCode.length !== 6) return;
+    setIsEmailCodeLoading(true);
+    try {
+      const res = await axiosInstance.post("/api/auth/email-code/verify", { email: emailCodeEmail, code: emailCode });
+      if (res.data?.two_factor_required) {
+        router.push("/auth/two-factor/challenge");
+        return;
+      }
+      if (res.data?.user) {
+        await checkAuth();
+        router.push(res.data.user.role === "admin" ? "/admin" : "/dashboard");
+      }
+    } catch (err: unknown) {
+      const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Invalid code";
+      setEmailCodeError(message);
+    } finally {
+      setIsEmailCodeLoading(false);
     }
   };
 
@@ -149,6 +198,117 @@ function LoginForm() {
               )}
               Sign in with Passkey
             </button>
+          </>
+        )}
+
+        {/* Email code login */}
+        {!emailCodeMode ? (
+          <>
+            <AuthFormDivider />
+            <button
+              type="button"
+              onClick={() => {
+                setEmailCodeMode(true);
+                setEmailCodeStep("email");
+                setEmailCodeError("");
+              }}
+              disabled={isLoading}
+              className="w-full flex items-center justify-center gap-2 rounded-xl border border-border px-4 py-3 text-sm font-medium hover:bg-muted transition-colors disabled:opacity-50"
+            >
+              <KeyRound className="h-4 w-4" />
+              Sign in with email code
+            </button>
+          </>
+        ) : (
+          <>
+            <AuthFormDivider />
+            <div className="space-y-4 rounded-xl border border-border p-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-medium flex items-center gap-2">
+                  <KeyRound className="h-4 w-4" />
+                  Email code sign-in
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmailCodeMode(false);
+                    setEmailCodeStep("email");
+                    setEmailCodeError("");
+                    setEmailCode("");
+                  }}
+                  className="text-xs text-muted-foreground hover:text-foreground"
+                >
+                  Back to password
+                </button>
+              </div>
+              {emailCodeError && (
+                <p className="rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+                  {emailCodeError}
+                </p>
+              )}
+              {emailCodeStep === "email" ? (
+                <form onSubmit={handleRequestEmailCode} className="space-y-3">
+                  <AuthIconInput
+                    id="email-code-email"
+                    icon={Mail}
+                    type="email"
+                    autoComplete="email"
+                    placeholder="name@example.com"
+                    value={emailCodeEmail}
+                    onChange={(e) => setEmailCodeEmail(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="submit"
+                    disabled={!emailCodeEmail || isEmailCodeLoading}
+                    className="w-full rounded-xl bg-teal-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-teal-700 transition-colors disabled:opacity-50"
+                  >
+                    {isEmailCodeLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin mx-auto" />
+                    ) : (
+                      "Send code"
+                    )}
+                  </button>
+                </form>
+              ) : (
+                <form onSubmit={handleVerifyEmailCode} className="space-y-3">
+                  <p className="text-xs text-muted-foreground">
+                    Code sent to <span className="font-medium text-foreground">{emailCodeEmail}</span>
+                  </p>
+                  <AuthIconInput
+                    id="email-code"
+                    icon={KeyRound}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={6}
+                    placeholder="000000"
+                    value={emailCode}
+                    onChange={(e) => setEmailCode(e.target.value.replace(/\D/g, ""))}
+                    required
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setEmailCodeStep("email")}
+                      className="flex-1 rounded-xl border border-border px-4 py-2.5 text-sm font-medium hover:bg-muted transition-colors"
+                    >
+                      Back
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={emailCode.length !== 6 || isEmailCodeLoading}
+                      className="flex-1 rounded-xl bg-teal-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-teal-700 transition-colors disabled:opacity-50"
+                    >
+                      {isEmailCodeLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin mx-auto" />
+                      ) : (
+                        "Verify & sign in"
+                      )}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
           </>
         )}
 
