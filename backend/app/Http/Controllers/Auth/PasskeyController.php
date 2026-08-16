@@ -105,7 +105,7 @@ class PasskeyController extends Controller
             return response()->json(['message' => 'Invalid client data type.'], 422);
         }
 
-        if ($clientData['origin'] !== $this->getOrigin()) {
+        if (!$this->isOriginValid($clientData['origin'] ?? '')) {
             return response()->json(['message' => 'Invalid origin.'], 422);
         }
 
@@ -262,7 +262,7 @@ class PasskeyController extends Controller
             return response()->json(['message' => 'Invalid client data type.'], 422);
         }
 
-        if ($clientData['origin'] !== $this->getOrigin()) {
+        if (!$this->isOriginValid($clientData['origin'] ?? '')) {
             return response()->json(['message' => 'Invalid origin.'], 422);
         }
 
@@ -374,8 +374,38 @@ class PasskeyController extends Controller
 
     private function getOrigin(): string
     {
-        $frontendUrl = config('app.frontend_url', env('FRONTEND_URL', 'https://kuba.co.ke'));
-        return $frontendUrl ?: config('app.url', 'https://kuba.co.ke');
+        // Return the primary origin the browser will send.
+        // Accept FRONTEND_URL if set, otherwise fall back to the base domain.
+        $frontendUrl = config('app.frontend_url', env('FRONTEND_URL', ''));
+        if ($frontendUrl && $frontendUrl !== 'http://localhost:3000') {
+            return rtrim($frontendUrl, '/');
+        }
+
+        // Derive from APP_URL: replace api. subdomain with www. or bare domain
+        $appUrl = config('app.url', 'https://kuba.co.ke');
+        $host = parse_url($appUrl, PHP_URL_HOST) ?? 'kuba.co.ke';
+        $parts = explode('.', $host);
+        if (count($parts) >= 3 && $parts[0] === 'api') {
+            $host = implode('.', array_slice($parts, 1));
+        }
+
+        return parse_url($appUrl, PHP_URL_SCHEME) . '://' . $host;
+    }
+
+    /**
+     * Check if the client-reported origin matches any valid origin.
+     * Allows both the frontend URL and the API URL as valid origins.
+     */
+    private function isOriginValid(string $origin): bool
+    {
+        $validOrigins = [
+            $this->getOrigin(),
+            config('app.url', 'https://api.kuba.co.ke'),
+            'https://kuba.co.ke',
+            'https://www.kuba.co.ke',
+        ];
+
+        return in_array(rtrim($origin, '/'), array_unique($validOrigins), true);
     }
 
     private function base64urlDecode(string $data): string
