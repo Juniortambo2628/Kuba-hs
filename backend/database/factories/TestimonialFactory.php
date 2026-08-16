@@ -18,7 +18,7 @@ class TestimonialFactory extends Factory
             'rating' => fake()->numberBetween(4, 5),
             'image_url' => fake()->optional(0.5)->imageUrl(200, 200),
             'is_active' => true,
-            'order' => fake()->numberBetween(1, 20),
+            'sort_order' => fake()->numberBetween(1, 20),
         ];
     }
 }

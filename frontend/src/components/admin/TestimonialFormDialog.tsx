@@ -23,7 +23,7 @@ interface TestimonialFormDialogProps {
   onOpenChange: (open: boolean) => void;
   editingId: number | null;
   initial?: Partial<TestimonialFormValues>;
-  order?: number;
+  sort_order?: number;
   onSuccess: (item?: Testimonial) => void;
 }
 
@@ -32,7 +32,7 @@ export function TestimonialFormDialog({
   onOpenChange,
   editingId,
   initial,
-  order = 0,
+  sort_order = 0,
   onSuccess,
 }: TestimonialFormDialogProps) {
   const { form, setForm, isSaving, handleSubmit } = useCrudForm<TestimonialFormValues>({
@@ -40,7 +40,7 @@ export function TestimonialFormDialog({
     endpoint: "/api/admin/testimonials",
     editingId,
     initial,
-    extraCreatePayload: { order },
+    extraCreatePayload: { sort_order },
   });
 
   const onSubmit = async (e: React.FormEvent) => {

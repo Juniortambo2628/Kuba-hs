@@ -48,23 +48,18 @@ class BookingController extends Controller
         );
     }
 
-    public function updateStatus(Request $request, Booking $booking) {
+    public function updateStatus(Request $request, Booking $booking, BookingService $bookingService) {
         $validated = $request->validate([
             'status' => 'required|string|in:'.implode(',', array_column(BookingStatus::cases(), 'value')),
             'cancellation_reason' => 'nullable|string',
         ]);
 
-        $previousStatus = $booking->status;
-        $booking->update($validated);
-
-        if ($previousStatus->value !== $validated['status']) {
-            app(\App\Services\BookingActivityLogService::class)->logStatusChange(
-                $booking,
-                $request->user(),
-                $previousStatus->value,
-                $validated['status']
-            );
-        }
+        $bookingService->updateBookingStatus(
+            $booking,
+            $request->user(),
+            $validated['status'],
+            $validated['cancellation_reason'] ?? null
+        );
 
         return response()->json([
             'message' => 'Booking status updated.',

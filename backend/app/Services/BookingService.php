@@ -14,9 +14,14 @@ class BookingService
     /**
      * Create a new booking transaction, handling address creation,
      * price calculation, media attachment, and notifications.
+     *
+     * @param  array{status?: string, actor?: User, location_name?: string, images?: mixed}  $options
      */
-    public function createBooking(User $user, array $data, $images = null): Booking
+    public function createBooking(User $user, array $data, array $options = []): Booking
     {
+        $status = $options['status'] ?? 'pending';
+        $actor = $options['actor'] ?? $user;
+
         // Handle Address
         $addressId = $data['address_id'] ?? null;
         if (! $addressId && isset($data['new_address'])) {
@@ -27,7 +32,7 @@ class BookingService
                 'city' => $data['new_address']['city'],
                 'state' => $data['new_address']['state'],
                 'postal_code' => $data['new_address']['postal_code'],
-                'country' => 'Kenya', // default for now
+                'country' => 'Kenya',
                 'is_default' => true,
             ]);
             $addressId = $address->id;
@@ -40,7 +45,7 @@ class BookingService
 
         // Combine date and time if scheduled_time is present
         $scheduledDate = $data['scheduled_date'];
-        if (isset($data['scheduled_time'])) {
+        if (! empty($data['scheduled_time'])) {
             $scheduledDate .= ' '.$data['scheduled_time'].':00';
         }
 
@@ -48,15 +53,15 @@ class BookingService
         $price = 0;
         if (isset($providerService->pricing_type) && $providerService->pricing_type === 'hourly') {
             $effectiveHours = max($data['quantity'], (int) ($providerService->min_hours ?? 1));
-            $price = ($providerService->base_price * $effectiveHours);
+            $price = $providerService->base_price * $effectiveHours;
         } else {
-            $price = ($providerService->base_price * $data['quantity']);
+            $price = $providerService->base_price * $data['quantity'];
         }
 
         // Handle Promo Code
         $promoCode = null;
         $discountAmount = 0;
-        if (isset($data['promo_code'])) {
+        if (! empty($data['promo_code'])) {
             $promoCode = \App\Models\PromoCode::where('code', $data['promo_code'])->first();
             if ($promoCode && $promoCode->isValid($price)) {
                 $discountAmount = $promoCode->calculateDiscount($price);
@@ -71,9 +76,10 @@ class BookingService
             'booking_number' => 'BK-'.strtoupper(Str::random(8)),
             'scheduled_date' => $scheduledDate,
             'scheduled_time' => $data['scheduled_time'] ?? null,
-            'status' => 'pending',
+            'status' => $status,
             'payment_status' => 'pending',
             'address_id' => $addressId,
+            'location_name' => $data['location_name'] ?? null,
             'description' => $data['description'] ?? null,
             'service_type' => $data['service_type'],
             'quantity' => $data['quantity'],
@@ -96,9 +102,9 @@ class BookingService
         }
 
         // Handle Images
-        if ($images) {
+        if (! empty($options['images'])) {
             $optimizer = app(\App\Services\ImageOptimizationService::class);
-            foreach ($images as $image) {
+            foreach ($options['images'] as $image) {
                 $media = $booking->addMedia($image)->toMediaCollection('issue_images');
                 $optimizer->optimizeMedia($media, \App\Services\ImageOptimizationService::PRESET_BOOKING);
             }
@@ -107,20 +113,20 @@ class BookingService
         // Eager load relations for notifications
         $booking->load(['customer', 'provider.user', 'service']);
 
-        // Notify Provider (New Service Request)
+        // Notify Provider
         if (isset($booking->provider->user)) {
             $booking->provider->user->notify(new \App\Notifications\NewBookingReceived($booking));
         }
 
-        // Notify Customer (Confirmation)
+        // Notify Customer
         $user->notify(new \App\Notifications\BookingConfirmation($booking));
 
         app(BookingActivityLogService::class)->log(
             $booking,
             'created',
-            $user,
-            'Booking created',
-            ['status' => 'pending', 'booking_number' => $booking->booking_number]
+            $actor,
+            $actor->id === $user->id ? 'Booking created' : 'Booking created by administrator',
+            ['status' => $status, 'booking_number' => $booking->booking_number]
         );
 
         return $booking;
@@ -131,87 +137,16 @@ class BookingService
      */
     public function createAdminBooking(User $customer, array $data, string $status = 'pending'): Booking
     {
-        $providerService = ProviderService::where('provider_id', $data['provider_id'])
-            ->where('service_id', $data['service_id'])
-            ->firstOrFail();
-
-        $scheduledDate = $data['scheduled_date'];
-        if (! empty($data['scheduled_time'])) {
-            $scheduledDate .= ' '.$data['scheduled_time'].':00';
-        }
-
-        $price = 0;
-        if (isset($providerService->pricing_type) && $providerService->pricing_type === 'hourly') {
-            $effectiveHours = max($data['quantity'], (int) ($providerService->min_hours ?? 1));
-            $price = $providerService->base_price * $effectiveHours;
-        } else {
-            $price = $providerService->base_price * $data['quantity'];
-        }
-
-        $promoCode = null;
-        $discountAmount = 0;
-        if (! empty($data['promo_code'])) {
-            $promoCode = \App\Models\PromoCode::where('code', $data['promo_code'])->first();
-            if ($promoCode && $promoCode->isValid($price)) {
-                $discountAmount = $promoCode->calculateDiscount($price);
-                $price = max(0, $price - $discountAmount);
-            }
-        }
-
-        $booking = Booking::create([
-            'customer_id' => $customer->id,
-            'provider_id' => $data['provider_id'],
-            'service_id' => $data['service_id'],
-            'booking_number' => 'BK-'.strtoupper(Str::random(8)),
-            'scheduled_date' => $scheduledDate,
-            'scheduled_time' => $data['scheduled_time'] ?? null,
+        return $this->createBooking($customer, $data, [
             'status' => $status,
-            'payment_status' => 'pending',
-            'address_id' => $data['address_id'] ?? null,
-            'location_name' => $data['location_name'] ?? null,
-            'description' => $data['description'] ?? null,
-            'service_type' => $data['service_type'],
-            'quantity' => $data['quantity'],
-            'quantity_label' => $data['quantity_label'] ?? null,
-            'estimated_price' => $price,
-            'promo_code_id' => $promoCode?->id,
-            'discount_amount' => $discountAmount,
+            'actor' => auth()->user(),
         ]);
-
-        \App\Models\Conversation::create([
-            'booking_id' => $booking->id,
-            'customer_id' => $booking->customer_id,
-            'provider_id' => $booking->provider_id,
-        ]);
-
-        if ($promoCode) {
-            $promoCode->increment('used_count');
-        }
-
-        $booking->load(['customer', 'provider.user', 'service']);
-
-        if ($booking->provider?->user) {
-            $booking->provider->user->notify(new \App\Notifications\NewBookingReceived($booking));
-        }
-
-        $customer->notify(new \App\Notifications\BookingConfirmation($booking));
-
-        $admin = auth()->user();
-        app(BookingActivityLogService::class)->log(
-            $booking,
-            'created',
-            $admin,
-            'Booking created by administrator',
-            ['status' => $status, 'booking_number' => $booking->booking_number]
-        );
-
-        return $booking;
     }
 
     /**
      * Update Booking Status safely and notify relevant parties.
      */
-    public function updateBookingStatus(Booking $booking, User $user, string $status): Booking
+    public function updateBookingStatus(Booking $booking, User $user, string $status, string $cancellationReason = null): Booking
     {
         $isProvider = $user->role === UserRole::Provider
             && $user->provider
@@ -229,6 +164,10 @@ class BookingService
         $previousStatus = is_string($booking->status) ? $booking->status : $booking->status->value;
         $updateData = ['status' => $status];
 
+        if ($cancellationReason) {
+            $updateData['cancellation_reason'] = $cancellationReason;
+        }
+
         // Record started_at when service begins
         if ($status === 'in_progress' && ! $booking->started_at) {
             $updateData['started_at'] = now();
@@ -238,7 +177,6 @@ class BookingService
         if ($status === 'completed') {
             $updateData['completed_at'] = now();
 
-            // Calculate final price for hourly services based on elapsed time
             if ($booking->started_at) {
                 $providerService = ProviderService::where('provider_id', $booking->provider_id)
                     ->where('service_id', $booking->service_id)
@@ -246,10 +184,9 @@ class BookingService
 
                 if ($providerService && $providerService->pricing_type === 'hourly') {
                     $elapsedSeconds = $booking->started_at->diffInSeconds(now());
-                    $elapsedHours = max(1, ceil($elapsedSeconds / 3600)); // Min 1 hour, round up
+                    $elapsedHours = max(1, ceil($elapsedSeconds / 3600));
                     $updateData['final_price'] = $providerService->base_price * $elapsedHours;
                 } else {
-                    // Flat-rate: final price = estimated price
                     $updateData['final_price'] = $booking->estimated_price;
                 }
             }

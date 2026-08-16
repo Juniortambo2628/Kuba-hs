@@ -17,7 +17,7 @@ describe('admin testimonials API', function () {
             'content' => fake()->paragraph(),
             'rating' => fake()->numberBetween(4, 5),
             'is_active' => true,
-            'order' => fake()->numberBetween(1, 20),
+            'sort_order' => fake()->numberBetween(1, 20),
         ], $overrides);
 
         DB::table('testimonials')->insert($data);
@@ -82,19 +82,19 @@ describe('admin testimonials API', function () {
     });
 
     it('reorders testimonials', function () {
-        $t1 = createTestimonial(['client_name' => 'First', 'order' => 1]);
-        $t2 = createTestimonial(['client_name' => 'Second', 'order' => 2]);
+        $t1 = createTestimonial(['client_name' => 'First', 'sort_order' => 1]);
+        $t2 = createTestimonial(['client_name' => 'Second', 'sort_order' => 2]);
 
         $response = $this->actingAs($this->admin)
             ->postJson('/api/admin/testimonials/reorder', [
                 'items' => [
-                    ['id' => $t1->id, 'order' => 2],
-                    ['id' => $t2->id, 'order' => 1],
+                    ['id' => $t1->id, 'sort_order' => 2],
+                    ['id' => $t2->id, 'sort_order' => 1],
                 ],
             ]);
 
         $response->assertOk();
-        expect($t1->fresh()->order)->toBe(2);
-        expect($t2->fresh()->order)->toBe(1);
+        expect($t1->fresh()->sort_order)->toBe(2);
+        expect($t2->fresh()->sort_order)->toBe(1);
     });
 });

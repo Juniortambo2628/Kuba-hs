@@ -38,16 +38,3 @@ export function resolveProviderCardImageUrl(provider: ProviderImageFields): stri
 
   return null;
 }
-
-/** Small avatar chip (host row, list fallback): same priority as card image. */
-export function resolveProviderProfileImageUrl(
-  avatarUrl?: string | null,
-  logo?: string | null,
-  banner?: string | null
-): string | null {
-  return resolveProviderCardImageUrl({
-    logo,
-    banner,
-    user: { avatar_url: avatarUrl },
-  });
-}

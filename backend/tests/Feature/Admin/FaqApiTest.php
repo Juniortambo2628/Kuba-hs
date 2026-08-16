@@ -10,9 +10,9 @@ describe('Admin FAQ API', function () {
         $this->actingAs($admin, 'sanctum');
     });
 
-    it('lists all faqs ordered by order then id desc', function () {
-        FAQ::factory()->create(['question' => 'First', 'order' => 2]);
-        FAQ::factory()->create(['question' => 'Second', 'order' => 1]);
+    it('lists all faqs ordered by sort_order then id desc', function () {
+        FAQ::factory()->create(['question' => 'First', 'sort_order' => 2]);
+        FAQ::factory()->create(['question' => 'Second', 'sort_order' => 1]);
 
         $response = $this->getJson('/api/admin/faqs');
 
@@ -67,19 +67,19 @@ describe('Admin FAQ API', function () {
     });
 
     it('reorders faqs', function () {
-        $faq1 = FAQ::factory()->create(['order' => 1]);
-        $faq2 = FAQ::factory()->create(['order' => 2]);
+        $faq1 = FAQ::factory()->create(['sort_order' => 1]);
+        $faq2 = FAQ::factory()->create(['sort_order' => 2]);
 
         $response = $this->postJson('/api/admin/faqs/reorder', [
             'items' => [
-                ['id' => $faq1->id, 'order' => 2],
-                ['id' => $faq2->id, 'order' => 1],
+                ['id' => $faq1->id, 'sort_order' => 2],
+                ['id' => $faq2->id, 'sort_order' => 1],
             ],
         ]);
 
         $response->assertOk();
         $response->assertJsonFragment(['message' => 'Reordered successfully']);
-        $this->assertDatabaseHas('faqs', ['id' => $faq1->id, 'order' => 2]);
-        $this->assertDatabaseHas('faqs', ['id' => $faq2->id, 'order' => 1]);
+        $this->assertDatabaseHas('faqs', ['id' => $faq1->id, 'sort_order' => 2]);
+        $this->assertDatabaseHas('faqs', ['id' => $faq2->id, 'sort_order' => 1]);
     });
 });

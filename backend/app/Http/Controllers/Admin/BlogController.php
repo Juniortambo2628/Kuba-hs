@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StoreBlogPostRequest;
 use App\Http\Resources\BlogPostResource;
 use App\Models\BlogPost;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class BlogController extends Controller
@@ -15,14 +15,8 @@ class BlogController extends Controller
         return BlogPostResource::collection(BlogPost::with('author')->latest()->paginate(10));
     }
 
-    public function store(Request $request) {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'required|string',
-            'excerpt' => 'nullable|string|max:500',
-            'image' => 'nullable|string',
-            'is_published' => 'boolean',
-        ]);
+    public function store(StoreBlogPostRequest $request) {
+        $validated = $request->validated();
 
         $validated['slug'] = Str::slug($validated['title']).'-'.rand(1000, 9999);
         $validated['author_id'] = auth()->id();
@@ -36,14 +30,8 @@ class BlogController extends Controller
         return new BlogPostResource($blogPost->load('author'));
     }
 
-    public function update(Request $request, BlogPost $blogPost) {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'required|string',
-            'excerpt' => 'nullable|string|max:500',
-            'image' => 'nullable|string',
-            'is_published' => 'boolean',
-        ]);
+    public function update(StoreBlogPostRequest $request, BlogPost $blogPost) {
+        $validated = $request->validated();
 
         if ($validated['title'] !== $blogPost->title) {
             $validated['slug'] = Str::slug($validated['title']).'-'.rand(1000, 9999);

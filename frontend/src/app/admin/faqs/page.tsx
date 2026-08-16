@@ -16,6 +16,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Edit, Trash2, LayoutGrid, List, MessageSquare, Tag, Eye, EyeOff, ChevronUp, ChevronDown, GripVertical } from "lucide-react";
+import { MetricCard } from "@/components/shared/MetricCard";
 import {
   DragDropContext,
   Droppable,
@@ -38,7 +39,7 @@ interface FAQ {
   answer: string;
   avatar?: string;
   is_active: boolean;
-  order: number;
+  sort_order: number;
 }
 
 function FAQManagementContent() {
@@ -60,7 +61,7 @@ function FAQManagementContent() {
     }
   };
 
-  const reorderFaqs = async (items: { id: number; order: number }[]) => {
+  const reorderFaqs = async (items: { id: number; sort_order: number }[]) => {
     try {
       await axiosInstance.post("/api/admin/faqs/reorder", { items });
       toast.success("FAQ order updated");
@@ -72,23 +73,23 @@ function FAQManagementContent() {
 
   const onDragEnd = async (result: DropResult) => {
     if (!result.destination) return;
-    const sorted = [...faqs].sort((a, b) => a.order - b.order || a.id - b.id);
+    const sorted = [...faqs].sort((a, b) => a.sort_order - b.sort_order || a.id - b.id);
     const itemsCopy = Array.from(sorted);
     const [reordered] = itemsCopy.splice(result.source.index, 1);
     itemsCopy.splice(result.destination.index, 0, reordered);
-    const payload = itemsCopy.map((f, i) => ({ id: f.id, order: i }));
-    setFaqs(itemsCopy.map((f, i) => ({ ...f, order: i })));
+    const payload = itemsCopy.map((f, i) => ({ id: f.id, sort_order: i }));
+    setFaqs(itemsCopy.map((f, i) => ({ ...f, sort_order: i })));
     await reorderFaqs(payload);
   };
 
   const moveFaq = async (faqId: number, direction: "up" | "down") => {
-    const sorted = [...faqs].sort((a, b) => a.order - b.order || a.id - b.id);
+    const sorted = [...faqs].sort((a, b) => a.sort_order - b.sort_order || a.id - b.id);
     const idx = sorted.findIndex((f) => f.id === faqId);
     const target = direction === "up" ? idx - 1 : idx + 1;
     if (target < 0 || target >= sorted.length) return;
     const next = [...sorted];
     [next[idx], next[target]] = [next[target], next[idx]];
-    await reorderFaqs(next.map((f, i) => ({ id: f.id, order: i })));
+    await reorderFaqs(next.map((f, i) => ({ id: f.id, sort_order: i })));
   };
 
   const handleToggleActive = async (faq: FAQ) => {
@@ -115,7 +116,7 @@ function FAQManagementContent() {
         statusFilter === "" || (statusFilter === "active" ? faq.is_active : !faq.is_active);
       return matchesSearch && matchesStatus;
     })
-    .sort((a, b) => a.order - b.order || a.id - b.id);
+    .sort((a, b) => a.sort_order - b.sort_order || a.id - b.id);
 
   const activeCount = faqs.filter(f => f.is_active).length;
 
@@ -132,48 +133,9 @@ function FAQManagementContent() {
 
       {/* Top Value Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="border border-border group border-none">
-              <CardContent className="p-4 md:p-5 flex items-center justify-between">
-                  <div className="space-y-3">
-                      <p className="text-[10px] font-bold text-muted-foreground">Total FAQs</p>
-                      <div className="flex items-center gap-2">
-                          <span className="text-2xl font-bold text-foreground group-hover:text-primary transition-colors tracking-tight">{faqs.length}</span>
-                          <span className="text-[9px] font-bold text-muted-foreground">System total</span>
-                      </div>
-                  </div>
-                  <div className="p-4 bg-muted rounded-2xl text-primary group-hover:scale-110 transition-transform duration-500">
-                      <MessageSquare className="w-5 h-5" />
-                  </div>
-              </CardContent>
-          </Card>
-          <Card className="border border-border group border-none">
-              <CardContent className="p-4 md:p-5 flex items-center justify-between">
-                  <div className="space-y-3">
-                      <p className="text-[10px] font-bold text-muted-foreground">Published Active</p>
-                      <div className="flex items-center gap-2">
-                          <span className="text-2xl font-bold text-emerald-600 transition-colors tracking-tight">{activeCount}</span>
-                          <span className="text-[9px] font-bold text-muted-foreground">Visible on site</span>
-                      </div>
-                  </div>
-                  <div className="p-4 bg-muted rounded-2xl text-emerald-600 group-hover:scale-110 transition-transform duration-500">
-                      <Eye className="w-5 h-5" />
-                  </div>
-              </CardContent>
-          </Card>
-          <Card className="border border-border group border-none">
-              <CardContent className="p-4 md:p-5 flex items-center justify-between">
-                  <div className="space-y-3">
-                      <p className="text-[10px] font-bold text-muted-foreground">Hidden Drafts</p>
-                      <div className="flex items-center gap-2">
-                          <span className="text-2xl font-bold text-rose-600 transition-colors tracking-tight">{faqs.length - activeCount}</span>
-                          <span className="text-[9px] font-bold text-muted-foreground">Unpublished</span>
-                      </div>
-                  </div>
-                  <div className="p-4 bg-muted rounded-2xl text-rose-600 group-hover:scale-110 transition-transform duration-500">
-                      <EyeOff className="w-5 h-5" />
-                  </div>
-              </CardContent>
-          </Card>
+          <MetricCard label="Total FAQs" value={faqs.length} icon={MessageSquare} trend="System total" />
+          <MetricCard label="Published Active" value={activeCount} icon={Eye} trend="Visible on site" />
+          <MetricCard label="Hidden Drafts" value={faqs.length - activeCount} icon={EyeOff} trend="Unpublished" />
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -194,7 +156,7 @@ function FAQManagementContent() {
             {(provided) => (
               <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3">
                 {[...faqs]
-                  .sort((a, b) => a.order - b.order || a.id - b.id)
+                  .sort((a, b) => a.sort_order - b.sort_order || a.id - b.id)
                   .map((faq, index) => (
                     <Draggable key={faq.id} draggableId={String(faq.id)} index={index}>
                       {(dragProvided) => (
@@ -214,7 +176,7 @@ function FAQManagementContent() {
                               <p className="text-sm font-bold truncate">{faq.question}</p>
                               <p className="text-xs text-muted-foreground line-clamp-1">{faq.answer}</p>
                             </div>
-                            <span className="text-xs font-mono text-muted-foreground">#{faq.order}</span>
+                            <span className="text-xs font-mono text-muted-foreground">#{faq.sort_order}</span>
                           </CardContent>
                         </Card>
                       )}
@@ -284,7 +246,7 @@ function FAQManagementContent() {
                     <TableRow key={faq.id} className="hover:bg-muted/50 transition-colors border-border group">
                       <TableCell className="pl-10 text-center py-6">
                         <div className="flex flex-col items-center gap-1">
-                          <span className="font-bold text-muted-foreground text-xs">{faq.order}</span>
+                           <span className="font-bold text-muted-foreground text-xs">{faq.sort_order}</span>
                           <div className="flex flex-col gap-0.5">
                             <Button
                               type="button"
@@ -376,7 +338,7 @@ function FAQManagementContent() {
                                     )}
                                 </div>
                                 <div className="space-y-0.5">
-                                    <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Order ID: {faq.order}</p>
+                                    <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Order ID: {faq.sort_order}</p>
                                 </div>
                             </div>
                         </div>
@@ -413,9 +375,9 @@ function FAQManagementContent() {
                 answer: editingFaq.answer,
                 avatar: editingFaq.avatar || "",
                 is_active: editingFaq.is_active,
-                order: editingFaq.order,
+                sort_order: editingFaq.sort_order,
               }
-            : { order: faqs.length }
+            : { sort_order: faqs.length }
         }
         onSuccess={fetchFaqs}
       />

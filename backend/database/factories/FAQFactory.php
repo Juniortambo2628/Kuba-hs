@@ -17,7 +17,7 @@ class FAQFactory extends Factory
             'avatar' => null,
             'category' => fake()->randomElement(['general', 'booking', 'payment', 'provider']),
             'is_active' => true,
-            'order' => fake()->numberBetween(1, 50),
+            'sort_order' => fake()->numberBetween(1, 50),
         ];
     }
 }

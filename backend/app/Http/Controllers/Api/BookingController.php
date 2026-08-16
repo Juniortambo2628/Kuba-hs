@@ -27,7 +27,8 @@ class BookingController extends Controller
         $booking = app(\App\Services\BookingService::class)->updateBookingStatus(
             $booking,
             $request->user(),
-            $validated['status']
+            $validated['status'],
+            $validated['cancellation_reason'] ?? null
         );
 
         if ($validated['status'] === BookingStatus::Completed->value || $validated['status'] === BookingStatus::Completed) {
@@ -36,9 +37,6 @@ class BookingController extends Controller
 
         if ($validated['status'] === BookingStatus::Cancelled->value || $validated['status'] === BookingStatus::Cancelled) {
             app(\App\Services\LoyaltyService::class)->revertPointsForBooking($booking);
-            if (!empty($validated['cancellation_reason'])) {
-                $booking->update(['cancellation_reason' => $validated['cancellation_reason']]);
-            }
         }
 
         return response()->json([

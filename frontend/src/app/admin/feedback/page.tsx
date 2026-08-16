@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Star, Search, Filter, MessageSquare, AlertCircle, ShieldCheck, MoreHorizontal, User as UserIcon, Briefcase, Zap, Trash2 } from "lucide-react";
+import { MetricCard } from "@/components/shared/MetricCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardListToolbar } from "@/components/shared/DashboardListToolbar";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
@@ -96,26 +97,9 @@ export default function AdminFeedback() {
 
    {stats && (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {[
-       { label: "Total Submissions", value: stats.total, icon: MessageSquare, color: "text-primary", bg: "bg-muted", trend: "Market feedback" },
-       { label: "Kuba Satisfaction", value: `${stats.avg}/5`, icon: Star, color: "text-muted-foreground", bg: "bg-muted", trend: "Elite performance" },
-       { label: "Critical Alerts", value: stats.poor_ratings, icon: AlertCircle, color: "text-primary", bg: "bg-muted", trend: "Attention required" }
-      ].map((stat, i) => (
-       <Card key={i} className="border border-border group border-none">
-        <CardContent className="p-8 flex items-center justify-between">
-                                <div className="space-y-3">
-                                    <p className="text-[10px] font-bold text-muted-foreground">{stat.label}</p>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-2xl font-bold text-foreground group-hover:text-primary transition-colors tracking-tight">{stat.value}</span>
-                                        <span className="text-[9px] font-bold text-muted-foreground">{stat.trend}</span>
-                                    </div>
-                                </div>
-         <div className={`p-4 ${stat.bg} rounded-2xl ${stat.color} group-hover:scale-110 transition-transform duration-500`}>
-          <stat.icon className="w-5 h-5" />
-         </div>
-        </CardContent>
-       </Card>
-      ))}
+      <MetricCard label="Total Submissions" value={stats.total} icon={MessageSquare} trend="Market feedback" />
+      <MetricCard label="Kuba Satisfaction" value={`${stats.avg}/5`} icon={Star} trend="Elite performance" />
+      <MetricCard label="Critical Alerts" value={stats.poor_ratings} icon={AlertCircle} trend="Attention required" />
     </div>
    )}
 

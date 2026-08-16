@@ -47,6 +47,14 @@ class FeedbackController extends Controller
         ]);
     }
 
+    public function show($id) {
+        $feedback = Review::with(['customer', 'booking.service', 'booking.provider.user'])->findOrFail($id);
+
+        return response()->json([
+            'data' => new ReviewResource($feedback),
+        ]);
+    }
+
     public function update(Request $request, $id) {
         $request->validate([
             'status' => 'required|in:'.implode(',', array_column(ReviewStatus::cases(), 'value')),
