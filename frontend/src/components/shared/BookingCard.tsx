@@ -57,15 +57,6 @@ export function BookingCard({
       onClick={onClick}
     >
       <CardContent className="p-0 flex flex-col md:flex-row h-full">
-        {(isProvider || isAdmin) && (
-          <div className={cn(
-            "w-1 md:w-1.5 transition-all duration-500 shrink-0",
-            getBookingStatusAccentClass(booking.status),
-            "group-hover:w-2 md:group-hover:w-3",
-            isSelected && "bg-primary w-2 md:w-3"
-          )} />
-        )}
-        
         <div className="p-6 md:p-8 flex-1 flex flex-col justify-between gap-6">
           <div className="flex flex-col gap-4">
             {/* Header: ID and Status */}
