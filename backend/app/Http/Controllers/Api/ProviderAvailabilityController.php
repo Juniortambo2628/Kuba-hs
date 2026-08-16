@@ -3,19 +3,16 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Traits\HasProviderAuthorization;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class ProviderAvailabilityController extends Controller
 {
-    public function index() {
-        $user = Auth::user();
-        $provider = $user->provider;
+    use HasProviderAuthorization;
 
-        if (! $provider) {
-            return response()->json(['error' => 'Provider profile not found'], 404);
-        }
+    public function index() {
+        $provider = $this->getProviderOrFail();
 
         return response()->json([
             'availability' => $provider->availability,
@@ -24,8 +21,7 @@ class ProviderAvailabilityController extends Controller
     }
 
     public function update(Request $request) {
-        $user = Auth::user();
-        $provider = $user->provider;
+        $provider = $this->getProviderOrFail();
 
         $validated = $request->validate([
             'availability' => 'required|array',
@@ -53,8 +49,7 @@ class ProviderAvailabilityController extends Controller
     }
 
     public function updateExceptions(Request $request) {
-        $user = Auth::user();
-        $provider = $user->provider;
+        $provider = $this->getProviderOrFail();
 
         $validated = $request->validate([
             'exceptions' => 'required|array',

@@ -4,19 +4,16 @@ namespace App\Http\Controllers\Provider;
 
 use App\Http\Controllers\Controller;
 use App\Models\Review;
+use App\Traits\HasProviderAuthorization;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class ReviewController extends Controller
 {
-    public function index(Request $request) {
-        $user = Auth::user();
-        $provider = $user->provider;
+    use HasProviderAuthorization;
 
-        if (! $provider) {
-            return response()->json(['error' => 'Provider profile not found'], 404);
-        }
+    public function index(Request $request) {
+        $provider = $this->getProviderOrFail();
 
         $reviews = Review::where('provider_id', $provider->id)
             ->with(['customer', 'booking.service'])
