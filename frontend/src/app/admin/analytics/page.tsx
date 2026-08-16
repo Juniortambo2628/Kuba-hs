@@ -217,7 +217,7 @@ export default function AdminAnalytics() {
                 <YAxis tickFormatter={(val) => `KES ${val}`} tick={{fontSize: 11}} tickLine={false} axisLine={false} stroke="var(--muted-foreground)" />
                 <Tooltip 
                   contentStyle={{ borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--foreground)', fontSize: 13 }}
-                  formatter={(value: number) => [`KES ${Number(value).toLocaleString()}`, 'Revenue']}
+                  formatter={(value) => [`KES ${Number(value).toLocaleString()}`, 'Revenue']}
                 />
                 <Area type="monotone" dataKey="count" stroke="#18181b" strokeWidth={2} fillOpacity={1} fill="url(#colorRevenue)" />
               </AreaChart>
