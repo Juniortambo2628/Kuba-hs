@@ -366,7 +366,7 @@ class PasskeyController extends Controller
         // Use the bare domain so passkeys work across both subdomains.
         $parts = explode('.', $host);
         if (count($parts) >= 3) {
-            return strtolower(implode('.', array_slice($parts, -2)));
+            return strtolower(implode('.', array_slice($parts, -3)));
         }
 
         return $host;
