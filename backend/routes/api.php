@@ -264,6 +264,7 @@ Route::middleware(['auth:sanctum', 'two-factor-setup'])->group(function () {
 
         // Email Templates
         Route::get('/email-templates', [\App\Http\Controllers\Admin\EmailTemplateController::class, 'index']);
+        Route::get('/email-templates/available-keys', [\App\Http\Controllers\Admin\EmailTemplateController::class, 'availableKeys']);
         Route::post('/email-templates', [\App\Http\Controllers\Admin\EmailTemplateController::class, 'store']);
         Route::get('/email-templates/{emailTemplate}', [\App\Http\Controllers\Admin\EmailTemplateController::class, 'show']);
         Route::put('/email-templates/{emailTemplate}', [\App\Http\Controllers\Admin\EmailTemplateController::class, 'update']);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import axiosInstance, { handleApiError } from "@/lib/axios";
 import {
   Mail,
@@ -13,6 +13,7 @@ import {
   FileText,
   Plus,
   Trash2,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
@@ -29,6 +30,13 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -45,6 +53,13 @@ const SYSTEM_TEMPLATE_KEYS = new Set([
   "new_review_received_provider",
   "investor_inquiry_admin_alert",
 ]);
+
+interface AvailableKey {
+  key: string;
+  label: string;
+  description: string;
+  exists: boolean;
+}
 
 const emptyCreateForm = () => ({
   key: "",
@@ -66,6 +81,14 @@ export default function AdminEmailTemplatesPage() {
   const [createForm, setCreateForm] = useState(emptyCreateForm);
   const [isCreating, setIsCreating] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [availableKeys, setAvailableKeys] = useState<AvailableKey[]>([]);
+
+  useEffect(() => {
+    axiosInstance
+      .get<AvailableKey[]>("/api/admin/email-templates/available-keys")
+      .then((res) => setAvailableKeys(res.data))
+      .catch(() => {});
+  }, []);
 
   const filteredTemplates = useMemo(() => {
     const q = search.toLowerCase().trim();
@@ -154,23 +177,53 @@ export default function AdminEmailTemplatesPage() {
             <DialogHeader>
               <DialogTitle>Create email template</DialogTitle>
               <DialogDescription>
-                Use lowercase letters, numbers, and underscores for the key (e.g.{" "}
-                <code className="text-xs">welcome_email</code>).
+                Select a system template key or choose "Custom" to create your own.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-2">
+              <div className="space-y-2">
+                <Label className="text-xs font-bold">Template key</Label>
+                <Select
+                  value={createForm.key}
+                  onValueChange={(value) => {
+                    const selected = availableKeys.find((k) => k.key === value);
+                    setCreateForm({
+                      ...createForm,
+                      key: value,
+                      name: selected?.label || createForm.name,
+                    });
+                  }}
+                >
+                  <SelectTrigger className="font-mono text-sm">
+                    <SelectValue placeholder="Select a template key..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableKeys.map((ak) => (
+                      <SelectItem
+                        key={ak.key}
+                        value={ak.key}
+                        disabled={ak.exists}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-xs">{ak.label}</span>
+                          {ak.exists && (
+                            <Badge variant="secondary" className="text-[9px] ml-auto">
+                              <Check className="w-3 h-3 mr-1" />
+                              exists
+                            </Badge>
+                          )}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {createForm.key && availableKeys.find((k) => k.key === createForm.key) && (
+                  <p className="text-[10px] text-muted-foreground">
+                    {availableKeys.find((k) => k.key === createForm.key)?.description}
+                  </p>
+                )}
+              </div>
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-xs font-bold">Template key</Label>
-                  <Input
-                    value={createForm.key}
-                    onChange={(e) =>
-                      setCreateForm({ ...createForm, key: e.target.value })
-                    }
-                    placeholder="custom_welcome"
-                    className="font-mono text-sm"
-                  />
-                </div>
                 <div className="space-y-2">
                   <Label className="text-xs font-bold">Display name</Label>
                   <Input
@@ -181,16 +234,16 @@ export default function AdminEmailTemplatesPage() {
                     placeholder="Welcome Email"
                   />
                 </div>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-bold">Subject</Label>
-                <Input
-                  value={createForm.subject}
-                  onChange={(e) =>
-                    setCreateForm({ ...createForm, subject: e.target.value })
-                  }
-                  placeholder="Hello {{name}}"
-                />
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold">Subject</Label>
+                  <Input
+                    value={createForm.subject}
+                    onChange={(e) =>
+                      setCreateForm({ ...createForm, subject: e.target.value })
+                    }
+                    placeholder="Hello {{name}}"
+                  />
+                </div>
               </div>
               <div className="space-y-2">
                 <Label className="text-xs font-bold">Body (Markdown)</Label>
@@ -236,14 +289,12 @@ export default function AdminEmailTemplatesPage() {
         <div className="w-full lg:w-1/3 bg-card/50 backdrop-blur-md rounded-[2rem] border-none shadow-sm flex flex-col overflow-hidden relative">
           <div className="p-6 border-b border-border/40 bg-muted/20">
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
-                <Search className="w-4 h-4 text-muted-foreground" />
-              </div>
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
               <Input
                 placeholder="Search templates..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-12 h-10 bg-white border-border rounded-xl text-xs"
+                className="pl-10 h-10 bg-white border-border rounded-xl text-xs"
               />
             </div>
           </div>
