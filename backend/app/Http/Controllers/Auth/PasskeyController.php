@@ -359,12 +359,23 @@ class PasskeyController extends Controller
 
     private function getRpId(): string
     {
-        return parse_url(config('app.url', 'https://kuba.co.ke'), PHP_URL_HOST) ?? 'kuba.co.ke';
+        $host = parse_url(config('app.url', 'https://kuba.co.ke'), PHP_URL_HOST) ?? 'kuba.co.ke';
+
+        // WebAuthn RP ID must be a registrable domain suffix of the page origin.
+        // The frontend runs on kuba.co.ke / www.kuba.co.ke while the API is on api.kuba.co.ke.
+        // Use the bare domain so passkeys work across both subdomains.
+        $parts = explode('.', $host);
+        if (count($parts) >= 3) {
+            return strtolower(implode('.', array_slice($parts, -2)));
+        }
+
+        return $host;
     }
 
     private function getOrigin(): string
     {
-        return config('app.url', 'https://kuba.co.ke');
+        $frontendUrl = config('app.frontend_url', env('FRONTEND_URL', 'https://kuba.co.ke'));
+        return $frontendUrl ?: config('app.url', 'https://kuba.co.ke');
     }
 
     private function base64urlDecode(string $data): string
