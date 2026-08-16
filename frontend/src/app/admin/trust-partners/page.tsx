@@ -3,21 +3,16 @@
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
 import { DashboardPageSkeleton } from "@/components/shared/DashboardPageSkeleton";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import axiosInstance, { handleApiError } from "@/lib/axios";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Loader2, Plus, Trash2, Edit, ShieldCheck, Globe } from "lucide-react";
+import { Plus, Trash2, Edit, ShieldCheck, Globe } from "lucide-react";
 import { toast } from "sonner";
-import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
 import { useData } from "@/hooks/useData";
 import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
-import { Switch } from "@/components/ui/switch";
-import { DashboardImageUpload } from "@/components/shared/DashboardImageUpload";
+import { TrustPartnerFormDialog } from "@/components/admin/TrustPartnerFormDialog";
 
 interface TrustPartner {
     id: string;
@@ -29,28 +24,8 @@ interface TrustPartner {
 export default function TrustPartnersPage() {
     const { data: partners, isLoading, refetch: fetchPartners } = useData<TrustPartner[]>("/api/admin/trust-partners", { initialData: [] });
     const [isOpen, setIsOpen] = useState(false);
-    const [selectedPartner, setSelectedPartner] = useState<TrustPartner | null>(null);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [form, setForm] = useState({ name: '', logo_path: '', is_active: true });
+    const [editingPartner, setEditingPartner] = useState<TrustPartner | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<TrustPartner | null>(null);
-
-    const handleSave = async () => {
-        setIsSubmitting(true);
-        try {
-            if (selectedPartner) {
-                await axiosInstance.put(`/api/admin/trust-partners/${selectedPartner.id}`, form);
-                toast.success("Partner updated");
-            } else {
-                await axiosInstance.post("/api/admin/trust-partners", form);
-                toast.success("Partner added");
-            }
-            fetchPartners();
-            setIsOpen(false);
-            setForm({ name: '', logo_path: '', is_active: true });
-            setSelectedPartner(null);
-        } catch (err: any) { toast.error(handleApiError(err)); }
-        finally { setIsSubmitting(false); }
-    };
 
     const handleDelete = async (id: string) => {
         try { 
@@ -61,8 +36,7 @@ export default function TrustPartnersPage() {
     };
 
     const openEdit = (partner: TrustPartner) => { 
-        setSelectedPartner(partner); 
-        setForm({ name: partner.name, logo_path: partner.logo_path, is_active: partner.is_active }); 
+        setEditingPartner(partner);
         setIsOpen(true); 
     };
 
@@ -76,57 +50,22 @@ export default function TrustPartnersPage() {
                 title="Trust Ecosystem" 
                 subtitle="Manage brand logos and corporate partners displayed on the landing page."
             >
-                <Dialog open={isOpen} onOpenChange={setIsOpen}>
-                    <DialogTrigger asChild>
-                        <Button 
-                            onClick={() => { setSelectedPartner(null); setForm({ name: '', logo_path: '', is_active: true }); }} 
-                            className="h-12 bg-primary hover:bg-black text-white rounded-2xl font-bold px-8 shadow-md transition-all flex items-center gap-2 group"
-                        >
-                            <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
-                            Add Partner
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle className="text-xl font-bold">
-                                {selectedPartner ? "Edit Partner" : "New Partner"}
-                            </DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4 py-2">
-                            <div className="space-y-2">
-                                <Label className="text-xs font-bold text-muted-foreground">Partner Name</Label>
-                                <Input 
-                                    value={form.name} 
-                                    onChange={(e) => setForm({...form, name: e.target.value})} 
-                                    placeholder="e.g. Safaricom"
-                                    className="h-12 bg-muted border-none rounded-xl font-bold" 
-                                />
-                            </div>
-                            <DashboardImageUpload 
-                                value={form.logo_path}
-                                onChange={(url) => setForm({...form, logo_path: url})}
-                                type="logo"
-                                label="Partner Brand Logo"
-                            />
-                            <p className="text-[10px] text-muted-foreground ml-1">Upload a high-quality PNG or SVG with transparency if possible.</p>
-                            <div className="flex items-center justify-between py-2">
-                                <Label className="text-xs font-bold text-muted-foreground">Visibility Status</Label>
-                                <Switch 
-                                    checked={form.is_active} 
-                                    onCheckedChange={(val) => setForm({...form, is_active: val})} 
-                                />
-                            </div>
-                            <Button 
-                                onClick={handleSave} 
-                                disabled={isSubmitting || !form.name || !form.logo_path} 
-                                className="w-full h-12 bg-primary hover:bg-black text-white font-bold rounded-xl mt-4"
-                            >
-                                {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Save Partner"}
-                            </Button>
-                        </div>
-                    </DialogContent>
-                </Dialog>
+                <Button 
+                    onClick={() => { setEditingPartner(null); setIsOpen(true); }} 
+                    className="h-12 bg-primary hover:bg-black text-white rounded-2xl font-bold px-8 shadow-md transition-all flex items-center gap-2 group"
+                >
+                    <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
+                    Add Partner
+                </Button>
             </DashboardPageHeader>
+
+            <TrustPartnerFormDialog
+                open={isOpen}
+                onOpenChange={setIsOpen}
+                editingId={editingPartner?.id ?? null}
+                initial={editingPartner ? { name: editingPartner.name, logo_path: editingPartner.logo_path, is_active: editingPartner.is_active } : undefined}
+                onSuccess={fetchPartners}
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {partners.map((partner) => (

@@ -27,15 +27,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
@@ -44,6 +35,7 @@ import {
   DashboardTableHead,
   DashboardTableHeaderRow,
 } from "@/components/shared/DashboardTable";
+import { ProviderCreateFormDialog } from "@/components/admin/ProviderCreateFormDialog";
 
 interface PaginatedProviders {
   data: Provider[];
@@ -59,19 +51,7 @@ function AdminProvidersContent() {
   const [meta, setMeta] = useState<PaginatedProviders["meta"]>();
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [form, setForm] = useState({
-    business_name: "",
-    email: "",
-    password: "",
-    first_name: "",
-    last_name: "",
-    phone: "",
-    bio: "",
-    experience_years: 0,
-    location_name: "",
-  });
 
   const buildQuery = useCallback(() => {
     const params = new URLSearchParams();
@@ -99,32 +79,6 @@ function AdminProvidersContent() {
   useEffect(() => {
     fetchProviders();
   }, [fetchProviders]);
-
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSaving(true);
-    try {
-      await axiosInstance.post("/api/admin/providers", form);
-      toast.success("Provider created");
-      setIsCreateOpen(false);
-      setForm({
-        business_name: "",
-        email: "",
-        password: "",
-        first_name: "",
-        last_name: "",
-        phone: "",
-        bio: "",
-        experience_years: 0,
-        location_name: "",
-      });
-      fetchProviders();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to create provider");
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   const patchStatus = async (id: string, payload: Record<string, unknown>) => {
     try {
@@ -311,45 +265,11 @@ function AdminProvidersContent() {
         </div>
       )}
 
-      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent className="sm:max-w-lg rounded-2xl">
-          <DialogHeader>
-            <DialogTitle>Add provider</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleCreate} className="space-y-4">
-            <div className="space-y-2">
-              <Label>Business name</Label>
-              <Input required value={form.business_name} onChange={(e) => setForm({ ...form, business_name: e.target.value })} />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>First name</Label>
-                <Input value={form.first_name} onChange={(e) => setForm({ ...form, first_name: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>Last name</Label>
-                <Input value={form.last_name} onChange={(e) => setForm({ ...form, last_name: e.target.value })} />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Email</Label>
-              <Input type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-            </div>
-            <div className="space-y-2">
-              <Label>Password</Label>
-              <Input type="password" required minLength={8} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
-            </div>
-            <div className="space-y-2">
-              <Label>Location</Label>
-              <Input value={form.location_name} onChange={(e) => setForm({ ...form, location_name: e.target.value })} />
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
-              <Button type="submit" disabled={isSaving}>{isSaving ? "Saving..." : "Create"}</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <ProviderCreateFormDialog
+        open={isCreateOpen}
+        onOpenChange={setIsCreateOpen}
+        onSuccess={fetchProviders}
+      />
 
       <AppConfirmDialog
         open={!!deleteId}
