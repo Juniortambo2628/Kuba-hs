@@ -21,6 +21,7 @@ import {
   Monitor,
   Settings,
   Ticket,
+  TestTube,
 } from "lucide-react";
 import type { ActivityCounts } from "@/hooks/useActivityCounts";
 
@@ -63,6 +64,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   { id: "notif", title: "Notifications", url: "/admin/notifications", icon: Bell, category: "System", badgeKey: null },
   { id: "repo", title: "Reports", url: "/admin/reports", icon: ClipboardList, category: "System", badgeKey: null },
   { id: "mail", title: "Email Templates", url: "/admin/email-templates", icon: Mail, category: "System", badgeKey: null },
+  { id: "email_test", title: "Email Testing", url: "/admin/email-test", icon: TestTube, category: "System", badgeKey: null },
   { id: "faq", title: "FAQs", url: "/admin/faqs", icon: HelpCircle, category: "Content", badgeKey: null },
   { id: "test", title: "Testimonials", url: "/admin/testimonials", icon: Star, category: "Content", badgeKey: null },
   { id: "trust", title: "Trust Partners", url: "/admin/trust-partners", icon: ShieldCheck, category: "Content", badgeKey: null },

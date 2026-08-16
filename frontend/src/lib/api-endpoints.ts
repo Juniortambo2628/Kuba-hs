@@ -119,6 +119,10 @@ export const API = {
     complianceProviders: "/api/admin/compliance/providers",
     reports: "/api/admin/reports",
 
+    // Email testing
+    emailTestSend: "/api/admin/email-test/send",
+    emailTestTemplates: "/api/admin/email-test/templates",
+
     // Chat moderation
     chatConversations: "/api/admin/chat/conversations",
   },

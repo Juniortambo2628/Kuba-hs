@@ -268,6 +268,10 @@ Route::middleware(['auth:sanctum', 'two-factor-setup'])->group(function () {
         Route::put('/email-templates/{emailTemplate}', [\App\Http\Controllers\Admin\EmailTemplateController::class, 'update']);
         Route::delete('/email-templates/{emailTemplate}', [\App\Http\Controllers\Admin\EmailTemplateController::class, 'destroy']);
 
+        // Email Testing
+        Route::post('/email-test/send', [\App\Http\Controllers\Admin\EmailTestController::class, 'sendTest']);
+        Route::get('/email-test/templates', [\App\Http\Controllers\Admin\EmailTestController::class, 'templates']);
+
         // Contact Messages
         Route::get('/contact', [\App\Http\Controllers\Admin\ContactController::class, 'index']);
         Route::get('/contact/{contactMessage}', [\App\Http\Controllers\Admin\ContactController::class, 'show']);
