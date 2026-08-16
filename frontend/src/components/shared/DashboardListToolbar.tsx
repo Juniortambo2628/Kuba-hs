@@ -14,12 +14,12 @@ import {
 import { AppBadge } from "@/components/shared/ui/AppBadge";
 import { cn } from "@/lib/utils";
 
-interface FilterOption {
+export interface FilterOption {
   label: string;
   value: string;
 }
 
-interface FilterGroup {
+export interface FilterGroup {
   id: string;
   label: string;
   options: FilterOption[];
@@ -27,7 +27,7 @@ interface FilterGroup {
   onChange: (value: string) => void;
 }
 
-interface BulkAction {
+export interface BulkAction {
   label: string;
   icon?: React.ReactNode;
   onClick: () => void;
