@@ -112,8 +112,8 @@ Route::middleware(['auth:sanctum', 'two-factor-setup'])->group(function () {
     Route::patch('/bookings/{booking}/status', [\App\Http\Controllers\Api\BookingController::class, 'updateStatus']);
     Route::patch('/bookings/{booking}/reschedule', [\App\Http\Controllers\Api\BookingController::class, 'reschedule']);
 
-    Route::post('/media/upload', [\App\Http\Controllers\MediaController::class, 'upload']);
-    Route::delete('/media/{id}', [\App\Http\Controllers\MediaController::class, 'destroy']);
+    Route::post('/media/upload', [\App\Http\Controllers\Admin\MediaController::class, 'upload']);
+    Route::delete('/media/{id}', [\App\Http\Controllers\Admin\MediaController::class, 'destroy']);
     Route::get('/notifications', [\App\Http\Controllers\Api\NotificationController::class, 'index']);
     Route::post('/notifications/read-all', [\App\Http\Controllers\Api\NotificationController::class, 'markAllAsRead']);
     Route::post('/notifications/{id}/read', [\App\Http\Controllers\Api\NotificationController::class, 'markAsRead']);

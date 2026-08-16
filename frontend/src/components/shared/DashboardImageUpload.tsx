@@ -136,7 +136,6 @@ export function DashboardImageUpload({
                       "/api/admin/media/upload",
                       formData,
                       {
-                        responseType: "text",
                         signal: controller.signal,
                         onUploadProgress: (e) => {
                           progress(true, e.loaded, e.total || 1);
@@ -144,11 +143,9 @@ export function DashboardImageUpload({
                       }
                     );
 
-                    const path =
-                      typeof res.data === "string"
-                        ? res.data.trim()
-                        : String(res.data);
-                    load(path);
+                    const { url, id } = res.data;
+                    load(String(id));
+                    if (url) onChange(url);
                   } catch (err) {
                     error(handleApiError(err));
                   }
@@ -165,13 +162,11 @@ export function DashboardImageUpload({
                 (async () => {
                   try {
                     await axiosInstance.get("/sanctum/csrf-cookie");
-                    const path = String(uniqueFileId).replace(/^\/storage\//, "");
-                    if (path) {
-                      await axiosInstance.delete("/api/admin/media/revert", {
-                        data: path,
-                        headers: { "Content-Type": "text/plain" },
-                      });
+                    const mediaId = String(uniqueFileId);
+                    if (mediaId) {
+                      await axiosInstance.delete(`/api/admin/media/${mediaId}`);
                     }
+                    onChange("");
                     load();
                   } catch (err) {
                     error(handleApiError(err));
