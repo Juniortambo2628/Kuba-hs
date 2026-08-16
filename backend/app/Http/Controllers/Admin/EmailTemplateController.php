@@ -23,8 +23,30 @@ class EmailTemplateController extends Controller
         'sign_in_log',
     ];
 
+    /** All available template keys used by the notification system */
+    private const AVAILABLE_TEMPLATE_KEYS = [
+        ['key' => 'booking_confirmation_customer', 'label' => 'Booking Confirmation (Customer)', 'description' => 'Sent when a customer creates a booking'],
+        ['key' => 'booking_confirmation_provider', 'label' => 'Booking Confirmation (Provider)', 'description' => 'Sent when a provider receives a new booking'],
+        ['key' => 'booking_status_updated_customer', 'label' => 'Status Update (Customer)', 'description' => 'Sent when a booking status changes for the customer'],
+        ['key' => 'booking_status_updated_provider', 'label' => 'Status Update (Provider)', 'description' => 'Sent when a booking status changes for the provider'],
+        ['key' => 'payment_received_customer', 'label' => 'Payment Receipt (Customer)', 'description' => 'Sent after a successful payment'],
+        ['key' => 'new_review_received_provider', 'label' => 'New Review (Provider)', 'description' => 'Sent when a provider receives a new review'],
+        ['key' => 'investor_inquiry_admin_alert', 'label' => 'Investor Inquiry (Admin)', 'description' => 'Admin alert for new investor inquiries'],
+        ['key' => 'passkey_created', 'label' => 'Passkey Created', 'description' => 'Sent when a new passkey is added to an account'],
+        ['key' => 'sign_in_log', 'label' => 'Sign-In Log', 'description' => 'Sent when a new sign-in is detected'],
+    ];
+
     public function index() {
         return response()->json(EmailTemplate::orderBy('name')->get());
+    }
+
+    public function availableKeys() {
+        $existingKeys = EmailTemplate::pluck('key')->toArray();
+        $keys = collect(self::AVAILABLE_TEMPLATE_KEYS)->map(function ($item) use ($existingKeys) {
+            $item['exists'] = in_array($item['key'], $existingKeys, true);
+            return $item;
+        });
+        return response()->json($keys);
     }
 
     public function show(EmailTemplate $emailTemplate) {
