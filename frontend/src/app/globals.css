@@ -436,7 +436,7 @@
 
   .tight-pond .filepond--panel-root {
     background-color: transparent !important;
-    border: 2px dashed rgba(0, 0, 0, 0.08) !important;
+    border: 2px dashed rgb(0 0 0 / 0.08) !important;
     border-radius: 16px;
   }
 
@@ -447,7 +447,7 @@
   }
 
   .dark .tight-pond .filepond--panel-root {
-    border-color: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgb(255 255 255 / 0.1) !important;
   }
 
   .dark .tight-pond .filepond--label-idle {
