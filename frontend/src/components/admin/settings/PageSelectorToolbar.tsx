@@ -16,7 +16,7 @@ export function PageSelectorToolbar({
   counts,
 }: PageSelectorToolbarProps) {
   return (
-    <div className="flex items-center gap-2 overflow-x-auto kuba-scroll-hidden pb-2">
+    <div className="flex items-center gap-2 overflow-x-auto kuba-scroll-hidden pb-2 -mx-1 px-1">
       {pages.map((page) => {
         const isActive = page.id === selectedPage;
         const count = counts?.[page.id] ?? 0;

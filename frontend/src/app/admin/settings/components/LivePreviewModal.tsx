@@ -10,7 +10,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Eye, MonitorSmartphone } from "lucide-react";
 import { designSystem } from "@/lib/design-system";
-import { CheckCircle2 } from "lucide-react";
 
 interface Setting {
     id: string;
@@ -50,11 +49,11 @@ export function LivePreviewModal({ sectionId, currentSettings }: LivePreviewModa
                            </div>
                            
                            {/* Hero Demo */}
-                           <div className="relative min-h-[400px] flex items-center justify-center p-8 text-center" style={{
-                               backgroundImage: val('hero_bg_image') ? `url(${val('hero_bg_image')})` : 'none',
-                               backgroundSize: 'cover',
-                               backgroundPosition: 'center',
-                           }}>
+                            <div className="relative min-h-[400px] flex items-center justify-center p-8 text-center preview-hero-bg"
+                                style={{
+                                    backgroundImage: val('hero_bg_image') ? `url(${val('hero_bg_image')})` : 'none',
+                                }}
+                            >
                                <div className="absolute inset-0 bg-black/60" />
                                <div className="relative z-10 text-white space-y-4 max-w-lg">
                                    <span className="inline-block px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-[10px] font-black tracking-widest uppercase">Platform Welcome</span>
@@ -102,11 +101,11 @@ export function LivePreviewModal({ sectionId, currentSettings }: LivePreviewModa
                            </div>
                            
                            {/* Hero Demo */}
-                           <div className="relative min-h-[300px] flex items-center p-12 text-left" style={{
-                               backgroundImage: val(`${sectionId}_hero_image`) ? `url(${val(`${sectionId}_hero_image`)})` : 'none',
-                               backgroundSize: 'cover',
-                               backgroundPosition: 'center',
-                           }}>
+                            <div className={`relative min-h-[300px] flex items-center p-12 text-left preview-hero-bg`}
+                                style={{
+                                    backgroundImage: val(`${sectionId}_hero_image`) ? `url(${val(`${sectionId}_hero_image`)})` : 'none',
+                                }}
+                            >
                                <div className="absolute inset-0 bg-black/60" />
                                <div className="relative z-10 text-white space-y-4 max-w-lg">
                                    <span className="inline-block px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-[10px] font-black tracking-widest uppercase">{val(`${sectionId}_hero_badge`, `${sectionId} Hub`)}</span>
