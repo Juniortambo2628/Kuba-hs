@@ -104,24 +104,6 @@ export default function AboutPage() {
                 )}
               </p>
             </div>
-            <div className="grid grid-cols-2 gap-8 py-8 border-y border-border dark:border-white/10">
-              <div>
-                <h4 className="text-4xl font-semibold text-gray-900 dark:text-white mb-1">
-                  {getS("about_page", "about_stat_providers", "5k+")}
-                </h4>
-                <p className="text-xs font-bold text-muted-foreground tracking-widest uppercase">
-                  Active Providers
-                </p>
-              </div>
-              <div>
-                <h4 className="text-4xl font-semibold text-blue-600 dark:text-blue-400 mb-1">
-                  {getS("about_page", "about_stat_satisfaction", "98%")}
-                </h4>
-                <p className="text-xs font-bold text-muted-foreground tracking-widest uppercase">
-                  Satisfaction Rate
-                </p>
-              </div>
-            </div>
           </motion.div>
         </div>
       </MarketingSection>

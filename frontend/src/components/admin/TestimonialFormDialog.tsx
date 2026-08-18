@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Star } from "lucide-react";
 import { FieldLabel } from "@/components/shared/ui";
 import { CrudFormDialog } from "@/components/shared/dialog/CrudFormDialog";
 import { DashboardImageUpload } from "@/components/shared/DashboardImageUpload";
+import { RichTextEditor } from "@/components/shared/ui/RichTextEditor";
 import { useCrudForm } from "@/hooks/useCrudForm";
 import type { Testimonial } from "@/types/admin";
 
@@ -83,11 +82,10 @@ export function TestimonialFormDialog({
 
         <div className="space-y-2">
           <FieldLabel>Testimonial</FieldLabel>
-          <Textarea
-            required
+          <RichTextEditor
             value={form.content}
-            onChange={(e) => setForm({ ...form, content: e.target.value })}
-            className="min-h-[120px] rounded-xl resize-y"
+            onChange={(value) => setForm({ ...form, content: value })}
+            placeholder="Write the testimonial..."
           />
         </div>
 

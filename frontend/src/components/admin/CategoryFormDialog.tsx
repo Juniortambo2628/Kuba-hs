@@ -1,10 +1,10 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { FieldLabel } from "@/components/shared/ui";
 import { CrudFormDialog } from "@/components/shared/dialog/CrudFormDialog";
 import { DashboardImageUpload } from "@/components/shared/DashboardImageUpload";
+import { RichTextEditor } from "@/components/shared/ui/RichTextEditor";
 import { useCrudForm } from "@/hooks/useCrudForm";
 
 export type CategoryFormValues = {
@@ -69,11 +69,10 @@ export function CategoryFormDialog({
         </div>
         <div className="space-y-2">
           <FieldLabel>Description</FieldLabel>
-          <Textarea
+          <RichTextEditor
             value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
-            placeholder="Describe the category scope…"
-            className="min-h-[100px] rounded-xl resize-y"
+            onChange={(value) => setForm({ ...form, description: value })}
+            placeholder="Describe the category scope..."
           />
         </div>
         <DashboardImageUpload

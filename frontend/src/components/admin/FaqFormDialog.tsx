@@ -1,11 +1,11 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { FieldLabel } from "@/components/shared/ui";
 import { CrudFormDialog } from "@/components/shared/dialog/CrudFormDialog";
 import { DashboardImageUpload } from "@/components/shared/DashboardImageUpload";
+import { RichTextEditor } from "@/components/shared/ui/RichTextEditor";
 import { useCrudForm } from "@/hooks/useCrudForm";
 
 export interface FaqFormValues {
@@ -75,12 +75,10 @@ export function FaqFormDialog({
 
         <div className="space-y-2">
           <FieldLabel>Answer</FieldLabel>
-          <Textarea
-            required
+          <RichTextEditor
             value={form.answer}
-            onChange={(e) => setForm({ ...form, answer: e.target.value })}
-            placeholder="Provide a clear resolution…"
-            className="min-h-[140px] rounded-xl resize-y"
+            onChange={(value) => setForm({ ...form, answer: value })}
+            placeholder="Provide a clear resolution..."
           />
         </div>
 

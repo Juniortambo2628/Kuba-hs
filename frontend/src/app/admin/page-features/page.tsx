@@ -18,7 +18,7 @@ import { useData } from "@/hooks/useData";
 import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/shared/ui/RichTextEditor";
 import { 
   Select, 
   SelectContent, 
@@ -203,7 +203,11 @@ export default function PageFeaturesPage() {
                                 </div>
                                 <div className="space-y-2">
                                     <Label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Description</Label>
-                                    <Textarea value={form.description} onChange={(e) => setForm({...form, description: e.target.value})} placeholder="Explain what makes this feature special..." className="min-h-[120px] bg-muted border-none rounded-xl pt-4 font-medium focus:ring-2 focus:ring-primary/20" />
+                                    <RichTextEditor
+                                        value={form.description}
+                                        onChange={(value) => setForm({...form, description: value})}
+                                        placeholder="Explain what makes this feature special..."
+                                    />
                                 </div>
                             </div>
                             <div className="space-y-6">

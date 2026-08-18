@@ -63,7 +63,7 @@ const GROUP_CONFIG: Record<string, { label: string; icon: ComponentType<{ classN
 
     // ── Content ──
     'home_hero': { label: 'Landing — Hero', icon: Sparkles, category: 'content', description: 'Eyebrow, headline, stat line, search bar labels, and hero copy.' },
-    'about_page': { label: 'How It Works', icon: Info, category: 'content', description: 'Section headline, intro, and three feature columns (step titles & descriptions).' },
+    'about_page': { label: 'About Page', icon: Info, category: 'content', description: 'About page headline, tagline, paragraphs, story images, and how-it-works steps.' },
     'payment': { label: 'Payment Gateway Keys', icon: CreditCard, category: 'system', description: 'Paystack/M-Pesa keys (stored in DB; use env for secrets in production).' },
     'site_stats': { label: 'Landing — Legacy counters', icon: BarChart3, category: 'content', description: 'Stat values used in the bottom CTA card (stat_1–4). The standalone “Why thousands trust” section was removed from the homepage.' },
     'landing_sections': { label: 'Landing — Section Headings', icon: Layout, category: 'content', description: 'Badges, titles, and subtitles for categories, services, providers, testimonials, and FAQ blocks.' },
