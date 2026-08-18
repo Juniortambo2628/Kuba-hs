@@ -103,22 +103,7 @@ export function CTA() {
                     </div>
                 </motion.div>
 
-                <motion.div 
-                    className="absolute bottom-1/4 right-12 bg-background p-6 rounded-[2rem] shadow-2xl border border-gray-100 dark:border-white/10 z-20"
-                    initial={{ y: 0 }}
-                    animate={{ y: [0, 10, 0] }}
-                    transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                >
-                    <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 bg-yellow-100 dark:bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 rounded-2xl flex items-center justify-center font-black text-2xl">
-                            ★
-                        </div>
-                        <div>
-                            <p className="text-3xl font-black text-gray-900 dark:text-white">{getS('about_page', 'about_stat_satisfaction', '4.9')}</p>
-                            <p className="text-sm font-bold tracking-tight text-gray-500 dark:text-gray-400">{getS('site_stats', 'stat_3_label', 'Avg Rating')}</p>
-                        </div>
-                    </div>
-                </motion.div>
+
             </div>
           </div>
         </motion.div>
