@@ -5,6 +5,7 @@ import { dashboardUi } from '@/lib/dashboard-ui';
 import { uiPrimitives } from '@/lib/ui-primitives';
 import { ImageSettingCard } from './ImageSettingCard';
 import { resolveMediaUrl } from '@/lib/utils';
+import { RichTextEditor } from '@/components/shared/ui/RichTextEditor';
 import type { ComponentType } from 'react';
 import type { Setting } from './types';
 
@@ -65,10 +66,10 @@ export function SettingsGroupSection({
                   </div>
                 </div>
                 {setting.type === 'textarea' ? (
-                  <textarea
-                    className="w-full min-h-[120px] bg-muted/5 border border-border/40 rounded-xl px-4 py-3 text-foreground text-sm font-semibold outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all resize-none leading-relaxed"
+                  <RichTextEditor
                     value={setting.value || ''}
-                    onChange={(e) => onValueChange(setting.group, setting.id, e.target.value)}
+                    onChange={(value) => onValueChange(setting.group, setting.id, value)}
+                    placeholder={`Enter ${setting.label || setting.key.replace(/_/g, ' ')}...`}
                   />
                 ) : (
                   <Input

@@ -1,10 +1,10 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { FieldLabel } from "@/components/shared/ui";
 import { CrudFormDialog } from "@/components/shared/dialog/CrudFormDialog";
+import { RichTextEditor } from "@/components/shared/ui/RichTextEditor";
 import { useCrudForm } from "@/hooks/useCrudForm";
 
 export interface BlogPostFormValues {
@@ -76,12 +76,11 @@ export function BlogPostFormDialog({
 
         <div className="space-y-2">
           <FieldLabel>Content</FieldLabel>
-          <Textarea
-            required
+          <RichTextEditor
             value={form.content}
-            onChange={(e) => setForm({ ...form, content: e.target.value })}
+            onChange={(value) => setForm({ ...form, content: value })}
             placeholder="Write your article content..."
-            className="min-h-[200px] rounded-xl resize-y"
+            minHeight="min-h-[200px]"
           />
         </div>
 

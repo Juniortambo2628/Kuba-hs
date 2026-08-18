@@ -1,10 +1,10 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { FieldLabel } from "@/components/shared/ui";
 import { CrudFormDialog } from "@/components/shared/dialog/CrudFormDialog";
 import { KubaFilePond } from "@/components/ui/filepond";
+import { RichTextEditor } from "@/components/shared/ui/RichTextEditor";
 import { useCrudForm } from "@/hooks/useCrudForm";
 import { toast } from "sonner";
 
@@ -71,11 +71,10 @@ export function ServiceFormDialog({
         </div>
         <div className="space-y-2">
           <FieldLabel>Description</FieldLabel>
-          <Textarea
+          <RichTextEditor
             value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
-            placeholder="Detail the specific offering…"
-            className="min-h-[100px] rounded-xl resize-y"
+            onChange={(value) => setForm({ ...form, description: value })}
+            placeholder="Detail the specific offering..."
           />
         </div>
 

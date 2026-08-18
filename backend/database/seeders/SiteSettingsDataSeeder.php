@@ -24,6 +24,7 @@ class SiteSettingsDataSeeder extends Seeder
             $this->corporateBannerSettings(),
             $this->corporateBannerCtaUpdates(),
             $this->authPageSettings(),
+            $this->aboutPageSettings(),
         );
 
         foreach ($settings as $row) {
@@ -151,6 +152,19 @@ class SiteSettingsDataSeeder extends Seeder
     private function corporateBannerCtaUpdates(): array
     {
         return [];
+    }
+
+    private function aboutPageSettings(): array
+    {
+        return [
+            ['key' => 'about_headline', 'value' => 'Redefining Home Services Excellence', 'type' => 'text', 'group' => 'about_page', 'label' => 'About Page — Main Headline', 'description' => 'Large title displayed on the About page story section.'],
+            ['key' => 'about_tagline', 'value' => "Born from a simple frustration: finding quality home help shouldn't be this hard.", 'type' => 'textarea', 'group' => 'about_page', 'label' => 'About Page — Tagline', 'description' => 'Italicised quote below the headline.'],
+            ['key' => 'about_paragraph_1', 'value' => 'KUBA was founded with a mission to connect homeowners with the best local service professionals. We believe everyone deserves access to reliable, transparent, and affordable home services.', 'type' => 'textarea', 'group' => 'about_page', 'label' => 'About Page — Paragraph 1', 'description' => 'First body paragraph on the About page.'],
+            ['key' => 'about_paragraph_2', 'value' => 'Our platform rigorously vets every professional, provides upfront pricing, and ensures secure payments — so you can focus on what matters most while we handle the rest.', 'type' => 'textarea', 'group' => 'about_page', 'label' => 'About Page — Paragraph 2', 'description' => 'Second body paragraph on the About page.'],
+            ['key' => 'about_story_image_1', 'value' => '', 'type' => 'image', 'group' => 'about_page', 'label' => 'About Page — Story Image 1 (Main)', 'description' => 'Large hero image on the left side of the About story section.'],
+            ['key' => 'about_story_image_2', 'value' => '', 'type' => 'image', 'group' => 'about_page', 'label' => 'About Page — Story Image 2 (Top Right)', 'description' => 'Smaller image at the top-right of the story section.'],
+            ['key' => 'about_story_image_3', 'value' => '', 'type' => 'image', 'group' => 'about_page', 'label' => 'About Page — Story Image 3 (Bottom Right)', 'description' => 'Smaller image at the bottom-right of the story section.'],
+        ];
     }
 
     private function authPageSettings(): array
