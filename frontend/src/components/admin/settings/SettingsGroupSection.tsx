@@ -46,7 +46,7 @@ export function SettingsGroupSection({
 
       <div className={uiPrimitives.layout.grid3}>
         {group.settings.map((setting) => (
-          <div key={setting.id}>
+          <div key={setting.id} className="min-w-0">
             {setting.type === 'image' ? (
               <ImageSettingCard
                 setting={setting}
@@ -56,7 +56,7 @@ export function SettingsGroupSection({
                 getMediaUrl={resolveMediaUrl}
               />
             ) : (
-              <Card className={cn(dashboardUi.card.padding, 'border border-border/40 bg-white dark:bg-zinc-900 rounded-2xl shadow-sm space-y-3 hover:border-primary/20 transition-all')}>
+              <Card className={cn(dashboardUi.card.padding, 'border border-border/40 bg-white dark:bg-zinc-900 rounded-2xl shadow-sm space-y-3 hover:border-primary/20 transition-all overflow-hidden')}>
                 <div className="flex items-center justify-between gap-4">
                   <label className="text-xs font-black uppercase tracking-widest text-muted-foreground truncate">
                     {setting.label || setting.key.replace(/_/g, ' ')}
