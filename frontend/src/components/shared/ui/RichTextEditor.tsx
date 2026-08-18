@@ -77,6 +77,7 @@ export function RichTextEditor({
     extensions: [
       StarterKit.configure({
         heading: { levels: [1, 2, 3] },
+        // StarterKit does NOT include link or underline — we add them explicitly below
       }),
       Underline,
       Link.configure({
@@ -85,6 +86,7 @@ export function RichTextEditor({
       }),
       Placeholder.configure({ placeholder }),
     ],
+    immediatelyRender: false,
     content: value,
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
@@ -133,7 +135,7 @@ export function RichTextEditor({
         className
       )}
     >
-      <div className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 border-b border-border/20 bg-muted/30">
+      <div className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 border-b border-border/20 bg-muted/30 overflow-hidden">
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBold().run()}
           active={editor.isActive("bold")}
