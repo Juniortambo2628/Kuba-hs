@@ -3,11 +3,10 @@
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
 import { DashboardPageSkeleton } from "@/components/shared/DashboardPageSkeleton";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import axiosInstance, { handleApiError } from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Accordion } from "@/components/ui/accordion";
 import {
   Settings as SettingsIcon,
   Save,
@@ -15,17 +14,13 @@ import {
   Layout,
   Globe,
   CreditCard,
-  Image as ImageIcon,
-  Sparkles,
   Navigation,
   Share2,
-  BarChart3,
   Smartphone,
-  Info,
   Palette,
-  Layers,
-  Type,
   FileText,
+  Camera,
+  Type,
 } from "lucide-react";
 import { toast } from "sonner";
 import { uiPrimitives } from "@/lib/ui-primitives";
@@ -35,9 +30,9 @@ import { useData } from "@/hooks/useData";
 import { compressImageFile } from "@/lib/image-compression";
 import { useCMS } from "@/contexts/CMSContext";
 import { NavigationManager } from "./components/NavigationManager";
-import { resolveMediaUrl } from "@/lib/utils";
 import { SettingsGroupSection } from "@/components/admin/settings/SettingsGroupSection";
 import { SettingsPageContent } from "@/components/admin/settings/SettingsPageContent";
+import { PageSelectorToolbar } from "@/components/admin/settings/PageSelectorToolbar";
 import type { Setting } from "@/components/admin/settings/types";
 import type { ComponentType } from "react";
 
@@ -53,25 +48,18 @@ interface SettingsApiResponse {
 }
 
 const GROUP_CONFIG: Record<string, { label: string; icon: ComponentType<{ className?: string }>; category: string; description: string }> = {
-    // ── Brand & Identity ──
     'identity': { label: 'Brand Identity', icon: Globe, category: 'brand', description: 'Logos, favicons, and site branding.' },
     'social_links': { label: 'Social Links', icon: Share2, category: 'brand', description: 'Social media handles and platform links.' },
-
-    // ── Hero Visuals ──
-    'hero_backgrounds': { label: 'Backgrounds', icon: ImageIcon, category: 'hero', description: 'Default hero images per page (e.g. services_hero_image). Category/service pages use uploaded thumbnails when available.' },
-    'hero_text': { label: 'Titles & Copy', icon: Type, category: 'hero', description: 'Headlines, subtitles, and badge text for hero banners.' },
-
-    // ── Content ──
-    'home_hero': { label: 'Landing — Hero', icon: Sparkles, category: 'content', description: 'Eyebrow, headline, stat line, search bar labels, and hero copy.' },
-    'about_page': { label: 'About Page', icon: Info, category: 'content', description: 'About page headline, tagline, paragraphs, story images, and how-it-works steps.' },
+    'hero_backgrounds': { label: 'Hero Backgrounds', icon: Camera, category: 'media', description: 'Default hero images per page.' },
+    'hero_text': { label: 'Hero Titles & Copy', icon: Type, category: 'content', description: 'Headlines, subtitles, and badge text for hero banners.' },
+    'home_hero': { label: 'Landing — Hero', icon: FileText, category: 'content', description: 'Eyebrow, headline, stat line, search bar labels, and hero copy.' },
+    'about_page': { label: 'About Page', icon: FileText, category: 'content', description: 'About page headline, tagline, paragraphs, and how-it-works steps.' },
+    'site_stats': { label: 'Landing — Stats', icon: FileText, category: 'content', description: 'Stat values used in the bottom CTA card.' },
+    'landing_sections': { label: 'Landing — Sections', icon: Layout, category: 'content', description: 'Badges, titles, and subtitles for categories, services, providers, testimonials, and FAQ.' },
+    'cta': { label: 'Landing — CTA', icon: FileText, category: 'content', description: 'Final call-to-action copy and button labels.' },
+    'market_narratives': { label: 'Pages — Content', icon: Layout, category: 'content', description: 'Corporate landing banner, legacy keys, and portal page copy.' },
+    'auth_pages': { label: 'Authentication Pages', icon: Smartphone, category: 'content', description: 'Login, register, forgot password, and reset password copy.' },
     'payment': { label: 'Payment Gateway Keys', icon: CreditCard, category: 'system', description: 'Paystack/M-Pesa keys (stored in DB; use env for secrets in production).' },
-    'site_stats': { label: 'Landing — Legacy counters', icon: BarChart3, category: 'content', description: 'Stat values used in the bottom CTA card (stat_1–4). The standalone “Why thousands trust” section was removed from the homepage.' },
-    'landing_sections': { label: 'Landing — Section Headings', icon: Layout, category: 'content', description: 'Badges, titles, and subtitles for categories, services, providers, testimonials, and FAQ blocks.' },
-    'cta': { label: 'Landing — Bottom CTA', icon: Sparkles, category: 'content', description: 'Final call-to-action copy and button labels.' },
-    'market_narratives': { label: 'Pages — Section Content', icon: Layout, category: 'content', description: 'Corporate landing banner (corp_banner_*), legacy corp_title/desc keys, and portal page copy.' },
-    'auth_pages': { label: 'Authentication Pages', icon: Smartphone, category: 'content', description: 'Login, register, forgot password, and reset password copy, visuals, and social proof.' },
-
-    // ── System & Config ──
     'support_info': { label: 'Contact & Support', icon: Smartphone, category: 'system', description: 'Contact emails, phone numbers, and addresses.' },
     'financial_config': { label: 'Fees & Payments', icon: CreditCard, category: 'system', description: 'Platform fees, currency settings, and payout thresholds.' },
 };
@@ -79,20 +67,19 @@ const GROUP_CONFIG: Record<string, { label: string; icon: ComponentType<{ classN
 const PAGE_MAPPINGS = [
     { id: 'landing', label: 'Landing Page' },
     { id: 'about', label: 'About Page' },
-    { id: 'services', label: 'Services Marketplace' },
-    { id: 'providers', label: 'Providers Portal' },
-    { id: 'commercial', label: 'Commercial Business' },
-    { id: 'cooperatives', label: 'Cooperatives & Groups' },
-    { id: 'investors', label: 'Investor Relations' },
-    { id: 'contact', label: 'Contact & Support' },
-    { id: 'blog', label: 'Kuba Journal' },
-    { id: 'auth', label: 'Authentication' },
+    { id: 'services', label: 'Services' },
+    { id: 'providers', label: 'Providers' },
+    { id: 'commercial', label: 'Commercial' },
+    { id: 'cooperatives', label: 'Cooperatives' },
+    { id: 'investors', label: 'Investors' },
+    { id: 'contact', label: 'Contact' },
+    { id: 'blog', label: 'Blog' },
+    { id: 'auth', label: 'Auth Pages' },
 ];
 
 const getPageForKey = (key: string, group: string) => {
-    // Specific elements for "How We Operate" physically on the Landing Page
     if (
-        key.startsWith('step_') || 
+        key.startsWith('step_') ||
         key === 'about_badge' ||
         key === 'how_eyebrow' ||
         key === 'how_headline' ||
@@ -100,7 +87,6 @@ const getPageForKey = (key: string, group: string) => {
         key === 'about_title_1' ||
         key === 'about_title_2' ||
         key === 'about_desc' ||
-        key.startsWith('step_') ||
         key.startsWith('hero_eyebrow') ||
         key.startsWith('hero_headline') ||
         key.startsWith('hero_stat_') ||
@@ -117,7 +103,6 @@ const getPageForKey = (key: string, group: string) => {
         return 'landing';
     }
 
-    // Check group matches first
     if (group === 'about_page' || group === 'about') return 'about';
     if (group === 'commercial_page' || group === 'commercial') return 'commercial';
     if (group === 'cooperative_page' || group === 'cooperatives') return 'cooperatives';
@@ -129,7 +114,6 @@ const getPageForKey = (key: string, group: string) => {
     if (group === 'auth_pages' || key.startsWith('auth_')) return 'auth';
     if (group === 'home_hero' || group === 'site_stats' || group === 'stats' || group === 'cta' || group === 'landing_sections' || group === 'testimonials' || group === 'sections') return 'landing';
 
-    // Fallback to key prefixes
     if (key.startsWith('about_')) return 'about';
     if (key.startsWith('commercial_')) return 'commercial';
     if (key.startsWith('cooperatives_')) return 'cooperatives';
@@ -139,20 +123,20 @@ const getPageForKey = (key: string, group: string) => {
     if (key.startsWith('contact_')) return 'contact';
     if (key.startsWith('blog_') || key.startsWith('journal_')) return 'blog';
     if (key.startsWith('hero_') || key.startsWith('stat_') || key.startsWith('step_') || key.startsWith('test_') || key.startsWith('faq_') || key.startsWith('cta_')) return 'landing';
-    
-    // Default fallback to landing if it's general content
+
     return 'landing';
 };
 
 export default function UnifiedSettingsPage() {
     const { refreshSettings } = useCMS();
     const { data: settingsData, isLoading, refetch: fetchSettings, setData: setSettingsData } = useData<SettingsApiResponse>("/api/admin/settings");
-    const settings = settingsData?.settings ?? ({} as Record<string, Setting[]>);
+    const rawSettings = useMemo(() => settingsData?.settings ?? ({} as Record<string, Setting[]>), [settingsData?.settings]);
     const metadata = settingsData?.metadata ?? null;
 
     const [files, setFiles] = useState<Record<string, File>>({});
     const [isSaving, setIsSaving] = useState(false);
-    const [, setActiveMainTab] = useState("brand");
+    const [selectedContentPage, setSelectedContentPage] = useState("landing");
+    const [selectedMediaPage, setSelectedMediaPage] = useState("landing");
 
     const handleValueChange = (group: string, id: string, value: string) => {
         if (!settingsData) return;
@@ -190,20 +174,19 @@ export default function UnifiedSettingsPage() {
         setIsSaving(true);
         try {
             const formData = new FormData();
-            const allSettings = Object.values(settings).flat() as Setting[];
+            const allSettings = Object.values(rawSettings).flat() as Setting[];
 
             const compressedFiles: Record<string, File> = {};
             for (const [id, file] of Object.entries(files)) {
                 compressedFiles[id] = await compressImageFile(file, { preset: "cms" });
             }
-            
-            // Filter out json type settings (handled by their own components)
+
             const saveable = allSettings.filter(s => s.type !== 'json') as Setting[];
-            
+
             saveable.forEach((s: Setting, index: number) => {
                 formData.append(`settings[${index}][id]`, s.id);
                 formData.append(`settings[${index}][value]`, s.value || "");
-                
+
                 if (s.type === 'image' && compressedFiles[s.id]) {
                     formData.append(`settings[${index}][file]`, compressedFiles[s.id]);
                 }
@@ -214,7 +197,7 @@ export default function UnifiedSettingsPage() {
                 maxBodyLength: Infinity,
                 maxContentLength: Infinity,
             });
-            
+
             toast.success("Synchronized! Site settings updated.");
             await fetchSettings();
             await refreshSettings();
@@ -226,41 +209,90 @@ export default function UnifiedSettingsPage() {
         }
     };
 
-    if (isLoading) {
-        return (
-            <DashboardPageSkeleton width="wide" metrics={3} className="p-4 md:p-8" />
-        );
-    }
-
     const getGroupsByCategory = (cat: string) => {
         return Object.entries(GROUP_CONFIG)
             .filter(([, config]) => config.category === cat)
             .map(([groupId, config]) => ({
                 id: groupId,
                 ...config,
-                // Filter out json settings so they don't render generically (e.g. navigation_menu)
-                settings: ((settings[groupId] || []) as Setting[]).filter((s: Setting) => s.type !== 'json')
+                settings: ((rawSettings[groupId] || []) as Setting[]).filter((s: Setting) => s.type !== 'json')
             }))
             .filter(group => group.settings.length > 0);
     };
 
+    // All hooks must be before any early returns
+    const allFlatSettings = useMemo(() => {
+        return Object.entries(rawSettings).flatMap(([, groupSettings]) =>
+            (groupSettings as Setting[]).filter(s => s.type !== 'json')
+        );
+    }, [rawSettings]);
+
+    const contentByPage = useMemo(() => {
+        const byPage: Record<string, Setting[]> = {};
+        allFlatSettings
+            .filter(s => s.type === 'text' || s.type === 'textarea')
+            .forEach(s => {
+                const page = getPageForKey(s.key, s.group);
+                if (!byPage[page]) byPage[page] = [];
+                byPage[page].push(s);
+            });
+        return byPage;
+    }, [allFlatSettings]);
+
+    const mediaByPage = useMemo(() => {
+        const byPage: Record<string, Setting[]> = {};
+        allFlatSettings
+            .filter(s => s.type === 'image')
+            .forEach(s => {
+                const page = getPageForKey(s.key, s.group);
+                if (!byPage[page]) byPage[page] = [];
+                byPage[page].push(s);
+            });
+        return byPage;
+    }, [allFlatSettings]);
+
+    const contentPageCounts = useMemo(() => {
+        const counts: Record<string, number> = {};
+        for (const [page, items] of Object.entries(contentByPage)) {
+            counts[page] = items.length;
+        }
+        return counts;
+    }, [contentByPage]);
+
+    const mediaPageCounts = useMemo(() => {
+        const counts: Record<string, number> = {};
+        for (const [page, items] of Object.entries(mediaByPage)) {
+            counts[page] = items.length;
+        }
+        return counts;
+    }, [mediaByPage]);
+
+    const brandGroups = getGroupsByCategory('brand');
+    const systemGroups = getGroupsByCategory('system');
+
     const categories = [
-        { id: 'brand', label: 'Brand & Identity', icon: Palette },
-        { id: 'hero', label: 'Hero Visuals', icon: Layers },
         { id: 'content', label: 'Content', icon: FileText },
-        { id: 'system', label: 'System & Config', icon: SettingsIcon },
+        { id: 'media', label: 'Media', icon: Camera },
+        { id: 'brand', label: 'Brand', icon: Palette },
+        { id: 'system', label: 'System', icon: SettingsIcon },
         { id: 'navigation', label: 'Navigation', icon: Navigation },
     ];
 
+    if (isLoading) {
+        return (
+            <DashboardPageSkeleton width="wide" metrics={3} className="p-4 md:p-8" />
+        );
+    }
+
     return (
         <DashboardPageContainer width="wide" className="space-y-10 pb-20">
-            <DashboardPageHeader 
-                title="Platform CMS" 
+            <DashboardPageHeader
+                title="Platform CMS"
                 subtitle="Site settings stored in site_settings — synced to the public site via /api/settings."
             >
-                <Button 
-                    onClick={handleSave} 
-                    disabled={isSaving} 
+                <Button
+                    onClick={handleSave}
+                    disabled={isSaving}
                     className="rounded-xl bg-primary text-white hover:bg-black h-12 px-8 font-bold shadow-lg shadow-primary/20 transition-all flex items-center gap-2"
                 >
                     {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
@@ -268,13 +300,13 @@ export default function UnifiedSettingsPage() {
                 </Button>
             </DashboardPageHeader>
 
-            <Tabs defaultValue="brand" onValueChange={setActiveMainTab} className="w-full">
+            <Tabs defaultValue="content" className="w-full">
                 <div className="flex items-center justify-between mb-8 overflow-x-auto kuba-scroll-hidden scroll-smooth">
                     <TabsList className="bg-transparent h-auto p-0 flex gap-8 border-b border-border/10 rounded-none w-full justify-start">
                         {categories.map(cat => (
-                            <TabsTrigger 
+                            <TabsTrigger
                                 key={cat.id}
-                                value={cat.id} 
+                                value={cat.id}
                                 className="relative h-14 px-0 rounded-none bg-transparent data-[state=active]:bg-transparent text-muted-foreground data-[state=active]:text-primary font-bold text-sm border-b-2 border-transparent data-[state=active]:border-primary transition-all flex items-center gap-2.5 group whitespace-nowrap"
                             >
                                 <cat.icon className="w-4.5 h-4.5" />
@@ -284,84 +316,121 @@ export default function UnifiedSettingsPage() {
                     </TabsList>
                 </div>
 
-                {['brand', 'hero', 'content', 'system'].map(catId => {
-                    const isPageAccordionMode = catId === 'hero' || catId === 'content';
-                    let categoryGroups = getGroupsByCategory(catId);
-                    
-                    if (catId === 'content') {
-                        // Dynamically pull unmapped database groups into the content tab
-                        const unmappedGroups = Object.keys(settings).filter(groupId => !GROUP_CONFIG[groupId] && groupId !== 'navigation_menu' && groupId !== 'payment');
-                        const dynamicGroups = unmappedGroups.map(groupId => ({
-                            id: groupId,
-                            label: groupId,
-                            icon: Layout,
-                            category: 'content',
-                            description: '',
-                            settings: (settings[groupId] || []).filter((s: Setting) => s.type !== 'json')
-                        })).filter(g => g.settings.length > 0);
-                        
-                        categoryGroups = [...categoryGroups, ...dynamicGroups];
-                    }
-                    
-                    if (isPageAccordionMode) {
-                        // Gather all settings from this category's groups for local filtering
-                        let catIdSettings: Setting[] = [];
-                        categoryGroups.forEach(g => {
-                            catIdSettings = [...catIdSettings, ...g.settings];
-                        });
-
-                        // Flatten ALL settings for the Preview Modal to allow cross-tab data access (e.g. Hero + Content)
-                        const allPlatformSettings = Object.values(settings).flat() as Setting[];
-
-                        // Group them by page
-                        const settingsByPage: Record<string, Setting[]> = {};
-                        catIdSettings.forEach(s => {
-                            const page = getPageForKey(s.key, s.group);
-                            if (!settingsByPage[page]) settingsByPage[page] = [];
-                            settingsByPage[page].push(s);
-                        });
-
-                        return (
-                            <TabsContent key={catId} value={catId} className="mt-0 focus:outline-none">
-                                <Accordion type="multiple" className="space-y-4">
-                                    {PAGE_MAPPINGS.map(pageInfo => {
-                                        const pageSettings = settingsByPage[pageInfo.id] || [];
-                                        return (
-                                        <SettingsPageContent
-                                            key={pageInfo.id}
-                                            pageInfo={pageInfo}
-                                            pageSettings={pageSettings}
-                                            allPlatformSettings={allPlatformSettings}
-                                            files={files}
-                                            onValueChange={handleValueChange}
-                                            onRemoveImage={handleRemoveImage}
-                                            onSetFile={(id, file) => setFiles(prev => ({ ...prev, [id]: file }))}
-                                        />
-                                    )})}
-                                </Accordion>
-                            </TabsContent>
-                        );
-                    }
-
-                    // Strict Standard rendering for Brand and System tabs
-                    return (
-                        <TabsContent key={catId} value={catId} className="mt-0 focus:outline-none">
-                            <div className="space-y-12">
-                                {categoryGroups.map(group => (
-                                <SettingsGroupSection
-                                    key={group.id}
-                                    group={group}
+                {/* ── Content Tab ── */}
+                <TabsContent value="content" className="mt-0 focus:outline-none">
+                    <div className="space-y-6">
+                        <PageSelectorToolbar
+                            pages={PAGE_MAPPINGS}
+                            selectedPage={selectedContentPage}
+                            onSelect={setSelectedContentPage}
+                            counts={contentPageCounts}
+                        />
+                        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-border/40 shadow-sm p-6">
+                            <div className="mb-6 flex items-center justify-between border-b border-border/10 pb-4">
+                                <div>
+                                    <h3 className="text-lg font-bold tracking-tight text-foreground">
+                                        {PAGE_MAPPINGS.find(p => p.id === selectedContentPage)?.label}
+                                    </h3>
+                                    <p className="text-sm font-medium text-muted-foreground mt-1">
+                                        {(contentByPage[selectedContentPage] || []).length} content settings
+                                    </p>
+                                </div>
+                            </div>
+                            {(contentByPage[selectedContentPage] || []).length === 0 ? (
+                                <div className="py-16 text-center bg-muted/10 rounded-2xl border border-dashed border-border/40">
+                                    <FileText className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
+                                    <p className="text-muted-foreground text-sm font-medium">No content settings mapped for this page.</p>
+                                </div>
+                            ) : (
+                                <SettingsPageContent
+                                    pageInfo={{ id: selectedContentPage, label: PAGE_MAPPINGS.find(p => p.id === selectedContentPage)?.label || selectedContentPage }}
+                                    pageSettings={contentByPage[selectedContentPage] || []}
+                                    allPlatformSettings={allFlatSettings}
                                     files={files}
                                     onValueChange={handleValueChange}
                                     onRemoveImage={handleRemoveImage}
                                     onSetFile={(id, file) => setFiles(prev => ({ ...prev, [id]: file }))}
+                                    filterType="content"
                                 />
-                            ))}
+                            )}
                         </div>
-                    </TabsContent>
-                );
-            })}
+                    </div>
+                </TabsContent>
 
+                {/* ── Media Tab ── */}
+                <TabsContent value="media" className="mt-0 focus:outline-none">
+                    <div className="space-y-6">
+                        <PageSelectorToolbar
+                            pages={PAGE_MAPPINGS}
+                            selectedPage={selectedMediaPage}
+                            onSelect={setSelectedMediaPage}
+                            counts={mediaPageCounts}
+                        />
+                        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-border/40 shadow-sm p-6">
+                            <div className="mb-6 flex items-center justify-between border-b border-border/10 pb-4">
+                                <div>
+                                    <h3 className="text-lg font-bold tracking-tight text-foreground">
+                                        {PAGE_MAPPINGS.find(p => p.id === selectedMediaPage)?.label}
+                                    </h3>
+                                    <p className="text-sm font-medium text-muted-foreground mt-1">
+                                        {(mediaByPage[selectedMediaPage] || []).length} media assets
+                                    </p>
+                                </div>
+                            </div>
+                            {(mediaByPage[selectedMediaPage] || []).length === 0 ? (
+                                <div className="py-16 text-center bg-muted/10 rounded-2xl border border-dashed border-border/40">
+                                    <Camera className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
+                                    <p className="text-muted-foreground text-sm font-medium">No media assets mapped for this page.</p>
+                                </div>
+                            ) : (
+                                <SettingsPageContent
+                                    pageInfo={{ id: selectedMediaPage, label: PAGE_MAPPINGS.find(p => p.id === selectedMediaPage)?.label || selectedMediaPage }}
+                                    pageSettings={mediaByPage[selectedMediaPage] || []}
+                                    allPlatformSettings={allFlatSettings}
+                                    files={files}
+                                    onValueChange={handleValueChange}
+                                    onRemoveImage={handleRemoveImage}
+                                    onSetFile={(id, file) => setFiles(prev => ({ ...prev, [id]: file }))}
+                                    filterType="media"
+                                />
+                            )}
+                        </div>
+                    </div>
+                </TabsContent>
+
+                {/* ── Brand Tab ── */}
+                <TabsContent value="brand" className="mt-0 focus:outline-none">
+                    <div className="space-y-12">
+                        {brandGroups.map(group => (
+                            <SettingsGroupSection
+                                key={group.id}
+                                group={group}
+                                files={files}
+                                onValueChange={handleValueChange}
+                                onRemoveImage={handleRemoveImage}
+                                onSetFile={(id, file) => setFiles(prev => ({ ...prev, [id]: file }))}
+                            />
+                        ))}
+                    </div>
+                </TabsContent>
+
+                {/* ── System Tab ── */}
+                <TabsContent value="system" className="mt-0 focus:outline-none">
+                    <div className="space-y-12">
+                        {systemGroups.map(group => (
+                            <SettingsGroupSection
+                                key={group.id}
+                                group={group}
+                                files={files}
+                                onValueChange={handleValueChange}
+                                onRemoveImage={handleRemoveImage}
+                                onSetFile={(id, file) => setFiles(prev => ({ ...prev, [id]: file }))}
+                            />
+                        ))}
+                    </div>
+                </TabsContent>
+
+                {/* ── Navigation Tab ── */}
                 <TabsContent value="navigation" className="mt-0 focus:outline-none">
                     <div className={cn("bg-white dark:bg-zinc-900 rounded-2xl border border-border/40 shadow-sm min-h-[600px]", uiPrimitives.surface.paddingLg)}>
                         <div className="mb-10 flex items-center gap-4">

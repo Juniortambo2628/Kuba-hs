@@ -18,6 +18,68 @@ interface SettingsPageContentProps {
   onValueChange: (group: string, id: string, value: string) => void;
   onRemoveImage: (group: string, id: string) => void;
   onSetFile: (id: string, file: File) => void;
+  filterType?: 'content' | 'media';
+}
+
+function SettingGrid({
+  pageSettings,
+  files,
+  onValueChange,
+  onRemoveImage,
+  onSetFile,
+}: {
+  pageSettings: Setting[];
+  files: Record<string, File>;
+  onValueChange: (group: string, id: string, value: string) => void;
+  onRemoveImage: (group: string, id: string) => void;
+  onSetFile: (id: string, file: File) => void;
+}) {
+  return (
+    <div className={uiPrimitives.layout.grid3}>
+      {pageSettings.map((setting) => (
+        <div key={setting.id}>
+          {setting.type === 'image' ? (
+            <ImageSettingCard
+              setting={setting}
+              pendingFile={files[setting.id]}
+              onSetFile={(file: File) => onSetFile(setting.id, file)}
+              onRemove={() => onRemoveImage(setting.group, setting.id)}
+              getMediaUrl={resolveMediaUrl}
+            />
+          ) : (
+            <Card className={cn(dashboardUi.card.padding, 'border border-border/40 bg-white dark:bg-zinc-900 rounded-2xl shadow-sm space-y-3 hover:border-primary/20 transition-all h-full')}>
+              <div className="flex items-center justify-between gap-4">
+                <label className="text-xs font-black uppercase tracking-widest text-muted-foreground truncate" title={setting.label || setting.key.replace(/_/g, ' ')}>
+                  {setting.label || setting.key.replace(/_/g, ' ')}
+                </label>
+                <div className="p-1 px-2.5 bg-primary/5 rounded-lg text-[10px] font-bold text-primary/60 border border-primary/10 shrink-0">
+                  {setting.key}
+                </div>
+              </div>
+              {setting.type === 'textarea' ? (
+                <RichTextEditor
+                  value={setting.value || ''}
+                  onChange={(value) => onValueChange(setting.group, setting.id, value)}
+                  placeholder={`Enter ${setting.label || setting.key.replace(/_/g, ' ')}...`}
+                />
+              ) : (
+                <Input
+                  className="h-12 bg-muted/5 border-border/40 px-4 font-bold text-foreground focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all rounded-xl"
+                  value={setting.value || ''}
+                  onChange={(e) => onValueChange(setting.group, setting.id, e.target.value)}
+                />
+              )}
+              {setting.description && (
+                <p className="text-[10px] font-medium text-muted-foreground/60 italic px-1 pt-1">
+                  {setting.description}
+                </p>
+              )}
+            </Card>
+          )}
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export function SettingsPageContent({
@@ -28,7 +90,33 @@ export function SettingsPageContent({
   onValueChange,
   onRemoveImage,
   onSetFile,
+  filterType,
 }: SettingsPageContentProps) {
+  // Flat grid mode — used by Content/Media tabs with page selector toolbar
+  if (filterType) {
+    return (
+      <div>
+        <div className="mb-6 flex items-center justify-end">
+          <LivePreviewModal sectionId={pageInfo.id} currentSettings={allPlatformSettings} />
+        </div>
+        {pageSettings.length === 0 ? (
+          <div className="py-16 text-center bg-muted/10 rounded-2xl border border-dashed border-border/40">
+            <p className="text-muted-foreground text-sm font-medium">No settings mapped for this section.</p>
+          </div>
+        ) : (
+          <SettingGrid
+            pageSettings={pageSettings}
+            files={files}
+            onValueChange={onValueChange}
+            onRemoveImage={onRemoveImage}
+            onSetFile={onSetFile}
+          />
+        )}
+      </div>
+    );
+  }
+
+  // Accordion mode — legacy fallback
   return (
     <AccordionItem value={pageInfo.id} className="border border-border/40 bg-white dark:bg-zinc-900 rounded-2xl shadow-sm px-2">
       <AccordionTrigger className="px-6 py-5 hover:no-underline group h-auto min-h-[5.5rem]">
@@ -57,50 +145,13 @@ export function SettingsPageContent({
             <p className="text-muted-foreground text-sm font-medium">No configurations currently mapped for this section.</p>
           </div>
         ) : (
-          <div className={uiPrimitives.layout.grid3}>
-            {pageSettings.map((setting) => (
-              <div key={setting.id}>
-                {setting.type === 'image' ? (
-                  <ImageSettingCard
-                    setting={setting}
-                    pendingFile={files[setting.id]}
-                    onSetFile={(file: File) => onSetFile(setting.id, file)}
-                    onRemove={() => onRemoveImage(setting.group, setting.id)}
-                    getMediaUrl={resolveMediaUrl}
-                  />
-                ) : (
-                  <Card className={cn(dashboardUi.card.padding, 'border border-border/40 bg-white dark:bg-zinc-900 rounded-2xl shadow-sm space-y-3 hover:border-primary/20 transition-all h-full')}>
-                    <div className="flex items-center justify-between gap-4">
-                      <label className="text-xs font-black uppercase tracking-widest text-muted-foreground truncate" title={setting.label || setting.key.replace(/_/g, ' ')}>
-                        {setting.label || setting.key.replace(/_/g, ' ')}
-                      </label>
-                      <div className="p-1 px-2.5 bg-primary/5 rounded-lg text-[10px] font-bold text-primary/60 border border-primary/10 shrink-0">
-                        {setting.key}
-                      </div>
-                    </div>
-                    {setting.type === 'textarea' ? (
-                      <RichTextEditor
-                        value={setting.value || ''}
-                        onChange={(value) => onValueChange(setting.group, setting.id, value)}
-                        placeholder={`Enter ${setting.label || setting.key.replace(/_/g, ' ')}...`}
-                      />
-                    ) : (
-                      <Input
-                        className="h-12 bg-muted/5 border-border/40 px-4 font-bold text-foreground focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all rounded-xl"
-                        value={setting.value || ''}
-                        onChange={(e) => onValueChange(setting.group, setting.id, e.target.value)}
-                      />
-                    )}
-                    {setting.description && (
-                      <p className="text-[10px] font-medium text-muted-foreground/60 italic px-1 pt-1">
-                        {setting.description}
-                      </p>
-                    )}
-                  </Card>
-                )}
-              </div>
-            ))}
-          </div>
+          <SettingGrid
+            pageSettings={pageSettings}
+            files={files}
+            onValueChange={onValueChange}
+            onRemoveImage={onRemoveImage}
+            onSetFile={onSetFile}
+          />
         )}
       </AccordionContent>
     </AccordionItem>
