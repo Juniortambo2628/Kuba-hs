@@ -47,7 +47,7 @@ function SettingGrid({
               getMediaUrl={resolveMediaUrl}
             />
           ) : (
-            <Card className={cn(dashboardUi.card.padding, 'border border-border/40 bg-white dark:bg-zinc-900 rounded-2xl shadow-sm space-y-3 hover:border-primary/20 transition-all h-full overflow-hidden')}>
+            <Card className={cn(dashboardUi.card.padding, 'border border-border/40 bg-white dark:bg-zinc-900 rounded-2xl shadow-sm space-y-3 hover:border-primary/20 transition-all h-full overflow-hidden min-w-0')}>
               <div className="flex items-center justify-between gap-4">
                 <label className="text-xs font-black uppercase tracking-widest text-muted-foreground truncate" title={setting.label || setting.key.replace(/_/g, ' ')}>
                   {setting.label || setting.key.replace(/_/g, ' ')}

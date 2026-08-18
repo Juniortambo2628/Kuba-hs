@@ -285,7 +285,7 @@ export default function UnifiedSettingsPage() {
     }
 
     return (
-        <DashboardPageContainer width="wide" className="space-y-10 pb-20">
+        <DashboardPageContainer width="wide" className="space-y-10 pb-20 cms-settings-overflow">
             <DashboardPageHeader
                 title="Platform CMS"
                 subtitle="Site settings stored in site_settings — synced to the public site via /api/settings."
@@ -301,8 +301,8 @@ export default function UnifiedSettingsPage() {
             </DashboardPageHeader>
 
             <Tabs defaultValue="content" className="w-full">
-                <div className="flex items-center justify-between mb-8 overflow-x-auto kuba-scroll-hidden scroll-smooth">
-                    <TabsList className="bg-transparent h-auto p-0 flex gap-8 border-b border-border/10 rounded-none w-full justify-start">
+                <div className="flex items-center justify-between mb-8 overflow-x-auto kuba-scroll-hidden scroll-smooth -mx-1 px-1">
+                    <TabsList className="bg-transparent h-auto p-0 flex gap-6 md:gap-8 border-b border-border/10 rounded-none w-full justify-start min-w-max">
                         {categories.map(cat => (
                             <TabsTrigger
                                 key={cat.id}
@@ -325,7 +325,7 @@ export default function UnifiedSettingsPage() {
                             onSelect={setSelectedContentPage}
                             counts={contentPageCounts}
                         />
-                        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-border/40 shadow-sm p-6">
+                        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-border/40 shadow-sm p-4 sm:p-6 overflow-hidden min-w-0">
                             <div className="mb-6 flex items-center justify-between border-b border-border/10 pb-4">
                                 <div>
                                     <h3 className="text-lg font-bold tracking-tight text-foreground">
@@ -366,7 +366,7 @@ export default function UnifiedSettingsPage() {
                             onSelect={setSelectedMediaPage}
                             counts={mediaPageCounts}
                         />
-                        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-border/40 shadow-sm p-6">
+                        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-border/40 shadow-sm p-4 sm:p-6 overflow-hidden min-w-0">
                             <div className="mb-6 flex items-center justify-between border-b border-border/10 pb-4">
                                 <div>
                                     <h3 className="text-lg font-bold tracking-tight text-foreground">
@@ -461,22 +461,6 @@ export default function UnifiedSettingsPage() {
                 )}
             </div>
 
-            <style jsx global>{`
-                .tight-pond .filepond--root {
-                    margin-bottom: 0;
-                    font-family: inherit;
-                }
-                .tight-pond .filepond--panel-root {
-                    background-color: transparent !important;
-                    border: 2px dashed rgba(0,0,0,0.08) !important;
-                    border-radius: 16px;
-                }
-                .tight-pond .filepond--label-idle {
-                    font-size: 11px;
-                    font-weight: 800;
-                    color: #64748b;
-                }
-            `}</style>
         </DashboardPageContainer>
     );
 }

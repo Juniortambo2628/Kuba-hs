@@ -17,7 +17,7 @@ export const uiPrimitives = {
     /** Landing page sections — comfortable padding, natural page scroll */
     sectionLanding: "py-16 md:py-24",
     /** Standard 3-column card grid (1 → 2 → 3 cols) */
-    grid3: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 min-w-0",
+    grid3: "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 min-w-0",
   },
   pill: {
     base: "inline-flex items-center gap-2 font-bold capitalize tracking-widest",
