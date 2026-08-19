@@ -527,8 +527,8 @@ class PasskeyController extends Controller
             return $keyBytes;
         }
 
-        // Try EC key first (starts with 0x04 for uncompressed point)
-        if ($keyBytes[0] === "\x04") {
+        // If it's a raw EC uncompressed point (0x04 prefix, 65 bytes), build DER directly
+        if (strlen($keyBytes) === 65 && $keyBytes[0] === "\x04") {
             $der = $this->buildECDerKey($keyBytes);
             if ($der) {
                 $b64 = chunk_split(base64_encode($der), 64, "\n");
@@ -536,7 +536,39 @@ class PasskeyController extends Controller
             }
         }
 
-        // Try RSA (might have SubjectPublicKeyInfo header)
+        // If it starts with a CBOR map header (0xA0-0xBF), parse COSE key
+        $firstByte = ord($keyBytes[0]);
+        if ($firstByte >= 0xA0 && $firstByte <= 0xBF) {
+            $cooseKey = $this->parseCBOR($keyBytes);
+            if (is_array($cooseKey)) {
+                $kty = $cooseKey[1] ?? null;
+                $x = $cooseKey[-2] ?? null;
+                $y = $cooseKey[-3] ?? null;
+
+                // kty=2 is EC2
+                if ($kty === 2 && $x && $y && strlen($x) === 32 && strlen($y) === 32) {
+                    $rawEcPoint = "\x04" . $x . $y;
+                    $der = $this->buildECDerKey($rawEcPoint);
+                    if ($der) {
+                        $b64 = chunk_split(base64_encode($der), 64, "\n");
+                        return "-----BEGIN PUBLIC KEY-----\n{$b64}-----END PUBLIC KEY-----\n";
+                    }
+                }
+
+                // kty=3 is RSA — extract n and e
+                $n = $cooseKey[-1] ?? null;
+                $e = $cooseKey[3] ?? null;
+                if ($kty === 3 && $n && $e) {
+                    $der = $this->buildRSADerKey($n, $e);
+                    if ($der) {
+                        $b64 = chunk_split(base64_encode($der), 64, "\n");
+                        return "-----BEGIN PUBLIC KEY-----\n{$b64}-----END PUBLIC KEY-----\n";
+                    }
+                }
+            }
+        }
+
+        // Fallback: try as raw DER/SubjectPublicKeyInfo
         $b64 = chunk_split(base64_encode($keyBytes), 64, "\n");
 
         return "-----BEGIN PUBLIC KEY-----\n{$b64}-----END PUBLIC KEY-----\n";
@@ -562,6 +594,22 @@ class PasskeyController extends Controller
         $subjectPublicKeyInfo = "\x30" . $this->encodeLength(strlen($algorithmSeq) + strlen($ecPublicKeyBitString)) . $algorithmSeq . $ecPublicKeyBitString;
 
         return $subjectPublicKeyInfo;
+    }
+
+    private function buildRSADerKey(string $n, string $e): ?string
+    {
+        // Remove leading zero bytes from n and e (DER requires minimal encoding)
+        $n = ltrim($n, "\x00");
+        $e = ltrim($e, "\x00");
+
+        // OID for RSA encryption (1.2.840.113549.1.1.1)
+        $algorithmSeq = "\x30\x0d\x30\x09\x06\x07\x2a\x86\x48\xce\x37\x02\x02\x06\x01";
+        $nInteger = "\x02" . $this->encodeLength(strlen($n)) . $n;
+        $eInteger = "\x02" . $this->encodeLength(strlen($e)) . $e;
+        $rsaSeq = "\x30" . $this->encodeLength(strlen($nInteger) + strlen($eInteger)) . $nInteger . $eInteger;
+        $bitString = "\x03" . $this->encodeLength(strlen($rsaSeq) + 1) . "\x00" . $rsaSeq;
+
+        return "\x30" . $this->encodeLength(strlen($algorithmSeq) + strlen($bitString)) . $algorithmSeq . $bitString;
     }
 
     private function encodeLength(int $length): string
