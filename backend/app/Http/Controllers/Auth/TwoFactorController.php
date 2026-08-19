@@ -4,6 +4,10 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Renderer\ImageRenderer;
+use BaconQrCode\Renderer\RendererStyle\RendererStyle;
+use BaconQrCode\Writer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -21,11 +25,17 @@ class TwoFactorController extends Controller
 
         $google2fa = new Google2FA();
         $secret = $google2fa->generateSecretKey();
-        $qrCodeSvg = $google2fa->getQRCodeInline(
+        $otpUrl = $google2fa->getQRCodeUrl(
             config('app.name', 'Kuba'),
             $user->email,
             $secret
         );
+
+        $renderer = new ImageRenderer(
+            new RendererStyle(200, 0),
+            new SvgImageBackEnd()
+        );
+        $qrCodeSvg = (new Writer($renderer))->writeString($otpUrl);
 
         // Store the secret temporarily (encrypted) until confirmed
         $request->session()->put('2fa_secret', Crypt::encryptString($secret));

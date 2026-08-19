@@ -91,7 +91,7 @@ class GoogleController extends Controller
 
         } catch (\Exception $e) {
             \Log::error('Google Auth Error: '.$e->getMessage());
-            $frontendUrl = env('FRONTEND_URL', 'http://localhost:3000');
+            $frontendUrl = config('app.frontend_url', 'https://kuba.co.ke');
 
             return redirect($frontendUrl.'/login?error=google_auth_failed');
         }

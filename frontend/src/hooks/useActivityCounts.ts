@@ -101,7 +101,13 @@ export function useActivityCounts() {
         quotes: pendingQuotes,
       });
     } catch (err: any) {
-      if (err.response?.status !== 401) {
+      const status = err.response?.status;
+      const twoFactorRequired = err.response?.data?.two_factor_setup_required;
+      if (twoFactorRequired && status === 403) {
+        // 2FA setup pending — counts will be zero until setup is complete
+        return;
+      }
+      if (status !== 401) {
         console.error("Failed to fetch activity counts", err);
       }
     }

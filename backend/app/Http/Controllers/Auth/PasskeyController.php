@@ -39,7 +39,7 @@ class PasskeyController extends Controller
             ->toArray();
 
         $options = [
-            'challenge' => base64_encode($challenge),
+            'challenge' => $this->base64urlEncode($challenge),
             'rp' => [
                 'name' => config('app.name', 'Kuba'),
                 'id' => $this->getRpId(),
@@ -67,8 +67,8 @@ class PasskeyController extends Controller
             }, $existingIds),
         ];
 
-        // Store challenge in session for verification
-        $request->session()->put('webauthn_registration_challenge', base64_encode($challenge));
+        // Store challenge in session for verification (use base64url to match browser encoding)
+        $request->session()->put('webauthn_registration_challenge', $this->base64urlEncode($challenge));
 
         return response()->json($options);
     }
@@ -210,7 +210,7 @@ class PasskeyController extends Controller
         }
 
         $options = [
-            'challenge' => base64_encode($challenge),
+            'challenge' => $this->base64urlEncode($challenge),
             'timeout' => 60000,
             'rpId' => $this->getRpId(),
             'userVerification' => 'preferred',
@@ -226,7 +226,7 @@ class PasskeyController extends Controller
             }, $credentialIds);
         }
 
-        $request->session()->put('webauthn_authentication_challenge', base64_encode($challenge));
+        $request->session()->put('webauthn_authentication_challenge', $this->base64urlEncode($challenge));
 
         return response()->json($options);
     }
@@ -374,13 +374,6 @@ class PasskeyController extends Controller
 
     private function getOrigin(): string
     {
-        // Return the primary origin the browser will send.
-        // Accept FRONTEND_URL if set, otherwise fall back to the base domain.
-        $frontendUrl = config('app.frontend_url', env('FRONTEND_URL', ''));
-        if ($frontendUrl && $frontendUrl !== 'http://localhost:3000') {
-            return rtrim($frontendUrl, '/');
-        }
-
         // Derive from APP_URL: replace api. subdomain with www. or bare domain
         $appUrl = config('app.url', 'https://kuba.co.ke');
         $host = parse_url($appUrl, PHP_URL_HOST) ?? 'kuba.co.ke';
