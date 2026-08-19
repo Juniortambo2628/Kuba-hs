@@ -45,6 +45,7 @@ function AdminLoginForm() {
   const [emailCode, setEmailCode] = useState("");
   const [isEmailCodeLoading, setIsEmailCodeLoading] = useState(false);
   const [emailCodeError, setEmailCodeError] = useState("");
+  const [emailCodeSuccess, setEmailCodeSuccess] = useState("");
 
   useEffect(() => {
     if (!authLoading && user && user.role === "admin") {
@@ -80,10 +81,12 @@ function AdminLoginForm() {
   const handleRequestEmailCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setEmailCodeError("");
+    setEmailCodeSuccess("");
     if (!emailCodeEmail) return;
     setIsEmailCodeLoading(true);
     try {
-      await axiosInstance.post("/api/auth/email-code/request", { email: emailCodeEmail });
+      const res = await axiosInstance.post("/api/auth/email-code/request", { email: emailCodeEmail });
+      setEmailCodeSuccess(res.data?.message || "Code sent successfully.");
       setEmailCodeStep("code");
     } catch (err: unknown) {
       const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Failed to send code";
@@ -190,12 +193,13 @@ function AdminLoginForm() {
                 </h3>
                 <button
                   type="button"
-                  onClick={() => {
-                    setEmailCodeMode(false);
-                    setEmailCodeStep("email");
-                    setEmailCodeError("");
-                    setEmailCode("");
-                  }}
+              onClick={() => {
+                setEmailCodeMode(false);
+                setEmailCodeStep("email");
+                setEmailCodeError("");
+                setEmailCodeSuccess("");
+                setEmailCode("");
+              }}
                   className="text-xs text-muted-foreground hover:text-foreground"
                 >
                   Back to password
@@ -204,6 +208,11 @@ function AdminLoginForm() {
               {emailCodeError && (
                 <p className="rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs text-destructive">
                   {emailCodeError}
+                </p>
+              )}
+              {emailCodeSuccess && emailCodeStep === "code" && (
+                <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+                  {emailCodeSuccess}
                 </p>
               )}
               {emailCodeStep === "email" ? (
@@ -249,7 +258,10 @@ function AdminLoginForm() {
                   <div className="flex gap-2">
                     <button
                       type="button"
-                      onClick={() => setEmailCodeStep("email")}
+                      onClick={() => {
+                        setEmailCodeStep("email");
+                        setEmailCodeSuccess("");
+                      }}
                       className="flex-1 rounded-xl border border-border px-4 py-2.5 text-sm font-medium hover:bg-muted transition-colors"
                     >
                       Back
