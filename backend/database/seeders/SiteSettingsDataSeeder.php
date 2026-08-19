@@ -43,11 +43,14 @@ class SiteSettingsDataSeeder extends Seeder
     {
         return [
             ['key' => 'hero_bg_image', 'value' => '', 'type' => 'image', 'group' => 'hero_backgrounds', 'label' => 'Landing Page Hero Image', 'description' => 'Background image for the landing page hero section.'],
-            ['key' => 'about_hero_image', 'value' => '', 'type' => 'image', 'group' => 'about', 'label' => 'About Page Hero', 'description' => 'Background image for the About Us page hero section.'],
-            ['key' => 'contact_hero_image', 'value' => '', 'type' => 'image', 'group' => 'contact', 'label' => 'Contact Page Hero', 'description' => 'Background image for the Contact page hero section.'],
-            ['key' => 'investors_hero_image', 'value' => '', 'type' => 'image', 'group' => 'sections', 'label' => 'Investors Page Hero', 'description' => 'Background image for the Investors page hero section.'],
-            ['key' => 'commercial_hero_image', 'value' => '', 'type' => 'image', 'group' => 'sections', 'label' => 'Commercial Page Hero', 'description' => 'Background image for the Commercial page hero section.'],
-            ['key' => 'cooperatives_hero_image', 'value' => '', 'type' => 'image', 'group' => 'sections', 'label' => 'Cooperatives Page Hero', 'description' => 'Background image for the Cooperatives page hero section.'],
+            ['key' => 'services_hero_image', 'value' => '', 'type' => 'image', 'group' => 'hero_backgrounds', 'label' => 'Services Page Hero', 'description' => 'Background image for the Services listing page hero section.'],
+            ['key' => 'providers_hero_image', 'value' => '', 'type' => 'image', 'group' => 'hero_backgrounds', 'label' => 'Providers Page Hero', 'description' => 'Background image for the Providers listing page hero section.'],
+            ['key' => 'about_hero_image', 'value' => '', 'type' => 'image', 'group' => 'hero_backgrounds', 'label' => 'About Page Hero', 'description' => 'Background image for the About Us page hero section.'],
+            ['key' => 'contact_hero_image', 'value' => '', 'type' => 'image', 'group' => 'hero_backgrounds', 'label' => 'Contact Page Hero', 'description' => 'Background image for the Contact page hero section.'],
+            ['key' => 'investors_hero_image', 'value' => '', 'type' => 'image', 'group' => 'hero_backgrounds', 'label' => 'Investors Page Hero', 'description' => 'Background image for the Investors page hero section.'],
+            ['key' => 'commercial_hero_image', 'value' => '', 'type' => 'image', 'group' => 'hero_backgrounds', 'label' => 'Commercial Page Hero', 'description' => 'Background image for the Commercial page hero section.'],
+            ['key' => 'cooperatives_hero_image', 'value' => '', 'type' => 'image', 'group' => 'hero_backgrounds', 'label' => 'Cooperatives Page Hero', 'description' => 'Background image for the Cooperatives page hero section.'],
+            ['key' => 'journal_hero_image', 'value' => '', 'type' => 'image', 'group' => 'hero_backgrounds', 'label' => 'Journal Page Hero', 'description' => 'Background image for the Blog/Journal page hero section.'],
         ];
     }
 
@@ -66,9 +69,9 @@ class SiteSettingsDataSeeder extends Seeder
 
         $settings = [];
         foreach ($pages as $slug => $defaults) {
-            $settings[] = ['key' => "{$slug}_hero_badge", 'value' => $defaults['badge'], 'type' => 'text', 'group' => 'hero_media', 'label' => ucfirst($slug) . ' Hero Badge', 'description' => 'Small badge text above the main hero headline.'];
-            $settings[] = ['key' => "{$slug}_hero_title", 'value' => $defaults['title'], 'type' => 'text', 'group' => 'hero_media', 'label' => ucfirst($slug) . ' Hero Title', 'description' => 'Main headline for the hero section.'];
-            $settings[] = ['key' => "{$slug}_hero_subtitle", 'value' => $defaults['subtitle'], 'type' => 'textarea', 'group' => 'hero_media', 'label' => ucfirst($slug) . ' Hero Subtitle', 'description' => 'Sub-headline text for the hero section.'];
+            $settings[] = ['key' => "{$slug}_hero_badge", 'value' => $defaults['badge'], 'type' => 'text', 'group' => 'hero_text', 'label' => ucfirst($slug) . ' Hero Badge', 'description' => 'Small badge text above the main hero headline.'];
+            $settings[] = ['key' => "{$slug}_hero_title", 'value' => $defaults['title'], 'type' => 'text', 'group' => 'hero_text', 'label' => ucfirst($slug) . ' Hero Title', 'description' => 'Main headline for the hero section.'];
+            $settings[] = ['key' => "{$slug}_hero_subtitle", 'value' => $defaults['subtitle'], 'type' => 'textarea', 'group' => 'hero_text', 'label' => ucfirst($slug) . ' Hero Subtitle', 'description' => 'Sub-headline text for the hero section.'];
         }
         return $settings;
     }

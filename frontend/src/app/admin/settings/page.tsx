@@ -78,6 +78,20 @@ const PAGE_MAPPINGS = [
 ];
 
 const getPageForKey = (key: string, group: string) => {
+    // Hero text & image settings: route by key prefix to the correct page tab
+    if (key === 'hero_bg_image') return 'landing';
+    if (key.endsWith('_hero_image') || key.endsWith('_hero_badge') || key.endsWith('_hero_title') || key.endsWith('_hero_subtitle')) {
+        if (key.startsWith('about_')) return 'about';
+        if (key.startsWith('services_') || key.startsWith('service_detail_')) return 'services';
+        if (key.startsWith('providers_') || key.startsWith('provider_profile_')) return 'providers';
+        if (key.startsWith('investors_')) return 'investors';
+        if (key.startsWith('commercial_')) return 'commercial';
+        if (key.startsWith('cooperatives_')) return 'cooperatives';
+        if (key.startsWith('contact_')) return 'contact';
+        if (key.startsWith('journal_') || key.startsWith('blog_')) return 'blog';
+        return 'landing';
+    }
+
     if (
         key.startsWith('step_') ||
         key === 'about_badge' ||
