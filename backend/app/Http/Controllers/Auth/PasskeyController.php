@@ -98,7 +98,7 @@ class PasskeyController extends Controller
         }
 
         // Verify the client data
-        $clientDataJSON = base64_decode($credential['response']['clientDataJSON'], true);
+        $clientDataJSON = $this->base64urlDecode($credential['response']['clientDataJSON']);
         $clientData = json_decode($clientDataJSON, true);
 
         if (!$clientData || ($clientData['type'] ?? '') !== 'webauthn.create') {
@@ -157,11 +157,11 @@ class PasskeyController extends Controller
         $publicKeyBytes = substr($credData, 18 + $credIdLength);
 
         // Verify credential ID matches
-        $expectedCredId = base64_decode($credential['id'], true);
-        if ($credId !== $expectedCredId && $credId !== $credential['rawId']) {
-            // Try base64url decode of the rawId
-            $expectedCredId = $this->base64urlDecode($credential['rawId']);
-            if ($credId !== $expectedCredId) {
+        $expectedCredId = $this->base64urlDecode($credential['rawId']);
+        if ($credId !== $expectedCredId) {
+            // Fallback: try standard base64
+            $expectedCredId = base64_decode($credential['id'], true);
+            if ($credId !== $expectedCredId && $credId !== ($credential['rawId'] ?? '')) {
                 return response()->json(['message' => 'Credential ID mismatch.'], 422);
             }
         }
@@ -255,7 +255,7 @@ class PasskeyController extends Controller
         }
 
         // Verify client data
-        $clientDataJSON = base64_decode($credential['response']['clientDataJSON'], true);
+        $clientDataJSON = $this->base64urlDecode($credential['response']['clientDataJSON']);
         $clientData = json_decode($clientDataJSON, true);
 
         if (!$clientData || ($clientData['type'] ?? '') !== 'webauthn.get') {
@@ -272,13 +272,15 @@ class PasskeyController extends Controller
         }
 
         // Find the credential
-        $credId = base64_decode($credential['id'], true);
+        $credId = $this->base64urlDecode($credential['rawId']);
         $webauthnCred = WebauthnCredential::where('credential_id', base64_encode($credId))->first();
 
         if (!$webauthnCred) {
-            // Try base64url decode
-            $credId = $this->base64urlDecode($credential['rawId']);
-            $webauthnCred = WebauthnCredential::where('credential_id', base64_encode($credId))->first();
+            // Fallback: try standard base64
+            $credId = base64_decode($credential['id'], true);
+            if ($credId !== false) {
+                $webauthnCred = WebauthnCredential::where('credential_id', base64_encode($credId))->first();
+            }
         }
 
         if (!$webauthnCred) {
@@ -286,7 +288,7 @@ class PasskeyController extends Controller
         }
 
         // Verify authenticator data
-        $authData = base64_decode($credential['response']['authenticatorData'], true);
+        $authData = $this->base64urlDecode($credential['response']['authenticatorData']);
         if (strlen($authData) < 37) {
             return response()->json(['message' => 'Invalid authenticator data.'], 422);
         }
@@ -309,7 +311,7 @@ class PasskeyController extends Controller
 
         // Verify signature using stored public key
         $publicKeyBytes = base64_decode(Crypt::decryptString($webauthnCred->public_key));
-        $signature = base64_decode($credential['response']['signature'], true);
+        $signature = $this->base64urlDecode($credential['response']['signature']);
 
         // Build the signed data: authData + SHA-256(clientDataJSON)
         $signedData = $authData . hash('sha256', $clientDataJSON, true);
@@ -502,20 +504,17 @@ class PasskeyController extends Controller
 
     private function verifySignature(string $publicKeyBytes, string $data, string $signature): bool
     {
-        // Try to determine key type from the first bytes
-        // SEQUENCE header for RSA: 0x30
-        // EC point: 0x04
-        if (strlen($publicKeyBytes) < 1) {
+        if (strlen($publicKeyBytes) < 1 || strlen($signature) < 1) {
             return false;
         }
 
-        $keyType = openssl_pkey_get_public($this->buildPemKey($publicKeyBytes));
-        if (!$keyType) {
+        $pem = $this->buildPemKey($publicKeyBytes);
+        $key = openssl_pkey_get_public($pem);
+        if (!$key) {
             return false;
         }
 
-        $result = openssl_verify($data, $signature, $keyType, OPENSSL_ALGO_SHA256);
-        openssl_free_key($keyType);
+        $result = openssl_verify($data, $signature, $key, OPENSSL_ALGO_SHA256);
 
         return $result === 1;
     }
