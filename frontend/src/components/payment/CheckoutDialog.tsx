@@ -1,25 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
   DialogTitle,
   DialogDescription
-} from "@/components/ui/dialog"; 
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { 
-  CreditCard, 
-  ShieldCheck, 
-  Zap, 
-  Loader2, 
-  CheckCircle2, 
-  Smartphone, 
-  Banknote, 
-  ArrowLeft, 
-  ChevronRight,
+import {
+  CreditCard,
+  ShieldCheck,
+  Zap,
+  Loader2,
+  CheckCircle2,
+  ArrowLeft,
   Receipt
 } from "lucide-react";
 import { usePaystackPayment } from "react-paystack";
@@ -28,7 +24,7 @@ import { toast } from "sonner";
 import { Booking } from "@/types";
 import { VirtualReceipt } from "./VirtualReceipt";
 
-type PaymentMethod = 'select' | 'paystack' | 'mpesa' | 'cash';
+type PaymentMethod = 'select' | 'paystack' | 'cash';
 type PaymentStep = 'select' | 'details' | 'processing' | 'success';
 
 interface CheckoutDialogProps {
@@ -43,8 +39,6 @@ export function CheckoutDialog({ isOpen, onClose, booking, userEmail, onSuccess 
     const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('select');
     const [paymentStep, setPaymentStep] = useState<PaymentStep>('select');
     const [isInitializing, setIsInitializing] = useState(false);
-    const [mpesaPhone, setMpesaPhone] = useState('');
-    const [mpesaPolling, setMpesaPolling] = useState(false);
     const [showReceipt, setShowReceipt] = useState(false);
     const [txReference, setTxReference] = useState('');
 
@@ -59,7 +53,6 @@ export function CheckoutDialog({ isOpen, onClose, booking, userEmail, onSuccess 
             setPaymentMethod('select');
             setPaymentStep('select');
             setIsInitializing(false);
-            setMpesaPhone('');
             setShowReceipt(false);
         }
     }, [isOpen]);
@@ -113,64 +106,14 @@ export function CheckoutDialog({ isOpen, onClose, booking, userEmail, onSuccess 
         }
     };
 
-    // ─── M-Pesa Flow ───
-    const handleMpesa = async () => {
-        if (!mpesaPhone || mpesaPhone.length < 9) {
-            toast.error("Please enter a valid phone number");
-            return;
-        }
-        setIsInitializing(true);
-        setPaymentStep('processing');
-        try {
-            const res = await axiosInstance.post("/api/payments/mpesa/stk-push", {
-                booking_id: booking.id,
-                phone_number: mpesaPhone,
-            });
-            toast.success("Check your phone for the M-Pesa prompt!");
-            setTxReference(res.data.checkout_request_id || '');
-            
-            // Poll for status
-            setMpesaPolling(true);
-            const pollInterval = setInterval(async () => {
-                try {
-                    const statusRes = await axiosInstance.post("/api/payments/mpesa/check-status", {
-                        booking_id: booking.id
-                    });
-                    if (statusRes.data.payment_status === 'paid') {
-                        clearInterval(pollInterval);
-                        setMpesaPolling(false);
-                        setPaymentStep('success');
-                        toast.success("M-Pesa payment confirmed!");
-                    }
-                } catch {
-                    // Silent poll failure
-                }
-            }, 3000);
-            
-            // Stop polling after 2 minutes
-            setTimeout(() => {
-                clearInterval(pollInterval);
-                setMpesaPolling(false);
-                if (paymentStep !== 'success') {
-                    setIsInitializing(false);
-                    toast.info("If you completed the payment, it may take a moment to process.");
-                }
-            }, 120000);
-        } catch (err: any) {
-            toast.error(err.response?.data?.message || "Failed to send STK Push");
-            setPaymentStep('details');
-            setIsInitializing(false);
-        }
-    };
-
     const selectMethod = (method: PaymentMethod) => {
         setPaymentMethod(method);
         setPaymentStep('details');
     };
 
-    const progressWidth = paymentStep === 'select' ? 'w-1/4' 
-        : paymentStep === 'details' ? 'w-1/2' 
-        : paymentStep === 'processing' ? 'w-3/4' 
+    const progressWidth = paymentStep === 'select' ? 'w-1/4'
+        : paymentStep === 'details' ? 'w-1/2'
+        : paymentStep === 'processing' ? 'w-3/4'
         : 'w-full';
 
     if (!isOpen) return null;
@@ -178,13 +121,13 @@ export function CheckoutDialog({ isOpen, onClose, booking, userEmail, onSuccess 
     // Show receipt overlay
     if (showReceipt) {
         return (
-            <VirtualReceipt 
-                booking={booking} 
+            <VirtualReceipt
+                booking={booking}
                 onClose={() => {
                     setShowReceipt(false);
                     onSuccess();
                     onClose();
-                }} 
+                }}
                 transactionId={txReference}
                 paymentMethod={paymentMethod}
             />
@@ -213,7 +156,7 @@ export function CheckoutDialog({ isOpen, onClose, booking, userEmail, onSuccess 
                                 Your transaction has been securely processed.
                             </p>
                             <div className="flex gap-3 mt-8">
-                                <Button 
+                                <Button
                                     onClick={() => setShowReceipt(true)}
                                     variant="outline"
                                     className="flex-1 h-12 rounded-2xl font-bold text-[10px] uppercase tracking-widest gap-2"
@@ -221,7 +164,7 @@ export function CheckoutDialog({ isOpen, onClose, booking, userEmail, onSuccess 
                                     <Receipt className="w-4 h-4" />
                                     View Receipt
                                 </Button>
-                                <Button 
+                                <Button
                                     onClick={() => { onSuccess(); onClose(); }}
                                     className="flex-1 h-12 bg-foreground text-background hover:bg-foreground/90 rounded-2xl font-bold text-[10px] uppercase tracking-widest"
                                 >
@@ -235,7 +178,7 @@ export function CheckoutDialog({ isOpen, onClose, booking, userEmail, onSuccess 
                             <DialogHeader className="flex flex-row justify-between items-start mb-6 space-y-0">
                                 <div className="flex items-center gap-3">
                                     {paymentStep !== 'select' && (
-                                        <button 
+                                        <button
                                             onClick={() => { setPaymentStep('select'); setPaymentMethod('select'); }}
                                             className="p-2 -ml-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground"
                                         >
@@ -244,7 +187,7 @@ export function CheckoutDialog({ isOpen, onClose, booking, userEmail, onSuccess 
                                     )}
                                     <div>
                                         <DialogTitle className="text-xl font-black tracking-tight text-foreground text-left">
-                                            {paymentStep === 'select' ? 'Checkout' : paymentMethod === 'mpesa' ? 'M-Pesa' : paymentMethod === 'cash' ? 'Cash Payment' : 'Card Payment'}
+                                            {paymentStep === 'select' ? 'Checkout' : paymentMethod === 'cash' ? 'Cash Payment' : 'Card Payment'}
                                         </DialogTitle>
                                         <DialogDescription className="text-xs text-muted-foreground mt-0.5 font-medium uppercase tracking-widest text-left">
                                             Order #{booking.booking_number}
@@ -278,9 +221,9 @@ export function CheckoutDialog({ isOpen, onClose, booking, userEmail, onSuccess 
                                     {/* Payment Methods */}
                                     <div className="space-y-2">
                                         <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-3">Select Payment Method</p>
-                                        
+
                                         {/* Paystack */}
-                                        <button 
+                                        <button
                                             onClick={() => selectMethod('paystack')}
                                             className="w-full flex items-center gap-4 p-4 rounded-2xl border border-border hover:border-primary/30 hover:bg-primary/5 transition-all group"
                                         >
@@ -288,25 +231,9 @@ export function CheckoutDialog({ isOpen, onClose, booking, userEmail, onSuccess 
                                                 <CreditCard className="w-5 h-5" />
                                             </div>
                                             <div className="text-left flex-1">
-                                                <p className="text-sm font-bold text-foreground">Card / Bank</p>
-                                                <p className="text-[10px] text-muted-foreground font-medium">Visa, Mastercard via Paystack</p>
+                                                <p className="text-sm font-bold text-foreground">Card, Bank or Mobile Money</p>
+                                                <p className="text-[10px] text-muted-foreground font-medium">Visa, Mastercard, M-Pesa via Paystack</p>
                                             </div>
-                                            <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                                        </button>
-
-                                        {/* M-Pesa */}
-                                        <button 
-                                            onClick={() => selectMethod('mpesa')}
-                                            className="w-full flex items-center gap-4 p-4 rounded-2xl border border-border hover:border-emerald-500/30 hover:bg-emerald-500/5 transition-all group"
-                                        >
-                                            <div className="w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 shrink-0">
-                                                <Smartphone className="w-5 h-5" />
-                                            </div>
-                                            <div className="text-left flex-1">
-                                                <p className="text-sm font-bold text-foreground">M-Pesa</p>
-                                                <p className="text-[10px] text-muted-foreground font-medium">Pay via STK Push to your phone</p>
-                                            </div>
-                                            <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-emerald-500 transition-colors" />
                                         </button>
                                     </div>
                                 </div>
@@ -333,42 +260,12 @@ export function CheckoutDialog({ isOpen, onClose, booking, userEmail, onSuccess 
                                         </div>
                                     </div>
 
-                                    <Button 
+                                    <Button
                                         onClick={handlePaystack}
                                         disabled={isInitializing}
                                         className="w-full h-14 bg-foreground text-background hover:bg-muted hover:text-foreground rounded-2xl font-bold text-xs uppercase tracking-[0.2em] shadow-xl transition-all active:scale-95"
                                     >
-                                        {isInitializing ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Pay with Card'}
-                                    </Button>
-                                </div>
-                            )}
-
-                            {/* ─── M-PESA DETAILS ─── */}
-                            {paymentStep === 'details' && paymentMethod === 'mpesa' && (
-                                <div className="space-y-6">
-                                    <div className="bg-emerald-50 dark:bg-emerald-500/5 rounded-2xl p-5 border border-emerald-100 dark:border-emerald-500/10">
-                                        <p className="text-xs text-emerald-700 dark:text-emerald-400 font-medium leading-relaxed">
-                                            Enter your Safaricom phone number. An M-Pesa prompt will appear on your device to authorize <strong>KES {total.toLocaleString()}</strong>.
-                                        </p>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Phone Number</label>
-                                        <Input
-                                            type="tel"
-                                            placeholder="0712 345 678"
-                                            value={mpesaPhone}
-                                            onChange={(e) => setMpesaPhone(e.target.value)}
-                                            className="h-14 rounded-2xl text-base font-bold px-5 bg-muted/30 border-border focus:ring-emerald-500"
-                                        />
-                                    </div>
-
-                                    <Button 
-                                        onClick={handleMpesa}
-                                        disabled={isInitializing || !mpesaPhone}
-                                        className="w-full h-14 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold text-xs uppercase tracking-[0.2em] shadow-xl shadow-emerald-500/20 transition-all active:scale-95"
-                                    >
-                                        {isInitializing ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Send STK Push'}
+                                        {isInitializing ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Continue to Paystack'}
                                     </Button>
                                 </div>
                             )}
@@ -379,15 +276,8 @@ export function CheckoutDialog({ isOpen, onClose, booking, userEmail, onSuccess 
                                     <Loader2 className="w-10 h-10 animate-spin text-primary mx-auto" />
                                     <h3 className="text-lg font-bold text-foreground">Processing Payment</h3>
                                     <p className="text-xs text-muted-foreground max-w-xs mx-auto">
-                                        {paymentMethod === 'mpesa' 
-                                            ? 'Waiting for M-Pesa confirmation from your phone...' 
-                                            : 'Verifying your transaction...'}
+                                        Verifying your transaction...
                                     </p>
-                                    {mpesaPolling && (
-                                        <p className="text-[10px] text-primary font-bold uppercase tracking-widest animate-pulse">
-                                            Listening for confirmation...
-                                        </p>
-                                    )}
                                 </div>
                             )}
 

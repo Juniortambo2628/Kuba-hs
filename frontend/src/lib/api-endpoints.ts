@@ -135,9 +135,6 @@ export const API = {
 
   // Payments
   payments: {
-    mpesaCallback: "/api/payments/mpesa/callback",
-    mpesaStkPush: "/api/payments/mpesa/stk-push",
-    mpesaCheckStatus: "/api/payments/mpesa/check-status",
     paystackInit: "/api/payments/paystack/initialize",
     paystackVerify: "/api/payments/paystack/verify",
     receipt: "/api/payments/receipt",

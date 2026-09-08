@@ -39,7 +39,6 @@ describe('API endpoints', () => {
   })
 
   it('has payment endpoints', () => {
-    expect(API.payments.mpesaStkPush).toBe('/api/payments/mpesa/stk-push')
     expect(API.payments.paystackInit).toBe('/api/payments/paystack/initialize')
     expect(API.payments.paystackVerify).toBe('/api/payments/paystack/verify')
   })
