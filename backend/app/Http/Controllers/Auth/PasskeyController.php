@@ -335,7 +335,10 @@ class PasskeyController extends Controller
         }
 
         \Illuminate\Support\Facades\Auth::guard('web')->login($user);
-        $request->session()->regenerate();
+
+        if ($request->hasSession()) {
+            $request->session()->regenerate();
+        }
 
         return response()->json([
             'message' => 'Passkey verified.',

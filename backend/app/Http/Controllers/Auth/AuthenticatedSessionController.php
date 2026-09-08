@@ -43,7 +43,9 @@ class AuthenticatedSessionController extends Controller
             ]);
         }
 
-        $request->session()->regenerate();
+        if ($request->hasSession()) {
+            $request->session()->regenerate();
+        }
 
         $user->notify(new SignInLog(
             ip: $request->ip(),

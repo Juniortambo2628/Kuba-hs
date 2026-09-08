@@ -68,7 +68,10 @@ class GoogleController extends Controller
                 ]);
 
                 Auth::guard('web')->login($user);
-                $request->session()->regenerate();
+
+                if ($request->hasSession()) {
+                    $request->session()->regenerate();
+                }
 
                 $params = http_build_query([
                     'first_name' => $user->first_name,
@@ -88,7 +91,10 @@ class GoogleController extends Controller
             }
 
             Auth::guard('web')->login($user);
-            $request->session()->regenerate();
+
+            if ($request->hasSession()) {
+                $request->session()->regenerate();
+            }
 
             // If user exists but no role, they still need to complete profile
             if (! $user->role) {
