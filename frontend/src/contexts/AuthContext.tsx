@@ -50,11 +50,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    // Skip auth check if no session cookie exists (anonymous visitor)
-    // Check for both the default Laravel cookie name and custom session names
-    const hasSession = document.cookie.includes('laravel_session') || 
-                       document.cookie.includes('kuba-session') ||
-                       document.cookie.includes('XSRF-TOKEN');
+    // Skip auth check if no session evidence exists (anonymous visitor).
+    // The Laravel session cookie is HttpOnly, so JavaScript only ever sees
+    // XSRF-TOKEN — that's the reliable signal that a session has been
+    // established for this browser.
+    const hasSession = document.cookie.includes("XSRF-TOKEN");
     if (hasSession) {
       checkAuth().catch(() => {});
     } else {
@@ -94,10 +94,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return (response.data?.user ?? response.data?.data) as User;
   };
 
-  const passkeyLogin = async (userId: string): Promise<User> => {
-    const response = await axiosInstance.post("/api/auth/login", { passkey_user_id: userId });
+  const passkeyLogin = async (_userId: string): Promise<User> => {
+    // The passkey verify endpoint logs the user in server-side.
+    // This helper just refreshes the auth context.
     await checkAuth();
-    return (response.data?.user ?? response.data?.data) as User;
+    const me = await axiosInstance.get("/api/user");
+    return (me.data?.data ?? me.data) as User;
   };
 
   const register = async (data: any) => {

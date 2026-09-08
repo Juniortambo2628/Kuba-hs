@@ -326,13 +326,22 @@ class PasskeyController extends Controller
             'last_used_at' => now(),
         ]);
 
-        // Return the user associated with this credential for login
+        // The passkey signature IS the authentication — log the user in here
+        // rather than trusting a follow-up call with a bare user_id.
         $user = $webauthnCred->user;
+
+        if (!$user->is_active) {
+            return response()->json(['message' => 'Account is deactivated.'], 403);
+        }
+
+        \Illuminate\Support\Facades\Auth::guard('web')->login($user);
+        $request->session()->regenerate();
 
         return response()->json([
             'message' => 'Passkey verified.',
             'user_id' => $user->id,
             'email' => $user->email,
+            'user' => new \App\Http\Resources\UserResource($user),
         ]);
     }
 

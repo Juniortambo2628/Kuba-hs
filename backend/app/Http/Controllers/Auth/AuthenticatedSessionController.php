@@ -43,19 +43,6 @@ class AuthenticatedSessionController extends Controller
             ]);
         }
 
-        if ($request->wantsJson()) {
-            $user->notify(new SignInLog(
-                ip: $request->ip(),
-                user_agent: $request->userAgent(),
-                timestamp: now()
-            ));
-
-            return response()->json([
-                'message' => 'Logged in successfully',
-                'user' => new UserResource($user),
-            ]);
-        }
-
         $request->session()->regenerate();
 
         $user->notify(new SignInLog(
@@ -64,7 +51,16 @@ class AuthenticatedSessionController extends Controller
             timestamp: now()
         ));
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => 'Logged in successfully',
+                'user' => new UserResource($user),
+            ]);
+        }
+
+        $frontendUrl = config('app.frontend_url', env('FRONTEND_URL', '/'));
+
+        return redirect()->intended($frontendUrl.'/dashboard');
     }
 
     /**

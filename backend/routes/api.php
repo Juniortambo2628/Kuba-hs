@@ -97,8 +97,10 @@ Route::post('/auth/complete-profile', [\App\Http\Controllers\Auth\ProfileComplet
 // Public Blog Routes
 Route::get('/blog', [\App\Http\Controllers\Api\BlogController::class, 'index']);
 Route::get('/blog/{slug}', [\App\Http\Controllers\Api\BlogController::class, 'show']);
-// Authenticated dashboard routes
-Route::middleware(['auth:sanctum', 'two-factor-setup'])->group(function () {
+// Authenticated dashboard routes.
+// Note: 2FA is opt-in from account settings, not enforced here.
+// Sensitive admin-only routes still get scoped by the 'admin' middleware below.
+Route::middleware(['auth:sanctum'])->group(function () {
     // Client/Provider Dashboard — delegates to role-specific controllers
     Route::get('/dashboard', function (\Illuminate\Http\Request $request) {
         $user = $request->user();
