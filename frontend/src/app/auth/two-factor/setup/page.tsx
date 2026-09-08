@@ -32,11 +32,6 @@ export default function TwoFactorSetupPage() {
 
   useEffect(() => {
     if (user) {
-      // Check if 2FA is already enabled
-      if (!user.two_factor_setup_required) {
-        router.push("/dashboard");
-        return;
-      }
       fetchSetup();
     }
   }, [user, router]);

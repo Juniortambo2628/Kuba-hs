@@ -76,10 +76,8 @@ function ProviderLoginForm() {
     setError("");
     setIsPasskeyLoading(true);
     try {
-      const result = await authenticateWithPasskey();
-      if (result.user_id) {
-        await login({ passkey_user_id: result.user_id });
-      }
+      await authenticateWithPasskey();
+      await checkAuth();
     } catch (err: unknown) {
       const message =
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||

@@ -25,6 +25,8 @@ class UserResource extends JsonResource
             'avatar_url' => $this->avatar_url,
             'is_verified' => $this->is_verified,
             'is_active' => $this->is_active,
+            'two_factor_setup_required' => (bool) $this->two_factor_setup_required,
+            'two_factor_enabled' => $this->two_factor_confirmed_at !== null,
             'created_at' => $this->created_at,
             'total_points' => $this->total_points,
             'membership_tier' => $this->membership_tier ? new LoyaltyTierResource($this->membership_tier) : null,

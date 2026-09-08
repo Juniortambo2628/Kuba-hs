@@ -62,7 +62,7 @@ export default function ClientRegisterPage() {
     try {
       await authRegister({ ...data, role: "customer" });
       toast.success("Welcome to Kuba! Account created.");
-      router.push("/auth/two-factor/setup");
+      router.push("/dashboard");
     } catch (err: unknown) {
       const message =
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
