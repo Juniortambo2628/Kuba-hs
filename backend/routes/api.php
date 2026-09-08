@@ -89,8 +89,6 @@ Route::post('/auth/register-provider', [\App\Http\Controllers\Api\ProviderApplic
 Route::post('/quotes', [\App\Http\Controllers\Api\QuoteController::class, 'store']);
 Route::get('/unsubscribe', [\App\Http\Controllers\Api\UnsubscribeController::class, 'unsubscribe'])->name('api.unsubscribe');
 
-// M-Pesa Callback (public, no auth - called by Safaricom)
-Route::post('/payments/mpesa/callback', [\App\Http\Controllers\Api\MpesaController::class, 'callback']);
 Route::post('/auth/complete-profile', [\App\Http\Controllers\Auth\ProfileCompletionController::class, 'store'])
     ->middleware('auth:sanctum');
 
@@ -163,8 +161,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/payments/paystack/initialize', [\App\Http\Controllers\Api\PaystackController::class, 'initialize']);
         Route::post('/payments/paystack/verify', [\App\Http\Controllers\Api\PaystackController::class, 'verify']);
         Route::get('/payments/client/transactions', [\App\Http\Controllers\Api\PaystackController::class, 'userTransactions']);
-        Route::post('/payments/mpesa/stk-push', [\App\Http\Controllers\Api\MpesaController::class, 'stkPush']);
-        Route::post('/payments/mpesa/check-status', [\App\Http\Controllers\Api\MpesaController::class, 'checkStatus']);
         Route::post('/reviews', [\App\Http\Controllers\Api\ReviewController::class, 'store']);
     });
 

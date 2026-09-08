@@ -323,7 +323,7 @@ export function ServiceDetailPortfolio({
               {
                 icon: Shield,
                 title: "Secure payment",
-                text: "Pay safely via Paystack or M-Pesa when you confirm.",
+                text: "Pay securely by card, bank or mobile money via Paystack.",
               },
               {
                 icon: Zap,
