@@ -32,14 +32,24 @@ test('profile completion requires authentication', function () {
     $response->assertUnauthorized();
 });
 
-test('profile completion validates fields', function () {
+test('profile completion validates required fields', function () {
+    $user = createCustomer();
+
+    $response = $this->actingAs($user)->postJson('/api/auth/complete-profile', []);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['role', 'first_name', 'last_name']);
+});
+
+test('profile completion rejects invalid role', function () {
     $user = createCustomer();
 
     $response = $this->actingAs($user)->postJson('/api/auth/complete-profile', [
-        'phone' => '', // Assuming phone is required if trying to complete
+        'role' => 'superuser',
+        'first_name' => 'Test',
+        'last_name' => 'User',
     ]);
 
-    // Validation rules might vary based on controller, but it should return 422 if empty payload or invalid
-    // If it's optional, it would be 200. Adjust based on controller rules. 
-    // Let's assume some validation exists.
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['role']);
 });
