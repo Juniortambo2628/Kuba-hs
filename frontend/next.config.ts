@@ -81,8 +81,11 @@ const nextConfig: NextConfig = {
         destination: `${apiOrigin}/sanctum/:path*`,
       },
       {
+        // Point at Laravel's public storage symlink so LiteSpeed serves the
+        // files as static assets — bypasses PHP entirely. The frontend URL
+        // surface (/cms-assets/*) is unchanged.
         source: '/cms-assets/:path*',
-        destination: `${apiOrigin}/cms-assets/:path*`,
+        destination: `${apiOrigin}/storage/:path*`,
       },
       {
         source: '/assets/:path*',

@@ -19,21 +19,9 @@ Route::get('/', function () {
 // Backend operates strictly as a headless API (api.php).
 
 
-// Storage proxy with CORS — used by Next.js /cms-assets rewrite (local + cross-origin dev)
-Route::get('/cms-assets/{path}', function ($path) {
-    $fullPath = storage_path('app/public/' . $path);
-    if (!file_exists($fullPath)) {
-        abort(404);
-    }
-
-    $file = file_get_contents($fullPath);
-    $type = mime_content_type($fullPath) ?: 'application/octet-stream';
-
-    return response($file, 200)
-        ->header('Content-Type', $type)
-        ->header('Access-Control-Allow-Origin', '*')
-        ->header('Access-Control-Allow-Methods', 'GET')
-        ->header('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With');
-})->where('path', '.*');
+// /cms-assets/* used to be a PHP proxy that streamed files through Laravel;
+// each image spawned a PHP worker and blew through the cPanel entry-process
+// limit under any load (HTTP 508). Front end now hits /storage/* directly
+// (served as static files by LiteSpeed via the storage symlink).
 
 require __DIR__.'/auth.php';
