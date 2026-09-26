@@ -211,7 +211,7 @@ Route::middleware(['auth:sanctum', 'two-factor-setup'])->group(function () {
 
         // CMS media (FilePond)
         Route::post('/media/upload', [\App\Http\Controllers\Admin\MediaController::class, 'upload']);
-        Route::delete('/media/revert', [\App\Http\Controllers\Admin\MediaController::class, 'delete']);
+        Route::delete('/media/{id}', [\App\Http\Controllers\Admin\MediaController::class, 'destroy']);
 
         Route::apiResource('trust-partners', \App\Http\Controllers\Admin\TrustPartnerController::class);
         Route::apiResource('page-features', \App\Http\Controllers\Admin\PageFeatureController::class);
