@@ -5,6 +5,7 @@ namespace App\Policies;
 use App\Enums\UserRole;
 use App\Models\Booking;
 use App\Models\User;
+use App\Services\BookingService;
 
 class BookingPolicy
 {
@@ -36,28 +37,15 @@ class BookingPolicy
 
     /**
      * Determine whether the user can update the model.
+     *
+     * Delegates to BookingService::mayChangeStatus so the policy and the
+     * service cannot disagree - they used to restate the rule independently,
+     * and this method carried a second provider branch (lines below the
+     * customer check) that the first provider branch made unreachable.
      */
     public function update(User $user, Booking $booking): bool
     {
-        if ($user->role === UserRole::Admin) {
-            return true;
-        }
-
-        if ($user->role === UserRole::Provider && $booking->provider_id === ($user->provider->id ?? null)) {
-            return true;
-        }
-
-        if ($user->role === UserRole::Customer && $booking->customer_id === $user->id) {
-            // Clients can only cancel through this endpoint
-            return request()->input('status') === 'cancelled';
-        }
-
-        // Allow in_progress for providers
-        if ($user->role === UserRole::Provider && $booking->provider_id === ($user->provider->id ?? null)) {
-            return in_array(request()->input('status'), ['confirmed', 'in_progress', 'completed', 'cancelled']);
-        }
-
-        return false;
+        return BookingService::mayChangeStatus($user, $booking, request()->input('status'));
     }
 
     /**

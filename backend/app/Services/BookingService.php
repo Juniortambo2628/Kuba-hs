@@ -145,21 +145,40 @@ class BookingService
     }
 
     /**
+     * Single source of truth for who may set a booking's status.
+     *
+     * BookingPolicy::update and this service both used to spell the rule out
+     * separately - and the policy carried a second provider branch that its
+     * first one made unreachable - so the two could drift. The policy now
+     * calls this with the status from the request; this calls it with the
+     * status it is about to write.
+     *
+     * Admins and the owning provider may set any status. The owning customer
+     * may set only 'cancelled'. Everyone else is refused.
+     */
+    public static function mayChangeStatus(User $user, Booking $booking, ?string $status): bool
+    {
+        $isAdmin = $user->role === UserRole::Admin;
+        $ownsAsProvider = $user->role === UserRole::Provider
+            && $user->provider
+            && $user->provider->id === $booking->provider_id;
+        $ownsAsCustomer = $user->role === UserRole::Customer
+            && $booking->customer_id === $user->id;
+
+        if (! $isAdmin && ! $ownsAsProvider && ! $ownsAsCustomer) {
+            return false;
+        }
+
+        return ! $ownsAsCustomer || $status === 'cancelled';
+    }
+
+    /**
      * Update Booking Status safely and notify relevant parties.
      */
     public function updateBookingStatus(Booking $booking, User $user, string $status, string $cancellationReason = null): Booking
     {
-        $isProvider = $user->role === UserRole::Provider
-            && $user->provider
-            && $user->provider->id === $booking->provider_id;
-        $isCustomer = $user->id === $booking->customer_id;
-
-        if (! $isProvider && ! $isCustomer && $user->role !== UserRole::Admin) {
+        if (! self::mayChangeStatus($user, $booking, $status)) {
             abort(403, 'Unauthorized action.');
-        }
-
-        if ($isCustomer && $status !== 'cancelled') {
-            abort(403, 'Customers can only cancel bookings.');
         }
 
         $previousStatus = is_string($booking->status) ? $booking->status : $booking->status->value;
