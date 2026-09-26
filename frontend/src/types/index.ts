@@ -290,7 +290,7 @@ export interface Post {
   title: string;
   slug: string;
   excerpt: string;
-  body: string;
+  content: string;
   image_url?: string;
   is_published: boolean;
   author_id: string | number;

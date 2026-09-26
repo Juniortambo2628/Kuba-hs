@@ -109,7 +109,7 @@ export default function BlogClient({ params }: { params: Promise<{ slug: string 
 
           {/* Content */}
           <div className="prose prose-lg prose-gray max-w-none text-foreground leading-loose">
-            <div dangerouslySetInnerHTML={{ __html: post.body }} />
+            <div dangerouslySetInnerHTML={{ __html: post.content }} />
           </div>
 
         </motion.div>
