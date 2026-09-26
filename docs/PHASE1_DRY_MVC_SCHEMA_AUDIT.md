@@ -338,3 +338,43 @@ result trustworthy.
 `php -l` on every touched file, backend `php artisan test`,
 `php artisan route:list --json` (0 duplicate method+URI).
 Final: **253 routes, 419 passed (3 new), 1 pre-existing risky.**
+---
+
+## Phase 2 log - part 2 (dead code, register closures)
+
+| Commit | Items | What changed |
+| --- | --- | --- |
+| `15fd190` | - | Phase 2 part 1 written up (9 commits, 262 -> 253 routes). |
+| `e7ddf78` | D6 | Deleted `frontend/src/lib/api-endpoints.ts` plus its two tests. The registry had 147 lines, zero production importers, and its `api-contract` test was a placeholder that `readFileSync`'d the file and asserted it contains three strings. |
+| `0184000` | D7 | Removed the three `Cache::forget('api_page_features_all')` calls - repo-wide, the key is written nowhere and `index()` queries the table every time, so invalidating it was a no-op. |
+| `49f2da0` | D7 | Deleted `LoyaltyService::awardPointsForReview` (0 callers, nothing in the API, UI or docs promises a review bonus). |
+| `e45bae6` | D7/D8 | Deleted the five superseded `site_settings` seeders: `SiteSettingSeeder`, `LandingPageSettingsSeeder`, `ProfessionalSiteSettingSeeder`, `SegmentPageSettingsSeeder`, `InvestorSettingsSeeder`. |
+
+### Register status after Phase 2 part 2
+
+| # | IDs | Status |
+| --- | --- | --- |
+| 3 | C6/D9 | **closed** - `db76a92` |
+| 6 | D1 | **closed** - `8637fe2` |
+| 11 | D2/D3/D4/D8 | **closed** - `7a1b91c`, `ccf2da6`, `b3f0c38`; D8's residual caveat (an unreferenced `SiteSettingSeeder` could be run by hand) is now closed too by `e45bae6` |
+| - | D6 | **closed** - `e7ddf78` |
+| - | D7 | **closed** - `0184000`, `49f2da0`, `e45bae6`; the `ApiResponse` fragment carries on as D22 |
+| - | D13 | **closed** by `67e3661` - the near-verbatim duplicate was `FinanceController::transactions()`, deleted as an orphan route |
+| 13 | D10, D11, D12, D14 | **open** - next |
+| 12 | C5, C7, C8 | **open** |
+| 14 | A4-A12 | **open** (A4 skipped by decision, A5/A12 already done) |
+| 15 | D22 | **open** |
+
+### Two findings worth recording from D13
+
+The duplicate half of D13 was already gone, but comparing it against the
+surviving copy exposed a **precedence bug** in `Admin\PaymentController::index`:
+the search block is not wrapped, so `transaction_id LIKE ? OR EXISTS(customer)`
+is followed by `AND status = ?`, which MySQL reads as
+`transaction_id LIKE ? OR (EXISTS(customer) AND status = ?)` - a transaction-id
+match escapes the status filter. `Api\Admin\FinancialController::index` has the
+same shape: its `whereHas(provider) OR reference_number` runs after an
+ungrouped `status` where. Both still open under D14.
+
+The surviving sites do group correctly, which is what makes the bug visible:
+the deleted `transactions()` had the grouped form.
