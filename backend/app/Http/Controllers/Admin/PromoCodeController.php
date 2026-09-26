@@ -95,20 +95,4 @@ class PromoCodeController extends Controller
             'data' => $promoCode,
         ]);
     }
-
-    /**
-     * Validate a promo code for a client.
-     */
-    public function validateCode(Request $request) {
-        $request->validate([
-            'code' => 'required|string',
-            'amount' => 'required|numeric',
-        ]);
-
-        return app(\App\Actions\ValidatePromoCode::class)(
-            $request->code,
-            $request->amount,
-            skipActiveCheck: true
-        );
-    }
 }

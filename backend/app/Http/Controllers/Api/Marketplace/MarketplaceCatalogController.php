@@ -118,26 +118,4 @@ class MarketplaceCatalogController extends Controller
             'is_general' => true,
         ]);
     }
-
-    public function showServiceBySlug(string $categorySlug, string $serviceSlug) {
-        $categories = ServiceCategory::all();
-        $category = $categories->first(function ($cat) use ($categorySlug) {
-            return \Illuminate\Support\Str::slug($cat->name) === $categorySlug;
-        });
-
-        if (! $category) {
-            return response()->json(['message' => 'Category not found'], 404);
-        }
-
-        $services = Service::where('category_id', $category->id)->get();
-        $service = $services->first(function ($svc) use ($serviceSlug) {
-            return \Illuminate\Support\Str::slug($svc->name) === $serviceSlug;
-        });
-
-        if (! $service) {
-            return response()->json(['message' => 'Service not found'], 404);
-        }
-
-        return $this->showGeneralService($service);
-    }
 }

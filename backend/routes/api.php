@@ -55,9 +55,6 @@ Route::prefix('auth')->group(function () {
     Route::post('/passkey/authenticate/options', [\App\Http\Controllers\Auth\PasskeyController::class, 'authenticateOptions']);
     Route::post('/passkey/authenticate/verify', [\App\Http\Controllers\Auth\PasskeyController::class, 'authenticateVerify']);
 
-    // Email code login (public — after code verification)
-    Route::post('/email-code/login', [AuthenticatedSessionController::class, 'emailCodeLogin']);
-
     // Two-factor challenge (public — during login flow)
     Route::post('/two-factor/challenge', [\App\Http\Controllers\Auth\TwoFactorChallengeController::class, 'verify']);
 });
@@ -74,7 +71,6 @@ Route::get('/featured-services/{providerService}', [MarketplaceCatalogController
 Route::get('/services/{service}', [MarketplaceCatalogController::class, 'showGeneralService']);
 Route::get('/featured-services/{providerService}/similar', [MarketplaceCatalogController::class, 'similarProviders']);
 Route::get('/categories/{category}', [MarketplaceCatalogController::class, 'showCategory']);
-Route::get('/categories/{categorySlug}/{serviceSlug}', [MarketplaceCatalogController::class, 'showServiceBySlug']);
 Route::get('/trust-partners', [MarketplaceContentController::class, 'trustPartners']);
 Route::post('/promo-codes/validate', [MarketplaceDiscoveryController::class, 'validatePromoCode'])->middleware('throttle:10,1');
 Route::get('/providers', [MarketplaceDiscoveryController::class, 'providers']);
@@ -99,15 +95,6 @@ Route::get('/blog', [\App\Http\Controllers\Api\BlogController::class, 'index']);
 Route::get('/blog/{slug}', [\App\Http\Controllers\Api\BlogController::class, 'show']);
 // Authenticated dashboard routes
 Route::middleware(['auth:sanctum', 'two-factor-setup'])->group(function () {
-    // Client/Provider Dashboard — delegates to role-specific controllers
-    Route::get('/dashboard', function (\Illuminate\Http\Request $request) {
-        $user = $request->user();
-        if ($user->role === \App\Enums\UserRole::Provider && $user->provider) {
-            return app(\App\Http\Controllers\Provider\DashboardController::class)->index($request);
-        }
-        return app(\App\Http\Controllers\Client\DashboardController::class)->index($request);
-    });
-
     // Booking management
     Route::get('/bookings/{booking}', [\App\Http\Controllers\Api\BookingController::class, 'show']);
     Route::get('/bookings/{booking}/activity', [\App\Http\Controllers\Api\BookingActivityController::class, 'index']);
@@ -262,7 +249,6 @@ Route::middleware(['auth:sanctum', 'two-factor-setup'])->group(function () {
         // Promo Codes
         Route::apiResource('promo-codes', \App\Http\Controllers\Admin\PromoCodeController::class);
         Route::patch('promo-codes/{promo_code}/toggle-status', [\App\Http\Controllers\Admin\PromoCodeController::class, 'toggleStatus']);
-        Route::post('promo-codes/validate', [\App\Http\Controllers\Admin\PromoCodeController::class, 'validateCode']);
 
         // Email Templates
         Route::get('/email-templates', [\App\Http\Controllers\Admin\EmailTemplateController::class, 'index']);
@@ -301,7 +287,6 @@ Route::middleware(['auth:sanctum', 'two-factor-setup'])->group(function () {
         Route::get('/conversations', [\App\Http\Controllers\Api\ChatController::class, 'index']);
         Route::get('/conversations/{bookingId}', [\App\Http\Controllers\Api\ChatController::class, 'getConversation']);
         Route::post('/conversations/{conversation}/messages', [\App\Http\Controllers\Api\ChatController::class, 'sendMessage']);
-        Route::post('/messages', [\App\Http\Controllers\Api\ChatController::class, 'sendMessage']);
         Route::patch('/conversations/{id}/read', [\App\Http\Controllers\Api\ChatController::class, 'markAsRead']);
         Route::post('/bookings/{bookingId}/conversation', [\App\Http\Controllers\Api\ChatController::class, 'createConversation']);
     });
