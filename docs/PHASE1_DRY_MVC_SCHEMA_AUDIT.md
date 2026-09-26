@@ -236,3 +236,61 @@ Fixes for B1–B4 already exist as unapplied migrations — no code to write, on
 | 22 | `financials/charts` | `frontend/src` | 1 (`FinanceOverview.tsx:67`) |
 | 23 | `admin/media` | `frontend/src` | 3 (`DashboardImageUpload.tsx:136,167`, dead registry) |
 | 24 | `SELECT`/`SHOW`/`information_schema` | MySQL `home_service` | 47 tables, 81 migrations, 0 `%zogin%` rows, 5 pending migrations, `faqs.order` present |
+
+
+---
+
+## Phase 1 execution log (appended after the read-only audit)
+
+### Phase 0 - verified runtime blockers (all fixed first)
+
+| Commit | Item | Fix |
+|---|---|---|
+| `2387be9` | finance monthly revenue used SQLite `strftime` | `DATE_FORMAT` for MySQL |
+| `3c467be` | the fix above broke the SQLite test suite | branch on `DB::getDriverName()` |
+| `2d81812` | blog post rendered `post.body`, API returns `content` | read `content` |
+| `7c0e0c8` | `DELETE /media/revert` pointed at a nonexistent action | route to `MediaController@destroy` |
+| `c7a0773` | `GET /api/admin/financials/charts` had no route | added to admin group |
+| `07b936a` | public `settings_debug.json` + 4 debug scripts | deleted, summary moved to `docs/` |
+
+C4 (chat read-state) was a **false positive**: `ChatController::getConversation:61-64`
+already persists `read_at` on every message fetch, so `ChatInterface` needs no PATCH.
+The `PATCH .../conversations/{id}/read` route stays orphaned (see C-register).
+
+### Phase 1 - layout consolidation
+
+| Item | Commit | Result |
+|---|---|---|
+| A2 messages pages (88.2%) | `616a3d6` | `MessagesWorkspace`, both pages are delegates |
+| A7 six identical spinners | `8338510` | `DashboardLoadingPage` |
+| A5 Leaflet CSS on all 85 routes | `0f1e59f` | global import removed, 4 component imports kept |
+| A8 triplicated error.tsx + no 404 | `ee3ebbf` | shared `RouteError` + `app/not-found.tsx` |
+| A12 investors double container | `baa3972` | nested `max-w-7xl px-4` removed, unused import dropped |
+| A3 competing page headers | `301dd35` | unified on `DashboardGreetingBar`, `DashboardPageHeader` deleted |
+| A1 login pair (83.2%) | `d931401` | shared `LoginForm`, -663 lines across the two pages |
+| A11 register pair (55.2%) | `f3e566c` | shared `RegisterCredentialFields` only |
+
+### Decisions taken during execution
+
+- **A9 - skipped** (user decision). `about`'s plain two-button CTA and `CTABanner`'s
+  coloured one-button card are different designs; adopting CTABanner would drop the
+  second CTA and change `/about`. `landing/CTA.tsx` is **not** dead - `app/page.tsx:33`
+  imports it dynamically. Three CTA implementations are accepted variance.
+- **A4 - skipped** (analysis). The "8 hand-rolled card shells" are all
+  `min-h-screen ... flex items-center justify-center` wrappers around unrelated
+  content (role-choice grid, spinner, error). Tailwind already owns that string;
+  a component would be over-abstraction rather than deduplication.
+- **A3 note**: `mb-8` is passed explicitly at every migrated call site so vertical
+  rhythm is unchanged; the accepted visual change is the wrapper alignment and the
+  actions container coming from `DashboardGreetingBar`.
+- **A1 note**: the reset-success banner now renders in both login variants. It can
+  only ever appear on `/login`, because `reset-password` always pushes
+  `/login?reset=success`, so provider output is unchanged.
+
+### Verification gates run after each change
+
+`npx tsc --noEmit` (only the pre-existing `useCrudForm.test.ts:64` TS2345 remains),
+`npx eslint src` on touched files, `npm test` (30 suites / 235 tests),
+`npm run build` (exit 0), backend `php artisan test` (418 passed, 1 pre-existing risky),
+`php artisan route:list --json` (262 routes, 0 duplicate method+URI).
+`npm run lint` is unusable - Next 16 removed `next lint`.
