@@ -63,17 +63,6 @@ class MarketplaceCatalogController extends Controller
         ))->response();
     }
 
-    public function similarProviders(ProviderService $providerService) {
-        $similar = ProviderService::where('id', '!=', $providerService->id)
-            ->where('service_id', $providerService->service_id)
-            ->where('is_available', true)
-            ->with(['provider.user', 'media', 'service.media'])
-            ->take(5)
-            ->get();
-
-        return ProviderServiceResource::collection($similar)->response();
-    }
-
     public function showCategory($identifier) {
         $category = ServiceCategory::with(['services' => function ($q) {
             $q->withMin(['providerServices' => function ($query) {

@@ -69,7 +69,6 @@ Route::get('/categories', [MarketplaceCatalogController::class, 'categories']);
 Route::get('/featured-services', [MarketplaceCatalogController::class, 'featured']);
 Route::get('/featured-services/{providerService}', [MarketplaceCatalogController::class, 'showService']);
 Route::get('/services/{service}', [MarketplaceCatalogController::class, 'showGeneralService']);
-Route::get('/featured-services/{providerService}/similar', [MarketplaceCatalogController::class, 'similarProviders']);
 Route::get('/categories/{category}', [MarketplaceCatalogController::class, 'showCategory']);
 Route::get('/trust-partners', [MarketplaceContentController::class, 'trustPartners']);
 Route::post('/promo-codes/validate', [MarketplaceDiscoveryController::class, 'validatePromoCode'])->middleware('throttle:10,1');
@@ -185,9 +184,7 @@ Route::middleware(['auth:sanctum', 'two-factor-setup'])->group(function () {
         Route::delete('/bookings/{booking}', [\App\Http\Controllers\Admin\BookingController::class, 'destroy']);
         Route::get('/payments', [\App\Http\Controllers\Admin\PaymentController::class, 'index']);
         Route::get('/payments/{payment}', [\App\Http\Controllers\Admin\PaymentController::class, 'show']);
-        Route::get('/finance', [\App\Http\Controllers\Admin\FinanceController::class, 'index']);
-        Route::get('/finance/transactions', [\App\Http\Controllers\Admin\FinanceController::class, 'transactions']);
-        
+
         // Configuration & Content
         Route::get('/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'index']);
         Route::post('/settings', [\App\Http\Controllers\Admin\SettingsController::class, 'update']);
@@ -287,7 +284,6 @@ Route::middleware(['auth:sanctum', 'two-factor-setup'])->group(function () {
         Route::get('/conversations', [\App\Http\Controllers\Api\ChatController::class, 'index']);
         Route::get('/conversations/{bookingId}', [\App\Http\Controllers\Api\ChatController::class, 'getConversation']);
         Route::post('/conversations/{conversation}/messages', [\App\Http\Controllers\Api\ChatController::class, 'sendMessage']);
-        Route::patch('/conversations/{id}/read', [\App\Http\Controllers\Api\ChatController::class, 'markAsRead']);
         Route::post('/bookings/{bookingId}/conversation', [\App\Http\Controllers\Api\ChatController::class, 'createConversation']);
     });
 });

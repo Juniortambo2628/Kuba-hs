@@ -122,7 +122,7 @@ describe('chat API', function () {
         ]);
 
         $response = $this->actingAs($this->customer)
-            ->patchJson("/api/chat/conversations/{$this->conversation->id}/read");
+            ->getJson("/api/chat/conversations/{$this->conversation->id}");
 
         $response->assertOk();
         $msg = Message::where('conversation_id', $this->conversation->id)

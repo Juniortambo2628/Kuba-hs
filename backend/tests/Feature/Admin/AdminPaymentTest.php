@@ -11,10 +11,10 @@ test('admin can list payments', function () {
     $response->assertOk();
 });
 
-test('admin can view finance overview', function () {
+test('admin can view finance charts', function () {
     $admin = createAdmin();
     
-    $response = $this->actingAs($admin)->getJson('/api/admin/finance');
+    $response = $this->actingAs($admin)->getJson('/api/admin/financials/charts');
 
     $response->assertOk()
         ->assertJsonStructure([
@@ -25,12 +25,4 @@ test('admin can view finance overview', function () {
                 'pending_payouts',
             ]
         ]);
-});
-
-test('admin can view finance transactions', function () {
-    $admin = createAdmin();
-    
-    $response = $this->actingAs($admin)->getJson('/api/admin/finance/transactions');
-
-    $response->assertOk();
 });

@@ -47,18 +47,6 @@ test('can view single provider service', function () {
         ->assertJsonPath('data.id', $providerService->id);
 });
 
-test('similar providers endpoint works', function () {
-    $service = Service::factory()->create();
-    $targetService = ProviderService::factory()->create(['service_id' => $service->id, 'is_available' => true]);
-    $similarService = ProviderService::factory()->create(['service_id' => $service->id, 'is_available' => true]);
-
-    $response = $this->getJson('/api/featured-services/' . $targetService->id . '/similar');
-
-    $response->assertOk()
-        ->assertJsonFragment(['id' => $similarService->id])
-        ->assertJsonMissing(['id' => $targetService->id]);
-});
-
 test('can fetch category by id', function () {
     $category = ServiceCategory::factory()->create();
 

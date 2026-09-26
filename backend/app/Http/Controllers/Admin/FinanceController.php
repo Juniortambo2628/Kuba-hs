@@ -4,9 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 class FinanceController extends Controller
@@ -60,30 +57,5 @@ class FinanceController extends Controller
         return Payment::select('payment_method', DB::raw('count(*) as count'))
             ->groupBy('payment_method')
             ->get();
-    }
-
-    /**
-     * Get detailed list of transactions with filtering.
-     */
-    public function transactions(Request $request): LengthAwarePaginator
-    {
-        $query = Payment::with(['customer', 'provider.user', 'booking']);
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function (\Illuminate\Database\Eloquent\Builder $q) use ($search) {
-                $q->where('transaction_id', 'like', "%{$search}%")
-                    ->orWhereHas('customer', function ($sq) use ($search) {
-                        $sq->where('first_name', 'like', "%{$search}%")
-                            ->orWhere('last_name', 'like', "%{$search}%");
-                    });
-            });
-        }
-
-        return $query->latest()->paginate(20);
     }
 }

@@ -145,25 +145,6 @@ class ChatController extends Controller
         return response()->json(new ChatMessageResource($message->load('sender')));
     }
 
-    /**
-     * Mark messages as read.
-     */
-    public function markAsRead(Request $request, $conversationId) {
-        $user = $request->user();
-        $conversation = Conversation::findOrFail($conversationId);
-
-        if (! $this->userCanAccessConversation($user->id, $conversation)) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
-        Message::where('conversation_id', $conversationId)
-            ->where('sender_id', '!=', $user->id)
-            ->whereNull('read_at')
-            ->update(['read_at' => now()]);
-
-        return response()->json(['message' => 'Messages marked as read']);
-    }
-
     private function userCanAccessConversation(string $userId, Conversation $conversation): bool
     {
         if ($userId === $conversation->customer_id) {
