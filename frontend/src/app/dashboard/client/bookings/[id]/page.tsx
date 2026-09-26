@@ -6,9 +6,7 @@ import { BookingDetailDialog } from "@/components/booking/BookingDetailDialog";
 import axiosInstance, { handleApiError } from "@/lib/axios";
 import { toast } from "sonner";
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
-import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
-import { workspaceUi } from "@/lib/dashboard-ui";
+import { DashboardLoadingPage } from "@/components/shared/DashboardLoadingPage";
 import { useAuth } from "@/contexts/AuthContext";
 
 /** Deep link to a booking — opens the same management dialog as the list page. */
@@ -43,13 +41,7 @@ export default function ClientBookingDetailPage() {
   };
 
   if (isLoading) {
-    return (
-      <DashboardPageContainer width="default" className={workspaceUi.page}>
-        <div className="flex h-64 items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      </DashboardPageContainer>
-    );
+    return <DashboardLoadingPage />;
   }
 
   return (

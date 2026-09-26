@@ -5,11 +5,11 @@ import axiosInstance from "@/lib/axios";
 import {
   Star,
   MessageSquare,
-  Loader2,
   TrendingUp,
 } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
+import { DashboardLoadingPage } from "@/components/shared/DashboardLoadingPage";
 import {
   DashboardGreetingBar,
   DashboardFrostedStatCard,
@@ -80,13 +80,7 @@ export default function ReviewsManagement() {
       : "—";
 
   if (isLoading) {
-    return (
-      <DashboardPageContainer width="default" className={workspaceUi.page}>
-        <div className="flex h-64 items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      </DashboardPageContainer>
-    );
+    return <DashboardLoadingPage />;
   }
 
   return (

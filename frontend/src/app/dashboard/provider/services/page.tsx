@@ -3,9 +3,10 @@
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import axiosInstance from "@/lib/axios";
 import { Button } from "@/components/ui/button";
-import { Plus, Loader2, Briefcase, Layers, CircleDollarSign } from "lucide-react";
+import { Plus, Briefcase, Layers, CircleDollarSign } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
+import { DashboardLoadingPage } from "@/components/shared/DashboardLoadingPage";
 import {
   DashboardGreetingBar,
   DashboardFrostedStatCard,
@@ -97,13 +98,7 @@ function ServicesManagementContent() {
   };
 
   if (isLoading) {
-    return (
-      <DashboardPageContainer width="default" className={workspaceUi.page}>
-        <div className="flex h-64 items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      </DashboardPageContainer>
-    );
+    return <DashboardLoadingPage />;
   }
 
   return (

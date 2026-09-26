@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import {
   ShieldCheck,
   FileText,
-  Loader2,
   CheckCircle2,
   XCircle,
   Clock,
@@ -17,6 +16,7 @@ import {
 import { VerificationUploadDialog } from "@/components/dashboard/VerificationUploadDialog";
 import { toast } from "sonner";
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
+import { DashboardLoadingPage } from "@/components/shared/DashboardLoadingPage";
 import {
   DashboardGreetingBar,
   DashboardFrostedStatGrid,
@@ -68,13 +68,7 @@ export default function ProviderVerification() {
   const approvedCount = documents.filter((d) => d.status === "approved").length;
 
   if (isLoading) {
-    return (
-      <DashboardPageContainer width="default" className={workspaceUi.page}>
-        <div className="flex h-64 items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      </DashboardPageContainer>
-    );
+    return <DashboardLoadingPage />;
   }
 
   return (

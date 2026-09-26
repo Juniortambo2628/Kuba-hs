@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "@/lib/axios";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, Loader2, Pencil } from "lucide-react";
+import { Calendar, Clock, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
+import { DashboardLoadingPage } from "@/components/shared/DashboardLoadingPage";
 import {
   DashboardGreetingBar,
   DashboardPanelCard,
@@ -84,13 +85,7 @@ export default function AvailabilityManagement() {
   };
 
   if (isLoading) {
-    return (
-      <DashboardPageContainer width="default" className={workspaceUi.page}>
-        <div className="flex h-64 items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      </DashboardPageContainer>
-    );
+    return <DashboardLoadingPage />;
   }
 
   return (
