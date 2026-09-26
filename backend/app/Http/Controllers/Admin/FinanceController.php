@@ -40,8 +40,12 @@ class FinanceController extends Controller
      */
     protected function getMonthlyRevenue()
     {
+        $monthExpression = DB::getDriverName() === 'sqlite'
+            ? "strftime('%Y-%m', created_at)"
+            : "DATE_FORMAT(created_at, '%Y-%m')";
+
         return Payment::where('status', 'completed')
-            ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, SUM(amount) as revenue, SUM(platform_fee) as profit")
+            ->selectRaw("{$monthExpression} as month, SUM(amount) as revenue, SUM(platform_fee) as profit")
             ->groupBy('month')
             ->orderBy('month', 'desc')
             ->limit(12)
