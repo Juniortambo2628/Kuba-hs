@@ -374,7 +374,57 @@ is followed by `AND status = ?`, which MySQL reads as
 `transaction_id LIKE ? OR (EXISTS(customer) AND status = ?)` - a transaction-id
 match escapes the status filter. `Api\Admin\FinancialController::index` has the
 same shape: its `whereHas(provider) OR reference_number` runs after an
-ungrouped `status` where. Both still open under D14.
+ungrouped `status` where. Both closed under D14 - see part 3 below.
 
 The surviving sites do group correctly, which is what makes the bug visible:
-the deleted `transactions()` had the grouped form.
+the deleted `transactions()` had the grouped form. (The `Api\Admin\Financial`
+site named above is `payouts()`, not `index()` - `index()` never existed
+on that controller.)
+
+## Phase 2 log - part 3 (D14, D11, D10)
+
+| Commit | Items | What changed |
+| --- | --- | --- |
+| `1b65fa1` | D14 | Added `User::scopeLike($query, string $search, bool $withEmail = true)` and replaced eleven hand-written copies across nine files (`AdminChatController`, `FeedbackController`, `PaymentController`, `ProviderController`, `UserController`, `Api\Admin\FinancialController`, `Api\DashboardSearchController` x4, `Models\Booking`). Two of those copies were the precedence bugs from the D13 write-up: `Admin\PaymentController::index` (a transaction-id match escaped the `status` filter) and `Api\Admin\FinancialController::payouts` (same, on `reference_number`). Both now wrap the `OR`, proven by tests that fail on the original controllers and pass with the fix. |
+| `82128d2` | D11 | `Api\Admin\FinancialController::overview` summed `COALESCE(final_price, estimated_price)` over completed bookings while its own response key is `total_revenue` and the admin tile that consumes it is labelled "Total Platform Revenue". Now sums `payments.platform_fee`, matching `Admin\AnalyticsController::platform_revenue` and the label. Test `financial overview reports platform revenue rather than gross booking value` fails against the original code (verified via stash) and passes with the fix. |
+| `efbc5fd` | D10 part 1 | `BookingPolicy::update` and `BookingService::updateBookingStatus` restated the same rule and had already drifted (the service matched on `customer_id` regardless of role, the policy required `role === Customer`), and the policy carried a second provider branch made unreachable by the provider branch above it. Both now call `BookingService::mayChangeStatus()`, which passes the status from the request (policy) or the status about to be written (service). |
+| `9772559` | D10 part 2 | Five more view checks now ask `BookingPolicy::view`: `Api\InvoiceController::download`, `Client\BookingController::show`, `Client\BookingController::cancel` (via a new `cancel` ability, because the cancel endpoint sends no status), `Provider\BookingController::show` (plus deleting the unused `getProviderOrFail()` result and the now-orphaned `userOwnsBooking`/`assertOwnsBooking` from `HasProviderAuthorization`), and the `payments/receipt/{booking}` closure. |
+
+### The one deliberate behaviour change in D10
+
+The receipt closure was the only site where the answer moves: it allowed
+customer-owns OR admin, and the policy also allows the owning provider.
+Recorded rather than quietly made - the route has **zero frontend callers**
+(the only receipt-adjacent callers are the three invoice downloaders), and
+`Provider\BookingController::show` already hands the provider that same
+booking plus `address`, so no new data is exposed. Pinned by
+`the booking provider can view the receipt for their own booking`, which
+fails against the original closure.
+
+Everything else was verified case by case as equivalent, including the
+admin-who-is-also-a-customer case (their role is Admin, so the customer
+branch never fires - exactly as before). The one text change: the service's
+`Customers can only cancel bookings.` 403 is folded into
+`Unauthorized action.`; no test, backend route or frontend string asserts
+either, and the policy already answered first for the only API path that
+could have produced it.
+
+### Register status after Phase 2 part 3
+
+| # | IDs | Status |
+| --- | --- | --- |
+| 3 | C6/D9 | **closed** - `db76a92` |
+| 6 | D1 | **closed** - `8637fe2` |
+| 11 | D2/D3/D4/D8 | **closed** - `7a1b91c`, `ccf2da6`, `b3f0c38`, `e45bae6` |
+| - | D6 | **closed** - `e7ddf78` |
+| - | D7 | **closed** - `0184000`, `49f2da0`, `e45bae6`; the `ApiResponse` fragment carries on as D22 |
+| - | D13 | **closed** by `67e3661`; the precedence bugs it surfaced are closed by `1b65fa1` |
+| 13 | D10, D11, D14 | **closed** - `efbc5fd` + `9772559`, `82128d2`, `1b65fa1` |
+| 13 | D12 | **disproven, 2 fields residual** - `application_status`, `availability_status`, `compliance_status`, `is_verified` already default correctly in the migration; only `service_radius` (10 vs 25 vs NULL) and `experience_years` (0 vs NULL) actually diverge, and both need a product decision |
+| 12 | C5, C7, C8 | **open** - next (address edit UI, dual 2FA, dual auth) |
+| 14 | A4-A12 | **open** (A4 skipped by decision, A5/A12 already done) |
+| 15 | D22 | **open** |
+
+Gates after every one of these commits: `php -l`, `php artisan test`
+(424 passed, 1 pre-existing risky), `php artisan route:list --json` -
+253 routes, 0 duplicate method+URI.
