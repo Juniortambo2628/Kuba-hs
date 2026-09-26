@@ -15,11 +15,10 @@ class PaymentController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where('transaction_id', 'like', "%{$search}%")
-                ->orWhereHas('customer', function ($q) use ($search) {
-                    $q->where('first_name', 'like', "%{$search}%")
-                        ->orWhere('last_name', 'like', "%{$search}%");
-                });
+            $query->where(function ($q) use ($search) {
+                $q->where('transaction_id', 'like', "%{$search}%")
+                    ->orWhereHas('customer', fn ($cq) => $cq->like($search, withEmail: false));
+            });
         }
 
         if ($request->filled('status')) {

@@ -26,11 +26,7 @@ class ProviderController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('business_name', 'like', "%{$search}%")
                     ->orWhere('location_name', 'like', "%{$search}%")
-                    ->orWhereHas('user', function ($uq) use ($search) {
-                        $uq->where('email', 'like', "%{$search}%")
-                            ->orWhere('first_name', 'like', "%{$search}%")
-                            ->orWhere('last_name', 'like', "%{$search}%");
-                    });
+                    ->orWhereHas('user', fn ($uq) => $uq->like($search));
             });
         }
 

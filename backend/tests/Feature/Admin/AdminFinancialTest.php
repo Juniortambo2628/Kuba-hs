@@ -33,3 +33,14 @@ test('admin can process payout', function () {
         'reference_number' => 'RECEIPT123'
     ]);
 });
+
+test('payout search honours the status filter', function () {
+    $admin = createAdmin();
+    Payout::factory()->create(['reference_number' => 'REF-MATCHED', 'status' => 'paid']);
+    Payout::factory()->create(['reference_number' => 'REF-OTHER', 'status' => 'pending']);
+
+    $response = $this->actingAs($admin)->getJson('/api/admin/financials/payouts?search=REF-MATCHED&status=pending');
+
+    $response->assertOk();
+    expect($response->json('data'))->toBeEmpty();
+});

@@ -22,10 +22,7 @@ class FeedbackController extends Controller
             $search = $request->search;
             $query->where(function (\Illuminate\Database\Eloquent\Builder $q) use ($search) {
                 $q->where('comment', 'like', "%{$search}%")
-                    ->orWhereHas('customer', function ($sub) use ($search) {
-                        $sub->where('first_name', 'like', "%{$search}%")
-                            ->orWhere('last_name', 'like', "%{$search}%");
-                    });
+                    ->orWhereHas('customer', fn ($sub) => $sub->like($search, withEmail: false));
             });
         }
 

@@ -17,15 +17,12 @@ class AdminChatController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->whereHas('customer', function ($sq) use ($search) {
-                    $sq->where('first_name', 'like', "%{$search}%")
-                        ->orWhere('last_name', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%");
-                })->orWhereHas('provider', function ($sq) use ($search) {
-                    $sq->where('business_name', 'like', "%{$search}%");
-                })->orWhereHas('booking', function ($sq) use ($search) {
-                    $sq->where('booking_number', 'like', "%{$search}%");
-                });
+                $q->whereHas('customer', fn ($sq) => $sq->like($search))
+                    ->orWhereHas('provider', function ($sq) use ($search) {
+                        $sq->where('business_name', 'like', "%{$search}%");
+                    })->orWhereHas('booking', function ($sq) use ($search) {
+                        $sq->where('booking_number', 'like', "%{$search}%");
+                    });
             });
         }
 

@@ -137,14 +137,10 @@ class DashboardSearchController extends Controller
         return Booking::query()
             ->where('provider_id', $providerId)
             ->with(['service', 'customer'])
-            ->where(function ($query) use ($like) {
+            ->where(function ($query) use ($like, $q) {
                 $query->where('booking_number', 'like', $like)
                     ->orWhereHas('service', fn ($sq) => $sq->where('name', 'like', $like))
-                    ->orWhereHas('customer', function ($cq) use ($like) {
-                        $cq->where('first_name', 'like', $like)
-                            ->orWhere('last_name', 'like', $like)
-                            ->orWhere('email', 'like', $like);
-                    });
+                    ->orWhereHas('customer', fn ($cq) => $cq->like($q));
             })
             ->latest()
             ->limit(5)
@@ -184,12 +180,8 @@ class DashboardSearchController extends Controller
     private function searchAdminUsers(string $like, string $q): array
     {
         return User::query()
-            ->where(function ($query) use ($like) {
-                $query->where('email', 'like', $like)
-                    ->orWhere('first_name', 'like', $like)
-                    ->orWhere('last_name', 'like', $like)
-                    ->orWhere('phone', 'like', $like);
-            })
+            ->like($q)
+            ->orWhere('phone', 'like', $like)
             ->latest()
             ->limit(5)
             ->get()
@@ -207,14 +199,10 @@ class DashboardSearchController extends Controller
     {
         return Booking::query()
             ->with(['service', 'customer'])
-            ->where(function ($query) use ($like) {
+            ->where(function ($query) use ($like, $q) {
                 $query->where('booking_number', 'like', $like)
                     ->orWhereHas('service', fn ($sq) => $sq->where('name', 'like', $like))
-                    ->orWhereHas('customer', function ($cq) use ($like) {
-                        $cq->where('first_name', 'like', $like)
-                            ->orWhere('last_name', 'like', $like)
-                            ->orWhere('email', 'like', $like);
-                    });
+                    ->orWhereHas('customer', fn ($cq) => $cq->like($q));
             })
             ->latest()
             ->limit(5)
@@ -233,14 +221,10 @@ class DashboardSearchController extends Controller
     {
         return Provider::query()
             ->with('user')
-            ->where(function ($query) use ($like) {
+            ->where(function ($query) use ($like, $q) {
                 $query->where('business_name', 'like', $like)
                     ->orWhere('location_name', 'like', $like)
-                    ->orWhereHas('user', function ($uq) use ($like) {
-                        $uq->where('email', 'like', $like)
-                            ->orWhere('first_name', 'like', $like)
-                            ->orWhere('last_name', 'like', $like);
-                    });
+                    ->orWhereHas('user', fn ($uq) => $uq->like($q));
             })
             ->latest()
             ->limit(5)

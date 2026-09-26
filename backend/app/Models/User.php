@@ -124,6 +124,26 @@ class User extends Authenticatable implements HasMedia
     }
 
     /**
+     * Scope: match a user by first name, last name and optionally email.
+     *
+     * The terms are wrapped in their own where-group so the scope can be
+     * dropped into a larger OR block without the LIKE clauses escaping an
+     * outer AND filter - which is exactly what the hand-written copies
+     * forgot to do in two places.
+     */
+    public function scopeLike($query, string $search, bool $withEmail = true)
+    {
+        return $query->where(function ($q) use ($search, $withEmail) {
+            $q->where('first_name', 'like', "%{$search}%")
+                ->orWhere('last_name', 'like', "%{$search}%");
+
+            if ($withEmail) {
+                $q->orWhere('email', 'like', "%{$search}%");
+            }
+        });
+    }
+
+    /**
      * Role checks.
      */
     public function isAdmin(): bool

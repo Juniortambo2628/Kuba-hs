@@ -159,11 +159,7 @@ class Booking extends Model implements HasMedia
 
         return $query->where(function ($q) use ($search) {
             $q->where('booking_number', 'like', "%{$search}%")
-                ->orWhereHas('customer', function ($cq) use ($search) {
-                    $cq->where('first_name', 'like', "%{$search}%")
-                        ->orWhere('last_name', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%");
-                })
+                ->orWhereHas('customer', fn ($cq) => $cq->like($search))
                 ->orWhereHas('service', fn ($sq) => $sq->where('name', 'like', "%{$search}%"));
         });
     }

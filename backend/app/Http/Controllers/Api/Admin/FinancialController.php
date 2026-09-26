@@ -47,12 +47,12 @@ class FinancialController extends Controller
                 }
             })
             ->when($request->search, function ($q, $search) {
-                $q->whereHas('provider', function ($q) use ($search) {
-                    $q->where('business_name', 'like', "%{$search}%")
-                        ->orWhereHas('user', fn ($q) => $q->where('first_name', 'like', "%{$search}%")
-                            ->orWhere('last_name', 'like', "%{$search}%")
-                        );
-                })->orWhere('reference_number', 'like', "%{$search}%");
+                $q->where(function ($q) use ($search) {
+                    $q->whereHas('provider', function ($q) use ($search) {
+                        $q->where('business_name', 'like', "%{$search}%")
+                            ->orWhereHas('user', fn ($u) => $u->like($search, withEmail: false));
+                    })->orWhere('reference_number', 'like', "%{$search}%");
+                });
             });
 
         return response()->json($query->latest()->paginate(15));

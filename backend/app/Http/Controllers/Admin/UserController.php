@@ -19,12 +19,7 @@ class UserController extends Controller
         }
 
         if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function (\Illuminate\Database\Eloquent\Builder $q) use ($search) {
-                $q->where('first_name', 'like', "%{$search}%")
-                    ->orWhere('last_name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
-            });
+            $query->like($request->search);
         }
 
         if ($request->filled('role')) {
