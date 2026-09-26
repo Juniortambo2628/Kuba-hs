@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Enums\BookingStatus;
+use App\Enums\PaymentStatus;
 use App\Enums\PayoutStatus;
 use App\Http\Controllers\Controller;
-use App\Models\Booking;
 use App\Models\Payout;
+use App\Models\Payment;
 use App\Models\Provider;
 use App\Services\LedgerService;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class FinancialController extends Controller
@@ -22,10 +21,13 @@ class FinancialController extends Controller
     }
 
     public function overview() {
-        // Calculate Total Revenue (completed bookings)
-        $totalRevenue = Booking::where('status', BookingStatus::Completed)
-            ->selectRaw('COALESCE(SUM(final_price), SUM(estimated_price)) as total')
-            ->value('total') ?? 0;
+        // Lifetime platform revenue: the platform's cut of completed payments.
+        // Admin\AnalyticsController calls the same figure platform_revenue, and
+        // the tile that renders this is labelled "Total Platform Revenue" /
+        // "Lifetime Earnings" - it used to report the gross value of completed
+        // bookings instead, which is roughly 10x larger and disagreed with the
+        // analytics screen.
+        $totalRevenue = Payment::where('status', PaymentStatus::Completed)->sum('platform_fee');
 
         $pendingPayoutsAmount = Payout::where('status', PayoutStatus::Pending)->sum('amount');
         $pendingPayoutsCount = Payout::where('status', PayoutStatus::Pending)->count();

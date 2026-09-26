@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Payment;
 use App\Models\Payout;
 use App\Models\Provider;
 
@@ -43,4 +44,21 @@ test('payout search honours the status filter', function () {
 
     $response->assertOk();
     expect($response->json('data'))->toBeEmpty();
+});
+
+test('financial overview reports platform revenue rather than gross booking value', function () {
+    $admin = createAdmin();
+
+    Payment::factory()->create(['status' => 'completed', 'platform_fee' => 100]);
+    Payment::factory()->create(['status' => 'completed', 'platform_fee' => 150]);
+    Payment::factory()->create(['status' => 'pending', 'platform_fee' => 999]);
+
+    // A completed booking worth far more than the fees it produced - the tile
+    // is labelled "Total Platform Revenue", so booking value must not leak in.
+    \App\Models\Booking::factory()->create(['status' => 'completed', 'final_price' => 50000]);
+
+    $response = $this->actingAs($admin)->getJson('/api/admin/financials/overview');
+
+    $response->assertOk();
+    expect((float) $response->json('total_revenue'))->toBe(250.0);
 });
