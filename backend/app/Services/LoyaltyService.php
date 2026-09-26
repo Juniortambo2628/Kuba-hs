@@ -51,23 +51,6 @@ class LoyaltyService
     }
 
     /**
-     * Award points for leaving a review.
-     */
-    public function awardPointsForReview(Booking $booking)
-    {
-        $points = 50; // Flat reward for engagement
-
-        return DB::transaction(function () use ($booking, $points) {
-            return LoyaltyPoint::create([
-                'user_id' => $booking->customer_id,
-                'points' => $points,
-                'description' => "Reward for reviewing booking #{$booking->booking_number}",
-                'transaction_type' => 'earn',
-            ]);
-        });
-    }
-
-    /**
      * Revert points if a booking is cancelled.
      */
     public function revertPointsForBooking(Booking $booking)
