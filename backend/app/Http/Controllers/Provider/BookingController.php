@@ -6,13 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\BookingResource;
 use App\Models\Booking;
 use App\Traits\HasProviderAuthorization;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class BookingController extends Controller
 {
-    use HasProviderAuthorization;
+    use AuthorizesRequests, HasProviderAuthorization;
 
     public function index(Request $request) {
         $user = Auth::user();
@@ -29,8 +30,7 @@ class BookingController extends Controller
     }
 
     public function show(Booking $booking) {
-        $this->assertOwnsBooking($booking);
-        $provider = $this->getProviderOrFail();
+        $this->authorize('view', $booking);
 
         return response()->json([
             'booking' => new BookingResource(

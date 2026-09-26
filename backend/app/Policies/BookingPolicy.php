@@ -49,6 +49,18 @@ class BookingPolicy
     }
 
     /**
+     * Determine whether the user can cancel the model.
+     *
+     * The cancel endpoint sends no status, so asking update() would always
+     * answer no - this states the intent instead of reading it off the
+     * request body.
+     */
+    public function cancel(User $user, Booking $booking): bool
+    {
+        return BookingService::mayChangeStatus($user, $booking, 'cancelled');
+    }
+
+    /**
      * Determine whether the user can delete the model.
      */
     public function delete(User $user, Booking $booking): bool

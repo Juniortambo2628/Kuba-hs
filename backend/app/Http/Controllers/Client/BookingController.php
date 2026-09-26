@@ -8,12 +8,15 @@ use App\Http\Requests\StoreBookingRequest;
 use App\Http\Resources\BookingResource;
 use App\Models\Booking;
 use App\Services\BookingService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class BookingController extends Controller
 {
+    use AuthorizesRequests;
+
     public function index(Request $request) {
         /** @var \App\Models\User $user */
         $user = Auth::user();
@@ -29,11 +32,7 @@ class BookingController extends Controller
     }
 
     public function show(Booking $booking) {
-        $user = Auth::user();
-
-        if ($booking->customer_id !== $user->id) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+        $this->authorize('view', $booking);
 
         return response()->json([
             'booking' => new BookingResource(
@@ -58,9 +57,7 @@ class BookingController extends Controller
     public function cancel(Booking $booking, Request $request, BookingService $bookingService) {
         $user = Auth::user();
 
-        if ($booking->customer_id !== $user->id) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+        $this->authorize('cancel', $booking);
 
         if (! in_array($booking->status, [BookingStatus::Pending, BookingStatus::Confirmed])) {
             return response()->json([

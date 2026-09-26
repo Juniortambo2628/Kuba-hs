@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Broadcast;
+use Illuminate\Support\Facades\Gate;
 use App\Http\Controllers\Api\Marketplace\MarketplaceCatalogController;
 use App\Http\Controllers\Api\Marketplace\MarketplaceContentController;
 use App\Http\Controllers\Api\Marketplace\MarketplaceDiscoveryController;
@@ -159,10 +160,8 @@ Route::middleware(['auth:sanctum', 'two-factor-setup'])->group(function () {
 
     // Receipt
     Route::get('/payments/receipt/{booking}', function (\App\Models\Booking $booking, Request $request) {
-        $user = $request->user();
-        if ($user->id !== $booking->customer_id && $user->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+        Gate::authorize('view', $booking);
+
         $booking->load(['customer', 'provider.user', 'service', 'payment', 'address']);
         return response()->json(['booking' => $booking]);
     });

@@ -3,33 +3,28 @@
 namespace App\Http\Controllers\Api;
 
 use App\Enums\BookingPaymentStatus;
-use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 class InvoiceController extends Controller
 {
+    use AuthorizesRequests;
+
     /**
      * Download the invoice for a specific booking.
      */
     public function download(Request $request, $bookingId): Response
     {
-        $user = $request->user();
-
         $booking = Booking::with(['customer', 'provider.user', 'service', 'payment'])
             ->findOrFail($bookingId);
 
-        // Authorization: Only the customer or provider of this booking can download
-        if ($user->id !== $booking->customer_id && ($booking->provider && $user->id !== $booking->provider->user_id)) {
-            // Check if admin
-            if ($user->role !== UserRole::Admin) {
-                return response()->json(['message' => 'Unauthorized.'], 403);
-            }
-        }
+        // Customer, owning provider or admin - the same rule as everywhere else.
+        $this->authorize('view', $booking);
 
         // Must be paid to have an invoice
         if ($booking->payment_status !== BookingPaymentStatus::Paid || ! $booking->payment) {

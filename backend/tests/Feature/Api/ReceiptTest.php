@@ -27,3 +27,19 @@ test('unauthorized user cannot view receipt', function () {
 
     $response->assertForbidden();
 });
+
+test('the booking provider can view the receipt for their own booking', function () {
+    $workflow = createBookingWorkflow(['status' => 'completed']);
+
+    \App\Models\Payment::factory()->create([
+        'booking_id' => $workflow['booking']->id,
+        'customer_id' => $workflow['customer']->id,
+        'amount' => 5000,
+        'status' => 'completed'
+    ]);
+
+    $response = $this->actingAs($workflow['providerUser'])
+        ->getJson("/api/payments/receipt/{$workflow['booking']->id}");
+
+    $response->assertOk();
+});
