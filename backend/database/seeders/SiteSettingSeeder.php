@@ -34,16 +34,12 @@ class SiteSettingSeeder extends Seeder
             ['key' => 'hero_subtitle', 'value' => 'Welcome to KUBA Kenya', 'type' => 'text', 'group' => 'hero', 'label' => 'Hero Subtitle'],
             ['key' => 'hero_title', 'value' => 'The #1 Professional Home Services Marketplace in Nairobi', 'type' => 'text', 'group' => 'hero', 'label' => 'Hero Title'],
             ['key' => 'hero_button_text', 'value' => 'Get Started', 'type' => 'text', 'group' => 'hero', 'label' => 'Hero Button Text'],
-            ['key' => 'hero_bg', 'value' => '/assets/zogin/img/hero/hero-1.jpg', 'type' => 'image', 'group' => 'hero', 'label' => 'Hero Background Image'],
 
             // About
             ['key' => 'about_title', 'value' => 'Connecting Nairobi to Trusted Pros', 'type' => 'text', 'group' => 'about', 'label' => 'About Title'],
             ['key' => 'about_subtitle', 'value' => '"Your Home, Kenya\'s Pride."', 'type' => 'text', 'group' => 'about', 'label' => 'About Subtitle'],
             ['key' => 'about_description_1', 'value' => 'KUBA is Nairobi\'s premier destination for finding trusted home service professionals. From electrical repairs to deep cleaning, we connect you with local experts who care about your home as much as you do.', 'type' => 'textarea', 'group' => 'about', 'label' => 'About Description 1'],
             ['key' => 'about_description_2', 'value' => 'Our platform ensures safety, quality, and convenience. Every provider in Kenya is vetted, and every service is backed by our KUBA Guarantee. Experience the ease of managing your home services with a single, intuitive platform.', 'type' => 'textarea', 'group' => 'about', 'label' => 'About Description 2'],
-            ['key' => 'about_image_1', 'value' => '/assets/zogin/img/about/about-1.jpg', 'type' => 'image', 'group' => 'about', 'label' => 'About Image 1'],
-            ['key' => 'about_image_2', 'value' => '/assets/zogin/img/about/about-2.jpg', 'type' => 'image', 'group' => 'about', 'label' => 'About Image 2'],
-            ['key' => 'about_image_3', 'value' => '/assets/zogin/img/about/about-3.jpg', 'type' => 'image', 'group' => 'about', 'label' => 'About Image 3'],
 
             ['key' => 'featured_title', 'value' => 'Featured Nairobi Services', 'type' => 'text', 'group' => 'sections', 'label' => 'Featured Services Title'],
             ['key' => 'featured_subtitle', 'value' => 'Expertly provided home services across Nairobi.', 'type' => 'text', 'group' => 'sections', 'label' => 'Featured Services Subtitle'],
