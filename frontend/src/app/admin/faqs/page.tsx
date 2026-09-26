@@ -24,7 +24,7 @@ import {
   DropResult,
 } from "react-beautiful-dnd";
 import { getMediaUrl } from "@/lib/utils";
-import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { DashboardListToolbar } from "@/components/shared/DashboardListToolbar";
 import { FaqFormDialog } from "@/components/admin/FaqFormDialog";
 import { Badge } from "@/components/ui/badge";
@@ -122,14 +122,14 @@ function FAQManagementContent() {
 
   return (
     <DashboardPageContainer className="space-y-10">
-      <DashboardPageHeader 
-        title="FAQ Configuration" 
+      <DashboardGreetingBar 
+        greeting="FAQ Configuration" 
         subtitle="Manage the Frequently Asked Questions displayed on the global landing page."
-      >
+       className="mb-8" actions={<>
         <Button onClick={() => { setEditingFaq(null); setDialogOpen(true); }} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl h-11 px-6 shadow-md">
           <Plus className="w-4 h-4 mr-2" /> Add FAQ
         </Button>
-      </DashboardPageHeader>
+      </>} />
 
       {/* Top Value Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

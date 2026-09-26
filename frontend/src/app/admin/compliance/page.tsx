@@ -25,7 +25,7 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { getMediaUrl, cn } from "@/lib/utils";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { MetricCard } from "@/components/shared/MetricCard";
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
 
@@ -96,10 +96,9 @@ export default function ComplianceDashboard() {
 
   return (
     <DashboardPageContainer width="default">
-      <DashboardPageHeader
-        title="Compliance & Audits"
-        subtitle="Provider documents, verification status, and quality scores."
-      />
+      <DashboardGreetingBar
+        greeting="Compliance & Audits"
+        subtitle="Provider documents, verification status, and quality scores." className="mb-8" />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {metricCards.map((metric, idx) => (

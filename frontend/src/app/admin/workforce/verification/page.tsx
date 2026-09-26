@@ -26,7 +26,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
-import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { toast } from "sonner";
 import { useData } from "@/hooks/useData";
@@ -86,10 +86,9 @@ function AdminVerificationContent() {
 
   return (
     <DashboardPageContainer width="default">
-      <DashboardPageHeader 
-        title="Workforce Integrity" 
-        subtitle="Review and validate provider credentials to maintain platform excellence."
-      />
+      <DashboardGreetingBar 
+        greeting="Workforce Integrity" 
+        subtitle="Review and validate provider credentials to maintain platform excellence." className="mb-8" />
 
       <div className="flex items-center justify-between gap-4">
         <div className="relative flex-1 max-w-sm">

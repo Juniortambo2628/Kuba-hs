@@ -18,7 +18,7 @@ import {
   ExternalLink,
   Trash2,
 } from "lucide-react";
-import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { DashboardListToolbar } from "@/components/shared/DashboardListToolbar";
 import {
@@ -103,17 +103,17 @@ function AdminProvidersContent() {
 
   return (
     <DashboardPageContainer width="narrow" className="space-y-10">
-      <DashboardPageHeader
-        title="Workforce Providers"
+      <DashboardGreetingBar
+        greeting="Workforce Providers"
         subtitle="Manage provider profiles, verification, compliance, and availability."
-      >
+       className="mb-8" actions={<>
         <Button
           onClick={() => setIsCreateOpen(true)}
           className="h-12 rounded-2xl font-bold px-6 gap-2"
         >
           <Plus className="w-5 h-5" /> Add Provider
         </Button>
-      </DashboardPageHeader>
+      </>} />
 
       <div className="flex flex-wrap gap-3">
         <select

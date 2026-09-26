@@ -16,7 +16,7 @@ import {
   Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -162,10 +162,10 @@ export default function AdminEmailTemplatesPage() {
 
   return (
     <DashboardPageContainer width="wide" className="h-full flex flex-col space-y-10 animate-in fade-in duration-500 pb-8">
-      <DashboardPageHeader
-        title="Email Core System"
+      <DashboardGreetingBar
+        greeting="Email Core System"
         subtitle="Design and personalize automated system notifications and transactional triggers."
-      >
+       className="mb-8" actions={<>
         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
           <DialogTrigger asChild>
             <Button className="rounded-xl font-bold gap-2">
@@ -283,7 +283,7 @@ export default function AdminEmailTemplatesPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </DashboardPageHeader>
+      </>} />
 
       <div className="flex-1 flex flex-col lg:flex-row gap-8 min-h-0">
         <div className="w-full lg:w-1/3 bg-card/50 backdrop-blur-md rounded-[2rem] border-none shadow-sm flex flex-col overflow-hidden relative">

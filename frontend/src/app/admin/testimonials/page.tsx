@@ -18,7 +18,7 @@ import {
   Draggable,
   DropResult,
 } from "react-beautiful-dnd";
-import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
 import { DashboardPageSkeleton } from "@/components/shared/DashboardPageSkeleton";
 import { Card, CardContent } from "@/components/ui/card";
@@ -104,15 +104,15 @@ export default function TestimonialPage() {
 
   return (
     <DashboardPageContainer width="xl" className="md:p-10 space-y-10 min-h-screen bg-[#F8FAFC] dark:bg-black transition-colors duration-500">
-      <DashboardPageHeader 
-        title="Social Proof & Endorsements" 
+      <DashboardGreetingBar 
+        greeting="Social Proof & Endorsements" 
         subtitle="Curate and organize high-impact testimonials for the landing page gallery."
-      >
+       className="mb-8" actions={<>
         <Button onClick={openCreate} className="rounded-xl bg-primary text-white hover:bg-black h-12 px-8 font-bold shadow-lg shadow-primary/20 transition-all gap-2">
           <Plus className="w-4 h-4" />
           Add Endorsement
         </Button>
-      </DashboardPageHeader>
+      </>} />
 
       <div className="bg-white/50 dark:bg-zinc-900/50 p-6 rounded-[2rem] border border-dashed border-border/60 flex items-center justify-between">
         <div className="flex items-center gap-4">

@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, FileText, Zap, PenTool, Calendar, User as UserIcon, Trash2, Edit3, ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useSearchState } from "@/hooks/useSearchState";
-import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { useData } from "@/hooks/useData";
 import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
 import { BlogPostFormDialog } from "@/components/admin/BlogPostFormDialog";
@@ -118,12 +118,12 @@ export default function AdminBlog() {
 
   return (
     <DashboardPageContainer className="space-y-10">
-      <DashboardPageHeader title="Editorial Journal" subtitle="Authored content and marketplace insights for the community.">
+      <DashboardGreetingBar greeting="Editorial Journal" subtitle="Authored content and marketplace insights for the community." className="mb-8" actions={<>
         <Button onClick={openCreate} className="h-12 bg-primary hover:bg-black text-white rounded-2xl font-bold px-8 shadow-md transition-all flex items-center gap-2 group">
           <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
           Compose New Article
         </Button>
-      </DashboardPageHeader>
+      </>} />
 
       <BlogPostFormDialog
         open={isDialogOpen}

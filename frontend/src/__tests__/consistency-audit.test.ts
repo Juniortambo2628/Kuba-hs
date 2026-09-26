@@ -74,7 +74,7 @@ describe("Form Dialog Pattern Consistency", () => {
 describe("Dashboard Layout Component Consistency", () => {
   const layoutComponents = [
     { name: "DashboardShell.tsx", dir: "layout" },
-    { name: "DashboardPageHeader.tsx", dir: "shared" },
+    { name: "DashboardGreetingBar.tsx", dir: "dashboard/workspace" },
     { name: "DashboardPageContainer.tsx", dir: "shared" },
   ];
 

@@ -25,7 +25,7 @@ import {
 import { toast } from "sonner";
 import { uiPrimitives } from "@/lib/ui-primitives";
 import { cn } from "@/lib/utils";
-import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { useData } from "@/hooks/useData";
 import { compressImageFile } from "@/lib/image-compression";
 import { useCMS } from "@/contexts/CMSContext";
@@ -300,10 +300,10 @@ export default function UnifiedSettingsPage() {
 
     return (
         <DashboardPageContainer width="wide" className="space-y-10 pb-20 cms-settings-overflow">
-            <DashboardPageHeader
-                title="Platform CMS"
+            <DashboardGreetingBar
+                greeting="Platform CMS"
                 subtitle="Site settings stored in site_settings — synced to the public site via /api/settings."
-            >
+             className="mb-8" actions={<>
                 <Button
                     onClick={handleSave}
                     disabled={isSaving}
@@ -312,7 +312,7 @@ export default function UnifiedSettingsPage() {
                     {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                     Save Configuration
                 </Button>
-            </DashboardPageHeader>
+            </>} />
 
             <Tabs defaultValue="content" className="w-full">
                 <div className="flex items-center justify-between mb-8 overflow-x-auto kuba-scroll-hidden scroll-smooth -mx-1 px-1">

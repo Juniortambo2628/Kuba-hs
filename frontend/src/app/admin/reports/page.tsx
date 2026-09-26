@@ -23,7 +23,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
-import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { AppPill } from "@/components/shared/ui";
 import axiosInstance from "@/lib/axios";
 
@@ -99,10 +99,9 @@ export default function AdminReportsPage() {
   return (
     <DashboardPageContainer className="space-y-10">
       {/* Standard Dashboard Header */}
-      <DashboardPageHeader 
-        title="Intelligence & Data Analytics" 
-        subtitle="Export high-fidelity system datasets for executive auditing and business growth analysis."
-      />
+      <DashboardGreetingBar 
+        greeting="Intelligence & Data Analytics" 
+        subtitle="Export high-fidelity system datasets for executive auditing and business growth analysis." className="mb-8" />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {REPORT_TYPES.map((report) => (

@@ -34,7 +34,7 @@ import {
 } from "recharts";
 import { useExport } from "@/hooks/useExport";
 import { Button } from "@/components/ui/button";
-import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
 import { ChartContainer } from "@/components/shared/ChartContainer";
 import { DashboardPageSkeleton } from "@/components/shared/DashboardPageSkeleton";
@@ -103,17 +103,17 @@ export default function AdminAnalytics() {
 
   return (
     <DashboardPageContainer width="default">
-      <DashboardPageHeader 
-        title="Analytics Dashboard" 
+      <DashboardGreetingBar 
+        greeting="Analytics Dashboard" 
         subtitle="Comprehensive platform insights and performance metrics."
-      >
+       className="mb-8" actions={<>
         <Button 
           onClick={() => { if (data) exportToCSV(data.trends.revenue, 'revenue_trends'); }}
           variant="outline" size="sm"
         >
           <Download className="w-4 h-4 mr-1.5" /> Export Report
         </Button>
-      </DashboardPageHeader>
+      </>} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, i) => (

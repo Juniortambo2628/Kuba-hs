@@ -23,7 +23,7 @@ import {
   Users
 } from "lucide-react";
 import { useData } from "@/hooks/useData";
-import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -130,10 +130,10 @@ export default function PromotionsPage() {
 
     return (
         <DashboardPageContainer className="space-y-10">
-            <DashboardPageHeader 
-                title="Growth & Promotions" 
+            <DashboardGreetingBar 
+                greeting="Growth & Promotions" 
                 subtitle="Engine for marketplace expansion, seasonal vouchers, and acquisition campaigns."
-            >
+             className="mb-8" actions={<>
                 <Button 
                     onClick={() => handleOpenSheet()}
                     className="h-12 bg-primary hover:bg-black text-white rounded-2xl font-bold px-8 shadow-lg shadow-primary/20 flex items-center gap-2 group"
@@ -141,7 +141,7 @@ export default function PromotionsPage() {
                     <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
                     New Campaign
                 </Button>
-            </DashboardPageHeader>
+            </>} />
 
             {/* Performance Overview */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

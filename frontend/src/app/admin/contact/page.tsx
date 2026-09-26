@@ -31,7 +31,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel
 } from "@/components/ui/dropdown-menu";
-import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { EmptyState } from "@/components/shared/ui/EmptyState";
 import { useData } from "@/hooks/useData";
@@ -95,10 +95,9 @@ function AdminContactContent() {
 
   return (
     <DashboardPageContainer width="default">
-      <DashboardPageHeader 
-        title="Contact Messages" 
-        subtitle="Review and manage inquiries directly from the landing page contact form."
-      />
+      <DashboardGreetingBar 
+        greeting="Contact Messages" 
+        subtitle="Review and manage inquiries directly from the landing page contact form." className="mb-8" />
 
       {search && (
         <p className="text-xs text-muted-foreground">Results for &quot;{search}&quot;</p>

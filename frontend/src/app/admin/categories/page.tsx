@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, Edit, Sparkles, ImageIcon } from "lucide-react";
 import { toast } from "sonner";
-import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
 import { useData } from "@/hooks/useData";
 import { uiPrimitives } from "@/lib/ui-primitives";
@@ -106,10 +106,10 @@ export default function AdminCategories() {
 
     return (
         <DashboardPageContainer width="narrow" className="space-y-10">
-            <DashboardPageHeader 
-                title="Service Categories" 
+            <DashboardGreetingBar 
+                greeting="Service Categories" 
                 subtitle="Manage platform service taxonomy and professional offerings."
-            >
+             className="mb-8" actions={<>
                 <Button 
                     onClick={openAddCat}
                     className="h-12 bg-primary hover:bg-black text-white rounded-2xl font-bold px-8 shadow-md transition-all flex items-center gap-2 group"
@@ -117,7 +117,7 @@ export default function AdminCategories() {
                     <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
                     Create Category
                 </Button>
-            </DashboardPageHeader>
+            </>} />
 
             <CategoryFormDialog
                 open={isCatOpen}

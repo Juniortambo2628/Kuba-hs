@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Loader2, Plus, Trash2, Edit, Monitor, Star, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { useData } from "@/hooks/useData";
 import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
 import { cn } from "@/lib/utils";
@@ -143,10 +143,10 @@ export default function PageFeaturesPage() {
 
     return (
         <DashboardPageContainer width="default" className="space-y-10">
-            <DashboardPageHeader 
-                title="Page Feature Manager" 
+            <DashboardGreetingBar 
+                greeting="Page Feature Manager" 
                 subtitle="Configure and fine-tune dynamic content cards displayed on the website's public pages."
-            >
+             className="mb-8" actions={<>
                 <Dialog open={isOpen} onOpenChange={setIsOpen}>
                     <DialogTrigger asChild>
                         <Button 
@@ -267,7 +267,7 @@ export default function PageFeaturesPage() {
                         </div>
                     </DialogContent>
                 </Dialog>
-            </DashboardPageHeader>
+            </>} />
 
             <div className="space-y-12">
                 {PAGE_OPTIONS.map(opt => opt.value).map(page => {

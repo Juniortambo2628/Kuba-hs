@@ -24,7 +24,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { DashboardDataCard } from "@/components/shared/DashboardTable";
 import { dashboardUi } from "@/lib/dashboard-ui";
 import { uiPrimitives } from "@/lib/ui-primitives";
@@ -152,10 +152,10 @@ export default function AdminLoyalty() {
  return (
     <DashboardPageContainer className="space-y-10">
         {/* Standard Dashboard Header */}
-        <DashboardPageHeader 
-            title="Loyalty Architecture" 
+        <DashboardGreetingBar 
+            greeting="Loyalty Architecture" 
             subtitle="Configure platform reward tiers, benefit structures, and track point velocity."
-        >
+         className="mb-8" actions={<>
             <div className="flex flex-wrap gap-3">
                 <Button
                     variant="outline"
@@ -173,7 +173,7 @@ export default function AdminLoyalty() {
                     Define Reward Tier
                 </Button>
             </div>
-        </DashboardPageHeader>
+        </>} />
 
    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
     {/* Tiers Management */}

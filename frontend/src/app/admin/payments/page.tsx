@@ -19,7 +19,7 @@ import { useExport } from "@/hooks/useExport";
 import { toast } from "sonner";
 import { useData } from "@/hooks/useData";
 import { DashboardListToolbar } from "@/components/shared/DashboardListToolbar";
-import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
 import {
   DashboardDataCard,
@@ -80,10 +80,9 @@ function AdminPaymentsContent() {
 
   return (
     <DashboardPageContainer>
-      <DashboardPageHeader
-        title="Finance & Payments"
-        subtitle="Revenue overview, transaction registry, and provider payout processing."
-      />
+      <DashboardGreetingBar
+        greeting="Finance & Payments"
+        subtitle="Revenue overview, transaction registry, and provider payout processing." className="mb-8" />
 
       <Tabs value={activeTab} onValueChange={(v) => setTab(v as FinanceTab)} className="w-full">
         <TabsList className="mb-6 bg-transparent space-x-2 border-b border-border w-full justify-start rounded-none h-auto p-0 pb-1">

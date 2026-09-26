@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
-import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Bell, Mail, ArrowRight } from "lucide-react";
@@ -17,10 +17,9 @@ const NOTIFICATION_EVENTS = [
 export default function AdminNotificationsPage() {
   return (
     <DashboardPageContainer className="space-y-10">
-      <DashboardPageHeader
-        title="Notifications & Templates"
-        subtitle="Transactional emails and in-app alerts are managed via email templates and Laravel notification classes."
-      />
+      <DashboardGreetingBar
+        greeting="Notifications & Templates"
+        subtitle="Transactional emails and in-app alerts are managed via email templates and Laravel notification classes." className="mb-8" />
 
       <Card className="border border-border">
         <CardHeader>

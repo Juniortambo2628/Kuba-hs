@@ -3,7 +3,7 @@
 import { useState } from "react";
 import axiosInstance from "@/lib/axios";
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
-import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { DashboardDataCard, DashboardTableHead, DashboardTableHeaderRow } from "@/components/shared/DashboardTable";
 import { useData } from "@/hooks/useData";
 import { extractApiList } from "@/lib/api-response";
@@ -71,10 +71,9 @@ export default function AdminChatModerationPage() {
 
   return (
     <DashboardPageContainer className="space-y-8">
-      <DashboardPageHeader
-        title="Chat Moderation"
-        subtitle="Review platform conversations and remove policy violations."
-      />
+      <DashboardGreetingBar
+        greeting="Chat Moderation"
+        subtitle="Review platform conversations and remove policy violations." className="mb-8" />
 
       <Input
         placeholder="Search by client, provider, or booking number..."

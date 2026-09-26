@@ -46,7 +46,7 @@ import { useData } from "@/hooks/useData";
 import Link from "next/link";
 
 import { Booking, User, Provider } from "@/types";
-import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Suspense } from "react";
 
@@ -108,10 +108,10 @@ function AdminDashboardContent() {
   return (
     <DashboardPageContainer width="default">
       {/* Page Header */}
-      <DashboardPageHeader 
-        title="Dashboard" 
+      <DashboardGreetingBar 
+        greeting="Dashboard" 
         subtitle="Overview of your platform performance."
-      >
+       className="mb-8" actions={<>
         <div className="flex items-center gap-2">
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <Button variant="outline" size="sm" onClick={handleExport}>
@@ -125,7 +125,7 @@ function AdminDashboardContent() {
             </Button>
           </motion.div>
         </div>
-      </DashboardPageHeader>
+      </>} />
 
       {/* Metric Cards */}
       <motion.div 

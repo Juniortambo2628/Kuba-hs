@@ -30,7 +30,7 @@ import {
   DropdownMenuLabel
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
-import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
 import { DashboardSuspenseFallback } from "@/components/shared/DashboardSuspenseFallback";
 import { DashboardCard } from "@/components/shared/DashboardCard";
@@ -115,10 +115,10 @@ function AdminBookingsContent() {
 
   return (
     <DashboardPageContainer width="default">
-      <DashboardPageHeader 
-        title="Service Bookings" 
+      <DashboardGreetingBar 
+        greeting="Service Bookings" 
         subtitle="Monitor and manage all service requests across the platform."
-      >
+       className="mb-8" actions={<>
         <Button
           onClick={() => setCreateOpen(true)}
           className="rounded-xl h-11 px-6 font-bold bg-primary text-primary-foreground"
@@ -126,7 +126,7 @@ function AdminBookingsContent() {
           <Plus className="w-4 h-4 mr-2" />
           Create booking
         </Button>
-      </DashboardPageHeader>
+      </>} />
 
       <AdminCreateBookingDialog
         open={createOpen}

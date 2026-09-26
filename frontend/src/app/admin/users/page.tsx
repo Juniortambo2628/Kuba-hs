@@ -32,7 +32,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel
 } from "@/components/ui/dropdown-menu";
-import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { EmptyState } from "@/components/shared/ui/EmptyState";
 import { toast } from "sonner";
@@ -118,10 +118,9 @@ function AdminUsersContent() {
 
   return (
     <DashboardPageContainer width="default">
-      <DashboardPageHeader 
-        title="Personnel Registry" 
-        subtitle="Manage platform participants: high-fidelity profiles for clients, providers, and executive staff."
-      />
+      <DashboardGreetingBar 
+        greeting="Personnel Registry" 
+        subtitle="Manage platform participants: high-fidelity profiles for clients, providers, and executive staff." className="mb-8" />
 
       {search && (
         <p className="text-xs text-muted-foreground">Results for &quot;{search}&quot;</p>

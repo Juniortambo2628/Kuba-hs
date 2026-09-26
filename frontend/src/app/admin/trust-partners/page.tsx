@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, Edit, ShieldCheck, Globe } from "lucide-react";
 import { toast } from "sonner";
-import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { useData } from "@/hooks/useData";
 import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
 import { TrustPartnerFormDialog } from "@/components/admin/TrustPartnerFormDialog";
@@ -46,10 +46,10 @@ export default function TrustPartnersPage() {
 
     return (
         <DashboardPageContainer width="narrow" className="space-y-10">
-            <DashboardPageHeader 
-                title="Trust Ecosystem" 
+            <DashboardGreetingBar 
+                greeting="Trust Ecosystem" 
                 subtitle="Manage brand logos and corporate partners displayed on the landing page."
-            >
+             className="mb-8" actions={<>
                 <Button 
                     onClick={() => { setEditingPartner(null); setIsOpen(true); }} 
                     className="h-12 bg-primary hover:bg-black text-white rounded-2xl font-bold px-8 shadow-md transition-all flex items-center gap-2 group"
@@ -57,7 +57,7 @@ export default function TrustPartnersPage() {
                     <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
                     Add Partner
                 </Button>
-            </DashboardPageHeader>
+            </>} />
 
             <TrustPartnerFormDialog
                 open={isOpen}

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import axiosInstance from "@/lib/axios";
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
-import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -122,10 +122,9 @@ export default function AdminEmailTestPage() {
 
   return (
     <DashboardPageContainer>
-      <DashboardPageHeader
-        title="Email Testing"
-        subtitle="Send test emails to verify your email configuration is working correctly."
-      />
+      <DashboardGreetingBar
+        greeting="Email Testing"
+        subtitle="Send test emails to verify your email configuration is working correctly." className="mb-8" />
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Test Email Form */}

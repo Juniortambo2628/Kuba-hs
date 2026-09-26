@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { ChevronLeft, Loader2, ShieldCheck, Star, Wallet } from "lucide-react";
 import { toast } from "sonner";
@@ -148,7 +148,7 @@ export default function AdminProviderDetailPage({ params }: { params: Promise<{ 
             <ChevronLeft className="w-5 h-5" />
           </Button>
         </Link>
-        <DashboardPageHeader title={provider.business_name} subtitle="Provider workforce profile" />
+        <DashboardGreetingBar greeting={provider.business_name} subtitle="Provider workforce profile" className="mb-8" />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

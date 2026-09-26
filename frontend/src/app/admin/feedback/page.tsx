@@ -20,7 +20,7 @@ import { Star, Search, Filter, MessageSquare, AlertCircle, ShieldCheck, MoreHori
 import { MetricCard } from "@/components/shared/MetricCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardListToolbar } from "@/components/shared/DashboardListToolbar";
-import { DashboardPageHeader } from "@/components/shared/DashboardPageHeader";
+import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { useData } from "@/hooks/useData";
 import { toast } from "sonner";
@@ -90,10 +90,9 @@ export default function AdminFeedback() {
     return (
         <DashboardPageContainer className="space-y-10">
             {/* Standard Dashboard Header */}
-            <DashboardPageHeader 
-                title="Market Sentiment" 
-                subtitle="Monitor service quality, platform satisfaction metrics, and customer feedback trends."
-            />
+            <DashboardGreetingBar 
+                greeting="Market Sentiment" 
+                subtitle="Monitor service quality, platform satisfaction metrics, and customer feedback trends." className="mb-8" />
 
    {stats && (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
