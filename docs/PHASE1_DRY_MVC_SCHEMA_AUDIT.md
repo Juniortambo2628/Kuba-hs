@@ -294,3 +294,47 @@ The `PATCH .../conversations/{id}/read` route stays orphaned (see C-register).
 `npm run build` (exit 0), backend `php artisan test` (418 passed, 1 pre-existing risky),
 `php artisan route:list --json` (262 routes, 0 duplicate method+URI).
 `npm run lint` is unusable - Next 16 removed `next lint`.
+
+---
+
+## Phase 2 log - schema, orphaned routes, dead code
+
+Ordered by risk: reversible schema first, then dead-code deletions, then
+route removals, then the behaviour fix. One commit each.
+
+| Commit | Items | What changed |
+| --- | --- | --- |
+| `d90a09a` | X1, X4 | Dropped the bad FK-index migration (would have added three indexes duplicating `*_foreign`) and ran the four that were still pending: `webauthn_credentials`, `users.two_factor_setup_required`, `email_login_codes`, and the `order` -> `sort_order` rename on `faqs`/`testimonials`. Closes B1-B4. |
+| `b3f0c38` | X7 | Deleted `public/assets/zogin` (101 files, 7.8 MB) and removed the four `zogin` rows from `SiteSettingSeeder` - both proven unreferenced by the live frontend and by live MySQL. |
+| `1fb1d65` | B7, B8 | New `2026_09_26_000001_add_missing_query_indexes`: 27 indexes, 12 of them `deleted_at` (the register said 7; corrected against the models actually using `SoftDeletes`). Reversible. |
+| `8637fe2` | D1 | Deleted `backend/documentation` (115 files, 94.23 MB, incl. a 93.75 MB video - 62% of the git pack). `docs/` is canonical. |
+| `7a1b91c` | D2, D4 | Deleted the entire Inertia app (`resources/js`, `resources/css`, `resources/views/app.blade.php`) plus its toolchain (`vite.config.js`, `package.json`, `tailwind`/`postcss`/eslint configs) and `Vite::prefetch` from `AppServiceProvider`. Kept `routes/web.php` (CORS probes, `/` redirect, `cms-assets` proxy) and the three live views. |
+| `ccf2da6` | D3 | Deleted `backend/templates/zogin-master` (145 files, 10.14 MB). |
+| `5c79e2c` | orphan pass 1 | Removed five routes with zero refs in frontend, backend, tests or `route()` calls: `POST /api/auth/email-code/login`, `GET /api/categories/{slug}/{slug}`, `GET /api/dashboard`, `POST /api/chat/messages`, `POST /api/admin/promo-codes/validate` - with their controller methods. |
+| `67e3661` | orphan pass 2 | The four "obvious duplicates" only: `GET /api/admin/finance`, `GET /api/admin/finance/transactions`, `GET /api/chat/conversations/{id}/read`, `GET /api/featured-services/{id}/similar`. Tests retargeted to the surviving endpoint or dropped with the route. |
+| `db76a92` | C6, D9 | Loyalty moved into `BookingService::updateBookingStatus`; admin/client copies deleted; three regression tests added. |
+
+### Route-count movement
+
+262 -> 253. 0 duplicate method+URI at every checkpoint.
+
+### Method note - two routes looked orphaned and were not
+
+`GET /api/unsubscribe` has no frontend caller but is linked from every
+outgoing email (`app/Mail/DynamicMail.php:48` -> `route('api.unsubscribe')` ->
+`resources/views/emails/dynamic.blade.php:17`), and
+`POST /api/payments/mpesa/callback` is the Safaricom webhook. Both kept.
+
+The orphan search also has to ignore `frontend/src/lib/api-endpoints.ts`: it
+is a dead registry (D6, its only importers are its own two test files) whose
+stale entries would otherwise mark live routes as "called". Searching with a
+param-aware pattern plus a terminator regex - `/[^/]+` for `{param}`, and
+`(?=[^A-Za-z0-9_/-]|$)` so `/api/admin/finance` cannot match
+`/api/admin/financials/...` - plus that file excluded is what makes the
+result trustworthy.
+
+### Verification gates after each Phase 2 change
+
+`php -l` on every touched file, backend `php artisan test`,
+`php artisan route:list --json` (0 duplicate method+URI).
+Final: **253 routes, 419 passed (3 new), 1 pre-existing risky.**
