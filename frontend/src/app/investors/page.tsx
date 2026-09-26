@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { MarketingPage } from "@/components/layout/MarketingPage";
-import { MarketingSection } from "@/components/shared/MarketingSection";
 import { useMarketingHero } from "@/hooks/useMarketingHero";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,30 +57,28 @@ export default function InvestorsPage() {
 
       {/* Stats/Metrics */}
       <section className="py-20 bg-muted/50 dark:bg-zinc-950/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {metrics.map((stat, idx) => {
-              const IconComp = resolveIcon(stat.icon, TrendingUp);
-              return (
-                <motion.div 
-                  key={stat.id || idx}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.1 }}
-                  className="text-center p-6 border border-border dark:border-white/5 rounded-2xl bg-white dark:bg-white/5 backdrop-blur-sm shadow-sm"
-                >
-                  <IconComp className="w-6 h-6 mx-auto mb-4 text-indigo-600 dark:text-indigo-500" />
-                  <div className="text-3xl font-bold mb-1">{stat.title}</div>
-                  <div className="text-[10px] text-muted-foreground dark:text-muted-foreground tracking-widest font-semibold">{stat.subtitle || stat.description}</div>
-                </motion.div>
-              );
-            })}
-          </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          {metrics.map((stat, idx) => {
+            const IconComp = resolveIcon(stat.icon, TrendingUp);
+            return (
+              <motion.div
+                key={stat.id || idx}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                className="text-center p-6 border border-border dark:border-white/5 rounded-2xl bg-white dark:bg-white/5 backdrop-blur-sm shadow-sm"
+              >
+                <IconComp className="w-6 h-6 mx-auto mb-4 text-indigo-600 dark:text-indigo-500" />
+                <div className="text-3xl font-bold mb-1">{stat.title}</div>
+                <div className="text-[10px] text-muted-foreground dark:text-muted-foreground tracking-widest font-semibold">{stat.subtitle || stat.description}</div>
+              </motion.div>
+            );
+          })}
         </div>
       </section>
 
       {/* Main Content & Form */}
-      <section className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-24">
         <div className="grid lg:grid-cols-2 gap-20 items-start">
           
           {/* Information */}
