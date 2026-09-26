@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\BookingStatus;
 use App\Enums\UserRole;
 use App\Models\Address;
 use App\Models\Booking;
@@ -196,6 +197,16 @@ class BookingService
 
         if ($previousStatus !== $status) {
             app(BookingActivityLogService::class)->logStatusChange($booking, $user, $previousStatus, $status);
+
+            // Loyalty lives here so every status change follows one rule,
+            // instead of each controller remembering to call it (admin used
+            // to award/revert nothing). Guarded by the transition check so
+            // re-asserting the current status cannot award twice.
+            if ($status === BookingStatus::Completed->value) {
+                app(LoyaltyService::class)->awardPointsForBooking($booking);
+            } elseif ($status === BookingStatus::Cancelled->value) {
+                app(LoyaltyService::class)->revertPointsForBooking($booking);
+            }
         }
 
         // Dispatch the legacy event for backward compatibility (real-time updates in dashboard layout)

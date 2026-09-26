@@ -70,8 +70,6 @@ class BookingController extends Controller
 
         $bookingService->updateBookingStatus($booking, $user, 'cancelled', $request->input('cancellation_reason'));
 
-        app(\App\Services\LoyaltyService::class)->revertPointsForBooking($booking);
-
         return response()->json([
             'message' => 'Booking cancelled successfully.',
             'booking' => new BookingResource($booking->fresh(['provider.user', 'service'])),
