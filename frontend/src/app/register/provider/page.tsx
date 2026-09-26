@@ -17,9 +17,8 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import { Mail, Lock } from "lucide-react";
 import { AuthPageShell, AuthPrimaryButton } from "@/components/auth/AuthPageShell";
-import { AuthIconInput } from "@/components/auth/AuthIconInput";
+import { RegisterCredentialFields } from "@/components/auth/RegisterCredentialFields";
 import { useAuthPageContent } from "@/hooks/useAuthPageContent";
 import { authUi } from "@/lib/auth-ui";
 import { cn } from "@/lib/utils";
@@ -107,77 +106,7 @@ export default function ProviderRegisterPage() {
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <AuthIconInput
-                    icon={Mail}
-                    type="email"
-                    autoComplete="email"
-                    placeholder="business@example.com"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage className="text-xs" />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="phone"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <Input placeholder="+254 700 000 000" className={cn(authUi.input, "pl-4")} {...field} />
-                </FormControl>
-                <FormMessage className="text-xs" />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <AuthIconInput
-                    icon={Lock}
-                    type="password"
-                    showToggle
-                    autoComplete="new-password"
-                    placeholder="Password"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage className="text-xs" />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="password_confirmation"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <AuthIconInput
-                    icon={Lock}
-                    type="password"
-                    showToggle
-                    autoComplete="new-password"
-                    placeholder="Confirm password"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage className="text-xs" />
-              </FormItem>
-            )}
-          />
+          <RegisterCredentialFields control={form.control} emailPlaceholder="business@example.com" />
 
           <FormField
             control={form.control}
