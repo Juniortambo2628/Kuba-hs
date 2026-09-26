@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, MapPin, Trash2, ExternalLink } from "lucide-react";
+import { Home, MapPin, Trash2, ExternalLink, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -21,10 +21,15 @@ import { cn } from "@/lib/utils";
 
 export interface ClientAddress {
   id: string;
+  address_type?: string;
   street_address: string;
   apartment?: string;
   city: string;
+  state?: string;
   postal_code?: string;
+  country?: string;
+  latitude?: number | null;
+  longitude?: number | null;
   is_default?: boolean;
 }
 
@@ -32,6 +37,7 @@ interface ClientAddressCardProps {
   address: ClientAddress;
   onSetDefault?: (id: string) => void;
   onDelete?: (id: string) => void;
+  onEdit?: (address: ClientAddress) => void;
   className?: string;
 }
 
@@ -39,6 +45,7 @@ export function ClientAddressCard({
   address,
   onSetDefault,
   onDelete,
+  onEdit,
   className,
 }: ClientAddressCardProps) {
   const mapsQuery = encodeURIComponent(
@@ -51,29 +58,43 @@ export function ClientAddressCard({
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-muted/80 text-primary">
           <Home className="h-5 w-5" />
         </div>
-        {onDelete && (
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-destructive">
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Remove this address?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Bookings that used this address will keep their history. You can add it again later.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <DashboardAlertCancel>Cancel</DashboardAlertCancel>
-                <DashboardAlertAction variant="destructive" onClick={() => onDelete(address.id)}>
-                  Remove
-                </DashboardAlertAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        )}
+        <div className="flex items-center gap-1">
+          {onEdit && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 text-muted-foreground hover:text-foreground"
+              onClick={() => onEdit(address)}
+            >
+              <Pencil className="h-4 w-4" />
+              <span className="sr-only">Edit address</span>
+            </Button>
+          )}
+          {onDelete && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-destructive">
+                  <Trash2 className="h-4 w-4" />
+                  <span className="sr-only">Remove address</span>
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Remove this address?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Bookings that used this address will keep their history. You can add it again later.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <DashboardAlertCancel>Cancel</DashboardAlertCancel>
+                  <DashboardAlertAction variant="destructive" onClick={() => onDelete(address.id)}>
+                    Remove
+                  </DashboardAlertAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+        </div>
       </div>
 
       <div className="space-y-1 min-w-0">

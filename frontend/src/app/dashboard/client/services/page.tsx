@@ -15,6 +15,7 @@ import {
   DashboardPanelCard,
   ClientAddressCard,
 } from "@/components/dashboard/workspace";
+import type { ClientAddress } from "@/components/dashboard/workspace";
 import { AddressFormDialog } from "@/components/dashboard/AddressFormDialog";
 import { workspaceUi } from "@/lib/dashboard-ui";
 import { cn } from "@/lib/utils";
@@ -24,9 +25,25 @@ import { DashboardSuspenseFallback } from "@/components/shared/DashboardSuspense
 function ServiceAddressesContent() {
   const { user, isLoading: authLoading } = useAuth();
   const { search } = useSearchState();
-  const [addresses, setAddresses] = useState<any[]>([]);
+  const [addresses, setAddresses] = useState<ClientAddress[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingAddress, setEditingAddress] = useState<ClientAddress | null>(null);
+
+  const openCreate = () => {
+    setEditingAddress(null);
+    setDialogOpen(true);
+  };
+
+  const openEdit = (address: ClientAddress) => {
+    setEditingAddress(address);
+    setDialogOpen(true);
+  };
+
+  const handleDialogOpenChange = (next: boolean) => {
+    setDialogOpen(next);
+    if (!next) setEditingAddress(null);
+  };
 
   useEffect(() => {
     if (!authLoading && user) fetchAddresses();
@@ -96,7 +113,7 @@ function ServiceAddressesContent() {
         greeting="Saved addresses"
         subtitle="Where providers should come for your bookings. Use ⌘K to search."
         actions={
-          <Button className="rounded-full" onClick={() => setDialogOpen(true)}>
+          <Button className="rounded-full" onClick={openCreate}>
             <Plus className="h-4 w-4 mr-2" />
             Add address
           </Button>
@@ -133,7 +150,7 @@ function ServiceAddressesContent() {
                 : "Add a home or office address so providers know where to meet you."}
             </p>
             {!search && (
-              <Button className="mt-6 rounded-full" onClick={() => setDialogOpen(true)}>
+              <Button className="mt-6 rounded-full" onClick={openCreate}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add your first address
               </Button>
@@ -148,11 +165,12 @@ function ServiceAddressesContent() {
               address={address}
               onSetDefault={handleSetDefault}
               onDelete={handleDeleteAddress}
+              onEdit={openEdit}
             />
           ))}
           <button
             type="button"
-            onClick={() => setDialogOpen(true)}
+            onClick={openCreate}
             className={cn(
               workspaceUi.frosted.inset,
               "min-h-[200px] flex flex-col items-center justify-center gap-3 text-muted-foreground hover:text-foreground transition-colors border-dashed"
@@ -166,8 +184,9 @@ function ServiceAddressesContent() {
 
       <AddressFormDialog
         open={dialogOpen}
-        onOpenChange={setDialogOpen}
+        onOpenChange={handleDialogOpenChange}
         onSuccess={fetchAddresses}
+        address={editingAddress}
       />
     </DashboardPageContainer>
   );
