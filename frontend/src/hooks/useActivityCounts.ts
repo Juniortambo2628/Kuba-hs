@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import axiosInstance from "@/lib/axios";
 import { useAuth } from "@/contexts/AuthContext";
-import { getEcho } from "@/lib/echo";
+import { loadEcho } from "@/lib/echo-loader";
 import { extractApiList } from "@/lib/api-response";
 
 export interface ActivityCounts {
@@ -126,19 +126,28 @@ export function useActivityCounts() {
   useEffect(() => {
     if (!user) return;
 
-    const echo = getEcho();
-    if (!echo) return;
+    let disposed = false;
+    let leave: (() => void) | undefined;
 
-    const channel = echo.private(`App.Models.User.${user.id}`);
-    channel.notification(() => {
-      // When any notification comes in, refresh counts
-      setCounts(prev => ({ ...prev, notifications: prev.notifications + 1 }));
-      // Also do a full refresh after a short delay
-      setTimeout(fetchCounts, 1000);
-    });
+    loadEcho().then((echo) => {
+      if (disposed || !echo) return;
+
+      const channel = echo.private(`App.Models.User.${user.id}`);
+      channel.notification(() => {
+        // When any notification comes in, refresh counts
+        setCounts(prev => ({ ...prev, notifications: prev.notifications + 1 }));
+        // Also do a full refresh after a short delay
+        setTimeout(fetchCounts, 1000);
+      });
+
+      leave = () => {
+        echo.leave(`App.Models.User.${user.id}`);
+      };
+    }).catch(() => {});
 
     return () => {
-      echo.leave(`App.Models.User.${user.id}`);
+      disposed = true;
+      leave?.();
     };
   }, [user, fetchCounts]);
 

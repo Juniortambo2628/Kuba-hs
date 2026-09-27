@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { getEcho } from "@/lib/echo";
+import { loadEcho } from "@/lib/echo-loader";
 import { toast } from "sonner";
 import { CheckCircle, Bell, MessageSquare, Star, CreditCard } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -29,39 +29,48 @@ export function GlobalNotificationListener() {
   useEffect(() => {
     if (!user) return;
 
-    const echo = getEcho();
-    if (!echo) return;
+    let disposed = false;
+    let leave: (() => void) | undefined;
 
-    // Listen to private user channel for general Laravel Notifications
-    const channel = echo.private(`App.Models.User.${user.id}`);
+    loadEcho().then((echo) => {
+      if (disposed || !echo) return;
 
-    channel.notification((notification: any) => {
-      let icon = <Bell className="w-4 h-4 text-sky-600" />;
-      
-      if (notification.type?.includes('BookingStatusUpdated')) {
-        icon = <CheckCircle className="w-4 h-4 text-emerald-500" />;
-      } else if (notification.type?.includes('NewReviewReceived')) {
-        icon = <Star className="w-4 h-4 text-amber-500" />;
-      } else if (notification.type?.includes('ChatMessageSent') || notification.type?.includes('NewMessageReceived')) {
-        icon = <MessageSquare className="w-4 h-4 text-blue-500" />;
-      } else if (notification.type?.includes('PaymentReceived')) {
-        icon = <CreditCard className="w-4 h-4 text-indigo-500" />;
-      }
+      // Listen to private user channel for general Laravel Notifications
+      const channel = echo.private(`App.Models.User.${user.id}`);
 
-      const cleanUrl = sanitizeUrl(notification.url);
+      channel.notification((notification: any) => {
+        let icon = <Bell className="w-4 h-4 text-sky-600" />;
 
-      toast(notification.title || notification.message || "New activity on Kuba", {
-        description: notification.message || (notification.booking_number ? `Booking #${notification.booking_number}` : undefined),
-        icon: icon,
-        action: cleanUrl ? {
-            label: "View",
-            onClick: () => router.push(cleanUrl),
-        } : undefined,
+        if (notification.type?.includes('BookingStatusUpdated')) {
+          icon = <CheckCircle className="w-4 h-4 text-emerald-500" />;
+        } else if (notification.type?.includes('NewReviewReceived')) {
+          icon = <Star className="w-4 h-4 text-amber-500" />;
+        } else if (notification.type?.includes('ChatMessageSent') || notification.type?.includes('NewMessageReceived')) {
+          icon = <MessageSquare className="w-4 h-4 text-blue-500" />;
+        } else if (notification.type?.includes('PaymentReceived')) {
+          icon = <CreditCard className="w-4 h-4 text-indigo-500" />;
+        }
+
+        const cleanUrl = sanitizeUrl(notification.url);
+
+        toast(notification.title || notification.message || "New activity on Kuba", {
+          description: notification.message || (notification.booking_number ? `Booking #${notification.booking_number}` : undefined),
+          icon: icon,
+          action: cleanUrl ? {
+              label: "View",
+              onClick: () => router.push(cleanUrl),
+          } : undefined,
+        });
       });
-    });
+
+      leave = () => {
+        echo.leave(`App.Models.User.${user.id}`);
+      };
+    }).catch(() => {});
 
     return () => {
-      echo.leave(`App.Models.User.${user.id}`);
+      disposed = true;
+      leave?.();
     };
   }, [user, router]);
 

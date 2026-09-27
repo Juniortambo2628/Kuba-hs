@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Bell } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { getEcho } from "@/lib/echo";
+import { loadEcho } from "@/lib/echo-loader";
 import axiosInstance from "@/lib/axios";
 import {
   DropdownMenu,
@@ -52,9 +52,12 @@ export function NotificationBadge() {
 
     fetchNotifications();
 
-    const echo = getEcho();
+    let disposed = false;
+    let leave: (() => void) | undefined;
 
-    if (echo) {
+    loadEcho().then((echo) => {
+      if (disposed || !echo) return;
+
       const channel = echo.private(`App.Models.User.${user.id}`);
 
       channel.notification((notification: NotificationData & { id: string; type: string }) => {
@@ -88,11 +91,16 @@ export function NotificationBadge() {
         });
       });
 
-      return () => {
+      leave = () => {
         channel.stopListening(".Illuminate\\Notifications\\Events\\BroadcastNotificationCreated");
         echo.leave(`App.Models.User.${user.id}`);
       };
-    }
+    }).catch(() => {});
+
+    return () => {
+      disposed = true;
+      leave?.();
+    };
   }, [user, router]);
 
   const fetchNotifications = async () => {

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import axiosInstance from "@/lib/axios";
-import { getEcho } from "@/lib/echo";
+import { loadEcho } from "@/lib/echo-loader";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Send, MessageSquare, ChevronLeft, CheckCheck } from "lucide-react";
@@ -93,8 +93,12 @@ export function ChatInterface({ role, layout = "embedded", className }: ChatInte
 
     fetchMessages();
 
-    const echo = getEcho();
-    if (echo) {
+    let disposed = false;
+    let leave: (() => void) | undefined;
+
+    loadEcho().then((echo) => {
+      if (disposed || !echo) return;
+
       const channel = echo.private(`conversation.${activeConversationId}`);
 
       channel.listen(".message.sent", (e: { message?: Message }) => {
@@ -118,12 +122,17 @@ export function ChatInterface({ role, layout = "embedded", className }: ChatInte
         }
       });
 
-      return () => {
+      leave = () => {
         channel.stopListening(".message.sent");
         channel.stopListening(".message.read");
         echo.leave(`conversation.${activeConversationId}`);
       };
-    }
+    }).catch(() => {});
+
+    return () => {
+      disposed = true;
+      leave?.();
+    };
   }, [activeConversationId, user?.id]);
 
   useEffect(() => {
