@@ -3,24 +3,30 @@
 namespace App\Http\Controllers\Api;
 
 use App\Enums\ProviderApplicationStatus;
-use App\Enums\UserRole;
 use App\Enums\VerificationDocumentStatus;
 use App\Http\Controllers\Controller;
-use App\Models\Provider;
 use App\Models\VerificationDocument;
 use App\Services\ImageOptimizationService;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class VerificationController extends Controller
 {
-    public function index(Request $request) {
-        $user = $request->user();
-        if ($user->role === UserRole::Admin) {
-            return VerificationDocument::with('provider.user')->latest()->get();
-        }
+    /**
+     * Every provider's documents, for the admin workforce screen. The route
+     * already sits behind the admin middleware, so there is no role to branch
+     * on - both this and the provider's own listing used to share one index()
+     * that re-decided which of the two the caller was.
+     */
+    public function adminIndex() {
+        return VerificationDocument::with('provider.user')->latest()->get();
+    }
 
-        $provider = $user->ensureProviderProfile();
+    /**
+     * The calling provider's own documents. The route sits behind the
+     * provider middleware.
+     */
+    public function index(Request $request) {
+        $provider = $request->user()->ensureProviderProfile();
         if (! $provider) {
             return response()->json(['message' => 'Not a provider'], 403);
         }
@@ -80,10 +86,6 @@ class VerificationController extends Controller
     }
 
     public function update(Request $request, $id) {
-        if ($request->user()->role !== UserRole::Admin) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
         $request->validate([
             'status' => 'required|in:approved,rejected',
             'rejection_reason' => 'required_if:status,rejected|string|nullable',

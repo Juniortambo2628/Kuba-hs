@@ -108,7 +108,7 @@ Route::middleware(['auth:sanctum', 'two-factor-setup'])->group(function () {
     Route::post('/notifications/{id}/read', [\App\Http\Controllers\Api\NotificationController::class, 'markAsRead']);
 
     Route::middleware('admin')->group(function () {
-        Route::get('/admin/workforce/verification', [\App\Http\Controllers\Api\VerificationController::class, 'index']);
+        Route::get('/admin/workforce/verification', [\App\Http\Controllers\Api\VerificationController::class, 'adminIndex']);
         Route::patch('/admin/workforce/verification/{id}', [\App\Http\Controllers\Api\VerificationController::class, 'update']);
     });
 
