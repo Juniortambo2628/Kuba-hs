@@ -117,7 +117,7 @@ export default function InvestorsPage() {
           </div>
 
           {/* Contact Form */}
-          <div id="contact-form" className="bg-white dark:bg-[#111] p-10 rounded-[2.5rem] border border-border dark:border-white/5 shadow-2xl relative overflow-hidden transition-all duration-300">
+          <div id="contact-form" className="bg-white dark:bg-[#111] p-10 rounded-surface border border-border dark:border-white/5 shadow-2xl relative overflow-hidden transition-all duration-300">
             {submitted ? (
               <motion.div 
                 initial={{ opacity: 0, scale: 0.9 }}

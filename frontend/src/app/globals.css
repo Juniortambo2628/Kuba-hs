@@ -47,6 +47,7 @@
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
   --radius-dashboard: 2rem;
+  --radius-surface: 2.5rem;
   --shadow-premium: 0 20px 25px -5px rgb(0 0 0 / 0.05), 0 8px 10px -6px rgb(0 0 0 / 0.05), 0 0 0 1px rgb(0 0 0 / 0.02);
   --shadow-glass: 0 0 0 1px rgb(255, 255, 255, 0.05) inset, 0 10px 15px -3px rgb(0, 0, 0, 0.1), 0 4px 6px -4px rgb(0, 0, 0, 0.1);
 }

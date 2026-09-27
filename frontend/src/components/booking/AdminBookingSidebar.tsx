@@ -38,7 +38,7 @@ export function AdminBookingSidebar({
 }: AdminBookingSidebarProps) {
   return (
     <div className="lg:col-span-4 space-y-8">
-      <Card className="border-none shadow-xl rounded-[2.5rem] bg-gradient-to-br from-slate-900 to-slate-800 text-white overflow-hidden relative">
+      <Card className="border-none shadow-xl rounded-surface bg-gradient-to-br from-slate-900 to-slate-800 text-white overflow-hidden relative">
         <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-white/5 rounded-full blur-3xl" />
         <CardHeader className="p-8 pb-4">
           <div className="flex items-center justify-between mb-4">
@@ -93,7 +93,7 @@ export function AdminBookingSidebar({
         </CardContent>
       </Card>
 
-      <Card className="border-none shadow-premium rounded-[2.5rem] bg-white dark:bg-card border border-border/50 overflow-hidden">
+      <Card className="border-none shadow-premium rounded-surface bg-white dark:bg-card border border-border/50 overflow-hidden">
         <div className="p-8 border-b border-border/40 bg-muted/20">
           <h3 className="text-xs font-black text-foreground uppercase tracking-widest flex items-center gap-2">
             <UserCheck className="w-4 h-4 text-primary" />
@@ -136,7 +136,7 @@ export function AdminBookingSidebar({
         </CardContent>
       </Card>
 
-      <Card className="border-none shadow-premium rounded-[2.5rem] bg-white dark:bg-card border border-border/50 overflow-hidden">
+      <Card className="border-none shadow-premium rounded-surface bg-white dark:bg-card border border-border/50 overflow-hidden">
         <div className="p-8 border-b border-border/40 bg-muted/20">
           <h3 className="text-xs font-black text-foreground uppercase tracking-widest flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-emerald-500" />

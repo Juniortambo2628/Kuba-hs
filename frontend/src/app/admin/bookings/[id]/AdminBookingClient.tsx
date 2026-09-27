@@ -60,7 +60,7 @@ export default function AdminBookingClient({ params }: { params: Promise<{ id: s
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           <div className="lg:col-span-8">
-            <Skeleton className="h-[500px] w-full rounded-[2.5rem]" />
+            <Skeleton className="h-[500px] w-full rounded-surface" />
           </div>
           <div className="lg:col-span-4 gap-6 flex flex-col">
             <Skeleton className="h-64 w-full rounded-[2rem]" />
@@ -149,7 +149,7 @@ export default function AdminBookingClient({ params }: { params: Promise<{ id: s
                 <div className="h-48 bg-muted relative overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent" />
                   <div className="absolute bottom-0 left-10 translate-y-1/2">
-                    <div className="w-32 h-32 rounded-[2.5rem] bg-white dark:bg-slate-900 shadow-2xl flex items-center justify-center text-primary border-8 border-white dark:border-slate-900">
+                    <div className="w-32 h-32 rounded-surface bg-white dark:bg-slate-900 shadow-2xl flex items-center justify-center text-primary border-8 border-white dark:border-slate-900">
                       <Zap className="w-12 h-12" />
                     </div>
                   </div>

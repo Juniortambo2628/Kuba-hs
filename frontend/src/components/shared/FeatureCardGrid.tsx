@@ -65,7 +65,7 @@ export function FeatureCardGrid({
             className={`group ${
               variant === "centered"
                 ? "bg-white dark:bg-zinc-900 p-10 rounded-3xl shadow-lg dark:shadow-none border border-border dark:border-white/10 text-center hover:-translate-y-2 transition-transform duration-300"
-                : `p-8 bg-white dark:bg-black border border-border/40 rounded-[2.5rem] space-y-6 hover:shadow-2xl hover:shadow-${accentColor}-500/5 transition-all duration-500`
+                : `p-8 bg-white dark:bg-black border border-border/40 rounded-surface space-y-6 hover:shadow-2xl hover:shadow-${accentColor}-500/5 transition-all duration-500`
             }`}
           >
             {imageSrc ? (

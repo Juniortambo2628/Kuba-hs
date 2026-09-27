@@ -97,7 +97,7 @@ export default function BlogClient({ params }: { params: Promise<{ slug: string 
 
           {/* Hero Image */}
           {post.image_url && (
-            <div className="w-full h-[300px] md:h-[500px] bg-muted rounded-[2.5rem] overflow-hidden my-12 relative border border-border/50">
+            <div className="w-full h-[300px] md:h-[500px] bg-muted rounded-surface overflow-hidden my-12 relative border border-border/50">
                <Image 
                  src={getImageUrl(post.image_url) || ""} 
                  alt={post.title} 
@@ -117,7 +117,7 @@ export default function BlogClient({ params }: { params: Promise<{ slug: string 
 
       {/* CTA Section footer */}
       <div className="max-w-[900px] mx-auto px-6 mt-24 pt-16 border-t border-border">
-          <div className="bg-muted rounded-[2.5rem] p-12 text-center space-y-6 border border-border">
+          <div className="bg-muted rounded-surface p-12 text-center space-y-6 border border-border">
               <h3 className="text-2xl font-bold text-foreground tracking-tight">Need expert services?</h3>
               <p className="text-muted-foreground max-w-md mx-auto">Skip the hassle and let Kuba's verified professionals handle your next project with precision.</p>
               <Link href="/services">

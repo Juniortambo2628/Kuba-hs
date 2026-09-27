@@ -9,7 +9,7 @@ interface SkeletonProps {
 
 export function CardSkeleton({ className }: SkeletonProps) {
   return (
-    <div className={cn("rounded-[2.5rem] overflow-hidden border border-border/50 bg-card p-8 space-y-6", className)}>
+    <div className={cn("rounded-surface overflow-hidden border border-border/50 bg-card p-8 space-y-6", className)}>
       <Skeleton className="h-48 w-full rounded-2xl" />
       <div className="space-y-3">
         <Skeleton className="h-6 w-3/4" />

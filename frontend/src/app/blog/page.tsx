@@ -133,7 +133,7 @@ export default function BlogList() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="space-y-6 animate-pulse">
-                  <div className="aspect-[16/10] bg-muted rounded-[2.5rem]"></div>
+                  <div className="aspect-[16/10] bg-muted rounded-surface"></div>
                   <div className="h-6 w-3/4 bg-muted rounded-xl"></div>
                   <div className="h-4 w-1/2 bg-muted rounded-xl"></div>
                 </div>
@@ -148,7 +148,7 @@ export default function BlogList() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  className="group flex flex-col h-full bg-white dark:bg-black rounded-[2.5rem] border border-border/40 overflow-hidden hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500"
+                  className="group flex flex-col h-full bg-white dark:bg-black rounded-surface border border-border/40 overflow-hidden hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500"
                 >
                   <Link href={`/blog/${post.slug}`} className="flex-1 flex flex-col">
                     <div className="relative aspect-[16/10] overflow-hidden bg-muted">
@@ -194,7 +194,7 @@ export default function BlogList() {
             </div>
           ) : (
             <div className="py-32 flex flex-col items-center justify-center text-center max-w-lg mx-auto space-y-6">
-              <div className="w-24 h-24 bg-muted rounded-[2.5rem] flex items-center justify-center text-muted-foreground/50">
+              <div className="w-24 h-24 bg-muted rounded-surface flex items-center justify-center text-muted-foreground/50">
                 <Search className="w-10 h-10" />
               </div>
               <h3 className="text-2xl font-bold tracking-tight">No narratives discovered</h3>
