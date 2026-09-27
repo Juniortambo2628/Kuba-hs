@@ -279,7 +279,7 @@ const bookingSchema = z.object({
   promo_code: z.string().optional(),
 });
 
-interface BookingModalProps {
+export interface BookingModalProps {
   isOpen: boolean;
   onClose: () => void;
   provider: { id: string; business_name: string; services?: BookingOffering[] };
@@ -820,3 +820,4 @@ export function BookingModal({
     </div>
   );
 }
+export default BookingModal;

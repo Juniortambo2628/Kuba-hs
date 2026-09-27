@@ -6,7 +6,8 @@ import { useData } from "@/hooks/useData";
 import { useCMS } from "@/contexts/CMSContext";
 import { CardSkeleton } from "@/components/shared/AdvancedSkeleton";
 import { EmptyState } from "@/components/shared/ui";
-import { BookingModal } from "@/components/booking/BookingModal";
+import dynamic from "next/dynamic";
+import type { BookingModalProps } from "@/components/booking/BookingModal";
 import { ServiceDetailPortfolio } from "@/components/marketing/service-detail/ServiceDetailPortfolio";
 import { buildMarketingHeroProps } from "@/config/marketing-pages";
 import { uiPrimitives } from "@/lib/ui-primitives";
@@ -17,6 +18,13 @@ import { useBookNowAuth } from "@/hooks/useAuthAction";
 import { Provider } from "@/types";
 import { Heart, Search } from "lucide-react";
 import { toast } from "sonner";
+
+// BookingModal pulls in Uppy's core, dashboard, image-editor and three CSS
+// sheets. Nothing on this page needs them until the visitor opens the modal,
+// so they go behind their own chunk instead of this route's first load.
+const BookingModal = dynamic(() => import("@/components/booking/BookingModal"), {
+  ssr: false,
+});
 
 export default function ServiceDetailClient({
   params,
@@ -192,8 +200,8 @@ export default function ServiceDetailClient({
         <BookingModal
           isOpen={isBookingModalOpen}
           onClose={() => setIsBookingModalOpen(false)}
-          provider={selectedProvider as Parameters<typeof BookingModal>[0]["provider"]}
-          service={bookingService as Parameters<typeof BookingModal>[0]["service"]}
+          provider={selectedProvider as BookingModalProps["provider"]}
+          service={bookingService as BookingModalProps["service"]}
         />
       )}
     </MarketingPage>

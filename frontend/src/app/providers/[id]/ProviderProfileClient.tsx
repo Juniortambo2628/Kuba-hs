@@ -3,7 +3,7 @@
 import { use, useState, useCallback, useMemo } from "react";
 import { Search } from "lucide-react";
 import { MarketingPage } from "@/components/layout/MarketingPage";
-import { BookingModal } from "@/components/booking/BookingModal";
+import dynamic from "next/dynamic";
 import { useData } from "@/hooks/useData";
 import { useCMS } from "@/contexts/CMSContext";
 import { CardSkeleton } from "@/components/shared/AdvancedSkeleton";
@@ -17,6 +17,13 @@ import { buildMarketingHeroProps } from "@/config/marketing-pages";
 import { uiPrimitives } from "@/lib/ui-primitives";
 import { cn } from "@/lib/utils";
 import { useBookNowAuth } from "@/hooks/useAuthAction";
+
+// BookingModal pulls in Uppy's core, dashboard, image-editor and three CSS
+// sheets. Nothing on this page needs them until the visitor opens the modal,
+// so they go behind their own chunk instead of this route's first load.
+const BookingModal = dynamic(() => import("@/components/booking/BookingModal"), {
+  ssr: false,
+});
 
 export default function ProviderProfileClient({ params }: { params: Promise<{ id: string }> }) {
   const { id: slug } = use(params);
