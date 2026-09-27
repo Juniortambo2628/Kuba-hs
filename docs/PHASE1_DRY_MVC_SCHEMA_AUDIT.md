@@ -504,7 +504,7 @@ register puts under C7.
 | --- | --- | --- |
 | 12 | C5 | **closed** - `139982e` |
 | 12 | C8 | **closed** for `routes/auth.php`; the Fortify half above is handed to C7 |
-| 12 | C7 | **open** - next |
+| 12 | C7 | **closed** - `014549d` |
 | 3 | C6/D9 | **closed** - `db76a92` |
 | 6 | D1 | **closed** - `8637fe2` |
 | 11 | D2/D3/D4/D8 | **closed** - `7a1b91c`, `ccf2da6`, `b3f0c38`, `e45bae6` |
@@ -518,3 +518,67 @@ Gates after every one of these commits: `php -l`, `php artisan test`
 (427 passed, 1 pre-existing risky), `php artisan route:list --json` -
 253 routes. The duplicate-name check is the one worth keeping:
 `Group-Object name | Where Count -gt 1`, currently only `api.admin. x56`.
+
+## Phase 2 log - part 5 (C7, and register item 12 is closed)
+
+| Commit | Items | What changed |
+| --- | --- | --- |
+| `014549d` | C7 | `Fortify::ignoreRoutes()` in `AppServiceProvider::register()` - Fortify's second two-factor stack and its fifteen other routes are gone. Route table 253 → 234, `Laravel\Fortify\*` actions 0. |
+
+Fortify was registering nineteen routes of its own on top of the ones
+`/api/auth` serves: `POST /login|register|logout|forgot-password|
+reset-password`, `GET`+`POST /two-factor-challenge`, the five
+`/user/two-factor-*` routes, `/user/confirmed-two-factor-authentication`,
+`/user/confirm-password`, `/user/confirmed-password-status`,
+`/user/password`, `/user/profile-information` and the `/passkeys/*`
+pair. C7 was filed because the second 2FA stack was one of them.
+
+Before switching it off, the caller search was redone per verb (the
+`PasswordUpdateTest` miss in part 4 is the reason): zero axios/fetch
+calls in `frontend/src` reach any of these URIs - the only absolute
+paths the frontend ever posts to are `/api/auth/*`, and its `/login` and
+`/register` strings are `router.push`/`<Link>` targets. Zero test
+references. The six URIs both stacks shared had already been decided by
+load order in our favour - `/login`, `/register`, `/forgot-password`,
+`/reset-password/{token}` and `/verify-email` are closures in
+`routes/auth.php`, and `POST /email/verification-notification` is our
+controller - so nothing was shadowed *back*.
+
+Two details that are easy to get wrong:
+
+- It belongs in `register()`, not `boot()`. `Fortify::ignoreRoutes()`
+  only sets `Fortify::$registersRoutes = false`, and
+  `FortifyServiceProvider::boot()` is what reads it. All providers'
+  `register()` calls complete before any `boot()`, so either provider's
+  registration phase works - but `boot()` on `FortifyServiceProvider`
+  would be too late, and `AppServiceProvider::boot()` would be a race.
+- The provider itself stays. Its bindings and its `configurePasskeys()`
+  block still configure `laravel/passkeys` (user model, config, and
+  `LaravelPasskeys::ignoreRoutes()`, which is what keeps the package's
+  *own* routes out). Turning the routes off does not turn the package off.
+
+`tests/Feature/Auth/SingleAuthEntryPointTest` pins both directions: the
+Fortify URIs 404, `POST /api/auth/two-factor/challenge` still answers,
+and the `GET` redirects to the frontend still work. Note `POST /login`
+is 405 rather than 404 - our `GET /login` owns the URI, so only the
+method is missing, which is exactly the shape of "one entry point, one
+contract". Stashing `AppServiceProvider` fails two of the four tests.
+
+### Register status after Phase 2 part 5
+
+| # | IDs | Status |
+| --- | --- | --- |
+| 12 | C5, C7, C8 | **closed** - `139982e`, `014549d`, `32c6ae2` |
+| 3 | C6/D9 | **closed** - `db76a92` |
+| 6 | D1 | **closed** - `8637fe2` |
+| 11 | D2/D3/D4/D8 | **closed** - `7a1b91c`, `ccf2da6`, `b3f0c38`, `e45bae6` |
+| - | D6, D7, D13 | **closed** - `e7ddf78`; `0184000`/`49f2da0`/`e45bae6`; `67e3661` + `1b65fa1` |
+| 13 | D10, D11, D14 | **closed** - `efbc5fd` + `9772559`, `82128d2`, `1b65fa1` |
+| 13 | D12 | **disproven, 2 fields residual** - `service_radius`, `experience_years`, both need a product decision |
+| 14 | A4-A12 | **open** (A4 skipped by decision, A5/A12 already done) |
+| 15 | D22 | **open** |
+
+Gates after every one of these commits: `php -l`, `php artisan test`
+(431 passed, 1 pre-existing risky), `php artisan route:list --json` -
+234 routes, 0 `Laravel\Fortify\*` actions, duplicate-name check shows
+only the pre-existing `api.admin. x56`.
