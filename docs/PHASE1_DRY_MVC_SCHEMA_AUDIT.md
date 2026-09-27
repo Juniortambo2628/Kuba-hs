@@ -1,6 +1,6 @@
 # Phase 1 — Audit Report (read-only, no code changes)
 
-**Repo:** `C:\wamp64\www\Kuba-hs` · HEAD `91641fa` · tree clean at audit time
+**Repo:** `C:\wamp64\www\Kuba-hs` · HEAD `61828e0` · tree clean at audit time
 **Stack:** `/backend` Laravel 12 (headless API) + `/frontend` Next.js 16 App Router · MySQL `home_service`
 **Approvals received (Phase 2 gate):** B2 behaviour change **approved** · destructive list **approved per recommendations** · `public/assets/zogin` **delete** · C7/C8/D22 **in scope** · save report to `docs/` **approved**.
 
@@ -109,7 +109,7 @@ Fixes for B1–B4 already exist as unapplied migrations — no code to write, on
 | X3 | Drop the 3 redundant indexes (B9) | ✅ **approved** | Yes (recreate exact definitions) |
 | X4 | Delete migration `2026_08_16_123829_*` (B10) | ✅ **approved** | Yes (git) |
 | X5 | Drop Spatie permission tables (B14) | ❌ **do NOT drop** (my recommendation, accepted) | n/a |
-| X6 | Purge 94 MB MP4 from **git history** (`git filter-repo`) | ⏸ **deferred** — separate decision, rewrites shared history | No |
+| X6 | Purge 94 MB MP4 from **git history** (`git filter-repo`) | ✅ **done** — 153.94 MiB → 59.90 MiB, every commit hash remapped (see the history note) | restore from `Kuba-hs-before-purge.bundle` |
 | X7 | Drop `public/assets/zogin/**` (7.8 MB) | ✅ **delete** | Yes (git) |
 
 ---
@@ -246,12 +246,12 @@ Fixes for B1–B4 already exist as unapplied migrations — no code to write, on
 
 | Commit | Item | Fix |
 |---|---|---|
-| `2387be9` | finance monthly revenue used SQLite `strftime` | `DATE_FORMAT` for MySQL |
-| `3c467be` | the fix above broke the SQLite test suite | branch on `DB::getDriverName()` |
-| `2d81812` | blog post rendered `post.body`, API returns `content` | read `content` |
-| `7c0e0c8` | `DELETE /media/revert` pointed at a nonexistent action | route to `MediaController@destroy` |
-| `c7a0773` | `GET /api/admin/financials/charts` had no route | added to admin group |
-| `07b936a` | public `settings_debug.json` + 4 debug scripts | deleted, summary moved to `docs/` |
+| `02d2406` | finance monthly revenue used SQLite `strftime` | `DATE_FORMAT` for MySQL |
+| `86ae48f` | the fix above broke the SQLite test suite | branch on `DB::getDriverName()` |
+| `63da8ed` | blog post rendered `post.body`, API returns `content` | read `content` |
+| `9719acc` | `DELETE /media/revert` pointed at a nonexistent action | route to `MediaController@destroy` |
+| `b548607` | `GET /api/admin/financials/charts` had no route | added to admin group |
+| `a98dd23` | public `settings_debug.json` + 4 debug scripts | deleted, summary moved to `docs/` |
 
 C4 (chat read-state) was a **false positive**: `ChatController::getConversation:61-64`
 already persists `read_at` on every message fetch, so `ChatInterface` needs no PATCH.
@@ -261,14 +261,14 @@ The `PATCH .../conversations/{id}/read` route stays orphaned (see C-register).
 
 | Item | Commit | Result |
 |---|---|---|
-| A2 messages pages (88.2%) | `616a3d6` | `MessagesWorkspace`, both pages are delegates |
-| A7 six identical spinners | `8338510` | `DashboardLoadingPage` |
-| A5 Leaflet CSS on all 85 routes | `0f1e59f` | global import removed, 4 component imports kept |
-| A8 triplicated error.tsx + no 404 | `ee3ebbf` | shared `RouteError` + `app/not-found.tsx` |
-| A12 investors double container | `baa3972` | nested `max-w-7xl px-4` removed, unused import dropped |
-| A3 competing page headers | `301dd35` | unified on `DashboardGreetingBar`, `DashboardPageHeader` deleted |
-| A1 login pair (83.2%) | `d931401` | shared `LoginForm`, -663 lines across the two pages |
-| A11 register pair (55.2%) | `f3e566c` | shared `RegisterCredentialFields` only |
+| A2 messages pages (88.2%) | `b194418` | `MessagesWorkspace`, both pages are delegates |
+| A7 six identical spinners | `decf0a1` | `DashboardLoadingPage` |
+| A5 Leaflet CSS on all 85 routes | `e1dd81d` | global import removed, 4 component imports kept |
+| A8 triplicated error.tsx + no 404 | `4846903` | shared `RouteError` + `app/not-found.tsx` |
+| A12 investors double container | `e10ff14` | nested `max-w-7xl px-4` removed, unused import dropped |
+| A3 competing page headers | `76d097a` | unified on `DashboardGreetingBar`, `DashboardPageHeader` deleted |
+| A1 login pair (83.2%) | `16bd0cf` | shared `LoginForm`, -663 lines across the two pages |
+| A11 register pair (55.2%) | `cb80fb8` | shared `RegisterCredentialFields` only |
 
 ### Decisions taken during execution
 
@@ -304,15 +304,15 @@ route removals, then the behaviour fix. One commit each.
 
 | Commit | Items | What changed |
 | --- | --- | --- |
-| `d90a09a` | X1, X4 | Dropped the bad FK-index migration (would have added three indexes duplicating `*_foreign`) and ran the four that were still pending: `webauthn_credentials`, `users.two_factor_setup_required`, `email_login_codes`, and the `order` -> `sort_order` rename on `faqs`/`testimonials`. Closes B1-B4. |
-| `b3f0c38` | X7 | Deleted `public/assets/zogin` (101 files, 7.8 MB) and removed the four `zogin` rows from `SiteSettingSeeder` - both proven unreferenced by the live frontend and by live MySQL. |
-| `1fb1d65` | B7, B8 | New `2026_09_26_000001_add_missing_query_indexes`: 27 indexes, 12 of them `deleted_at` (the register said 7; corrected against the models actually using `SoftDeletes`). Reversible. |
-| `8637fe2` | D1 | Deleted `backend/documentation` (115 files, 94.23 MB, incl. a 93.75 MB video - 62% of the git pack). `docs/` is canonical. |
-| `7a1b91c` | D2, D4 | Deleted the entire Inertia app (`resources/js`, `resources/css`, `resources/views/app.blade.php`) plus its toolchain (`vite.config.js`, `package.json`, `tailwind`/`postcss`/eslint configs) and `Vite::prefetch` from `AppServiceProvider`. Kept `routes/web.php` (CORS probes, `/` redirect, `cms-assets` proxy) and the three live views. |
-| `ccf2da6` | D3 | Deleted `backend/templates/zogin-master` (145 files, 10.14 MB). |
-| `5c79e2c` | orphan pass 1 | Removed five routes with zero refs in frontend, backend, tests or `route()` calls: `POST /api/auth/email-code/login`, `GET /api/categories/{slug}/{slug}`, `GET /api/dashboard`, `POST /api/chat/messages`, `POST /api/admin/promo-codes/validate` - with their controller methods. |
-| `67e3661` | orphan pass 2 | The four "obvious duplicates" only: `GET /api/admin/finance`, `GET /api/admin/finance/transactions`, `GET /api/chat/conversations/{id}/read`, `GET /api/featured-services/{id}/similar`. Tests retargeted to the surviving endpoint or dropped with the route. |
-| `db76a92` | C6, D9 | Loyalty moved into `BookingService::updateBookingStatus`; admin/client copies deleted; three regression tests added. |
+| `5e2032f` | X1, X4 | Dropped the bad FK-index migration (would have added three indexes duplicating `*_foreign`) and ran the four that were still pending: `webauthn_credentials`, `users.two_factor_setup_required`, `email_login_codes`, and the `order` -> `sort_order` rename on `faqs`/`testimonials`. Closes B1-B4. |
+| `7f0b0f6` | X7 | Deleted `public/assets/zogin` (101 files, 7.8 MB) and removed the four `zogin` rows from `SiteSettingSeeder` - both proven unreferenced by the live frontend and by live MySQL. |
+| `1e52d63` | B7, B8 | New `2026_09_26_000001_add_missing_query_indexes`: 27 indexes, 12 of them `deleted_at` (the register said 7; corrected against the models actually using `SoftDeletes`). Reversible. |
+| `43b444c` | D1 | Deleted `backend/documentation` (115 files, 94.23 MB, incl. a 93.75 MB video - 62% of the git pack). `docs/` is canonical. |
+| `0f967b6` | D2, D4 | Deleted the entire Inertia app (`resources/js`, `resources/css`, `resources/views/app.blade.php`) plus its toolchain (`vite.config.js`, `package.json`, `tailwind`/`postcss`/eslint configs) and `Vite::prefetch` from `AppServiceProvider`. Kept `routes/web.php` (CORS probes, `/` redirect, `cms-assets` proxy) and the three live views. |
+| `813b57b` | D3 | Deleted `backend/templates/zogin-master` (145 files, 10.14 MB). |
+| `95f7527` | orphan pass 1 | Removed five routes with zero refs in frontend, backend, tests or `route()` calls: `POST /api/auth/email-code/login`, `GET /api/categories/{slug}/{slug}`, `GET /api/dashboard`, `POST /api/chat/messages`, `POST /api/admin/promo-codes/validate` - with their controller methods. |
+| `bebc21e` | orphan pass 2 | The four "obvious duplicates" only: `GET /api/admin/finance`, `GET /api/admin/finance/transactions`, `GET /api/chat/conversations/{id}/read`, `GET /api/featured-services/{id}/similar`. Tests retargeted to the surviving endpoint or dropped with the route. |
+| `73d3fed` | C6, D9 | Loyalty moved into `BookingService::updateBookingStatus`; admin/client copies deleted; three regression tests added. |
 
 ### Route-count movement
 
@@ -344,22 +344,22 @@ Final: **253 routes, 419 passed (3 new), 1 pre-existing risky.**
 
 | Commit | Items | What changed |
 | --- | --- | --- |
-| `15fd190` | - | Phase 2 part 1 written up (9 commits, 262 -> 253 routes). |
-| `e7ddf78` | D6 | Deleted `frontend/src/lib/api-endpoints.ts` plus its two tests. The registry had 147 lines, zero production importers, and its `api-contract` test was a placeholder that `readFileSync`'d the file and asserted it contains three strings. |
-| `0184000` | D7 | Removed the three `Cache::forget('api_page_features_all')` calls - repo-wide, the key is written nowhere and `index()` queries the table every time, so invalidating it was a no-op. |
-| `49f2da0` | D7 | Deleted `LoyaltyService::awardPointsForReview` (0 callers, nothing in the API, UI or docs promises a review bonus). |
-| `e45bae6` | D7/D8 | Deleted the five superseded `site_settings` seeders: `SiteSettingSeeder`, `LandingPageSettingsSeeder`, `ProfessionalSiteSettingSeeder`, `SegmentPageSettingsSeeder`, `InvestorSettingsSeeder`. |
+| `07ae378` | - | Phase 2 part 1 written up (9 commits, 262 -> 253 routes). |
+| `0603d04` | D6 | Deleted `frontend/src/lib/api-endpoints.ts` plus its two tests. The registry had 147 lines, zero production importers, and its `api-contract` test was a placeholder that `readFileSync`'d the file and asserted it contains three strings. |
+| `995af77` | D7 | Removed the three `Cache::forget('api_page_features_all')` calls - repo-wide, the key is written nowhere and `index()` queries the table every time, so invalidating it was a no-op. |
+| `fb74fcd` | D7 | Deleted `LoyaltyService::awardPointsForReview` (0 callers, nothing in the API, UI or docs promises a review bonus). |
+| `0230530` | D7/D8 | Deleted the five superseded `site_settings` seeders: `SiteSettingSeeder`, `LandingPageSettingsSeeder`, `ProfessionalSiteSettingSeeder`, `SegmentPageSettingsSeeder`, `InvestorSettingsSeeder`. |
 
 ### Register status after Phase 2 part 2
 
 | # | IDs | Status |
 | --- | --- | --- |
-| 3 | C6/D9 | **closed** - `db76a92` |
-| 6 | D1 | **closed** - `8637fe2` |
-| 11 | D2/D3/D4/D8 | **closed** - `7a1b91c`, `ccf2da6`, `b3f0c38`; D8's residual caveat (an unreferenced `SiteSettingSeeder` could be run by hand) is now closed too by `e45bae6` |
-| - | D6 | **closed** - `e7ddf78` |
-| - | D7 | **closed** - `0184000`, `49f2da0`, `e45bae6`; the `ApiResponse` fragment carries on as D22 |
-| - | D13 | **closed** by `67e3661` - the near-verbatim duplicate was `FinanceController::transactions()`, deleted as an orphan route |
+| 3 | C6/D9 | **closed** - `73d3fed` |
+| 6 | D1 | **closed** - `43b444c` |
+| 11 | D2/D3/D4/D8 | **closed** - `0f967b6`, `813b57b`, `7f0b0f6`; D8's residual caveat (an unreferenced `SiteSettingSeeder` could be run by hand) is now closed too by `0230530` |
+| - | D6 | **closed** - `0603d04` |
+| - | D7 | **closed** - `995af77`, `fb74fcd`, `0230530`; the `ApiResponse` fragment carries on as D22 |
+| - | D13 | **closed** by `bebc21e` - the near-verbatim duplicate was `FinanceController::transactions()`, deleted as an orphan route |
 | 13 | D10, D11, D12, D14 | **open** - next |
 | 12 | C5, C7, C8 | **open** |
 | 14 | A4-A12 | **open** (A4 skipped by decision, A5/A12 already done) |
@@ -385,10 +385,10 @@ on that controller.)
 
 | Commit | Items | What changed |
 | --- | --- | --- |
-| `1b65fa1` | D14 | Added `User::scopeLike($query, string $search, bool $withEmail = true)` and replaced eleven hand-written copies across nine files (`AdminChatController`, `FeedbackController`, `PaymentController`, `ProviderController`, `UserController`, `Api\Admin\FinancialController`, `Api\DashboardSearchController` x4, `Models\Booking`). Two of those copies were the precedence bugs from the D13 write-up: `Admin\PaymentController::index` (a transaction-id match escaped the `status` filter) and `Api\Admin\FinancialController::payouts` (same, on `reference_number`). Both now wrap the `OR`, proven by tests that fail on the original controllers and pass with the fix. |
-| `82128d2` | D11 | `Api\Admin\FinancialController::overview` summed `COALESCE(final_price, estimated_price)` over completed bookings while its own response key is `total_revenue` and the admin tile that consumes it is labelled "Total Platform Revenue". Now sums `payments.platform_fee`, matching `Admin\AnalyticsController::platform_revenue` and the label. Test `financial overview reports platform revenue rather than gross booking value` fails against the original code (verified via stash) and passes with the fix. |
-| `efbc5fd` | D10 part 1 | `BookingPolicy::update` and `BookingService::updateBookingStatus` restated the same rule and had already drifted (the service matched on `customer_id` regardless of role, the policy required `role === Customer`), and the policy carried a second provider branch made unreachable by the provider branch above it. Both now call `BookingService::mayChangeStatus()`, which passes the status from the request (policy) or the status about to be written (service). |
-| `9772559` | D10 part 2 | Five more view checks now ask `BookingPolicy::view`: `Api\InvoiceController::download`, `Client\BookingController::show`, `Client\BookingController::cancel` (via a new `cancel` ability, because the cancel endpoint sends no status), `Provider\BookingController::show` (plus deleting the unused `getProviderOrFail()` result and the now-orphaned `userOwnsBooking`/`assertOwnsBooking` from `HasProviderAuthorization`), and the `payments/receipt/{booking}` closure. |
+| `94c468d` | D14 | Added `User::scopeLike($query, string $search, bool $withEmail = true)` and replaced eleven hand-written copies across nine files (`AdminChatController`, `FeedbackController`, `PaymentController`, `ProviderController`, `UserController`, `Api\Admin\FinancialController`, `Api\DashboardSearchController` x4, `Models\Booking`). Two of those copies were the precedence bugs from the D13 write-up: `Admin\PaymentController::index` (a transaction-id match escaped the `status` filter) and `Api\Admin\FinancialController::payouts` (same, on `reference_number`). Both now wrap the `OR`, proven by tests that fail on the original controllers and pass with the fix. |
+| `15d1565` | D11 | `Api\Admin\FinancialController::overview` summed `COALESCE(final_price, estimated_price)` over completed bookings while its own response key is `total_revenue` and the admin tile that consumes it is labelled "Total Platform Revenue". Now sums `payments.platform_fee`, matching `Admin\AnalyticsController::platform_revenue` and the label. Test `financial overview reports platform revenue rather than gross booking value` fails against the original code (verified via stash) and passes with the fix. |
+| `52eabce` | D10 part 1 | `BookingPolicy::update` and `BookingService::updateBookingStatus` restated the same rule and had already drifted (the service matched on `customer_id` regardless of role, the policy required `role === Customer`), and the policy carried a second provider branch made unreachable by the provider branch above it. Both now call `BookingService::mayChangeStatus()`, which passes the status from the request (policy) or the status about to be written (service). |
+| `fc8582f` | D10 part 2 | Five more view checks now ask `BookingPolicy::view`: `Api\InvoiceController::download`, `Client\BookingController::show`, `Client\BookingController::cancel` (via a new `cancel` ability, because the cancel endpoint sends no status), `Provider\BookingController::show` (plus deleting the unused `getProviderOrFail()` result and the now-orphaned `userOwnsBooking`/`assertOwnsBooking` from `HasProviderAuthorization`), and the `payments/receipt/{booking}` closure. |
 
 ### The one deliberate behaviour change in D10
 
@@ -413,13 +413,13 @@ could have produced it.
 
 | # | IDs | Status |
 | --- | --- | --- |
-| 3 | C6/D9 | **closed** - `db76a92` |
-| 6 | D1 | **closed** - `8637fe2` |
-| 11 | D2/D3/D4/D8 | **closed** - `7a1b91c`, `ccf2da6`, `b3f0c38`, `e45bae6` |
-| - | D6 | **closed** - `e7ddf78` |
-| - | D7 | **closed** - `0184000`, `49f2da0`, `e45bae6`; the `ApiResponse` fragment carries on as D22 |
-| - | D13 | **closed** by `67e3661`; the precedence bugs it surfaced are closed by `1b65fa1` |
-| 13 | D10, D11, D14 | **closed** - `efbc5fd` + `9772559`, `82128d2`, `1b65fa1` |
+| 3 | C6/D9 | **closed** - `73d3fed` |
+| 6 | D1 | **closed** - `43b444c` |
+| 11 | D2/D3/D4/D8 | **closed** - `0f967b6`, `813b57b`, `7f0b0f6`, `0230530` |
+| - | D6 | **closed** - `0603d04` |
+| - | D7 | **closed** - `995af77`, `fb74fcd`, `0230530`; the `ApiResponse` fragment carries on as D22 |
+| - | D13 | **closed** by `bebc21e`; the precedence bugs it surfaced are closed by `94c468d` |
+| 13 | D10, D11, D14 | **closed** - `52eabce` + `fc8582f`, `15d1565`, `94c468d` |
 | 13 | D12 | **disproven, 2 fields residual** - `application_status`, `availability_status`, `compliance_status`, `is_verified` already default correctly in the migration; only `service_radius` (10 vs 25 vs NULL) and `experience_years` (0 vs NULL) actually diverge, and both need a product decision |
 | 12 | C5, C7, C8 | **open** - next (address edit UI, dual 2FA, dual auth) |
 | 14 | A4-A12 | **open** (A4 skipped by decision, A5/A12 already done) |
@@ -433,8 +433,8 @@ method+URI" half of that gate was never doing anything.
 
 | Commit | Items | What changed |
 | --- | --- | --- |
-| `139982e` | C5 | Address edit UI. `PUT`/`GET /api/client/addresses/{address}` existed behind `Route::apiResource` and nothing ever called them: `AddressFormDialog` only POST'd, so a saved address could be added, defaulted or deleted but never corrected. The dialog now takes an optional address, seeds the form from it and PUTs; two payload details are deliberate - `is_default` is carried across (sending the form's default `false` would demote a default address on every edit, and `StoreAddressRequest` accepts it), and the Nairobi pin fallback stays create-only so an address without a pin cannot jump to it on edit. |
-| `32c6ae2` | C8 | Removed the five stateful POSTs from `routes/auth.php` (`login`, `register`, `forgot-password`, `reset-password`, `logout`) - all duplicates of `/api/auth/*`, zero frontend callers, zero test callers - and made `AuthenticatedSessionController`, `RegisteredUserController`, `PasswordResetLinkController` and `NewPasswordController` JSON-only. Also fixed the two surviving `route('dashboard')` calls. |
+| `2f1603f` | C5 | Address edit UI. `PUT`/`GET /api/client/addresses/{address}` existed behind `Route::apiResource` and nothing ever called them: `AddressFormDialog` only POST'd, so a saved address could be added, defaulted or deleted but never corrected. The dialog now takes an optional address, seeds the form from it and PUTs; two payload details are deliberate - `is_default` is carried across (sending the form's default `false` would demote a default address on every edit, and `StoreAddressRequest` accepts it), and the Nairobi pin fallback stays create-only so an address without a pin cannot jump to it on edit. |
+| `e053870` | C8 | Removed the five stateful POSTs from `routes/auth.php` (`login`, `register`, `forgot-password`, `reset-password`, `logout`) - all duplicates of `/api/auth/*`, zero frontend callers, zero test callers - and made `AuthenticatedSessionController`, `RegisteredUserController`, `PasswordResetLinkController` and `NewPasswordController` JSON-only. Also fixed the two surviving `route('dashboard')` calls. |
 
 ### Correction - the duplicate-route gate could never have fired
 
@@ -502,14 +502,14 @@ register puts under C7.
 
 | # | IDs | Status |
 | --- | --- | --- |
-| 12 | C5 | **closed** - `139982e` |
+| 12 | C5 | **closed** - `2f1603f` |
 | 12 | C8 | **closed** for `routes/auth.php`; the Fortify half above is handed to C7 |
-| 12 | C7 | **closed** - `014549d` |
-| 3 | C6/D9 | **closed** - `db76a92` |
-| 6 | D1 | **closed** - `8637fe2` |
-| 11 | D2/D3/D4/D8 | **closed** - `7a1b91c`, `ccf2da6`, `b3f0c38`, `e45bae6` |
-| - | D6, D7, D13 | **closed** - `e7ddf78`; `0184000`/`49f2da0`/`e45bae6`; `67e3661` + `1b65fa1` |
-| 13 | D10, D11, D14 | **closed** - `efbc5fd` + `9772559`, `82128d2`, `1b65fa1` |
+| 12 | C7 | **closed** - `9638e94` |
+| 3 | C6/D9 | **closed** - `73d3fed` |
+| 6 | D1 | **closed** - `43b444c` |
+| 11 | D2/D3/D4/D8 | **closed** - `0f967b6`, `813b57b`, `7f0b0f6`, `0230530` |
+| - | D6, D7, D13 | **closed** - `0603d04`; `995af77`/`fb74fcd`/`0230530`; `bebc21e` + `94c468d` |
+| 13 | D10, D11, D14 | **closed** - `52eabce` + `fc8582f`, `15d1565`, `94c468d` |
 | 13 | D12 | **disproven, 2 fields residual** - only `service_radius` and `experience_years` actually diverge, both need a product decision |
 | 14 | A4-A12 | **open** (A4 skipped by decision, A5/A12 already done) |
 | 15 | D22 | **open** |
@@ -523,7 +523,7 @@ Gates after every one of these commits: `php -l`, `php artisan test`
 
 | Commit | Items | What changed |
 | --- | --- | --- |
-| `014549d` | C7 | `Fortify::ignoreRoutes()` in `AppServiceProvider::register()` - Fortify's second two-factor stack and its fifteen other routes are gone. Route table 253 → 234, `Laravel\Fortify\*` actions 0. |
+| `9638e94` | C7 | `Fortify::ignoreRoutes()` in `AppServiceProvider::register()` - Fortify's second two-factor stack and its fifteen other routes are gone. Route table 253 → 234, `Laravel\Fortify\*` actions 0. |
 
 Fortify was registering nineteen routes of its own on top of the ones
 `/api/auth` serves: `POST /login|register|logout|forgot-password|
@@ -568,12 +568,12 @@ contract". Stashing `AppServiceProvider` fails two of the four tests.
 
 | # | IDs | Status |
 | --- | --- | --- |
-| 12 | C5, C7, C8 | **closed** - `139982e`, `014549d`, `32c6ae2` |
-| 3 | C6/D9 | **closed** - `db76a92` |
-| 6 | D1 | **closed** - `8637fe2` |
-| 11 | D2/D3/D4/D8 | **closed** - `7a1b91c`, `ccf2da6`, `b3f0c38`, `e45bae6` |
-| - | D6, D7, D13 | **closed** - `e7ddf78`; `0184000`/`49f2da0`/`e45bae6`; `67e3661` + `1b65fa1` |
-| 13 | D10, D11, D14 | **closed** - `efbc5fd` + `9772559`, `82128d2`, `1b65fa1` |
+| 12 | C5, C7, C8 | **closed** - `2f1603f`, `9638e94`, `e053870` |
+| 3 | C6/D9 | **closed** - `73d3fed` |
+| 6 | D1 | **closed** - `43b444c` |
+| 11 | D2/D3/D4/D8 | **closed** - `0f967b6`, `813b57b`, `7f0b0f6`, `0230530` |
+| - | D6, D7, D13 | **closed** - `0603d04`; `995af77`/`fb74fcd`/`0230530`; `bebc21e` + `94c468d` |
+| 13 | D10, D11, D14 | **closed** - `52eabce` + `fc8582f`, `15d1565`, `94c468d` |
 | 13 | D12 | **disproven, 2 fields residual** - `service_radius`, `experience_years`, both need a product decision |
 | 14 | A4-A12 | **open** (A4 skipped by decision, A5/A12 already done) |
 | 15 | D22 | **open** |
@@ -587,7 +587,7 @@ only the pre-existing `api.admin. x56`.
 
 | Commit | Items | What changed |
 | --- | --- | --- |
-| `03206df` | A10 | `components/marketing/VerticalSalesPage` now holds the thesis grid, value-prop cards, image panel, category band and CTA that `commercial` and `cooperatives` both duplicated. 237 lines of page → 108, plus one 138-line component. |
+| `6ddf2ae` | A10 | `components/marketing/VerticalSalesPage` now holds the thesis grid, value-prop cards, image panel, category band and CTA that `commercial` and `cooperatives` both duplicated. 237 lines of page → 108, plus one 138-line component. |
 
 The two pages were structurally identical and differed only in content:
 CMS key prefix, icons, which value-prop slot each page fills
@@ -617,13 +617,13 @@ reaching for again on the remaining A-items.
 
 | # | IDs | Status |
 | --- | --- | --- |
-| 14 | A4-A12 | **closed** - A4, A9 skipped by decision; A5/A7/A8/A10/A11/A12 done. Last one closed by `b56940e` |
-| 12 | C5, C7, C8 | **closed** - `139982e`, `014549d`, `32c6ae2` |
-| 3 | C6/D9 | **closed** - `db76a92` |
-| 6 | D1 | **closed** - `8637fe2` |
-| 11 | D2/D3/D4/D8 | **closed** - `7a1b91c`, `ccf2da6`, `b3f0c38`, `e45bae6` |
-| - | D6, D7, D13 | **closed** - `e7ddf78`; `0184000`/`49f2da0`/`e45bae6`; `67e3661` + `1b65fa1` |
-| 13 | D10, D11, D14 | **closed** - `efbc5fd` + `9772559`, `82128d2`, `1b65fa1` |
+| 14 | A4-A12 | **closed** - A4, A9 skipped by decision; A5/A7/A8/A10/A11/A12 done. Last one closed by `27d160b` |
+| 12 | C5, C7, C8 | **closed** - `2f1603f`, `9638e94`, `e053870` |
+| 3 | C6/D9 | **closed** - `73d3fed` |
+| 6 | D1 | **closed** - `43b444c` |
+| 11 | D2/D3/D4/D8 | **closed** - `0f967b6`, `813b57b`, `7f0b0f6`, `0230530` |
+| - | D6, D7, D13 | **closed** - `0603d04`; `995af77`/`fb74fcd`/`0230530`; `bebc21e` + `94c468d` |
+| 13 | D10, D11, D14 | **closed** - `52eabce` + `fc8582f`, `15d1565`, `94c468d` |
 | 13 | D12 | **disproven, 2 fields residual** - `service_radius`, `experience_years`, both need a product decision |
 | 15 | D22 | **open** - 4 response-envelope shapes, `ApiResponse` used once |
 
@@ -631,7 +631,7 @@ reaching for again on the remaining A-items.
 
 | Commit | Items | What changed |
 | --- | --- | --- |
-| `b56940e` | A6 | `BookingModal` is behind `next/dynamic` in the two pages that mount it, so Uppy's runtime and its three stylesheets leave both routes' first load. |
+| `27d160b` | A6 | `BookingModal` is behind `next/dynamic` in the two pages that mount it, so Uppy's runtime and its three stylesheets leave both routes' first load. |
 
 `BookingModal` statically imports `@uppy/core`,
 `@uppy/react/dashboard-modal`, `@uppy/image-editor` and three Uppy
@@ -665,13 +665,13 @@ Lint was compared by stashing the three files and re-running `eslint`:
 
 | # | IDs | Status |
 | --- | --- | --- |
-| 14 | A4-A12 | **closed** - A4/A9 skipped by decision; A5 `0f1e59f`, A7 `8338510`, A8 `ee3ebbf`, A11 `f3e566c`, A12 `baa3972` landed in Phase 1, A10 `03206df` and A6 `b56940e` in Phase 2 |
-| 12 | C5, C7, C8 | **closed** - `139982e`, `014549d`, `32c6ae2` |
-| 3 | C6/D9 | **closed** - `db76a92` |
-| 6 | D1 | **closed** - `8637fe2` |
-| 11 | D2/D3/D4/D8 | **closed** - `7a1b91c`, `ccf2da6`, `b3f0c38`, `e45bae6` |
-| - | D6, D7, D13 | **closed** - `e7ddf78`; `0184000`/`49f2da0`/`e45bae6`; `67e3661` + `1b65fa1` |
-| 13 | D10, D11, D14 | **closed** - `efbc5fd` + `9772559`, `82128d2`, `1b65fa1` |
+| 14 | A4-A12 | **closed** - A4/A9 skipped by decision; A5 `e1dd81d`, A7 `decf0a1`, A8 `4846903`, A11 `cb80fb8`, A12 `e10ff14` landed in Phase 1, A10 `6ddf2ae` and A6 `27d160b` in Phase 2 |
+| 12 | C5, C7, C8 | **closed** - `2f1603f`, `9638e94`, `e053870` |
+| 3 | C6/D9 | **closed** - `73d3fed` |
+| 6 | D1 | **closed** - `43b444c` |
+| 11 | D2/D3/D4/D8 | **closed** - `0f967b6`, `813b57b`, `7f0b0f6`, `0230530` |
+| - | D6, D7, D13 | **closed** - `0603d04`; `995af77`/`fb74fcd`/`0230530`; `bebc21e` + `94c468d` |
+| 13 | D10, D11, D14 | **closed** - `52eabce` + `fc8582f`, `15d1565`, `94c468d` |
 | 13 | D12 | **disproven, 2 fields residual** - `service_radius`, `experience_years`, both need a product decision |
 | 15 | D22 | **open** - the last mechanical item: 4 response-envelope shapes, `ApiResponse` used once |
 
@@ -679,8 +679,8 @@ Lint was compared by stashing the three files and re-running `eslint`:
 
 | Commit | Items | What changed |
 | --- | --- | --- |
-| `ef3997c` | D22 | `app/Support/ApiResponse.php` deleted; `PaginationMeta::for()` replaces the two hand-rolled `meta` arrays. |
-| `74517ec` | D12 residual | New migration giving `providers.experience_years` and `providers.service_radius` a database default. |
+| `7dacabe` | D22 | `app/Support/ApiResponse.php` deleted; `PaginationMeta::for()` replaces the two hand-rolled `meta` arrays. |
+| `139811b` | D12 residual | New migration giving `providers.experience_years` and `providers.service_radius` a database default. |
 
 ### D22 - one meta shape, one fewer envelope
 
@@ -770,24 +770,24 @@ tests never saw this database.
 
 | # | IDs | Status |
 | --- | --- | --- |
-| 1 | B1-B5 | **closed** - `d90a09a` ran the four pending migrations and deleted the fifth (B1-B4); `2387be9` + `3c467be` fixed SQLite `strftime` (B5); `2d81812` fixed `post.body` vs `content` |
-| 2 | C1-C3 | **closed** - `7c0e0c8` repaired the admin media delete route (C1/C2), `c7a0773` added the missing `financials/charts` route (C3) |
-| 3 | C6/D9 | **closed** - `db76a92` |
+| 1 | B1-B5 | **closed** - `5e2032f` ran the four pending migrations and deleted the fifth (B1-B4); `02d2406` + `86ae48f` fixed SQLite `strftime` (B5); `63da8ed` fixed `post.body` vs `content` |
+| 2 | C1-C3 | **closed** - `9719acc` repaired the admin media delete route (C1/C2), `b548607` added the missing `financials/charts` route (C3) |
+| 3 | C6/D9 | **closed** - `73d3fed` |
 | 4 | C4 | **disproven** - `ChatController::getConversation` already persists `read_at` on every fetch |
-| 5 | D5 | **closed** - `07b936a` |
-| 6 | D1 | **closed** - `8637fe2` |
-| 7 | A2 | **closed** - `616a3d6` |
-| 8 | A3/A5 | **closed** - `301dd35`, `0f1e59f` |
-| 9 | A1 | **closed** - `d931401` |
-| 10 | B7/B8 | **closed** - `1fb1d65` |
-| 11 | D2/D3/D4/D8 | **closed** - `7a1b91c`, `ccf2da6`, `b3f0c38`, `e45bae6` |
-| 12 | C5, C7, C8 | **closed** - `139982e`, `014549d`, `32c6ae2` |
-| 13 | D10-D14 | **closed** - `efbc5fd` + `9772559` (D10), `82128d2` (D11), `1b65fa1` (D14) + `67e3661` (D13), `74517ec` (D12 residual) |
-| 14 | A4-A12 | **closed** - A4/A9 skipped by decision; A5 `0f1e59f`, A7 `8338510`, A8 `ee3ebbf`, A11 `f3e566c`, A12 `baa3972` in Phase 1, A10 `03206df` and A6 `b56940e` in Phase 2 |
-| 15 | D22 | **closed** - `ef3997c` |
+| 5 | D5 | **closed** - `a98dd23` |
+| 6 | D1 | **closed** - `43b444c` |
+| 7 | A2 | **closed** - `b194418` |
+| 8 | A3/A5 | **closed** - `76d097a`, `e1dd81d` |
+| 9 | A1 | **closed** - `16bd0cf` |
+| 10 | B7/B8 | **closed** - `1e52d63` |
+| 11 | D2/D3/D4/D8 | **closed** - `0f967b6`, `813b57b`, `7f0b0f6`, `0230530` |
+| 12 | C5, C7, C8 | **closed** - `2f1603f`, `9638e94`, `e053870` |
+| 13 | D10-D14 | **closed** - `52eabce` + `fc8582f` (D10), `15d1565` (D11), `94c468d` (D14) + `bebc21e` (D13), `139811b` (D12 residual) |
+| 14 | A4-A12 | **closed** - A4/A9 skipped by decision; A5 `e1dd81d`, A7 `decf0a1`, A8 `4846903`, A11 `cb80fb8`, A12 `e10ff14` in Phase 1, A10 `6ddf2ae` and A6 `27d160b` in Phase 2 |
+| 15 | D22 | **closed** - `7dacabe` |
 
 D6, D7 and the D8 seeder residual were never separate register rows and
-are closed by `e7ddf78` and `0184000`/`49f2da0`/`e45bae6`.
+are closed by `0603d04` and `995af77`/`fb74fcd`/`0230530`.
 
 ### What the consolidated register never covered
 
@@ -812,8 +812,8 @@ is not misread as "the audit is finished":
   key still on disk** (`github-actions-kuba-home-service`, gitignored,
   untracked, last written 15 July). D21 is the one High-severity item
   outside the register and the one worth acting on next.
-- **X6** - purging the 94 MB MP4 from git history, deliberately deferred
-  because it rewrites shared history.
+- **X6** - purging the 94 MB MP4 from git history. Approved and done;
+  see the history note at the end of this document.
 
 ---
 
@@ -829,7 +829,7 @@ frontend refactors that need before/after measurements.
 | ID | Task | Verified by |
 | --- | --- | --- |
 | D21 | Delete `github-actions-kuba-home-service` and its `.pub` from the repo root | both files gone, `git status` still clean, all four workflows still reading `secrets.SSH_PRIVATE_KEY` |
-| D20 | **already closed** - `backend/package.json` went with the Inertia toolchain in `7a1b91c`, so the five dead backend deps went with it | `Test-Path backend/package.json` = false |
+| D20 | **already closed** - `backend/package.json` went with the Inertia toolchain in `0f967b6`, so the five dead backend deps went with it | `Test-Path backend/package.json` = false |
 | D19 | Repoint `chat-utils.unwrapResourceList` and `lib/provider-services-api` at their canonical helpers, then delete the deprecated re-exports | `npx tsc --noEmit`, `npx eslint src`, `npm test`, `npm run build` |
 | C12 | Confirm the three relation-only models are reached through relations and are not dead code; close as informational | read + grep, no code change |
 | A13 | Already downgraded (`getSSRSettings()` revalidates hourly) - record and close | none |
@@ -850,7 +850,7 @@ attention.
 | - | **Not in the register:** 56 routes share the literal name `api.admin.` (group `as` prefix, no per-route `->name()`), so `route('api.admin.')` is ambiguous | `route:list --json`, assert no two routes share a name |
 
 C9 has moved since the audit: `Admin\FinanceController` was called
-"unused", then `c7a0773` wired `GET /admin/financials/charts` to it while
+"unused", then `b548607` wired `GET /admin/financials/charts` to it while
 fixing C3. Both controllers are live now and still disagree on shape, so
 the fix is to share the mapping while keeping each endpoint's current
 JSON as the contract.
@@ -883,19 +883,16 @@ JSON as the contract.
 | D15 | Base-URL resolution x7 -> all through `lib/api-base-url` | `tsc`, tests, and a check that SSR and browser resolve the same origin |
 | D18 | 3 overlapping fetch hooks + 4 ad-hoc SWR fetchers + `/api/categories` fetched in 8 places | largest refactor, last; network calls per route unchanged |
 
-### Decisions needed before Tier 3 and Tier 4
+### Decisions taken
 
-1. **D21** - delete the key files? And is the server-side
-   `authorized_keys` entry yours to remove?
-2. **B11** - full naming unification, or the smallest cut (sort column
-   only)?
-3. **B12** - add `slug` columns and change public URLs, or keep PHP-side
-   synthesis and fix only the collision?
-4. **B13** - drop `view_count` from the resource, or add the column and
-   count views?
-5. **A15** - swap `react-beautiful-dnd` for `@dnd-kit`, or leave it?
-6. **X6** - still deferred: purging the 94 MB MP4 rewrites shared
-   history.
+| ID | Decision |
+| --- | --- |
+| D21 | **delete** - both key files removed. The workflows read `secrets.SSH_PRIVATE_KEY`, not the files; removing the matching `authorized_keys` entry from the server is a separate, manual step. |
+| B11 | **full naming unification** |
+| B12 | **add `slug` columns** - public URLs change |
+| B13 | **drop `view_count`** from the resource |
+| A15 | **swap `react-beautiful-dnd` for `@dnd-kit`** |
+| X6 | **proceed with the purge** - done, see the history note below |
 
 ### Explicitly not doing
 
@@ -904,6 +901,29 @@ JSON as the contract.
 | X5 / B14 | dropping the Spatie tables was declined; installed-but-unused is harmless |
 | A4, A9 | skipped by decision in Phase 1 |
 | C4 | disproven |
-| X6 | deferred until a history rewrite is approved |
+
+### History note - the X6 purge rewrote every commit hash
+
+`backend/documentation/GG1M7488.mp4` was 98,298,782 bytes (93.75 MiB).
+It existed in exactly two commits - the initial one that added it, and
+the `backend/documentation` removal that deleted it - so taking it out
+of history changed those two and therefore every descendant. **Every
+commit hash in this document has been remapped to its post-purge
+equivalent.**
+
+- Pack size **153.94 MiB -> 59.90 MiB**, a 94.04 MiB (61 %) reduction.
+- Nothing else was removed. The next largest blobs are the
+  `Design-Templates` images at 3.2 MB and below, and the other 114 files
+  of `backend/documentation`; both are still in history, as intended.
+- The old-to-new mapping was built from a full pre-purge bundle, keyed
+  on subject plus author and committer timestamps - 40 distinct hashes,
+  191 occurrences, every one resolved uniquely - then verified by
+  applying it to the pre-purge file and getting an exact match.
+- Backup: `Kuba-hs-before-purge.bundle` (160,042,171 bytes) holds the
+  complete pre-purge history.
+- `git filter-repo` removes the `origin` remote; it has been re-added.
+  **GitHub still has the old history**, so a plain `git fetch` would put
+  the blob back. Finishing this on GitHub needs a force push, which has
+  not been made.
 
 
