@@ -172,7 +172,7 @@ Route::middleware(['auth:sanctum', 'two-factor-setup'])->group(function () {
     Route::get('/invoices/{bookingId}/download', [\App\Http\Controllers\Api\InvoiceController::class, 'download']);
 
     // Admin routes (admin role required)
-    Route::group(['prefix' => 'admin', 'as' => 'api.admin.', 'middleware' => 'admin'], function () {
+    Route::group(['prefix' => 'admin', 'middleware' => 'admin'], function () {
         Route::get('/analytics', [\App\Http\Controllers\Admin\AnalyticsController::class, 'index']);
         Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index']);
         Route::get('/messages-summary', [\App\Http\Controllers\Admin\DashboardController::class, 'messagesSummary']);
