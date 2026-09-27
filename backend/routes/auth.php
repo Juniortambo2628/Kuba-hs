@@ -59,11 +59,4 @@ Route::middleware('auth')->group(function () use ($frontendUrl) {
     // POST /reset-password, and two routes answering to one name means
     // route('password.update') resolves to whichever registered first.
     Route::put('password', [PasswordController::class, 'update']);
-
-    /*
-    Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])
-        ->name('password.confirm');
-
-    Route::post('confirm-password', [ConfirmablePasswordController::class, 'store']);
-    */
 });

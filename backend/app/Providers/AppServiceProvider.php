@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Fortify\Fortify;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -12,7 +13,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // Fortify ships a complete second auth stack - /login, /register,
+        // /logout, /forgot-password, /reset-password, /two-factor-challenge,
+        // /user/two-factor-*, /user/confirm-password, /user/password,
+        // /user/profile-information and /passkeys/* - on top of the ones the
+        // API serves under /api/auth. None of it has a caller: the Next.js
+        // client posts only to /api/auth/*, no test reaches these URIs, and
+        // the handful of URIs both stacks shared were already decided by load
+        // order (the closures in routes/auth.php won every one).
         //
+        // This has to run before FortifyServiceProvider::boot() calls
+        // configureRoutes(), so it belongs in register(), not boot().
+        Fortify::ignoreRoutes();
     }
 
     /**
