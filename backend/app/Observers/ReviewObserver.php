@@ -34,7 +34,7 @@ class ReviewObserver
             $count = Review::where('provider_id', $providerId)->count();
 
             $provider->update([
-                'rating_avg' => round($avg ?: 0, 1),
+                'rating' => round($avg ?: 0, 1),
                 'review_count' => $count,
             ]);
         }

@@ -28,7 +28,7 @@ class ReviewController extends Controller
             ->toArray();
 
         $stats = [
-            'avg_rating' => $provider->rating_avg ?? 0,
+            'avg_rating' => $provider->rating ?? 0,
             'total_reviews' => $provider->review_count ?? 0,
             'rating_distribution' => [
                 5 => $ratingDistribution[5] ?? 0,

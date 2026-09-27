@@ -23,8 +23,8 @@ test('can view single provider profile', function () {
 });
 
 test('top providers endpoint sorts by rating', function () {
-    $p1 = Provider::factory()->create(['rating_avg' => 4.5, 'is_verified' => true]);
-    $p2 = Provider::factory()->create(['rating_avg' => 5.0, 'is_verified' => true]);
+    $p1 = Provider::factory()->create(['rating' => 4.5, 'is_verified' => true]);
+    $p2 = Provider::factory()->create(['rating' => 5.0, 'is_verified' => true]);
 
     $response = $this->getJson('/api/top-providers');
 

@@ -13,7 +13,7 @@ it('has correct fillable attributes', function () {
     $provider = new Provider;
     expect($provider->getFillable())->toContain(
         'user_id', 'business_name', 'bio', 'experience_years', 'location_name',
-        'latitude', 'longitude', 'service_radius', 'rating_avg', 'review_count',
+        'latitude', 'longitude', 'service_radius', 'rating', 'review_count',
         'is_verified', 'application_status', 'availability_status', 'specialized_skills',
         'quality_score', 'compliance_status', 'balance', 'total_earned'
     );

@@ -19,7 +19,7 @@ class AdminProviderResource extends JsonResource
             'latitude' => $this->latitude,
             'longitude' => $this->longitude,
             'service_radius' => $this->service_radius,
-            'rating' => (float) ($this->reviews_avg_rating ?? $this->rating_avg ?? 0),
+            'rating' => (float) ($this->reviews_avg_rating ?? $this->rating ?? 0),
             'review_count' => (int) ($this->reviews_count ?? $this->review_count ?? 0),
             'is_verified' => (bool) $this->is_verified,
             'application_status' => $this->application_status,

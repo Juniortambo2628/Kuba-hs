@@ -88,7 +88,7 @@ class ProviderQualityService
 
         // Factor 1: Reviews (up to 40 points)
         // A 5-star rating gives 40 points (8 * 5 = 40)
-        $ratingScore = ($provider->rating_avg ?? 0) * 8; 
+        $ratingScore = ($provider->rating ?? 0) * 8; 
 
         // Factor 2: Compliance Penalty
         $compliancePenalty = 0;

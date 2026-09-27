@@ -24,7 +24,7 @@ class ProviderFactory extends Factory
             'latitude' => fake()->latitude(-1.5, -1.2),
             'longitude' => fake()->longitude(36.6, 37.0),
             'service_radius' => fake()->numberBetween(5, 50),
-            'rating_avg' => fake()->randomFloat(1, 3.0, 5.0),
+            'rating' => fake()->randomFloat(1, 3.0, 5.0),
             'review_count' => fake()->numberBetween(0, 200),
             'is_verified' => fake()->boolean(70),
             'application_status' => ProviderApplicationStatus::Approved,

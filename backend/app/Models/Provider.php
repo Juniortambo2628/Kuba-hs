@@ -25,7 +25,7 @@ class Provider extends Model implements \Spatie\MediaLibrary\HasMedia
         'latitude',
         'longitude',
         'service_radius',
-        'rating_avg',
+        'rating',
         'review_count',
         'is_verified',
         'application_status',

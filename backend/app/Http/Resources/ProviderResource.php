@@ -22,7 +22,7 @@ class ProviderResource extends JsonResource
             'experience_years' => $this->experience_years,
             'location_name' => $this->location_name,
             'specialized_skills' => $this->specialized_skills,
-            'rating' => (float) ($this->reviews_avg_rating ?? $this->rating_avg ?? 0),
+            'rating' => (float) ($this->reviews_avg_rating ?? $this->rating ?? 0),
             'review_count' => (int) ($this->reviews_count ?? $this->review_count ?? 0),
             'is_verified' => (bool) $this->is_verified,
             'logo' => $this->getFirstMediaUrl('logos') ?: null,
