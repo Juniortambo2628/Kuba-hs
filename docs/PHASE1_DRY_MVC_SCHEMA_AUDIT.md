@@ -582,3 +582,47 @@ Gates after every one of these commits: `php -l`, `php artisan test`
 (431 passed, 1 pre-existing risky), `php artisan route:list --json` -
 234 routes, 0 `Laravel\Fortify\*` actions, duplicate-name check shows
 only the pre-existing `api.admin. x56`.
+
+## Phase 2 log - part 6 (A10)
+
+| Commit | Items | What changed |
+| --- | --- | --- |
+| `03206df` | A10 | `components/marketing/VerticalSalesPage` now holds the thesis grid, value-prop cards, image panel, category band and CTA that `commercial` and `cooperatives` both duplicated. 237 lines of page → 108, plus one 138-line component. |
+
+The two pages were structurally identical and differed only in content:
+CMS key prefix, icons, which value-prop slot each page fills
+(commercial `1`+`2`, cooperatives `1`+`3`), accent colour, image group
+(`market_narratives` vs `sections`), and CTA copy. All of that moved
+into props. The one abstraction introduced is `accent`, which replaces
+three props that always had to agree - the value-prop icon colour, the
+`FeatureCardGrid` `accentColor` and the `CTABanner` `bgColor` - because
+they are the same accent and were drifting in lockstep across two files.
+
+**How it was verified.** A throwaway Jest test rendered both pages with
+`useCMS`/`usePageFeatures`/`useMarketingHero` mocked and
+`MarketingPage` stubbed to a passthrough, serialised the markup, and ran
+that *before* the refactor and again *after*. Both outputs are 8223
+bytes and share the SHA-256 `F07078DC…`. This is stronger than it looks:
+lucide renders real `<svg>` elements, so the markup proves commercial
+still renders `lucide-chart-column` and cooperatives still renders
+`lucide-zap`, and the mocked `CTABanner`/`FeatureCardGrid` dump their
+props as JSON, so every CTA string and accent class is covered
+byte-for-byte. The test was deleted afterwards.
+
+The same technique - render/serialise before, refactor, diff - is the
+cheap way to prove any JSX refactor is output-preserving, and it is worth
+reaching for again on the remaining A-items.
+
+### Register status after Phase 2 part 6
+
+| # | IDs | Status |
+| --- | --- | --- |
+| 14 | A4-A12 | **A10 closed** (`03206df`); A4, A9 skipped by decision; A5/A7/A8/A11/A12 already done. **A6 is the last one open** (Uppy statically imported into public pages via `BookingModal`) |
+| 12 | C5, C7, C8 | **closed** - `139982e`, `014549d`, `32c6ae2` |
+| 3 | C6/D9 | **closed** - `db76a92` |
+| 6 | D1 | **closed** - `8637fe2` |
+| 11 | D2/D3/D4/D8 | **closed** - `7a1b91c`, `ccf2da6`, `b3f0c38`, `e45bae6` |
+| - | D6, D7, D13 | **closed** - `e7ddf78`; `0184000`/`49f2da0`/`e45bae6`; `67e3661` + `1b65fa1` |
+| 13 | D10, D11, D14 | **closed** - `efbc5fd` + `9772559`, `82128d2`, `1b65fa1` |
+| 13 | D12 | **disproven, 2 fields residual** - `service_radius`, `experience_years`, both need a product decision |
+| 15 | D22 | **open** - 4 response-envelope shapes, `ApiResponse` used once |
