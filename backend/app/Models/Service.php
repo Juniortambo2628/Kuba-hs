@@ -8,17 +8,19 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\HasSlug;
 use Laravel\Scout\Searchable;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
 class Service extends Model implements HasMedia
 {
-    use HasFactory, HasUuids, InteractsWithMedia, Searchable, SoftDeletes;
+    use HasFactory, HasSlug, HasUuids, InteractsWithMedia, Searchable, SoftDeletes;
 
     protected $fillable = [
         'category_id',
         'name',
+        'slug',
         'description',
         'icon_url',
         'is_active',
@@ -30,12 +32,7 @@ class Service extends Model implements HasMedia
         'is_featured' => 'boolean',
     ];
 
-    protected $appends = ['thumbnail_url', 'slug'];
-
-    public function getSlugAttribute()
-    {
-        return \Illuminate\Support\Str::slug($this->name);
-    }
+    protected $appends = ['thumbnail_url'];
 
     public function getThumbnailUrlAttribute(): ?string
     {
@@ -56,7 +53,7 @@ class Service extends Model implements HasMedia
         }
 
         return $this->where('is_active', true)
-            ->whereRaw('LOWER(REPLACE(name, " ", "-")) = ?', [$value])
+            ->where('slug', $value)
             ->first();
     }
 

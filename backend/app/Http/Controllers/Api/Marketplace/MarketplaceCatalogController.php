@@ -64,26 +64,21 @@ class MarketplaceCatalogController extends Controller
     }
 
     public function showCategory($identifier) {
-        $category = ServiceCategory::with(['services' => function ($q) {
+        $withServices = ['services' => function ($q) {
             $q->withMin(['providerServices' => function ($query) {
                 $query->where('is_available', true);
             }], 'base_price')
                 ->withCount(['providerServices as provider_services_count' => function ($query) {
                     $query->where('is_available', true);
                 }]);
-        }])->find($identifier);
+        }];
+
+        $category = \Illuminate\Support\Str::isUuid($identifier)
+            ? ServiceCategory::with($withServices)->find($identifier)
+            : null;
 
         if (! $category) {
-            $category = ServiceCategory::with(['services' => function ($q) {
-                $q->withMin(['providerServices' => function ($query) {
-                    $query->where('is_available', true);
-                }], 'base_price')
-                    ->withCount(['providerServices as provider_services_count' => function ($query) {
-                        $query->where('is_available', true);
-                    }]);
-            }])->get()->first(function ($cat) use ($identifier) {
-                return \Illuminate\Support\Str::slug($cat->name) === $identifier;
-            });
+            $category = ServiceCategory::with($withServices)->where('slug', $identifier)->first();
         }
 
         if (! $category) {

@@ -8,15 +8,17 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\HasSlug;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
 class ServiceCategory extends Model implements HasMedia
 {
-    use HasFactory, HasUuids, InteractsWithMedia, SoftDeletes;
+    use HasFactory, HasSlug, HasUuids, InteractsWithMedia, SoftDeletes;
 
     protected $fillable = [
         'name',
+        'slug',
         'type',
         'parent_category_id',
         'description',
@@ -29,12 +31,7 @@ class ServiceCategory extends Model implements HasMedia
         'sort_order' => 'integer',
     ];
 
-    protected $appends = ['dynamic_icon_url', 'slug'];
-
-    public function getSlugAttribute()
-    {
-        return \Illuminate\Support\Str::slug($this->name);
-    }
+    protected $appends = ['dynamic_icon_url'];
 
     public function getDynamicIconUrlAttribute(): ?string
     {
