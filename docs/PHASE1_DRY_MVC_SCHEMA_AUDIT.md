@@ -617,7 +617,7 @@ reaching for again on the remaining A-items.
 
 | # | IDs | Status |
 | --- | --- | --- |
-| 14 | A4-A12 | **A10 closed** (`03206df`); A4, A9 skipped by decision; A5/A7/A8/A11/A12 already done. **A6 is the last one open** (Uppy statically imported into public pages via `BookingModal`) |
+| 14 | A4-A12 | **closed** - A4, A9 skipped by decision; A5/A7/A8/A10/A11/A12 done. Last one closed by `b56940e` |
 | 12 | C5, C7, C8 | **closed** - `139982e`, `014549d`, `32c6ae2` |
 | 3 | C6/D9 | **closed** - `db76a92` |
 | 6 | D1 | **closed** - `8637fe2` |
@@ -626,3 +626,51 @@ reaching for again on the remaining A-items.
 | 13 | D10, D11, D14 | **closed** - `efbc5fd` + `9772559`, `82128d2`, `1b65fa1` |
 | 13 | D12 | **disproven, 2 fields residual** - `service_radius`, `experience_years`, both need a product decision |
 | 15 | D22 | **open** - 4 response-envelope shapes, `ApiResponse` used once |
+
+## Phase 2 log - part 7 (A6) - register item 14 closed
+
+| Commit | Items | What changed |
+| --- | --- | --- |
+| `b56940e` | A6 | `BookingModal` is behind `next/dynamic` in the two pages that mount it, so Uppy's runtime and its three stylesheets leave both routes' first load. |
+
+`BookingModal` statically imports `@uppy/core`,
+`@uppy/react/dashboard-modal`, `@uppy/image-editor` and three Uppy
+stylesheets, and both public pages importing it imported it statically.
+Neither page renders it on first paint - `ProviderProfileClient` mounts
+it behind `isBookingOpen`, and `ServiceDetailClient`'s
+`bookingService`/`selectedProvider` are unset until `useData` resolves -
+so the module was absent from SSR output either way and `ssr: false`
+changes nothing server-side.
+
+Measured on the build rather than asserted:
+
+| route | chunks | bytes | chunks containing `@uppy/core` |
+| --- | --- | --- | --- |
+| `/providers/[id]` | 35 → 34 | 1,602,617 → 1,257,573 | 1 → 0 |
+| `/services/[slug]` | 34 → 33 | 1,588,057 → 1,243,008 | 1 → 0 |
+
+345 KB (~21.6 %) and one chunk off each route. The uppy chunk and the
+Uppy CSS now appear under `react-loadable-manifest.json` as
+`app\providers\[id]\ProviderProfileClient.tsx -> @/components/booking/BookingModal`
+and its services twin - entries that did not exist before, because
+nothing about the module was loadable before. That manifest is the
+cheap way to answer "is this import lazy yet", just as the route's
+client-reference-manifest answers "is this on the critical path".
+
+Lint was compared by stashing the three files and re-running `eslint`:
+21 problems before, 21 after, same set - the `no-explicit-any` errors in
+`BookingModal` and `ServiceDetailClient` are pre-existing.
+
+### Register status after Phase 2 part 7
+
+| # | IDs | Status |
+| --- | --- | --- |
+| 14 | A4-A12 | **closed** - A4/A9 skipped by decision; A5 `0f1e59f`, A7 `8338510`, A8 `ee3ebbf`, A11 `f3e566c`, A12 `baa3972` landed in Phase 1, A10 `03206df` and A6 `b56940e` in Phase 2 |
+| 12 | C5, C7, C8 | **closed** - `139982e`, `014549d`, `32c6ae2` |
+| 3 | C6/D9 | **closed** - `db76a92` |
+| 6 | D1 | **closed** - `8637fe2` |
+| 11 | D2/D3/D4/D8 | **closed** - `7a1b91c`, `ccf2da6`, `b3f0c38`, `e45bae6` |
+| - | D6, D7, D13 | **closed** - `e7ddf78`; `0184000`/`49f2da0`/`e45bae6`; `67e3661` + `1b65fa1` |
+| 13 | D10, D11, D14 | **closed** - `efbc5fd` + `9772559`, `82128d2`, `1b65fa1` |
+| 13 | D12 | **disproven, 2 fields residual** - `service_radius`, `experience_years`, both need a product decision |
+| 15 | D22 | **open** - the last mechanical item: 4 response-envelope shapes, `ApiResponse` used once |
