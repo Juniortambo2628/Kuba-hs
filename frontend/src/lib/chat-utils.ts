@@ -1,9 +1,5 @@
 import { getAvatarDisplayUrl } from "@/lib/avatar-url";
-import { extractApiList } from "@/lib/api-response";
 import type { Conversation, Message, User } from "@/types";
-
-/** @deprecated Use extractApiList from "@/lib/api-response" directly. */
-export const unwrapResourceList = extractApiList;
 
 export function unwrapResource<T>(payload: unknown): T | null {
   if (!payload || typeof payload !== "object") return null;

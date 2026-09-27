@@ -1,9 +1,6 @@
 import type { ProviderService, Service } from "@/types";
 import { extractApiList } from "@/lib/api-response";
 
-/** @deprecated Use extractApiList from "@/lib/api-response" directly. */
-export const unwrapResourceList = extractApiList;
-
 export interface ProviderServicesPayload {
   services: ProviderService[];
   available_services: Service[];
@@ -12,8 +9,8 @@ export interface ProviderServicesPayload {
 export function normalizeProviderServicesResponse(raw: unknown): ProviderServicesPayload {
   const body = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
   return {
-    services: unwrapResourceList<ProviderService>(body.services),
-    available_services: unwrapResourceList<Service>(body.available_services),
+    services: extractApiList<ProviderService>(body.services),
+    available_services: extractApiList<Service>(body.available_services),
   };
 }
 
