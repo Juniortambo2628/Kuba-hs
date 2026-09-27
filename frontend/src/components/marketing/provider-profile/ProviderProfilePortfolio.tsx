@@ -23,6 +23,7 @@ import { useFavoritesContext } from "@/contexts/FavoritesContext";
 import { ProviderLocationMap } from "./ProviderLocationMap";
 import { marketingUi } from "@/lib/marketing-ui";
 import { format } from "date-fns";
+import { formatCurrency } from "@/lib/format";
 
 export interface ProviderProfileData {
   id: string;
@@ -415,7 +416,7 @@ export function ProviderProfilePortfolio({ provider, onBook }: ProviderProfilePo
                   <div>
                     <p className="text-xs font-semibold text-muted-foreground">Starting from</p>
                     <p className="text-xl font-bold text-foreground tabular-nums">
-                      KES {Number(minPrice).toLocaleString()}
+                      {formatCurrency(Number(minPrice))}
                     </p>
                   </div>
                 )}

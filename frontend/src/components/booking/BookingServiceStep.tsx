@@ -11,6 +11,7 @@ import DashboardModal from "@uppy/react/dashboard-modal";
 import type { BookingOffering } from "@/components/booking/BookingModal";
 import type { BookingForm, BookingValues } from "@/components/booking/booking-modal-types";
 import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/format";
 
 interface BookingServiceStepProps {
   form: BookingForm;
@@ -63,7 +64,7 @@ export function BookingServiceStep({
                     <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{normalized.description}</p>
                   )}
                   <p className="text-sm font-bold text-primary mt-2 tabular-nums">
-                    KES {Number(normalized.base_price || 0).toLocaleString()}
+                    {formatCurrency(Number(normalized.base_price || 0))}
                     {normalized.pricing_type === "hourly" ? " / hr" : ""}
                   </p>
                 </button>

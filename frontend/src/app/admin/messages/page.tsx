@@ -31,6 +31,7 @@ import {
 } from "@/components/dashboard/workspace";
 import { workspaceUi } from "@/lib/dashboard-ui";
 import { formatStatusLabel } from "@/lib/dashboard-copy";
+import { formatDate } from "@/lib/format";
 
 const TYPE_LABELS: Record<UnifiedInboxMessage["type"], string> = {
   contact: "Support",
@@ -188,7 +189,7 @@ export default function MessagingHubPage() {
                         {TYPE_LABELS[msg.type]}
                       </span>
                       <span className="text-[10px] text-muted-foreground tabular-nums">
-                        {new Date(msg.created_at).toLocaleDateString(undefined, {
+                        {formatDate(msg.created_at, {
                           month: "short",
                           day: "numeric",
                         })}

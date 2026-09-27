@@ -36,6 +36,7 @@ import { cn } from "@/lib/utils";
 import axiosInstance from "@/lib/axios";
 import { toast } from "sonner";
 import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
+import { formatDate } from "@/lib/format";
 
 interface PromoCode {
     id: number;
@@ -213,7 +214,7 @@ export default function PromotionsPage() {
                                 <div className="flex items-center justify-between pt-2">
                                     <div className="flex items-center gap-1.5 text-muted-foreground">
                                         <Clock className="w-3.5 h-3.5" />
-                                        <span className="text-[10px] font-bold uppercase">{new Date(promo.end_date).toLocaleDateString()} expiry</span>
+                                        <span className="text-[10px] font-bold uppercase">{formatDate(promo.end_date)} expiry</span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <Button 

@@ -7,6 +7,7 @@ import { AppButton } from "@/components/shared/ui";
 import { getMediaUrl } from "@/lib/utils";
 import Link from "next/link";
 import { providerHref } from "@/lib/provider-urls";
+import { formatCurrency } from "@/lib/format";
 
 interface BookingProvider {
   id?: string;
@@ -46,7 +47,7 @@ export function MarketingBookingSidebar({
         <p className="text-sm font-medium text-muted-foreground mb-1">Estimated price</p>
         <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
           <span className="text-3xl font-bold tracking-tight text-foreground tabular-nums">
-            KES {Number(price || 0).toLocaleString()}
+            {formatCurrency(Number(price || 0))}
           </span>
           <span className="text-sm font-medium text-muted-foreground">per {unit}</span>
         </div>

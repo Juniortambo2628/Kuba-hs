@@ -30,6 +30,7 @@ import { workspaceUi } from "@/lib/dashboard-ui";
 import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
 import type { Booking, Provider } from "@/types";
 import { extractApiList } from "@/lib/api-response";
+import { formatDate, formatCurrency } from "@/lib/format";
 
 interface ProviderStats {
   total_earnings: number;
@@ -251,7 +252,7 @@ export default function ProviderOverview() {
     );
   }
 
-  const today = new Date().toLocaleDateString(undefined, {
+  const today = formatDate(new Date(), {
     weekday: "long",
     day: "numeric",
   });
@@ -301,7 +302,7 @@ export default function ProviderOverview() {
         <DashboardFrostedStatCard
           icon={Wallet}
           label="Total earnings"
-          value={`KES ${Number(stats?.total_earnings ?? 0).toLocaleString()}`}
+          value={`${formatCurrency(Number(stats?.total_earnings ?? 0))}`}
           tone="primary"
           hint="Completed payments"
         />

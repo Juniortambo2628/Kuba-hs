@@ -22,6 +22,7 @@ import { uiPrimitives } from "@/lib/ui-primitives";
 import { marketingUi } from "@/lib/marketing-ui";
 import { resolveServiceThumbnailSrc } from "@/lib/marketing-hero-media";
 import { Provider } from "@/types";
+import { formatCurrency } from "@/lib/format";
 
 type TabId = "providers" | "about" | "process";
 
@@ -200,7 +201,7 @@ export function ServiceDetailPortfolio({
                 </div>
                 <div className="text-center lg:text-right">
                   <p className={providerProfileUi.statValue}>
-                    {minPrice > 0 ? `KES ${Number(minPrice).toLocaleString()}` : "—"}
+                    {minPrice > 0 ? `${formatCurrency(Number(minPrice))}` : "—"}
                   </p>
                   <p className={providerProfileUi.statLabel}>From</p>
                 </div>

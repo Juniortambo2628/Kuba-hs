@@ -32,6 +32,7 @@ import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useData } from "@/hooks/useData";
+import { formatDate, formatCurrency } from "@/lib/format";
 
 interface MonthData {
   month: string;
@@ -89,25 +90,25 @@ export function FinanceOverview() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard
           label="Transaction Volume"
-          value={`KES ${Number(stats?.total_volume || 0).toLocaleString()}`}
+          value={`${formatCurrency(Number(stats?.total_volume || 0))}`}
           icon={DollarSign}
           trend="Gross platform flow"
         />
         <MetricCard
           label="Platform Profit"
-          value={`KES ${Number(stats?.total_platform_fees || 0).toLocaleString()}`}
+          value={`${formatCurrency(Number(stats?.total_platform_fees || 0))}`}
           icon={TrendingUp}
           trend="System commission"
         />
         <MetricCard
           label="Merchant Payouts"
-          value={`KES ${Number(stats?.total_provider_payouts || 0).toLocaleString()}`}
+          value={`${formatCurrency(Number(stats?.total_provider_payouts || 0))}`}
           icon={Wallet}
           trend="Settled accounts"
         />
         <MetricCard
           label="Escrow Capital"
-          value={`KES ${Number(stats?.pending_payouts || 0).toLocaleString()}`}
+          value={`${formatCurrency(Number(stats?.pending_payouts || 0))}`}
           icon={ShieldCheck}
           trend="Pending verification"
         />
@@ -139,7 +140,7 @@ export function FinanceOverview() {
                     axisLine={false}
                     tickLine={false}
                     tick={{ fontSize: 10, fontWeight: 700 }}
-                    tickFormatter={(val) => `KES ${val}`}
+                    tickFormatter={(val) => `${formatCurrency(val)}`}
                   />
                   <Tooltip contentStyle={{ borderRadius: "1rem", border: "none" }} />
                   <Area
@@ -220,7 +221,7 @@ export function FinanceOverview() {
                     <p className="text-xs font-bold font-mono">#{payment.transaction_id?.slice(-8)}</p>
                     <p className="text-[10px] text-muted-foreground flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
-                      {new Date(payment.created_at).toLocaleDateString()}
+                      {formatDate(payment.created_at)}
                     </p>
                   </TableCell>
                   <TableCell className="py-3 text-xs">
@@ -228,9 +229,9 @@ export function FinanceOverview() {
                     <p className="text-muted-foreground">{payment.provider?.user?.name}</p>
                   </TableCell>
                   <TableCell className="py-3">
-                    <p className="text-sm font-bold">KES {Number(payment.amount).toLocaleString()}</p>
+                    <p className="text-sm font-bold">{formatCurrency(Number(payment.amount))}</p>
                     <p className="text-[10px] text-emerald-600 font-bold">
-                      Fee: KES {Number(payment.platform_fee).toLocaleString()}
+                      Fee: {formatCurrency(Number(payment.platform_fee))}
                     </p>
                   </TableCell>
                   <TableCell className="py-3">

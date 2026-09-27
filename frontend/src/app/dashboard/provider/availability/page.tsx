@@ -22,6 +22,7 @@ import {
   AvailabilityExceptionsDialog,
   type ScheduleException,
 } from "@/components/dashboard/AvailabilityExceptionsDialog";
+import { formatDate } from "@/lib/format";
 
 const DAYS = [
   { id: 0, name: "Sunday" },
@@ -74,7 +75,7 @@ export default function AvailabilityManagement() {
   const formatExceptionDate = (date: string) => {
     const d = date?.split("T")[0] ?? date;
     try {
-      return new Date(d + "T12:00:00").toLocaleDateString(undefined, {
+      return formatDate(d + "T12:00:00", {
         weekday: "short",
         month: "short",
         day: "numeric",

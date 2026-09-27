@@ -3,6 +3,7 @@
 import { MapPin, Star, Shield, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ProviderSearchRowData } from "@/components/marketplace/ProviderSearchRow";
+import { formatCurrency } from "@/lib/format";
 
 type ProviderService = {
   name?: string;
@@ -33,7 +34,7 @@ export function ProviderMapHoverPreview({ provider, className }: ProviderMapHove
     provider.rating != null ? Number(provider.rating).toFixed(1) : null;
   const price =
     provider.starting_price != null
-      ? `KES ${Number(provider.starting_price).toLocaleString()}`
+      ? `${formatCurrency(Number(provider.starting_price))}`
       : null;
   const offered = serviceNames(provider.services);
   const shown = offered.slice(0, 4);

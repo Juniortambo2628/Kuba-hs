@@ -24,6 +24,7 @@ import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { useData } from "@/hooks/useData";
 import { toast } from "sonner";
+import { formatDate } from "@/lib/format";
 
 interface Review {
  id: string;
@@ -194,7 +195,7 @@ export default function AdminFeedback() {
                                                     <Trash2 className="w-4 h-4" />
                                                 </Button>
                                                 <span className="text-[10px] text-muted-foreground ml-2">
-                                                    {new Date(review.created_at).toLocaleDateString(undefined, { day: '2-digit', month: 'short' })}
+                                                    {formatDate(review.created_at, { day: '2-digit', month: 'short' })}
                                                 </span>
                                             </div>
                                         </TableCell>
@@ -268,7 +269,7 @@ export default function AdminFeedback() {
                                         </Button>
                                     </div>
                                     <span className="text-[10px] font-bold text-muted-foreground">
-                                        {new Date(review.created_at).toLocaleDateString(undefined, { day: '2-digit', month: 'short' })}
+                                        {formatDate(review.created_at, { day: '2-digit', month: 'short' })}
                                     </span>
                                 </div>
                             </CardContent>

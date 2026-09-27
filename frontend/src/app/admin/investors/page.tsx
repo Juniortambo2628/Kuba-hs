@@ -47,6 +47,7 @@ import { useData } from "@/hooks/useData";
 import { InvestorInquiry } from "@/types";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { formatDate } from "@/lib/format";
 
 export default function AdminInvestorsPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -187,7 +188,7 @@ export default function AdminInvestorsPage() {
                       </p>
                     </TableCell>
                     <TableCell className="py-4 text-sm text-muted-foreground">
-                      {new Date(inquiry.created_at).toLocaleDateString(undefined, {
+                      {formatDate(inquiry.created_at, {
                         day: "numeric",
                         month: "short",
                         year: "numeric",

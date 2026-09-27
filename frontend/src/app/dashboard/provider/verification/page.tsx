@@ -28,6 +28,7 @@ import { formatDocumentType } from "@/lib/dashboard-copy";
 import { workspaceUi } from "@/lib/dashboard-ui";
 import { cn, getMediaUrl } from "@/lib/utils";
 import type { VerificationDocument } from "@/types";
+import { formatDate } from "@/lib/format";
 
 function statusIcon(status: string) {
   switch (status) {
@@ -191,7 +192,7 @@ export default function ProviderVerification() {
                       {formatDocumentType(doc.document_type)}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Submitted {doc.created_at ? new Date(doc.created_at).toLocaleDateString() : 'Unknown'}
+                      Submitted {doc.created_at ? formatDate(doc.created_at) : 'Unknown'}
                     </p>
                     {doc.rejection_reason && (
                       <p className="text-xs text-red-600 mt-1">{doc.rejection_reason}</p>

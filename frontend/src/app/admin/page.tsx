@@ -49,6 +49,7 @@ import { Booking, User, Provider } from "@/types";
 import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Suspense } from "react";
+import { formatDate, formatCurrency } from "@/lib/format";
 
 interface AdminStats {
   total_users: number;
@@ -89,7 +90,7 @@ function AdminDashboardContent() {
     { label: "Total Users", value: stats?.total_users, icon: Users, trend: `${(stats?.growth?.users ?? 0) >= 0 ? '+' : ''}${stats?.growth?.users ?? 0}%` },
     { label: "Active Bookings", value: stats?.total_bookings, icon: Calendar, trend: `${(stats?.growth?.bookings ?? 0) >= 0 ? '+' : ''}${stats?.growth?.bookings ?? 0}%` },
     { label: "Avg Rating", value: stats?.avg_rating ? Number(stats?.avg_rating).toFixed(1) : '—', icon: Star, trend: "Market Leading" },
-    { label: "Revenue", value: `KES ${Number(stats?.platform_revenue || 0).toLocaleString()}`, icon: Banknote, trend: `${(stats?.growth?.revenue ?? 0) >= 0 ? '+' : ''}${stats?.growth?.revenue ?? 0}%` },
+    { label: "Revenue", value: `${formatCurrency(Number(stats?.platform_revenue || 0))}`, icon: Banknote, trend: `${(stats?.growth?.revenue ?? 0) >= 0 ? '+' : ''}${stats?.growth?.revenue ?? 0}%` },
   ];
 
   const handleExport = async () => {
@@ -244,7 +245,7 @@ function AdminDashboardContent() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <p className="text-sm font-medium text-foreground">{new Date(booking.scheduled_date).toLocaleDateString()}</p>
+                    <p className="text-sm font-medium text-foreground">{formatDate(booking.scheduled_date)}</p>
                   </TableCell>
                   <TableCell>
                     <StatusBadge status={booking.status} type="booking" />

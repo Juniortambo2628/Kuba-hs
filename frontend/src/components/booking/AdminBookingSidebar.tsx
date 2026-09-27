@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { OperationalLog } from "@/components/booking/OperationalLog";
 import { Booking } from "@/types";
+import { formatCurrency } from "@/lib/format";
 
 interface AdminBookingSidebarProps {
   booking: Booking & {
@@ -51,7 +52,7 @@ export function AdminBookingSidebar({
           </div>
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Registry Value</p>
           <h3 className="text-4xl font-black italic tracking-tighter mt-1 leading-none">
-            KES {Number(booking.final_price || booking.estimated_price || 0).toLocaleString()}
+            {formatCurrency(Number(booking.final_price || booking.estimated_price || 0))}
           </h3>
         </CardHeader>
         <CardContent className="p-8 pt-4 space-y-6">

@@ -19,6 +19,7 @@ import { getMediaUrl } from "@/lib/utils";
 import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
 import { KubaFilePond } from "@/components/ui/filepond";
+import { formatCurrency } from "@/lib/format";
 
 export default function AdminProviderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -172,7 +173,7 @@ export default function AdminProviderDetailPage({ params }: { params: Promise<{ 
             <p className="text-[10px] font-bold uppercase text-muted-foreground flex items-center gap-1">
               <Wallet className="w-3.5 h-3.5" /> Balance
             </p>
-            <p className="text-2xl font-black">KES {(provider.balance ?? 0).toLocaleString()}</p>
+            <p className="text-2xl font-black">{formatCurrency((provider.balance ?? 0))}</p>
           </CardContent>
         </Card>
       </div>
@@ -366,7 +367,7 @@ export default function AdminProviderDetailPage({ params }: { params: Promise<{ 
 
       <div className="flex justify-between pt-4 border-t border-border">
         <p className="text-xs text-muted-foreground">
-          Total earned: KES {(provider.total_earned ?? 0).toLocaleString()} · Quality score: {provider.quality_score ?? 0}
+          Total earned: {formatCurrency((provider.total_earned ?? 0))} · Quality score: {provider.quality_score ?? 0}
         </p>
         <Button variant="destructive" onClick={() => setShowDeactivate(true)} className="rounded-xl">
           Deactivate provider

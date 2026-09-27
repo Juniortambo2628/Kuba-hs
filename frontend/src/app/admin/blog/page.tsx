@@ -16,6 +16,7 @@ import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { useData } from "@/hooks/useData";
 import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
 import { BlogPostFormDialog } from "@/components/admin/BlogPostFormDialog";
+import { formatDate } from "@/lib/format";
 
 interface Post {
  id: string;
@@ -83,7 +84,7 @@ const columns: ColumnDef<Post>[] = [
     render: (post) => (
       <div className="flex items-center gap-2">
         <Calendar className="w-3 h-3" />
-        {new Date(post.created_at).toLocaleDateString('default', { day: '2-digit', month: 'short', year: 'numeric' })}
+        {formatDate(post.created_at, { day: '2-digit', month: 'short', year: 'numeric' })}
       </div>
     ),
   },
@@ -171,7 +172,7 @@ export default function AdminBlog() {
                 </div>
                 <div className="flex items-center gap-1.5 flex-shrink-0">
                   <Calendar className="w-3.5 h-3.5" />
-                  {new Date(post.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                  {formatDate(post.created_at, { month: 'short', day: 'numeric', year: 'numeric' })}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2 pt-4">

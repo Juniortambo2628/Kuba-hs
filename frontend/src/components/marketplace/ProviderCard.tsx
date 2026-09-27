@@ -13,6 +13,7 @@ import { MarketplaceCardLink } from "@/components/marketplace/MarketplaceCardLin
 import { ProviderCardAvatar } from "@/components/marketplace/ProviderCardAvatar";
 import { FavoriteButton } from "@/components/marketplace/FavoriteButton";
 import { useFavoritesContext } from "@/contexts/FavoritesContext";
+import { formatCurrency } from "@/lib/format";
 
 export type ProviderCardData = Pick<
   Provider,
@@ -48,7 +49,7 @@ export function ProviderCard({
   const L = marketplaceUi.listing;
   const cardImageSrc = resolveProviderCardImageUrl(provider);
   const startingPrice =
-    provider.starting_price != null ? Number(provider.starting_price).toLocaleString() : null;
+    provider.starting_price != null ? Number(provider.starting_price) : null;
   const categoryName = provider.services?.[0]?.service?.category?.name;
   const serviceCount = provider.services?.length ?? 0;
   const { isFavorited, toggleFavorite } = useFavoritesContext();
@@ -119,7 +120,7 @@ export function ProviderCard({
                 {startingPrice && (
                   <div className={cn(L.pricePill, "shrink-0 ml-2 mt-1")}>
                     <span className={L.priceLabel}>From</span>
-                    <p className={L.priceMain}>KES {startingPrice}</p>
+                    <p className={L.priceMain}>{formatCurrency(startingPrice)}</p>
                   </div>
                 )}
               </div>
@@ -203,7 +204,7 @@ export function ProviderCard({
                 provider.rating != null ? Number(provider.rating).toFixed(1) : "New"
               }
               reviewCount={provider.review_count}
-              price={startingPrice ? `KES ${startingPrice}` : null}
+              price={startingPrice ? `${formatCurrency(startingPrice)}` : null}
             />
           </div>
         </article>

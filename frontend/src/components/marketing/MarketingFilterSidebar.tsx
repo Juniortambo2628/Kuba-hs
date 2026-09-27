@@ -6,6 +6,7 @@ import { SlidersHorizontal, Shield, Star, Paintbrush, Hammer, Droplets, Lightbul
 import axiosInstance from "@/lib/axios";
 import { cn } from "@/lib/utils";
 import { MarketingFilterCard } from "./MarketingFilterCard";
+import { formatCurrency } from "@/lib/format";
 
 interface Service {
   id: number;
@@ -301,7 +302,7 @@ export function MarketingFilterSidebar() {
           </div>
           <div className="flex-1 p-1.5 rounded-lg border border-border bg-card">
             <span className="text-[8px] text-muted-foreground block font-bold uppercase tracking-wider">Maximum</span>
-            <span className="text-[11px] font-bold text-foreground block mt-0.5">KES {maxPrice.toLocaleString()}</span>
+            <span className="text-[11px] font-bold text-foreground block mt-0.5">{formatCurrency(maxPrice)}</span>
           </div>
         </div>
       </div>

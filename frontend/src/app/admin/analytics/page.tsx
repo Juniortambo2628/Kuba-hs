@@ -40,6 +40,7 @@ import { ChartContainer } from "@/components/shared/ChartContainer";
 import { DashboardPageSkeleton } from "@/components/shared/DashboardPageSkeleton";
 import { MetricCard } from "@/components/shared/MetricCard";
 import { useData } from "@/hooks/useData";
+import { formatCurrency } from "@/lib/format";
 
 interface AnalyticsData {
   trends: {
@@ -87,8 +88,6 @@ export default function AdminAnalytics() {
     count: s.provider_services_count,
     fill: CHART_COLORS[i % CHART_COLORS.length]
   }));
-
-  const formatCurrency = (val: number) => `KES ${Number(val).toLocaleString()}`;
 
   const stats = [
     { label: "Total Revenue", value: formatCurrency(data.summary.platform_revenue), icon: DollarSign, trend: `${data.growth.revenue >= 0 ? '+' : ''}${data.growth.revenue}%`, trendUp: data.growth.revenue >= 0 },
@@ -214,10 +213,10 @@ export default function AdminAnalytics() {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
                 <XAxis dataKey="date" tick={{fontSize: 11}} tickLine={false} axisLine={false} stroke="var(--muted-foreground)" />
-                <YAxis tickFormatter={(val) => `KES ${val}`} tick={{fontSize: 11}} tickLine={false} axisLine={false} stroke="var(--muted-foreground)" />
+                <YAxis tickFormatter={(val) => `${formatCurrency(val)}`} tick={{fontSize: 11}} tickLine={false} axisLine={false} stroke="var(--muted-foreground)" />
                 <Tooltip 
                   contentStyle={{ borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--foreground)', fontSize: 13 }}
-                  formatter={(value) => [`KES ${Number(value).toLocaleString()}`, 'Revenue']}
+                  formatter={(value) => [`${formatCurrency(Number(value))}`, 'Revenue']}
                 />
                 <Area type="monotone" dataKey="count" stroke="var(--foreground)" strokeWidth={2} fillOpacity={1} fill="url(#colorRevenue)" />
               </AreaChart>

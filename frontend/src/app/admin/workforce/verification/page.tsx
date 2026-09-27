@@ -48,6 +48,7 @@ import {
 } from "@/components/shared/DashboardTable";
 import type { WorkforceProposal } from "@/types/admin";
 import { dashboardUi } from "@/lib/dashboard-ui";
+import { formatDate } from "@/lib/format";
 
 function AdminVerificationContent() {
   const { data: proposals, isLoading, refetch: fetchProposals } = useData<WorkforceProposal[]>(
@@ -145,7 +146,7 @@ function AdminVerificationContent() {
                     </div>
                   </TableCell>
                   <TableCell className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                    {new Date(p.created_at).toLocaleDateString([], { day: '2-digit', month: 'short', year: 'numeric' })}
+                    {formatDate(p.created_at, { day: '2-digit', month: 'short', year: 'numeric' })}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">

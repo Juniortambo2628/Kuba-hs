@@ -10,6 +10,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { getBookingStatusAccentClass } from "@/lib/status-styles";
 import { Booking } from "@/types";
+import { formatDate } from "@/lib/format";
 
 function parseScheduledDate(dateStr?: string | null): Date | null {
   if (!dateStr) return null;
@@ -122,7 +123,7 @@ export function BookingCard({
                 <div className="flex flex-wrap items-center gap-4 md:gap-6 text-[10px] font-bold text-muted-foreground tracking-tight mt-2">
                   <span className="flex items-center gap-1.5">
                     <Calendar className="w-3.5 h-3.5" />{" "}
-                    {scheduled ? scheduled.toLocaleDateString() : "Date TBD"}
+                    {scheduled ? formatDate(scheduled) : "Date TBD"}
                   </span>
                   <span className="flex items-center gap-1.5 font-bold text-foreground">
                     <UserIcon className="w-3.5 h-3.5" /> {isProvider ? booking.customer?.name : isAdmin ? `Client: ${booking.customer?.name}` : booking.provider?.business_name || 'Assigned Pro'}
@@ -143,7 +144,7 @@ export function BookingCard({
           {booking.rescheduled_at && (
             <div className="flex items-center gap-2 p-3 bg-primary/5 border border-primary/10 rounded-xl">
               <Clock className="w-3.5 h-3.5 text-primary" />
-              <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Rescheduled on {new Date(booking.rescheduled_at).toLocaleDateString()}</span>
+              <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Rescheduled on {formatDate(booking.rescheduled_at)}</span>
             </div>
           )}
 

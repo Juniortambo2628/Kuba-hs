@@ -35,6 +35,7 @@ import { LiveServiceTimer } from "@/components/booking/LiveServiceTimer";
 import { crudDialogUi } from "@/lib/crud-dialog-ui";
 import { cn } from "@/lib/utils";
 import type { Booking } from "@/types";
+import { formatCurrency } from "@/lib/format";
 
 export type BookingDetailRole = "client" | "provider";
 
@@ -244,7 +245,7 @@ export function BookingDetailDialog({
                           {isProvider ? "Estimate" : "Estimate"}
                         </p>
                         <p className="text-lg font-bold text-foreground tabular-nums">
-                          KES {Number(price).toLocaleString()}
+                          {formatCurrency(Number(price))}
                         </p>
                       </div>
                     </div>

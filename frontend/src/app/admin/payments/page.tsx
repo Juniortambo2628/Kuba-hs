@@ -32,6 +32,7 @@ import { PaymentTransactionBadge } from "@/components/shared/PaymentTransactionB
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { PaymentDetailSheet } from "@/components/admin/PaymentDetailSheet";
 import axiosInstance from "@/lib/axios";
+import { formatDate, formatCurrency } from "@/lib/format";
 
 // --- TYPES ---
 interface Payment {
@@ -111,11 +112,11 @@ function AdminPaymentsContent() {
         </TabsContent>
 
         <TabsContent value="transactions" className="space-y-6 mt-0">
-          <TransactionsView exportToCSV={exportToCSV} formatKES={formatKES} />
+          <TransactionsView exportToCSV={exportToCSV} />
         </TabsContent>
 
         <TabsContent value="payouts" className="space-y-6 mt-0">
-          <PayoutsView exportToCSV={exportToCSV} formatKES={formatKES} />
+          <PayoutsView exportToCSV={exportToCSV} />
         </TabsContent>
       </Tabs>
     </DashboardPageContainer>
@@ -131,10 +132,10 @@ export default function AdminPayments() {
 }
 
 // --- HELPERS ---
-const formatKES = (val: number | string) => `KES ${Number(val || 0).toLocaleString()}`;
+
 
 // --- TRANSACTIONS VIEW (Existing Logic) ---
-function TransactionsView({ exportToCSV, formatKES }: { exportToCSV: any, formatKES: any }) {
+function TransactionsView({ exportToCSV }: { exportToCSV: any }) {
   const { search, setSearch, status, setStatus } = useSearchState();
   const [viewMode, setViewMode] = useState<'grid'|'list'>('grid');
   const [detailPaymentId, setDetailPaymentId] = useState<string | null>(null);
@@ -148,9 +149,9 @@ function TransactionsView({ exportToCSV, formatKES }: { exportToCSV: any, format
   const stats = paymentData?.stats;
 
   const kpiStats = [
-    { label: "Gross Volume", value: stats ? formatKES(stats.total_volume) : "KES 0", icon: Banknote, trend: "Total processed" },
-    { label: "Platform Fees", value: stats ? formatKES(stats.total_fees) : "KES 0", icon: Zap, trend: "Total earned" },
-    { label: "Pending Funds", value: stats ? formatKES(stats.pending_volume) : "KES 0", icon: Clock, trend: "Awaiting settlement" },
+    { label: "Gross Volume", value: stats ? formatCurrency(stats.total_volume) : "KES 0", icon: Banknote, trend: "Total processed" },
+    { label: "Platform Fees", value: stats ? formatCurrency(stats.total_fees) : "KES 0", icon: Zap, trend: "Total earned" },
+    { label: "Pending Funds", value: stats ? formatCurrency(stats.pending_volume) : "KES 0", icon: Clock, trend: "Awaiting settlement" },
     { label: "Success Rate", value: stats ? `${stats.completed_count} Tx` : "0 Tx", icon: CheckCircle, trend: "Fully settled" }
   ];
 
@@ -226,14 +227,14 @@ function TransactionsView({ exportToCSV, formatKES }: { exportToCSV: any, format
                     <div className="text-xs text-muted-foreground">to {p.provider?.business_name}</div>
                   </TableCell>
                   <TableCell className="py-4">
-                    <div className="font-black text-sm">{formatKES(p.amount)}</div>
-                    <div className="text-[10px] text-muted-foreground">{formatKES(p.platform_fee)} Platform Fee</div>
+                    <div className="font-black text-sm">{formatCurrency(p.amount)}</div>
+                    <div className="text-[10px] text-muted-foreground">{formatCurrency(p.platform_fee)} Platform Fee</div>
                   </TableCell>
                   <TableCell className="py-4">
                     <PaymentTransactionBadge status={p.status} />
                   </TableCell>
                   <TableCell className="py-4 text-xs font-bold text-muted-foreground">
-                    {new Date(p.created_at).toLocaleDateString()}
+                    {formatDate(p.created_at)}
                   </TableCell>
                   <TableCell className="pr-6 py-4 text-right">
                     <Button
@@ -270,7 +271,7 @@ function TransactionsView({ exportToCSV, formatKES }: { exportToCSV: any, format
 }
 
 // --- PAYOUTS VIEW (New Phase 25 Logic) ---
-function PayoutsView({ exportToCSV, formatKES }: { exportToCSV: any, formatKES: any }) {
+function PayoutsView({ exportToCSV }: { exportToCSV: any }) {
   const { search, setSearch, status, setStatus } = useSearchState();
 
   const { data: overview, isLoading: loadingOverview } = useData<any>('/api/admin/financials/overview');
@@ -291,9 +292,9 @@ function PayoutsView({ exportToCSV, formatKES }: { exportToCSV: any, formatKES: 
   const [notes, setNotes] = useState('');
 
   const kpiStats = [
-    { label: "Total Platform Revenue", value: overview ? formatKES(overview.total_revenue) : "KES 0", icon: Banknote, trend: "Lifetime Earnings" },
-    { label: "Global Provider Balance", value: overview ? formatKES(overview.global_provider_balance) : "KES 0", icon: Wallet, trend: "Held in platform" },
-    { label: "Pending Payout Amount", value: overview ? formatKES(overview.pending_payouts_amount) : "KES 0", icon: AlertCircle, trend: "Requires action" },
+    { label: "Total Platform Revenue", value: overview ? formatCurrency(overview.total_revenue) : "KES 0", icon: Banknote, trend: "Lifetime Earnings" },
+    { label: "Global Provider Balance", value: overview ? formatCurrency(overview.global_provider_balance) : "KES 0", icon: Wallet, trend: "Held in platform" },
+    { label: "Pending Payout Amount", value: overview ? formatCurrency(overview.pending_payouts_amount) : "KES 0", icon: AlertCircle, trend: "Requires action" },
     { label: "Pending Requests", value: overview ? `${overview.pending_payouts_count} Requests` : "0", icon: Clock, trend: "In queue" }
   ];
 
@@ -382,8 +383,8 @@ function PayoutsView({ exportToCSV, formatKES }: { exportToCSV: any, formatKES: 
                     <div className="text-xs text-muted-foreground">{p.provider?.user?.email}</div>
                   </TableCell>
                   <TableCell className="py-4">
-                    <div className="font-black text-sm">{formatKES(p.amount)}</div>
-                    <div className="text-[10px] text-muted-foreground">Current Bal: {formatKES(p.provider?.balance || 0)}</div>
+                    <div className="font-black text-sm">{formatCurrency(p.amount)}</div>
+                    <div className="text-[10px] text-muted-foreground">Current Bal: {formatCurrency(p.provider?.balance || 0)}</div>
                   </TableCell>
                   <TableCell className="py-4">
                     <Badge variant="outline" className="capitalize text-[10px] bg-background/50 border-border">{p.payment_method?.replace('_', ' ')}</Badge>
@@ -392,7 +393,7 @@ function PayoutsView({ exportToCSV, formatKES }: { exportToCSV: any, formatKES: 
                     <StatusBadge status={p.status} type="payout" />
                   </TableCell>
                   <TableCell className="py-4 text-xs font-bold text-muted-foreground whitespace-nowrap">
-                    {new Date(p.created_at).toLocaleDateString()}
+                    {formatDate(p.created_at)}
                   </TableCell>
                   <TableCell className="pr-6 py-4 text-right">
                     {p.status === 'pending' || p.status === 'processing' ? (
@@ -439,7 +440,7 @@ function PayoutsView({ exportToCSV, formatKES }: { exportToCSV: any, formatKES: 
                   </div>
                   <div className="flex justify-between items-center pt-1">
                     <span className="text-xs font-bold text-muted-foreground">Requested Amount</span>
-                    <span className="text-lg font-black text-primary">{formatKES(selectedPayout.amount)}</span>
+                    <span className="text-lg font-black text-primary">{formatCurrency(selectedPayout.amount)}</span>
                   </div>
                 </div>
               </div>

@@ -13,6 +13,7 @@ import Image from "next/image";
 import { useData } from "@/hooks/useData";
 import { HeroSkeleton } from "@/components/shared/AdvancedSkeleton";
 import { MarketingShell } from "@/components/layout/MarketingShell";
+import { formatDate } from "@/lib/format";
 
 export default function BlogClient({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
@@ -79,7 +80,7 @@ export default function BlogClient({ params }: { params: Promise<{ slug: string 
                     </div>
                     <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4" /> 
-                        {new Date(post.created_at).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}
+                        {formatDate(post.created_at, { month: 'long', day: 'numeric', year: 'numeric' })}
                     </div>
                 </div>
 

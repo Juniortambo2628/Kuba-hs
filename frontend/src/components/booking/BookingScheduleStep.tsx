@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, ShieldCheck } from "lucide-react";
 import type { BookingForm, BookingValues } from "@/components/booking/booking-modal-types";
+import { formatCurrency } from "@/lib/format";
 
 interface BookingScheduleStepProps {
   form: BookingForm;
@@ -103,7 +104,7 @@ export function BookingScheduleStep({
         {promoError && <p className="text-[10px] text-red-500 font-bold italic">{promoError}</p>}
         {promoDiscount && (
           <p className="text-[10px] text-emerald-600 font-bold italic">
-            Successful! You're saving KES {promoDiscount.amount.toLocaleString()} on this booking.
+            Successful! You're saving {formatCurrency(promoDiscount.amount)} on this booking.
           </p>
         )}
       </div>

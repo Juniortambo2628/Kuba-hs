@@ -27,6 +27,7 @@ import axiosInstance from "@/lib/axios";
 import { toast } from "sonner";
 import { Booking } from "@/types";
 import { VirtualReceipt } from "./VirtualReceipt";
+import { formatCurrency } from "@/lib/format";
 
 type PaymentMethod = 'select' | 'paystack' | 'mpesa' | 'cash';
 type PaymentStep = 'select' | 'details' | 'processing' | 'success';
@@ -263,15 +264,15 @@ export function CheckoutDialog({ isOpen, onClose, booking, userEmail, onSuccess 
                                     <div className="bg-muted/30 rounded-2xl p-5 border border-border/50">
                                         <div className="flex justify-between items-center text-sm mb-2">
                                             <span className="text-muted-foreground font-medium">{booking.service?.name}</span>
-                                            <span className="font-bold">KES {amount.toLocaleString()}</span>
+                                            <span className="font-bold">{formatCurrency(amount)}</span>
                                         </div>
                                         <div className="flex justify-between items-center text-sm mb-3">
                                             <span className="text-muted-foreground font-medium">Platform Fee</span>
-                                            <span className="font-bold">KES {platformFee.toLocaleString()}</span>
+                                            <span className="font-bold">{formatCurrency(platformFee)}</span>
                                         </div>
                                         <div className="pt-3 border-t border-border flex justify-between items-end">
                                             <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Total</span>
-                                            <span className="text-2xl font-black text-foreground tabular-nums">KES {total.toLocaleString()}</span>
+                                            <span className="text-2xl font-black text-foreground tabular-nums">{formatCurrency(total)}</span>
                                         </div>
                                     </div>
 
@@ -318,7 +319,7 @@ export function CheckoutDialog({ isOpen, onClose, booking, userEmail, onSuccess 
                                     <div className="bg-muted/30 rounded-2xl p-5 border border-border/50">
                                         <div className="pt-2 flex justify-between items-end">
                                             <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Total to Pay</span>
-                                            <span className="text-3xl font-black text-foreground tabular-nums">KES {total.toLocaleString()}</span>
+                                            <span className="text-3xl font-black text-foreground tabular-nums">{formatCurrency(total)}</span>
                                         </div>
                                     </div>
 
@@ -348,7 +349,7 @@ export function CheckoutDialog({ isOpen, onClose, booking, userEmail, onSuccess 
                                 <div className="space-y-6">
                                     <div className="bg-emerald-50 dark:bg-emerald-500/5 rounded-2xl p-5 border border-emerald-100 dark:border-emerald-500/10">
                                         <p className="text-xs text-emerald-700 dark:text-emerald-400 font-medium leading-relaxed">
-                                            Enter your Safaricom phone number. An M-Pesa prompt will appear on your device to authorize <strong>KES {total.toLocaleString()}</strong>.
+                                            Enter your Safaricom phone number. An M-Pesa prompt will appear on your device to authorize <strong>{formatCurrency(total)}</strong>.
                                         </p>
                                     </div>
 

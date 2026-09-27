@@ -40,6 +40,7 @@ import {
   DashboardPanelCard,
 } from "@/components/dashboard/workspace";
 import { workspaceUi } from "@/lib/dashboard-ui";
+import { formatCurrency, formatDate } from "@/lib/format";
 
 function ClientBillingContent() {
   const { user } = useAuth();
@@ -101,7 +102,7 @@ function ClientBillingContent() {
         <DashboardFrostedStatCard
           icon={CheckCircle2}
           label="Total spent"
-          value={`KES ${totalSpent.toLocaleString()}`}
+          value={`${formatCurrency(totalSpent)}`}
           tone="success"
           hint="All time"
         />
@@ -181,14 +182,14 @@ function ClientBillingContent() {
                       </div>
                     </TableCell>
                     <TableCell className="py-4 text-sm text-muted-foreground">
-                      {new Date(String(payment.created_at)).toLocaleDateString(undefined, {
+                      {formatDate(String(payment.created_at), {
                         day: "numeric",
                         month: "short",
                         year: "numeric",
                       })}
                     </TableCell>
                     <TableCell className="py-4 text-sm font-semibold tabular-nums">
-                      KES {Number(payment.amount).toLocaleString()}
+                      {formatCurrency(Number(payment.amount))}
                     </TableCell>
                     <TableCell className="py-4">
                       <PaymentTransactionBadge status={String(payment.status)} />

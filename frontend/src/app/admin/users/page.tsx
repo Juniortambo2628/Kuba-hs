@@ -52,6 +52,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { formatDate } from "@/lib/format";
 
 function AdminUsersContent() {
   const { search, setSearch } = useSearchState();
@@ -192,7 +193,7 @@ function AdminUsersContent() {
                       <StatusBadge status={u.is_active ? "Active" : "Suspended"} type="dashboard" />
                     </TableCell>
                     <TableCell className="text-[10px] font-bold text-muted-foreground">
-                      {new Date(u.created_at).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}
+                      {formatDate(u.created_at, { day: '2-digit', month: 'short', year: 'numeric' })}
                     </TableCell>
                     <TableCell className="pr-6 text-right">
                       <DropdownMenu>

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Clock, Zap, TrendingUp, CheckCircle2 } from "lucide-react";
 import { formatDuration, intervalToDuration } from "date-fns";
+import { formatCurrency } from "@/lib/format";
 
 interface LiveServiceTimerProps {
   startedAt: string;
@@ -113,7 +114,7 @@ export function LiveServiceTimer({
             </p>
             <div className="flex items-baseline gap-2">
               <span className="text-4xl font-black italic tracking-tighter text-sky-600 tabular-nums">
-                KES {liveCost.toLocaleString()}
+                {formatCurrency(liveCost)}
               </span>
               <TrendingUp className="w-4 h-4 text-emerald-500 mb-1" />
             </div>
@@ -122,7 +123,7 @@ export function LiveServiceTimer({
 
         {pricingType === 'hourly' && timerActive && (
           <p className="text-[9px] font-bold text-gray-400 italic">
-            * Cost is rounded up to the nearest hour. Current rate: KES {basePrice.toLocaleString()}/hr
+            * Cost is rounded up to the nearest hour. Current rate: {formatCurrency(basePrice)}/hr
           </p>
         )}
         

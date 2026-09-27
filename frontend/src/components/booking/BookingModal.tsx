@@ -56,6 +56,7 @@ import {
 import { dialogFormUi } from "@/lib/crud-dialog-ui";
 import { crudDialogUi } from "@/lib/crud-dialog-ui";
 import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/format";
 
 export type BookingOffering = {
   id: string;
@@ -585,7 +586,7 @@ export function BookingModal({
         amount: res.data.discount_amount,
         code: code
       });
-      toast.success(`Promo code applied! Saved KES ${res.data.discount_amount.toLocaleString()}`);
+      toast.success(`Promo code applied! Saved ${formatCurrency(res.data.discount_amount)}`);
     } catch (err: any) {
       setPromoError(err.response?.data?.message || "Invalid promo code");
       setPromoDiscount(null);

@@ -12,6 +12,7 @@ import { ListingCardMeta, type ListingMetaItem } from "@/components/marketplace/
 import { ListingCardFrostedFooter } from "@/components/marketplace/ListingCardFrostedFooter";
 import { MarketplaceCardLink } from "@/components/marketplace/MarketplaceCardLink";
 import { MarketplaceCardMediaFallback } from "@/components/marketplace/MarketplaceCardMediaFallback";
+import { formatCurrency } from "@/lib/format";
 
 export interface ServiceCardData {
   id: string | number;
@@ -59,10 +60,10 @@ function serviceImage(service: ServiceCardData) {
   return url ? getMediaUrl(url, "service") : null;
 }
 
-function formatPrice(service: ServiceCardData) {
+function priceAmount(service: ServiceCardData) {
   const amount = service.base_price ?? service.starting_price;
   if (amount == null) return null;
-  return Number(amount).toLocaleString();
+  return Number(amount);
 }
 
 function pricingUnit(type?: string) {
@@ -81,7 +82,7 @@ export function ServiceCard({
   onBookNow,
   bookLabel = "Book now",
 }: ServiceCardProps) {
-  const price = formatPrice(service);
+  const price = priceAmount(service);
   const imageSrc = serviceImage(service);
   const L = marketplaceUi.listing;
   const provider = service.provider;
@@ -136,7 +137,7 @@ export function ServiceCard({
                 {price && (
                   <div className={cn(L.pricePill, "shrink-0 ml-2 mt-1")}>
                     <span className={L.priceLabel}>From</span>
-                    <p className={L.priceMain}>KES {price}</p>
+                    <p className={L.priceMain}>{formatCurrency(price)}</p>
                     <p className={L.priceUnit}>/ {pricingUnit(service.pricing_type)}</p>
                   </div>
                 )}
@@ -218,7 +219,7 @@ export function ServiceCard({
                 provider?.rating != null ? Number(provider.rating).toFixed(1) : undefined
               }
               reviewCount={provider?.review_count}
-              price={price ? `KES ${price}` : null}
+              price={price ? `${formatCurrency(price)}` : null}
               priceUnit={price ? `/ ${pricingUnit(service.pricing_type)}` : null}
               primaryAction={bookAction}
             />

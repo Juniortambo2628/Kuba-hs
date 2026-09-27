@@ -34,6 +34,7 @@ import { useCMS } from "@/contexts/CMSContext";
 import { MarketingViewToggle } from "@/components/marketing/MarketingViewToggle";
 import { NativeSelectField } from "@/components/shared/NativeSelectField";
 import { dialogBelowNavClass } from "@/lib/footer-ui";
+import { formatDate } from "@/lib/format";
 
 const MapView = dynamic(() => import("@/components/shared/MapView"), {
   ssr: false,
@@ -68,7 +69,7 @@ interface HeroSearchModalProps {
 function formatDateOption(offset: number) {
   const d = new Date();
   d.setDate(d.getDate() + offset);
-  return d.toLocaleDateString(undefined, {
+  return formatDate(d, {
     weekday: "short",
     day: "numeric",
     month: "short",

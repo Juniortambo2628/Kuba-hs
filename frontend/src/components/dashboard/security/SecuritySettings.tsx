@@ -33,6 +33,7 @@ import { toast } from "sonner";
 import { Passkey, TwoFactorStatus, TwoFactorSetupResponse } from "@/types";
 import { FieldLabel } from "@/components/shared/ui";
 import { cn } from "@/lib/utils";
+import { formatDate } from "@/lib/format";
 
 interface SecuritySettingsProps {
   role: "customer" | "provider";
@@ -239,7 +240,7 @@ export function SecuritySettings({ role }: SecuritySettingsProps) {
                     <p className="text-sm font-medium">{passkey.name || "Unnamed passkey"}</p>
                     <p className="text-xs text-muted-foreground">
                       {passkey.authenticator_type === "platform" ? "Device biometric" : "Security key"}
-                      {passkey.last_used_at && ` · Last used ${new Date(passkey.last_used_at).toLocaleDateString()}`}
+                      {passkey.last_used_at && ` · Last used ${formatDate(passkey.last_used_at)}`}
                     </p>
                   </div>
                 </div>
@@ -304,7 +305,7 @@ export function SecuritySettings({ role }: SecuritySettingsProps) {
               </div>
               {twoFactorStatus.confirmed_at && (
                 <p className="text-xs text-emerald-600/70 dark:text-emerald-400/70 mt-1">
-                  Enabled on {new Date(twoFactorStatus.confirmed_at).toLocaleDateString()}
+                  Enabled on {formatDate(twoFactorStatus.confirmed_at)}
                 </p>
               )}
             </div>

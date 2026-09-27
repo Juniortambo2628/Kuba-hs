@@ -6,6 +6,7 @@ import { DashboardUserAvatar } from "@/components/dashboard/workspace/DashboardU
 import { workspaceUi } from "@/lib/dashboard-ui";
 import { cn } from "@/lib/utils";
 import type { Booking } from "@/types";
+import { formatDate } from "@/lib/format";
 
 interface DashboardJobsTableProps {
   title: string;
@@ -76,7 +77,7 @@ export function DashboardJobsTable({
                   </td>
                   <td className="px-5 py-4 text-right text-xs text-muted-foreground">
                     {b.scheduled_date
-                      ? new Date(b.scheduled_date).toLocaleDateString()
+                      ? formatDate(b.scheduled_date)
                       : "—"}
                   </td>
                 </tr>

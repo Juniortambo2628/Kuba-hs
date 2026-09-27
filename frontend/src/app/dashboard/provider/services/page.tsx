@@ -23,6 +23,7 @@ import {
   normalizeProviderServicesResponse,
   serviceDisplayName,
 } from "@/lib/provider-services-api";
+import { formatCurrency } from "@/lib/format";
 
 function ServicesManagementContent() {
   const { search } = useSearchState();
@@ -130,7 +131,7 @@ function ServicesManagementContent() {
         <DashboardFrostedStatCard
           icon={CircleDollarSign}
           label="Avg. listed rate"
-          value={stats.count ? `KES ${stats.avg.toLocaleString()}` : "—"}
+          value={stats.count ? `${formatCurrency(stats.avg)}` : "—"}
           tone="success"
           hint={stats.count ? "Across your offerings" : "Add your first service"}
         />

@@ -18,6 +18,7 @@ function categoryDisplayName(offering: ProviderService): string {
 }
 import axiosInstance from "@/lib/axios";
 import { toast } from "sonner";
+import { formatCurrency } from "@/lib/format";
 
 interface ProviderServiceOfferingCardProps {
   offering: ProviderService;
@@ -93,7 +94,7 @@ export function ProviderServiceOfferingCard({
             {isHourly ? "Hourly rate" : "Fixed price"}
           </p>
           <p className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
-            KES {Number(offering.base_price || 0).toLocaleString()}
+            {formatCurrency(Number(offering.base_price || 0))}
             {isHourly && <span className="text-sm font-medium text-muted-foreground"> /hr</span>}
           </p>
           {isHourly && Number(offering.min_hours) > 1 && (
@@ -101,7 +102,7 @@ export function ProviderServiceOfferingCard({
           )}
           {Number(offering.travel_fee) > 0 && (
             <p className="text-[11px] text-muted-foreground">
-              + KES {Number(offering.travel_fee).toLocaleString()} travel
+              + {formatCurrency(Number(offering.travel_fee))} travel
             </p>
           )}
           {offering.equipment_included && (

@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { Booking } from "@/types";
+import { formatCurrency } from "@/lib/format";
 
 interface VirtualReceiptProps {
   booking: Booking;
@@ -71,10 +72,10 @@ export function VirtualReceipt({ booking, onClose, transactionId, paymentMethod 
             <div class="row"><span class="row-label">Service</span><span class="row-value">${booking.service?.name || 'Service'}</span></div>
             <div class="row"><span class="row-label">Customer</span><span class="row-value">${booking.customer?.name || 'Customer'}</span></div>
             <hr class="divider" />
-            <div class="row"><span class="row-label">Service Amount</span><span class="row-value">KES ${amount.toLocaleString()}</span></div>
-            <div class="row"><span class="row-label">Platform Fee (10%)</span><span class="row-value">KES ${platformFee.toLocaleString()}</span></div>
+            <div class="row"><span class="row-label">Service Amount</span><span class="row-value">${formatCurrency(amount)}</span></div>
+            <div class="row"><span class="row-label">Platform Fee (10%)</span><span class="row-value">${formatCurrency(platformFee)}</span></div>
             <hr class="divider" />
-            <div class="row total-row"><span>Total Paid</span><span>KES ${total.toLocaleString()}</span></div>
+            <div class="row total-row"><span>Total Paid</span><span>${formatCurrency(total)}</span></div>
             <div class="footer">
               <p>Thank you for choosing Kuba.</p>
               <p style="margin-top: 4px;">This receipt serves as proof of payment.</p>
@@ -119,7 +120,7 @@ export function VirtualReceipt({ booking, onClose, transactionId, paymentMethod 
           <div className="text-center py-4 border-b border-dashed border-border">
             <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Total Paid</p>
             <p className="text-4xl font-black text-foreground tracking-tighter italic">
-              KES {total.toLocaleString()}
+              {formatCurrency(total)}
             </p>
           </div>
 
@@ -163,11 +164,11 @@ export function VirtualReceipt({ booking, onClose, transactionId, paymentMethod 
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground font-medium">Amount</span>
-              <span className="font-bold text-foreground">KES {amount.toLocaleString()}</span>
+              <span className="font-bold text-foreground">{formatCurrency(amount)}</span>
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground font-medium">Platform Fee</span>
-              <span className="font-bold text-foreground">KES {platformFee.toLocaleString()}</span>
+              <span className="font-bold text-foreground">{formatCurrency(platformFee)}</span>
             </div>
           </div>
 

@@ -30,6 +30,7 @@ import { dashboardUi } from "@/lib/dashboard-ui";
 import { uiPrimitives } from "@/lib/ui-primitives";
 import { cn } from "@/lib/utils";
 import { useData } from "@/hooks/useData";
+import { formatDate } from "@/lib/format";
 
 interface Tier {
  id: number;
@@ -277,7 +278,7 @@ export default function AdminLoyalty() {
                                                     {t.transaction_type === 'earn' ? '+' : '-'}{t.points}
                                                 </p>
                                                 <p className="text-[10px] font-bold text-muted-foreground">
-                                                    {new Date(t.created_at).toLocaleDateString('default', { day: '2-digit', month: 'short' })}
+                                                    {formatDate(t.created_at, { day: '2-digit', month: 'short' })}
                                                 </p>
                                             </div>
           </TableCell>
@@ -334,7 +335,7 @@ export default function AdminLoyalty() {
                {t.transaction_type === 'earn' ? '+' : '-'}{t.points}
              </p>
              <p className="text-[8px] font-bold text-muted-foreground uppercase ">
-               {new Date(t.created_at).toLocaleDateString()}
+               {formatDate(t.created_at)}
              </p>
             </div>
            </TableCell>

@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PaymentTransactionBadge } from "@/components/shared/PaymentTransactionBadge";
 import { normalizeApiResponse } from "@/lib/api-response";
 import { Calendar, CreditCard, ExternalLink, User, Briefcase } from "lucide-react";
+import { formatCurrency } from "@/lib/format";
 
 export interface PaymentDetail {
   id: string;
@@ -34,7 +35,7 @@ export interface PaymentDetail {
   booking?: { id?: string; booking_number?: string; status?: string };
 }
 
-const formatKES = (val: number | string) => `KES ${Number(val || 0).toLocaleString()}`;
+
 
 interface PaymentDetailSheetProps {
   paymentId: string | null;
@@ -105,16 +106,16 @@ export function PaymentDetailSheet({ paymentId, open, onOpenChange }: PaymentDet
               <div className="bg-muted/40 rounded-2xl p-5 space-y-3 border border-border">
                 <div className="flex justify-between items-center">
                   <span className="text-xs font-bold text-muted-foreground">Gross Amount</span>
-                  <span className="text-xl font-black">{formatKES(payment.amount)}</span>
+                  <span className="text-xl font-black">{formatCurrency(payment.amount)}</span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-muted-foreground">Platform fee</span>
-                  <span className="font-bold">{formatKES(payment.platform_fee ?? 0)}</span>
+                  <span className="font-bold">{formatCurrency(payment.platform_fee ?? 0)}</span>
                 </div>
                 <div className="flex justify-between items-center text-sm border-t border-border pt-2">
                   <span className="text-muted-foreground">Provider share</span>
                   <span className="font-bold text-emerald-600">
-                    {formatKES(payment.provider_amount ?? 0)}
+                    {formatCurrency(payment.provider_amount ?? 0)}
                   </span>
                 </div>
               </div>

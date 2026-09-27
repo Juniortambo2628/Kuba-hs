@@ -16,6 +16,7 @@ import { getMediaUrl } from "@/lib/utils";
 import { designSystem } from "@/lib/design-system";
 import Image from "next/image";
 import { FALLBACK_IMAGES } from "@/lib/fallback-images";
+import { formatDate } from "@/lib/format";
 
 export default function BlogList() {
   const { getS, getImg } = useCMS();
@@ -171,7 +172,7 @@ export default function BlogList() {
                     
                     <div className="p-8 flex-1 flex flex-col">
                       <div className="flex items-center gap-3 text-xs font-semibold text-muted-foreground tracking-tight mb-4">
-                        <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> {new Date(post.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                        <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> {formatDate(post.created_at, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                         <span className="w-1 h-1 rounded-full bg-border"></span>
                         <span className="flex items-center gap-1.5"><User className="w-3.5 h-3.5" /> {post.author?.name || 'Kuba Team'}</span>
                       </div>

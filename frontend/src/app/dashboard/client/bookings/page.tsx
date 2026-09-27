@@ -39,6 +39,7 @@ import { BookingDetailDialog } from "@/components/booking/BookingDetailDialog";
 import { ClientBookingActions } from "@/components/bookings/ClientBookingActions";
 import { Booking } from "@/types";
 import { extractApiList } from "@/lib/api-response";
+import { formatDate, formatCurrency } from "@/lib/format";
 
 function ClientBookingsContent() {
   const router = useRouter();
@@ -117,7 +118,7 @@ function ClientBookingsContent() {
     if (!dateStr) return "Date TBD";
     const d = new Date(dateStr);
     if (Number.isNaN(d.getTime())) return "Date TBD";
-    return d.toLocaleDateString(undefined, {
+    return formatDate(d, {
       day: "numeric",
       month: "short",
       year: "numeric",
@@ -256,7 +257,7 @@ function ClientBookingsContent() {
                       </div>
                     </TableCell>
                     <TableCell className="py-6 font-semibold text-foreground text-sm">
-                      KES {Number(booking.estimated_price ?? 0).toLocaleString()}
+                      {formatCurrency(Number(booking.estimated_price ?? 0))}
                     </TableCell>
                     <TableCell className="py-6">
                       <StatusBadge status={booking.status} type="booking" />

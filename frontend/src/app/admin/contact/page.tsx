@@ -50,6 +50,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { formatDate } from "@/lib/format";
 
 function AdminContactContent() {
   const { search, setSearch } = useSearchState();
@@ -163,7 +164,7 @@ function AdminContactContent() {
                     />
                   </TableCell>
                   <TableCell className="text-[10px] font-bold text-muted-foreground">
-                    {new Date(m.created_at).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    {formatDate(m.created_at, { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                   </TableCell>
                   <TableCell className="pr-6 text-right">
                     <DropdownMenu onOpenChange={(open) => {

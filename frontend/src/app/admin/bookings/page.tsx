@@ -55,6 +55,7 @@ import { FieldLabel } from "@/components/shared/ui/FilterControls";
 import { Input } from "@/components/ui/input";
 import { useData } from "@/hooks/useData";
 import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
+import { formatDate } from "@/lib/format";
 function AdminBookingsContent() {
   const { search, setSearch, status, setStatus } = useSearchState();
   const { data: bookings, isLoading, refetch: fetchBookings } = useData<Booking[]>(
@@ -221,7 +222,7 @@ function AdminBookingsContent() {
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col">
-                          <span className="text-xs font-black text-foreground">{new Date(booking.scheduled_date).toLocaleDateString([], { day: '2-digit', month: 'short' })}</span>
+                          <span className="text-xs font-black text-foreground">{formatDate(booking.scheduled_date, { day: '2-digit', month: 'short' })}</span>
                           <span className="text-[10px] font-bold text-muted-foreground uppercase">{new Date(booking.scheduled_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
                       </TableCell>

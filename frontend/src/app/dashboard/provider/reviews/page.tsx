@@ -19,6 +19,7 @@ import {
 } from "@/components/dashboard/workspace";
 import { workspaceUi } from "@/lib/dashboard-ui";
 import { cn } from "@/lib/utils";
+import { formatDate } from "@/lib/format";
 
 interface ReviewRow {
   id: string;
@@ -136,7 +137,7 @@ export default function ReviewsManagement() {
                       <p className="text-xs text-muted-foreground mt-0.5">
                         {review.service_name ?? "Service"} ·{" "}
                         {review.created_at
-                          ? new Date(review.created_at).toLocaleDateString()
+                          ? formatDate(review.created_at)
                           : ""}
                       </p>
                     </div>

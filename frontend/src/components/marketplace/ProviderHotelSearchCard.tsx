@@ -17,6 +17,7 @@ import { landingUi } from "@/lib/landing-ui";
 import { LandingButton } from "@/components/shared/LandingButton";
 import type { ProviderSearchRowData } from "@/components/marketplace/ProviderSearchRow";
 import { ProviderCardAvatar } from "@/components/marketplace/ProviderCardAvatar";
+import { formatCurrency } from "@/lib/format";
 
 interface ProviderHotelSearchCardProps {
   provider: ProviderSearchRowData & {
@@ -41,7 +42,7 @@ export function ProviderHotelSearchCard({
   const reviews = provider.review_count ?? 0;
   const price =
     provider.starting_price != null
-      ? Number(provider.starting_price).toLocaleString()
+      ? Number(provider.starting_price)
       : null;
   const serviceCount = provider.services?.length ?? 0;
   const categoryName = (provider.services?.[0] as any)?.service?.category?.name;
@@ -99,7 +100,7 @@ export function ProviderHotelSearchCard({
           {price && (
             <div className={landingUi.price.wrap}>
               <span className={landingUi.price.label}>From</span>
-              <p className={landingUi.price.value}>KES {price}</p>
+              <p className={landingUi.price.value}>{formatCurrency(price)}</p>
             </div>
           )}
         </div>

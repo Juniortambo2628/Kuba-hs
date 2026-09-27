@@ -6,6 +6,7 @@ import { Star } from "lucide-react";
 import { providerProfileUi } from "@/lib/provider-profile-ui";
 import { getMediaUrl, cn } from "@/lib/utils";
 import { MarketplaceCardMediaFallback } from "@/components/marketplace/MarketplaceCardMediaFallback";
+import { formatCurrency } from "@/lib/format";
 
 export interface ProviderWorkItem {
   id: string;
@@ -64,7 +65,7 @@ export function ProviderWorkCard({ item, onBook }: ProviderWorkCardProps) {
           </div>
           <div className="shrink-0 text-right">
             <p className="text-sm font-bold text-foreground tabular-nums">
-              KES {Number(item.base_price).toLocaleString()}
+              {formatCurrency(Number(item.base_price))}
             </p>
             <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-muted-foreground mt-0.5">
               <Star className="h-3 w-3 text-amber-400 fill-amber-400" />

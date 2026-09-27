@@ -19,6 +19,7 @@ import {
 } from "@/components/shared/DashboardTable";
 import { uiPrimitives } from "@/lib/ui-primitives";
 import { EmptyState } from "@/components/shared/ui/EmptyState";
+import { formatDate, formatCurrency } from "@/lib/format";
 
 export function ProviderEarnings() {
   const [transactions, setTransactions] = useState<any[]>([]);
@@ -80,16 +81,16 @@ export function ProviderEarnings() {
                 <p className="text-sm font-semibold">{tx.booking?.service?.name || "Service"}</p>
               </TableCell>
               <TableCell className="py-4 font-bold text-sm tabular-nums text-foreground">
-                KES {Number(tx.amount).toLocaleString()}
+                {formatCurrency(Number(tx.amount))}
               </TableCell>
               <TableCell className="py-4 text-xs font-medium text-primary">
-                - KES {Number(tx.platform_fee).toLocaleString()}
+                - {formatCurrency(Number(tx.platform_fee))}
               </TableCell>
               <TableCell className="py-4 font-black text-sm tabular-nums text-emerald-600 dark:text-emerald-400">
-                KES {Number(tx.provider_amount).toLocaleString()}
+                {formatCurrency(Number(tx.provider_amount))}
               </TableCell>
               <TableCell className="pr-8 py-4 text-xs font-medium text-muted-foreground">
-                {new Date(tx.created_at).toLocaleDateString()}
+                {formatDate(tx.created_at)}
               </TableCell>
             </TableRow>
           ))}

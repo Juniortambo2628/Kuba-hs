@@ -38,6 +38,7 @@ import { Booking } from "@/types";
 import { extractApiList } from "@/lib/api-response";
 import { BookingDetailDialog } from "@/components/booking/BookingDetailDialog";
 import { ProviderBookingActions } from "@/components/bookings/ProviderBookingActions";
+import { formatDate } from "@/lib/format";
 
 function BookingsHistoryContent() {
   const router = useRouter();
@@ -217,7 +218,7 @@ function BookingsHistoryContent() {
                     <TableCell className="py-6">
                       <p className="text-sm text-foreground">
                         {booking.scheduled_date
-                          ? new Date(booking.scheduled_date).toLocaleDateString()
+                          ? formatDate(booking.scheduled_date)
                           : "TBD"}
                       </p>
                     </TableCell>

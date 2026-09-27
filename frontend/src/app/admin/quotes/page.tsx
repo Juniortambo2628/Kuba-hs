@@ -50,6 +50,7 @@ import { CustomQuote } from "@/types";
 import { useData } from "@/hooks/useData";
 import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
 import { toast } from "sonner";
+import { formatDate } from "@/lib/format";
 
 export default function AdminQuotesPage() {
   const { search: searchTerm } = useSearchState();
@@ -187,7 +188,7 @@ export default function AdminQuotesPage() {
                     </TableCell>
                     <TableCell>
                        <p className="text-xs font-medium text-foreground max-w-[200px] truncate">{quote.service_category}</p>
-                       <p className="text-[10px] text-muted-foreground">{new Date(quote.created_at).toLocaleDateString()}</p>
+                       <p className="text-[10px] text-muted-foreground">{formatDate(quote.created_at)}</p>
                     </TableCell>
                     <TableCell>
                        <StatusBadge status={quote.status} type="dashboard" />
@@ -264,7 +265,7 @@ export default function AdminQuotesPage() {
                     <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-1">{quote.organization_name}</h3>
                     <div className="flex items-center gap-2">
                       <Badge variant="outline" className="text-[9px] h-4 py-0 font-bold uppercase tracking-tight">{quote.organization_type}</Badge>
-                      <span className="text-[10px] text-muted-foreground">{new Date(quote.created_at).toLocaleDateString()}</span>
+                      <span className="text-[10px] text-muted-foreground">{formatDate(quote.created_at)}</span>
                     </div>
                   </div>
                 </div>

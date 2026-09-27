@@ -18,6 +18,7 @@ import {
 } from "@/components/dashboard/workspace";
 import { workspaceUi } from "@/lib/dashboard-ui";
 import { cn } from "@/lib/utils";
+import { formatDate } from "@/lib/format";
 
 export default function LoyaltyProgram() {
   const { user, isLoading: authLoading } = useAuth();
@@ -186,7 +187,7 @@ export default function LoyaltyProgram() {
                         {item.description || "Points activity"}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {new Date(item.created_at).toLocaleDateString()}
+                        {formatDate(item.created_at)}
                       </p>
                     </div>
                     <span
