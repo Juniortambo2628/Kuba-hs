@@ -116,7 +116,7 @@ Fixes for B1–B4 already exist as unapplied migrations — no code to write, on
 
 ## C. MVC completeness
 
-**Matrix highlights:** 32/32 models have ≥1 route · **0 duplicate method+URI** across 261 registered routes · all 75 controllers routed · create/edit UI verified to live inside dialogs before being called a gap.
+**Matrix highlights:** 32/32 models have ≥1 route · **0 duplicate method+URI** across 261 registered routes (this check is structurally incapable of firing - see the Correction in Phase 2 part 4) · all 75 controllers routed · create/edit UI verified to live inside dialogs before being called a gap.
 
 ### Gaps that break the running app
 
@@ -425,6 +425,96 @@ could have produced it.
 | 14 | A4-A12 | **open** (A4 skipped by decision, A5/A12 already done) |
 | 15 | D22 | **open** |
 
+Gates after every one of those commits: `php -l`, `php artisan test`,
+`php artisan route:list --json`. See part 4 for why the "0 duplicate
+method+URI" half of that gate was never doing anything.
+
+## Phase 2 log - part 4 (C5, C8, and a correction to the route gate)
+
+| Commit | Items | What changed |
+| --- | --- | --- |
+| `139982e` | C5 | Address edit UI. `PUT`/`GET /api/client/addresses/{address}` existed behind `Route::apiResource` and nothing ever called them: `AddressFormDialog` only POST'd, so a saved address could be added, defaulted or deleted but never corrected. The dialog now takes an optional address, seeds the form from it and PUTs; two payload details are deliberate - `is_default` is carried across (sending the form's default `false` would demote a default address on every edit, and `StoreAddressRequest` accepts it), and the Nairobi pin fallback stays create-only so an address without a pin cannot jump to it on edit. |
+| `32c6ae2` | C8 | Removed the five stateful POSTs from `routes/auth.php` (`login`, `register`, `forgot-password`, `reset-password`, `logout`) - all duplicates of `/api/auth/*`, zero frontend callers, zero test callers - and made `AuthenticatedSessionController`, `RegisteredUserController`, `PasswordResetLinkController` and `NewPasswordController` JSON-only. Also fixed the two surviving `route('dashboard')` calls. |
+
+### Correction - the duplicate-route gate could never have fired
+
+Every "0 duplicate method+URI" checkpoint in this document is true but
+vacuous. `RouteCollection::addToCollections()` stores routes as
+`$this->routes[$method][$domainAndUri] = $route` and `$this->allRoutes[
+implode('|', $methods).$domainAndUri] = $route`, and
+`RouteCollection::getRoutes()` returns `array_values($this->allRoutes)`.
+A second route for the same method and URI does not appear twice in the
+listing - it **replaces** the first. `route:list` therefore cannot report
+one, and our `Group-Object method,uri | Where Count -gt 1` check was
+measuring something the framework prevents.
+
+This was not hypothetical. `routes/auth.php` and Fortify both registered
+`POST /login|register|forgot-password|reset-password|logout`; the later
+registration silently replaced the earlier, so the audit's "dual auth
+entry points" were in practice a pair, with the winning half decided by
+load order. Stashing `routes/auth.php` and re-running `route:list`
+showed the action flip from `App\...\AuthenticatedSessionController` to
+`Laravel\Fortify\...\AuthenticatedSessionController` on the same URI,
+with the route count unchanged at 253.
+
+What the gate should have been measuring, and what still needs doing:
+
+- **Route names.** `Group-Object name` does surface collisions, because
+  `nameList` keeps a route per name but `route:list` prints the name of
+  every route. It now reports `api.admin. x56` and nothing else.
+  That one is pre-existing and harmless: `routes/api.php:175` opens a
+  group with `'as' => 'api.admin.'`, and every route inside it that
+  does not declare its own name ends up answering to the bare prefix -
+  56 of them, first-registered wins. Nothing resolves that name (the
+  frontend uses literal URLs throughout, as noted above), so it is
+  recorded rather than fixed. `password.update x2` was introduced by C8
+  and is gone, by leaving `PUT /password` unnamed rather than claiming a
+  name Fortify already holds.
+- **Actions behind a URI.** Two implementations of one action behind one
+  URI only show up by diffing the action, which is what the stash check
+  above did.
+- **Every HTTP verb when grepping for callers.** The first pass over
+  `PUT /password` concluded "zero callers" by grepping POST patterns
+  only; `tests/Feature/Auth/PasswordUpdateTest` exercises it and failed
+  the suite. The route was restored in the same commit. Callers must be
+  searched per verb, and the test suite is what catches the miss.
+
+### What C8 did not close
+
+Fortify registers its own `POST /login|register|logout|forgot-password|
+reset-password` (plus `/two-factor-challenge`, `/user/two-factor-*`,
+`/user/confirm-password`, `/user/password`, `/user/profile-information`
+and the passkey endpoints). Before C8 those five POSTs were shadowed by
+`routes/auth.php`; with ours gone they are now the routes that answer.
+Both halves were, and remain, uncalled - zero axios calls in
+`frontend/src` reach any non-`/api/auth` auth endpoint (every `/login`
+and `/register` hit is a Next.js `router.push` or `<Link>`, landing on
+the frontend's own page), and no test reaches them.
+
+The switch is one line: `Fortify::$registersRoutes = false;` in
+`AppServiceProvider::register()` (it has to run before the package
+provider's `boot()` calls `configureRoutes()`). That is C7's decision
+to make, not a follow-on from C8 - it is the same flag that would drop
+Fortify's 2FA routes, which is the "which stack survives" question the
+register puts under C7.
+
+### Register status after Phase 2 part 4
+
+| # | IDs | Status |
+| --- | --- | --- |
+| 12 | C5 | **closed** - `139982e` |
+| 12 | C8 | **closed** for `routes/auth.php`; the Fortify half above is handed to C7 |
+| 12 | C7 | **open** - next |
+| 3 | C6/D9 | **closed** - `db76a92` |
+| 6 | D1 | **closed** - `8637fe2` |
+| 11 | D2/D3/D4/D8 | **closed** - `7a1b91c`, `ccf2da6`, `b3f0c38`, `e45bae6` |
+| - | D6, D7, D13 | **closed** - `e7ddf78`; `0184000`/`49f2da0`/`e45bae6`; `67e3661` + `1b65fa1` |
+| 13 | D10, D11, D14 | **closed** - `efbc5fd` + `9772559`, `82128d2`, `1b65fa1` |
+| 13 | D12 | **disproven, 2 fields residual** - only `service_radius` and `experience_years` actually diverge, both need a product decision |
+| 14 | A4-A12 | **open** (A4 skipped by decision, A5/A12 already done) |
+| 15 | D22 | **open** |
+
 Gates after every one of these commits: `php -l`, `php artisan test`
-(424 passed, 1 pre-existing risky), `php artisan route:list --json` -
-253 routes, 0 duplicate method+URI.
+(427 passed, 1 pre-existing risky), `php artisan route:list --json` -
+253 routes. The duplicate-name check is the one worth keeping:
+`Group-Object name | Where Count -gt 1`, currently only `api.admin. x56`.
