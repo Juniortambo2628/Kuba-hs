@@ -20,7 +20,7 @@ class PageFeatureFactory extends Factory
             'icon' => 'CheckCircle',
             'image_url' => fake()->imageUrl(),
             'metadata' => [],
-            'order_index' => fake()->numberBetween(0, 10),
+            'sort_order' => fake()->numberBetween(0, 10),
             'is_active' => true,
         ];
     }

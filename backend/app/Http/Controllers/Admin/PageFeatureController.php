@@ -9,7 +9,7 @@ use App\Models\PageFeature;
 class PageFeatureController extends Controller
 {
     public function index() {
-        return response()->json(PageFeature::orderBy('order_index')->get());
+        return response()->json(PageFeature::orderBy('sort_order')->get());
     }
 
     public function store(StorePageFeatureRequest $request) {

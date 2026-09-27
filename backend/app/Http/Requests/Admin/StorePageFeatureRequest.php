@@ -22,7 +22,7 @@ class StorePageFeatureRequest extends FormRequest
             'icon' => 'nullable|string',
             'image_url' => 'nullable|string',
             'metadata' => 'nullable|array',
-            'order_index' => 'integer',
+            'sort_order' => 'integer',
             'is_active' => 'boolean',
         ];
     }

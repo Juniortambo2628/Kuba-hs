@@ -57,7 +57,7 @@ interface PageFeature {
     description: string;
     icon: string | null;
     image_url: string | null;
-    order_index: number;
+    sort_order: number;
     is_active: boolean;
 }
 
@@ -75,7 +75,7 @@ export default function PageFeaturesPage() {
         description: '',
         icon: 'Sparkles',
         image_url: '',
-        order_index: 0,
+        sort_order: 0,
         is_active: true
     });
     const [deleteTarget, setDeleteTarget] = useState<PageFeature | null>(null);
@@ -115,7 +115,7 @@ export default function PageFeaturesPage() {
             description: '',
             icon: 'Sparkles',
             image_url: '',
-            order_index: 0,
+            sort_order: 0,
             is_active: true
         });
         setSelectedFeature(null);
@@ -131,7 +131,7 @@ export default function PageFeaturesPage() {
             description: feature.description,
             icon: feature.icon || 'Sparkles',
             image_url: feature.image_url || '',
-            order_index: feature.order_index,
+            sort_order: feature.sort_order,
             is_active: feature.is_active
         }); 
         setIsOpen(true); 
@@ -245,7 +245,7 @@ export default function PageFeaturesPage() {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <Label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Display Rank</Label>
-                                        <Input type="number" value={form.order_index} onChange={(e) => setForm({...form, order_index: parseInt(e.target.value)})} className="h-12 bg-muted border-none rounded-xl text-center font-bold" />
+                                        <Input type="number" value={form.sort_order} onChange={(e) => setForm({...form, sort_order: parseInt(e.target.value)})} className="h-12 bg-muted border-none rounded-xl text-center font-bold" />
                                     </div>
                                     <div className="space-y-2 flex flex-col justify-end pb-3">
                                         <div className="flex items-center justify-between px-2">
@@ -315,7 +315,7 @@ export default function PageFeaturesPage() {
                                             <div className="flex items-center gap-4 pt-4 border-t border-white/5">
                                                 <div className="flex items-center gap-1.5">
                                                     <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                                                    <span className="text-[10px] font-bold text-muted-foreground">Order: {feature.order_index}</span>
+                                                    <span className="text-[10px] font-bold text-muted-foreground">Order: {feature.sort_order}</span>
                                                 </div>
                                                 <div className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter ${feature.is_active ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>
                                                     {feature.is_active ? 'Online' : 'Draft'}

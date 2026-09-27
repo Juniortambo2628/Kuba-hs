@@ -17,7 +17,7 @@ class PageFeature extends Model
         'icon',
         'image_url',
         'metadata',
-        'order_index',
+        'sort_order',
         'is_active',
     ];
 

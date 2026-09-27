@@ -18,7 +18,7 @@ class PageFeatureController extends Controller
             $query->where('page_name', $request->query('page'));
         }
 
-        $features = $query->orderBy('order_index')->get();
+        $features = $query->orderBy('sort_order')->get();
 
         return PageFeatureResource::collection($features);
     }
