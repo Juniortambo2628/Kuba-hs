@@ -10,6 +10,7 @@ use App\Models\Payment;
 use App\Models\Provider;
 use App\Services\LedgerService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class FinancialController extends Controller
 {
@@ -18,6 +19,55 @@ class FinancialController extends Controller
     public function __construct(LedgerService $ledgerService)
     {
         $this->ledgerService = $ledgerService;
+    }
+
+    /**
+     * The tiles and charts behind the finance overview screen. This used to
+     * live in a second, differently named controller that only this route
+     * ever reached.
+     */
+    public function charts() {
+        $stats = [
+            'total_volume' => Payment::where('status', PaymentStatus::Completed)->sum('amount'),
+            'total_platform_fees' => Payment::where('status', PaymentStatus::Completed)->sum('platform_fee'),
+            'total_provider_payouts' => Payment::where('status', PaymentStatus::Completed)->sum('provider_amount'),
+            'pending_payouts' => Payment::where('status', PaymentStatus::Pending)->sum('provider_amount'),
+            'monthly_revenue' => $this->monthlyRevenue(),
+            'payment_methods' => $this->paymentMethodBreakdown(),
+        ];
+
+        $recentPayments = Payment::with(['customer', 'provider.user', 'booking'])
+            ->latest()
+            ->limit(10)
+            ->get();
+
+        return response()->json([
+            'stats' => $stats,
+            'recent_payments' => $recentPayments,
+        ]);
+    }
+
+    protected function monthlyRevenue()
+    {
+        // strftime is SQLite-only; MySQL needs DATE_FORMAT. Using the SQLite
+        // form on MySQL is an error 1305, so the driver decides.
+        $monthExpression = DB::getDriverName() === 'sqlite'
+            ? "strftime('%Y-%m', created_at)"
+            : "DATE_FORMAT(created_at, '%Y-%m')";
+
+        return Payment::where('status', PaymentStatus::Completed)
+            ->selectRaw("{$monthExpression} as month, SUM(amount) as revenue, SUM(platform_fee) as profit")
+            ->groupBy('month')
+            ->orderBy('month', 'desc')
+            ->limit(12)
+            ->get();
+    }
+
+    protected function paymentMethodBreakdown()
+    {
+        return Payment::select('payment_method', DB::raw('count(*) as count'))
+            ->groupBy('payment_method')
+            ->get();
     }
 
     public function overview() {

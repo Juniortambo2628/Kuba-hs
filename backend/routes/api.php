@@ -271,7 +271,7 @@ Route::middleware(['auth:sanctum', 'two-factor-setup'])->group(function () {
         Route::patch('/compliance/documents/{document}/review', [\App\Http\Controllers\Api\Admin\ComplianceController::class, 'reviewDocument']);
 
         // Financial Operations & Payouts
-        Route::get('/financials/charts', [\App\Http\Controllers\Admin\FinanceController::class, 'index']);
+        Route::get('/financials/charts', [\App\Http\Controllers\Api\Admin\FinancialController::class, 'charts']);
         Route::get('/financials/overview', [\App\Http\Controllers\Api\Admin\FinancialController::class, 'overview']);
         Route::get('/financials/payouts', [\App\Http\Controllers\Api\Admin\FinancialController::class, 'payouts']);
         Route::post('/financials/payouts/{payout}/process', [\App\Http\Controllers\Api\Admin\FinancialController::class, 'process']);
