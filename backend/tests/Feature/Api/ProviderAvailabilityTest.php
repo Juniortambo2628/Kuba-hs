@@ -26,7 +26,7 @@ test('provider can update availability', function () {
     ]);
 
     $response->assertOk();
-    $this->assertDatabaseHas('provider_availability', [
+    $this->assertDatabaseHas('provider_availabilities', [
         'provider_id' => $providerUser->provider->id,
         'day_of_week' => 1,
     ]);
