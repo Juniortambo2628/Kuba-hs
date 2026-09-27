@@ -753,10 +753,18 @@ checkpoint - 105 unnamed routes and 56 routes literally named
 `api.admin.`, neither touched by this work. `php -l` clean on both new
 files.
 
-The migration has **not** been run against MySQL: `wampmysqld64` is
-stopped and this shell is not elevated, so `php artisan migrate` is
-still owed once WAMP is up. It has been exercised - up, down, up -
-against SQLite by the suite.
+The migration **has** been run against MySQL, now that WAMP is up:
+
+| check | result |
+| --- | --- |
+| `php artisan migrate` | ran, batch 5, `migrate:status` 0 pending |
+| column defaults | `experience_years` default `0`, `service_radius` default `10`, both `int`, both still `nullable=YES` |
+| raw `INSERT` omitting both columns (inside a rolled-back transaction) | came back `experience_years=0`, `service_radius=10`; rollback left 0 rows behind |
+| `migrate:rollback --step=1` | both defaults went to `NULL` - the MySQL `drop default` branch of `down()`, which the SQLite suite cannot reach |
+| `migrate` again | defaults restored; the 8 existing provider rows were never touched (`service_radius` is still `NULL` on all 8, as designed) |
+
+The suite itself runs on `sqlite`/`:memory:` (`phpunit.xml`), so the 435
+tests never saw this database.
 
 ### Register status after Phase 2 part 8 - 15 of 15 closed
 
@@ -806,5 +814,96 @@ is not misread as "the audit is finished":
   outside the register and the one worth acting on next.
 - **X6** - purging the 94 MB MP4 from git history, deliberately deferred
   because it rewrites shared history.
+
+---
+
+## Remaining work - the plan
+
+Everything below sits **outside** the 15-row consolidated register. It is
+ordered by risk: no-decision, no-data-change work first, then backend
+route and controller dedup, then reversible schema changes, then the
+frontend refactors that need before/after measurements.
+
+### Tier 1 - mechanical, no decisions needed
+
+| ID | Task | Verified by |
+| --- | --- | --- |
+| D21 | Delete `github-actions-kuba-home-service` and its `.pub` from the repo root | both files gone, `git status` still clean, all four workflows still reading `secrets.SSH_PRIVATE_KEY` |
+| D20 | **already closed** - `backend/package.json` went with the Inertia toolchain in `7a1b91c`, so the five dead backend deps went with it | `Test-Path backend/package.json` = false |
+| D19 | Repoint `chat-utils.unwrapResourceList` and `lib/provider-services-api` at their canonical helpers, then delete the deprecated re-exports | `npx tsc --noEmit`, `npx eslint src`, `npm test`, `npm run build` |
+| C12 | Confirm the three relation-only models are reached through relations and are not dead code; close as informational | read + grep, no code change |
+| A13 | Already downgraded (`getSSRSettings()` revalidates hourly) - record and close | none |
+
+D21 is the only **High** item in this tier. The workflows read
+`secrets.SSH_PRIVATE_KEY`, not the file, so the file is a leftover - but
+deleting the private key locally does not un-install its public half, so
+the matching `authorized_keys` entry on the server needs the same
+attention.
+
+### Tier 2 - backend route and controller dedup
+
+| ID | Task | Verified by |
+| --- | --- | --- |
+| C9 | Two finance controllers: `Admin\FinanceController` (`GET /admin/financials/charts`) and `Api\Admin\FinancialController` (`overview`, `payouts`, `process`), different shapes | response shapes byte-identical for `FinanceOverview.tsx:67` and `admin/payments/page.tsx`, backend suite, `route:list` |
+| C10 | Handlers registered twice - `POST /media/upload` both bare and under `/admin`, `GET /settings` likewise | grep frontend for each URI, drop the unreferenced alias, `route:list` |
+| C11 | `VerificationController` serves admin and provider routes and re-checks the role the route middleware already checked | suite + the admin/provider verification tests |
+| - | **Not in the register:** 56 routes share the literal name `api.admin.` (group `as` prefix, no per-route `->name()`), so `route('api.admin.')` is ambiguous | `route:list --json`, assert no two routes share a name |
+
+C9 has moved since the audit: `Admin\FinanceController` was called
+"unused", then `c7a0773` wired `GET /admin/financials/charts` to it while
+fixing C3. Both controllers are live now and still disagree on shape, so
+the fix is to share the mapping while keeping each endpoint's current
+JSON as the contract.
+
+### Tier 3 - schema, one reversible migration each (MySQL is up)
+
+| ID | Task | Reversible how |
+| --- | --- | --- |
+| X3 / B9 | Drop `bookings.customer_id+status`, `bookings.provider_id+status`, `provider_services.provider_id` - **approved, never executed** | recreate the exact definitions in `down()`; read `information_schema.STATISTICS` before and after |
+| B11 | Naming: `page_features.order_index`, `faqs.order`, `testimonials.order` -> `sort_order`; 7 image-column names; `provider_availability`; `rating_avg` vs API `rating` | `renameColumn` back in `down()` - **scope needs a decision** |
+| B12 | Add `slug` to `service_categories` and `services`, backfill, stop synthesising slugs in PHP (the current bug: two same-named categories resolve to the first) | `dropColumn` in `down()`; route/URL impact needs a decision |
+| B13 | `blog_posts.view_count` does not exist but `BlogPostResource:26` emits `0` | either remove the field or add the column - **needs a decision** |
+| B14 / X5 | Spatie permission tables | **won't do** - dropping them was declined |
+
+### Tier 4 - frontend performance, measured like A6
+
+| ID | Task | Verified by |
+| --- | --- | --- |
+| A14 | Echo+Pusher boot on all 85 routes; tiptap reached from 8 admin files; `framer-motion` in 41 files | build chunk counts and `react-loadable-manifest.json` before/after, per route |
+| A17 | Unused-dep candidates: `@tanstack/react-table` (0 matches), `uppy` meta-pkg, `@capacitor/*` (0 in `src`) | grep + `npm ls`; check `capacitor.config` before touching the Capacitor set |
+| A15 | `react-beautiful-dnd` on React 19 with an in-repo workaround | replace with `@dnd-kit` or keep - **needs a decision** |
+| A16 | `globals.css`: 50 `!important`, 19 webkit selectors, `rounded-[2.5rem]` in 68 files | smallest batch last - visual regression risk, do it in slices |
+
+### Tier 5 - frontend dedup
+
+| ID | Task | Verified by |
+| --- | --- | --- |
+| D16 | Currency x3 definitions + 22 inline; 36 ad-hoc `toLocaleDateString` | one `formatCurrency`/`formatDate`, `tsc` + `eslint` + tests + build |
+| D17 | Status filter tables x4; `admin/bookings` missing `in_progress`; `admin/contact` bypasses `lib/status-styles.ts` | each page renders the same set as before, tests |
+| D15 | Base-URL resolution x7 -> all through `lib/api-base-url` | `tsc`, tests, and a check that SSR and browser resolve the same origin |
+| D18 | 3 overlapping fetch hooks + 4 ad-hoc SWR fetchers + `/api/categories` fetched in 8 places | largest refactor, last; network calls per route unchanged |
+
+### Decisions needed before Tier 3 and Tier 4
+
+1. **D21** - delete the key files? And is the server-side
+   `authorized_keys` entry yours to remove?
+2. **B11** - full naming unification, or the smallest cut (sort column
+   only)?
+3. **B12** - add `slug` columns and change public URLs, or keep PHP-side
+   synthesis and fix only the collision?
+4. **B13** - drop `view_count` from the resource, or add the column and
+   count views?
+5. **A15** - swap `react-beautiful-dnd` for `@dnd-kit`, or leave it?
+6. **X6** - still deferred: purging the 94 MB MP4 rewrites shared
+   history.
+
+### Explicitly not doing
+
+| ID | Why |
+| --- | --- |
+| X5 / B14 | dropping the Spatie tables was declined; installed-but-unused is harmless |
+| A4, A9 | skipped by decision in Phase 1 |
+| C4 | disproven |
+| X6 | deferred until a history rewrite is approved |
 
 
