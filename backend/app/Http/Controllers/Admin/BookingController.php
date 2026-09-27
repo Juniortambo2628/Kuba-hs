@@ -8,7 +8,6 @@ use App\Http\Requests\Admin\StoreAdminBookingRequest;
 use App\Models\Booking;
 use App\Models\User;
 use App\Services\BookingService;
-use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -39,13 +38,13 @@ class BookingController extends Controller
 
         $booking = $bookingService->createAdminBooking($customer, $data, $status);
 
-        return ApiResponse::success(
-            new \App\Http\Resources\BookingResource(
+        return response()->json([
+            'success' => true,
+            'message' => 'Booking created successfully.',
+            'data' => (new \App\Http\Resources\BookingResource(
                 $booking->load(['customer', 'provider.user', 'service', 'address'])
-            ),
-            'Booking created successfully.',
-            201
-        );
+            ))->resolve(),
+        ], 201);
     }
 
     public function updateStatus(Request $request, Booking $booking, BookingService $bookingService) {

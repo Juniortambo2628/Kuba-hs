@@ -6,6 +6,7 @@ use App\Enums\ReviewStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ReviewResource;
 use App\Models\Review;
+use App\Support\PaginationMeta;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -30,12 +31,7 @@ class FeedbackController extends Controller
 
         return response()->json([
             'data' => ReviewResource::collection($paginated->items())->resolve(),
-            'meta' => [
-                'current_page' => $paginated->currentPage(),
-                'last_page' => $paginated->lastPage(),
-                'per_page' => $paginated->perPage(),
-                'total' => $paginated->total(),
-            ],
+            'meta' => PaginationMeta::for($paginated),
             'stats' => [
                 'total' => Review::count(),
                 'avg' => round(Review::avg('rating') ?: 0, 1),

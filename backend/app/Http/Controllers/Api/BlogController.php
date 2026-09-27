@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\BlogPost;
+use App\Support\PaginationMeta;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -31,11 +32,7 @@ class BlogController extends Controller
         return response()->json([
             'success' => true,
             'data' => $posts->items(),
-            'meta' => [
-                'current_page' => $posts->currentPage(),
-                'last_page' => $posts->lastPage(),
-                'total' => $posts->total(),
-            ],
+            'meta' => PaginationMeta::for($posts),
         ]);
     }
 
