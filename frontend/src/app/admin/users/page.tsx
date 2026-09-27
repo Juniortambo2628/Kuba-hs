@@ -177,7 +177,7 @@ function AdminUsersContent() {
                     <TableCell className="pl-6">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-primary font-bold text-xs overflow-hidden border border-border shadow-sm">
-                          {u.avatar_url ? <img src={u.avatar_url} alt={u.name} className="w-full h-full object-cover" /> : u.name[0]}
+                          {u.image_url ? <img src={u.image_url} alt={u.name} className="w-full h-full object-cover" /> : u.name[0]}
                         </div>
                         <div>
                           <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{u.name}</p>
@@ -235,7 +235,7 @@ function AdminUsersContent() {
               <CardContent className="p-5">
                 <div className="flex justify-between items-start mb-4">
                   <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center text-primary font-bold text-xl overflow-hidden border border-border/60 shadow-inner group-hover:border-primary/20 transition-all">
-                    {u.avatar_url ? <img src={u.avatar_url} alt={u.name} className="w-full h-full object-cover" /> : u.name[0]}
+                    {u.image_url ? <img src={u.image_url} alt={u.name} className="w-full h-full object-cover" /> : u.name[0]}
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

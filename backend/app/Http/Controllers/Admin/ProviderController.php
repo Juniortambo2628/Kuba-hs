@@ -17,7 +17,7 @@ class ProviderController extends Controller
 {
     public function index(Request $request) {
         $query = Provider::query()
-            ->with(['user:id,first_name,last_name,email,phone,is_active,avatar_url'])
+            ->with(['user:id,first_name,last_name,email,phone,is_active,image_url'])
             ->withCount(['providerServices', 'reviews'])
             ->withAvg('reviews', 'rating');
 

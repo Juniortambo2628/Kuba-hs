@@ -13,7 +13,7 @@ class TrustPartnerFactory extends Factory
     {
         return [
             'name' => fake()->company(),
-            'logo_path' => fake()->filePath(),
+            'image_url' => fake()->filePath(),
             'is_active' => true,
         ];
     }

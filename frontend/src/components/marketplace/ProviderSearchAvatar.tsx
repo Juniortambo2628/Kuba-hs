@@ -9,7 +9,7 @@ export interface ProviderSearchAvatarData {
   business_name: string;
   logo?: string | null;
   services?: { service_thumbnail_url?: string }[];
-  user?: { avatar_url?: string | null };
+  user?: { image_url?: string | null };
 }
 
 interface ProviderSearchAvatarProps {

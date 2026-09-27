@@ -60,7 +60,7 @@ export function DashboardJobsTable({
                     >
                       <DashboardUserAvatar
                         name={b.customer?.name}
-                        avatarUrl={b.customer?.avatar_url}
+                        avatarUrl={b.customer?.image_url}
                         size="sm"
                       />
                       <span className="font-semibold text-foreground">

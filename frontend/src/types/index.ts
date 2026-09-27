@@ -8,7 +8,7 @@ export interface User {
   role: 'admin' | 'provider' | 'customer';
   is_active: boolean;
   is_verified?: boolean;
-  avatar_url?: string;
+  image_url?: string;
   created_at: string;
   permissions?: string[];
   roles?: string[];

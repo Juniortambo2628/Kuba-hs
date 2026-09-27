@@ -168,8 +168,8 @@ export default function ComplianceDashboard() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-white/5 relative overflow-hidden border border-gray-200 dark:border-white/10">
-                          {provider.user?.avatar ? (
-                            <Image src={getMediaUrl(provider.user.avatar, 'avatar')} alt="" fill className="object-cover" />
+                          {provider.user?.image_url ? (
+                            <Image src={getMediaUrl(provider.user.image_url, 'avatar')} alt="" fill className="object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm font-bold">
                               {provider.business_name?.substring(0,2).toUpperCase()}

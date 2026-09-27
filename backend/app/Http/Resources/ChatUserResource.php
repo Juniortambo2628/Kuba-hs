@@ -22,7 +22,7 @@ class ChatUserResource extends JsonResource
             'first_name' => $first ?: null,
             'last_name' => $last ?: null,
             'name' => $full !== '' ? $full : ($this->email ?? 'User'),
-            'avatar_url' => $this->avatar_url,
+            'image_url' => $this->image_url,
             'role' => $this->role,
         ];
     }

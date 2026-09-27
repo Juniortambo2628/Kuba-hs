@@ -194,7 +194,7 @@ export default function ProviderProfile() {
             description="Your face for the dashboard header, messages, and account menu — not shown as the business logo."
           >
             <div className="flex flex-col items-center text-center gap-4">
-              <DashboardUserAvatar name={user?.name} avatarUrl={user?.avatar_url} size="xl" />
+              <DashboardUserAvatar name={user?.name} avatarUrl={user?.image_url} size="xl" />
               {user?.id && (
                 <div className="w-full max-w-xs">
                   <KubaFilePond

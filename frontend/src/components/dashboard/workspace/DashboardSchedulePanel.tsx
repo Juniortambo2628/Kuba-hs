@@ -50,7 +50,7 @@ export function DashboardSchedulePanel({
           <div className="flex items-start gap-3">
             <DashboardUserAvatar
               name={featured.customer?.name}
-              avatarUrl={featured.customer?.avatar_url}
+              avatarUrl={featured.customer?.image_url}
               size="md"
             />
             <div className="min-w-0 flex-1">

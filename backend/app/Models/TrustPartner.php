@@ -12,7 +12,7 @@ class TrustPartner extends Model
 
     protected $fillable = [
         'name',
-        'logo_path',
+        'image_url',
         'is_active',
     ];
 

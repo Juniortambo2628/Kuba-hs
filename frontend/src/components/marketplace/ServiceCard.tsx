@@ -34,7 +34,7 @@ export interface ServiceCardData {
     logo?: string | null;
     banner?: string | null;
     location_name?: string | null;
-    user?: { avatar_url?: string | null };
+    user?: { image_url?: string | null };
   };
 }
 

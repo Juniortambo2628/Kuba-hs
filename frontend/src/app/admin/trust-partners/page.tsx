@@ -17,7 +17,7 @@ import { TrustPartnerFormDialog } from "@/components/admin/TrustPartnerFormDialo
 interface TrustPartner {
     id: string;
     name: string;
-    logo_path: string;
+    image_url: string;
     is_active: boolean;
 }
 
@@ -63,7 +63,7 @@ export default function TrustPartnersPage() {
                 open={isOpen}
                 onOpenChange={setIsOpen}
                 editingId={editingPartner?.id ?? null}
-                initial={editingPartner ? { name: editingPartner.name, logo_path: editingPartner.logo_path, is_active: editingPartner.is_active } : undefined}
+                initial={editingPartner ? { name: editingPartner.name, image_url: editingPartner.image_url, is_active: editingPartner.is_active } : undefined}
                 onSuccess={fetchPartners}
             />
 
@@ -87,9 +87,9 @@ export default function TrustPartnersPage() {
                         </CardHeader>
                         <CardContent className="p-6 pt-0 flex flex-col items-center gap-4">
                             <div className="w-full h-24 bg-white/5 rounded-2xl flex items-center justify-center p-4 border border-white/5 relative group-hover:bg-white/10 transition-colors">
-                                {partner.logo_path ? (
+                                {partner.image_url ? (
                                     <img 
-                                        src={partner.logo_path.startsWith('http') ? partner.logo_path : partner.logo_path} 
+                                        src={partner.image_url.startsWith('http') ? partner.image_url : partner.image_url} 
                                         alt={partner.name} 
                                         className="max-h-full max-w-full object-contain filter grayscale group-hover:grayscale-0 transition-all duration-500" 
                                     />

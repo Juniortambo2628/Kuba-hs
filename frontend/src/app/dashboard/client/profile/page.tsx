@@ -120,7 +120,7 @@ export default function ClientProfilePage() {
         <div className="lg:col-span-1 space-y-6">
           <BrandMediaPanel title="Profile photo" description="Shown in messages and your account menu.">
             <div className="flex flex-col items-center text-center gap-4">
-              <DashboardUserAvatar name={user.name} avatarUrl={user.avatar_url} size="xl" />
+              <DashboardUserAvatar name={user.name} avatarUrl={user.image_url} size="xl" />
               {user.id && (
                 <div className="w-full max-w-xs">
                   <KubaFilePond

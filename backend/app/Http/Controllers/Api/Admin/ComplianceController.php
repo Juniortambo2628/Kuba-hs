@@ -49,7 +49,7 @@ class ComplianceController extends Controller
     public function providers(Request $request) {
         $status = $request->query('status'); // e.g., 'pending', 'non_compliant'
 
-        $query = Provider::with(['user:id,first_name,last_name,email,avatar_url', 'verificationDocuments'])
+        $query = Provider::with(['user:id,first_name,last_name,email,image_url', 'verificationDocuments'])
             ->withCount([
                 'verificationDocuments as total_docs',
                 'verificationDocuments as pending_docs' => function ($q) {

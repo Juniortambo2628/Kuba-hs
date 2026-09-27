@@ -19,7 +19,7 @@ class TrustPartnerController extends Controller
     public function store(Request $request) {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'logo_path' => 'required|string', // URL or path
+            'image_url' => 'required|string', // URL or path
             'is_active' => 'boolean',
         ]);
 
@@ -37,7 +37,7 @@ class TrustPartnerController extends Controller
     public function update(Request $request, TrustPartner $trustPartner) {
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255',
-            'logo_path' => 'sometimes|required|string',
+            'image_url' => 'sometimes|required|string',
             'is_active' => 'boolean',
         ]);
 

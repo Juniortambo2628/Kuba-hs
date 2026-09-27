@@ -61,7 +61,7 @@ export function UserAccountDropdown({
             )}
 
             <Avatar className={cn(isDashboard ? "h-8 w-8" : "h-full w-full")}>
-              <AvatarImage src={getAvatarDisplayUrl(user.avatar_url) ?? ""} />
+              <AvatarImage src={getAvatarDisplayUrl(user.image_url) ?? ""} />
               <AvatarFallback
                 className={cn(
                   "text-xs font-semibold",

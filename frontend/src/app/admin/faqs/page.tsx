@@ -37,7 +37,7 @@ interface FAQ {
   id: number;
   question: string;
   answer: string;
-  avatar?: string;
+  image_url?: string;
   is_active: boolean;
   sort_order: number;
 }
@@ -273,8 +273,8 @@ function FAQManagementContent() {
                       </TableCell>
                       <TableCell className="py-6">
                         <div className="w-10 h-10 rounded-lg overflow-hidden bg-muted flex-shrink-0">
-                          {faq.avatar ? (
-                            <Image src={getMediaUrl(faq.avatar, "avatar")} alt="Avatar" width={40} height={40} className="object-cover" />
+                          {faq.image_url ? (
+                            <Image src={getMediaUrl(faq.image_url, "avatar")} alt="Avatar" width={40} height={40} className="object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-muted-foreground/40">N/A</div>
                           )}
@@ -331,8 +331,8 @@ function FAQManagementContent() {
                         <div className="flex items-start justify-between mb-4 mt-2">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-primary border border-border overflow-hidden">
-                                    {faq.avatar ? (
-                                        <Image src={getMediaUrl(faq.avatar, "avatar")} alt="Avatar" width={40} height={40} className="object-cover" />
+                                    {faq.image_url ? (
+                                        <Image src={getMediaUrl(faq.image_url, "avatar")} alt="Avatar" width={40} height={40} className="object-cover" />
                                     ) : (
                                         <Tag className="w-4 h-4" />
                                     )}
@@ -373,7 +373,7 @@ function FAQManagementContent() {
             ? {
                 question: editingFaq.question,
                 answer: editingFaq.answer,
-                avatar: editingFaq.avatar || "",
+                image_url: editingFaq.image_url || "",
                 is_active: editingFaq.is_active,
                 sort_order: editingFaq.sort_order,
               }

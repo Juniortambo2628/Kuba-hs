@@ -11,7 +11,7 @@ import { useCrudForm } from "@/hooks/useCrudForm";
 export interface FaqFormValues {
   question: string;
   answer: string;
-  avatar: string;
+  image_url: string;
   is_active: boolean;
   sort_order: number;
 }
@@ -32,7 +32,7 @@ export function FaqFormDialog({
   onSuccess,
 }: FaqFormDialogProps) {
   const { form, setForm, isSaving, handleSubmit } = useCrudForm<FaqFormValues>({
-    empty: () => ({ question: "", answer: "", avatar: "", is_active: true, sort_order: 0 }),
+    empty: () => ({ question: "", answer: "", image_url: "", is_active: true, sort_order: 0 }),
     endpoint: "/api/admin/faqs",
     editingId,
     initial,
@@ -67,8 +67,8 @@ export function FaqFormDialog({
         </div>
 
         <DashboardImageUpload
-          value={form.avatar}
-          onChange={(url) => setForm({ ...form, avatar: url })}
+          value={form.image_url}
+          onChange={(url) => setForm({ ...form, image_url: url })}
           type="avatar"
           label="Avatar (optional)"
         />

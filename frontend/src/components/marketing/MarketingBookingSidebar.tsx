@@ -13,7 +13,7 @@ interface BookingProvider {
   slug?: string;
   business_name?: string;
   logo?: string | null;
-  user?: { avatar_url?: string | null };
+  user?: { image_url?: string | null };
   rating?: number | null;
   review_count?: number;
   is_verified?: boolean;
@@ -62,7 +62,7 @@ export function MarketingBookingSidebar({
             >
               <Avatar className="h-12 w-12 border border-border/60 shadow-sm">
                 <AvatarImage
-                  src={getMediaUrl(provider.logo || provider.user?.avatar_url, "avatar")}
+                  src={getMediaUrl(provider.logo || provider.user?.image_url, "avatar")}
                 />
                 <AvatarFallback className="font-semibold text-sm">
                   {provider.business_name?.[0]}

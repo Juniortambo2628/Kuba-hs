@@ -6,7 +6,7 @@ import { isPlaceholderAvatarUrl } from "./avatar-url";
 export interface ProviderImageFields {
   logo?: string | null;
   banner?: string | null;
-  user?: { avatar_url?: string | null };
+  user?: { image_url?: string | null };
 }
 
 /**
@@ -23,7 +23,7 @@ export function resolveProviderCardImageUrl(provider: ProviderImageFields): stri
     return getMediaUrl(banner, "avatar");
   }
 
-  const avatar = provider.user?.avatar_url;
+  const avatar = provider.user?.image_url;
   if (avatar && !isPlaceholderAvatarUrl(avatar)) {
     return getMediaUrl(avatar, "avatar");
   }

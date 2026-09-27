@@ -25,13 +25,13 @@ export function chatPartner(
     const u = conv.provider?.user;
     return {
       name: conv.provider?.business_name || displayUserName(u),
-      avatarUrl: getAvatarDisplayUrl(u?.avatar_url) ?? null,
+      avatarUrl: getAvatarDisplayUrl(u?.image_url) ?? null,
       subtitle: "Provider",
     };
   }
   return {
     name: displayUserName(conv.customer),
-    avatarUrl: getAvatarDisplayUrl(conv.customer?.avatar_url) ?? null,
+    avatarUrl: getAvatarDisplayUrl(conv.customer?.image_url) ?? null,
     subtitle: "Client",
   };
 }

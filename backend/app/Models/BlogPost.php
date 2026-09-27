@@ -15,7 +15,7 @@ class BlogPost extends Model implements \Spatie\MediaLibrary\HasMedia
         'slug',
         'content',
         'excerpt',
-        'image',
+        'image_url',
         'is_published',
         'author_id',
     ];
@@ -28,7 +28,7 @@ class BlogPost extends Model implements \Spatie\MediaLibrary\HasMedia
 
     public function getImageUrlAttribute()
     {
-        return $this->getFirstMediaUrl('hero') ?: ($this->image ?? 'https://placehold.co/1200x600/1E293B/sky?text=Kuba+Insights');
+        return $this->getFirstMediaUrl('hero') ?: ($this->attributes['image_url'] ?? 'https://placehold.co/1200x600/1E293B/sky?text=Kuba+Insights');
     }
 
     public function author()

@@ -14,7 +14,7 @@ class FAQFactory extends Factory
         return [
             'question' => fake()->unique()->sentence(),
             'answer' => fake()->paragraph(),
-            'avatar' => null,
+            'image_url' => null,
             'category' => fake()->randomElement(['general', 'booking', 'payment', 'provider']),
             'is_active' => true,
             'sort_order' => fake()->numberBetween(1, 50),

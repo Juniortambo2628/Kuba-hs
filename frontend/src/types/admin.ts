@@ -5,14 +5,13 @@ export interface Testimonial {
   content: string;
   rating: number;
   sort_order: number;
-  avatar?: string;
   image_url?: string;
 }
 
 export interface TrustPartner {
   id: number;
   name: string;
-  logo_path: string;
+  image_url: string;
   is_active: boolean;
 }
 

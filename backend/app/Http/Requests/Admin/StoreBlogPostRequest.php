@@ -17,7 +17,7 @@ class StoreBlogPostRequest extends FormRequest
             'title' => 'required|string|max:255',
             'content' => 'required|string',
             'excerpt' => 'nullable|string|max:500',
-            'image' => 'nullable|string',
+            'image_url' => 'nullable|string',
             'is_published' => 'boolean',
         ];
     }

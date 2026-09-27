@@ -9,7 +9,7 @@ import { useCrudForm } from "@/hooks/useCrudForm";
 
 export interface TrustPartnerFormValues {
   name: string;
-  logo_path: string;
+  image_url: string;
   is_active: boolean;
 }
 
@@ -29,7 +29,7 @@ export function TrustPartnerFormDialog({
   onSuccess,
 }: TrustPartnerFormDialogProps) {
   const { form, setForm, isSaving, handleSubmit } = useCrudForm<TrustPartnerFormValues>({
-    empty: () => ({ name: "", logo_path: "", is_active: true }),
+    empty: () => ({ name: "", image_url: "", is_active: true }),
     endpoint: "/api/admin/trust-partners",
     editingId,
     initial,
@@ -64,8 +64,8 @@ export function TrustPartnerFormDialog({
         </div>
 
         <DashboardImageUpload
-          value={form.logo_path}
-          onChange={(url) => setForm({ ...form, logo_path: url })}
+          value={form.image_url}
+          onChange={(url) => setForm({ ...form, image_url: url })}
           type="logo"
           label="Partner Brand Logo"
         />

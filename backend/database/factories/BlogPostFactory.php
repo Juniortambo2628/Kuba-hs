@@ -18,7 +18,7 @@ class BlogPostFactory extends Factory
             'slug' => \Illuminate\Support\Str::slug($title),
             'content' => fake()->paragraphs(5, true),
             'excerpt' => fake()->paragraph(),
-            'image' => fake()->imageUrl(800, 400),
+            'image_url' => fake()->imageUrl(800, 400),
             'is_published' => fake()->boolean(70),
             'author_id' => User::factory(),
         ];

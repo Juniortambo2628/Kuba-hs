@@ -31,7 +31,7 @@ class User extends Authenticatable implements HasMedia
      */
     protected $appends = [
         'name',
-        'avatar_url',
+        'image_url',
     ];
 
     /**
@@ -46,7 +46,7 @@ class User extends Authenticatable implements HasMedia
         'password',
         'phone',
         'role',
-        'avatar_url',
+        'image_url',
         'google_id',
         'is_verified',
         'is_active',
@@ -97,14 +97,14 @@ class User extends Authenticatable implements HasMedia
     /**
      * Uploaded avatar only — no auto-generated placeholder URLs in API responses.
      */
-    public function getAvatarUrlAttribute(): ?string
+    public function getImageUrlAttribute(): ?string
     {
         $media = $this->getFirstMediaUrl('avatars');
         if ($media) {
             return $media;
         }
 
-        $stored = $this->attributes['avatar_url'] ?? null;
+        $stored = $this->attributes['image_url'] ?? null;
         if ($stored && ! self::isPlaceholderAvatarUrl($stored)) {
             return $stored;
         }

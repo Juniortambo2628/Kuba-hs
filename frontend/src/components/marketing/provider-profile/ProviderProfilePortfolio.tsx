@@ -41,7 +41,7 @@ export interface ProviderProfileData {
   is_verified: boolean;
   starting_price?: number | null;
   specialized_skills?: string[] | null;
-  user?: { avatar_url?: string | null; first_name?: string; last_name?: string };
+  user?: { image_url?: string | null; first_name?: string; last_name?: string };
   services: Array<{
     id: string;
     service_id: string;

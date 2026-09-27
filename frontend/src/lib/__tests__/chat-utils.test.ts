@@ -99,7 +99,7 @@ describe('chatPartner', () => {
     const conv = {
       provider: {
         business_name: 'Clean Pro',
-        user: { name: 'Jane', avatar_url: null },
+        user: { name: 'Jane', image_url: null },
       },
       customer: { name: 'John' },
     }
@@ -112,7 +112,7 @@ describe('chatPartner', () => {
     const { chatPartner } = require('@/lib/chat-utils')
     const conv = {
       provider: { user: { name: 'Jane' } },
-      customer: { name: 'John', avatar_url: null },
+      customer: { name: 'John', image_url: null },
     }
     const result = chatPartner(conv, 'provider')
     expect(result.name).toBe('John')

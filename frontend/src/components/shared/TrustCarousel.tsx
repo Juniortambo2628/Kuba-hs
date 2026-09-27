@@ -10,7 +10,7 @@ import { getMediaUrl } from "@/lib/utils";
 interface Partner {
   id: string;
   name: string;
-  logo_path: string;
+  image_url: string;
 }
 
 export function TrustCarousel() {
@@ -54,7 +54,7 @@ export function TrustCarousel() {
             [...partners, ...partners, ...partners].map((partner, i) => (
               <div key={i} className="grayscale hover:grayscale-0 opacity-40 hover:opacity-100 transition-all duration-500 px-4">
                 <Image
-                  src={getMediaUrl(partner.logo_path, "service")}
+                  src={getMediaUrl(partner.image_url, "service")}
                   alt={partner.name}
                   width={120}
                   height={40}

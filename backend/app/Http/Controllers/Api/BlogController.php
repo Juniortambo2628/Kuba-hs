@@ -15,7 +15,7 @@ class BlogController extends Controller
      */
     public function index(Request $request) {
         $query = BlogPost::where('is_published', true)
-            ->with(['author:id,name,avatar_url'])
+            ->with(['author:id,name,image_url'])
             ->orderByDesc('created_at');
 
         // Optional search filter
@@ -42,7 +42,7 @@ class BlogController extends Controller
     public function show($slug) {
         $post = BlogPost::where('slug', $slug)
             ->where('is_published', true)
-            ->with(['author:id,name,avatar_url'])
+            ->with(['author:id,name,image_url'])
             ->firstOrFail();
 
         return response()->json([

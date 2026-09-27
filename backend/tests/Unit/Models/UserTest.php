@@ -10,7 +10,7 @@ it('has correct fillable attributes', function () {
     $user = new User;
     expect($user->getFillable())->toContain(
         'first_name', 'last_name', 'email', 'password', 'phone', 'role',
-        'avatar_url', 'google_id', 'is_verified', 'is_active', 'unsubscribed_from_emails'
+        'image_url', 'google_id', 'is_verified', 'is_active', 'unsubscribed_from_emails'
     );
 });
 
