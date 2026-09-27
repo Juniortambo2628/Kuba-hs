@@ -16,26 +16,22 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+    public function store(LoginRequest $request): \Illuminate\Http\JsonResponse
     {
         $request->authenticate();
 
         $user = $request->user();
 
-        // Check if 2FA is enabled — return challenge instead of completing login
+        // 2FA is enabled: park the half-signed-in session and ask for the
+        // challenge instead of completing login. The challenge endpoint reads
+        // 2fa_user_id from here, and the session has to be torn down first or
+        // the password alone would already be enough to act as the user.
         if ($user->hasTwoFactorEnabled()) {
-            if ($request->wantsJson()) {
-                return response()->json([
-                    'two_factor_required' => true,
-                    'challenge_methods' => ['totp', 'recovery_code'],
-                ]);
-            }
-
             Auth::guard('web')->logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
+            session()->invalidate();
+            session()->regenerateToken();
 
-            $request->session()->put('2fa_user_id', $user->id);
+            session()->put('2fa_user_id', $user->id);
 
             return response()->json([
                 'two_factor_required' => true,
@@ -43,28 +39,16 @@ class AuthenticatedSessionController extends Controller
             ]);
         }
 
-        if ($request->wantsJson()) {
-            $user->notify(new SignInLog(
-                ip: $request->ip(),
-                user_agent: $request->userAgent(),
-                timestamp: now()
-            ));
-
-            return response()->json([
-                'message' => 'Logged in successfully',
-                'user' => new UserResource($user),
-            ]);
-        }
-
-        $request->session()->regenerate();
-
         $user->notify(new SignInLog(
             ip: $request->ip(),
             user_agent: $request->userAgent(),
             timestamp: now()
         ));
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        return response()->json([
+            'message' => 'Logged in successfully',
+            'user' => new UserResource($user),
+        ]);
     }
 
     /**
@@ -119,18 +103,13 @@ class AuthenticatedSessionController extends Controller
     /**
      * Destroy an authenticated session.
      */
-    public function destroy(Request $request): \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+    public function destroy(): \Illuminate\Http\JsonResponse
     {
         Auth::guard('web')->logout();
 
-        if ($request->wantsJson()) {
-            return response()->json(['message' => 'Logged out successfully']);
-        }
+        session()->invalidate();
+        session()->regenerateToken();
 
-        $request->session()->invalidate();
-
-        $request->session()->regenerateToken();
-
-        return redirect('/');
+        return response()->json(['message' => 'Logged out successfully']);
     }
 }

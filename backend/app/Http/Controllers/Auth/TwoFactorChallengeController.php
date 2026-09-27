@@ -21,14 +21,14 @@ class TwoFactorChallengeController extends Controller
             'code' => 'required|string',
         ]);
 
-        $userId = $request->session()->get('2fa_user_id');
+        $userId = session()->get('2fa_user_id');
         if (!$userId) {
             return response()->json(['message' => 'No pending 2FA challenge. Please sign in again.'], 422);
         }
 
         $user = User::find($userId);
         if (!$user || !$user->two_factor_secret) {
-            $request->session()->forget('2fa_user_id');
+            session()->forget('2fa_user_id');
 
             return response()->json(['message' => 'Invalid session. Please sign in again.'], 422);
         }
@@ -40,7 +40,7 @@ class TwoFactorChallengeController extends Controller
 
         // Check if it's a recovery code
         if (strlen($code) === 9 && str_contains($code, '-')) {
-            return $this->verifyRecoveryCode($request, $user, $code);
+            return $this->verifyRecoveryCode($user, $code);
         }
 
         // Verify TOTP code
@@ -49,13 +49,13 @@ class TwoFactorChallengeController extends Controller
         }
 
         // Complete the login
-        return $this->completeLogin($request, $user);
+        return $this->completeLogin($user);
     }
 
     /**
      * Verify a recovery code to complete the 2FA challenge.
      */
-    private function verifyRecoveryCode(Request $request, User $user, string $code): JsonResponse
+    private function verifyRecoveryCode(User $user, string $code): JsonResponse
     {
         if (!$user->two_factor_recovery_codes) {
             return response()->json(['message' => 'Invalid recovery code.'], 422);
@@ -76,18 +76,18 @@ class TwoFactorChallengeController extends Controller
             'two_factor_recovery_codes' => Crypt::encryptString(json_encode($recoveryCodes)),
         ]);
 
-        return $this->completeLogin($request, $user);
+        return $this->completeLogin($user);
     }
 
     /**
      * Complete login after 2FA verification.
      */
-    private function completeLogin(Request $request, User $user): JsonResponse
+    private function completeLogin(User $user): JsonResponse
     {
-        $request->session()->forget('2fa_user_id');
+        session()->forget('2fa_user_id');
 
         Auth()->guard('web')->login($user);
-        $request->session()->regenerate();
+        session()->regenerate();
 
         return response()->json([
             'message' => 'Authenticated successfully.',

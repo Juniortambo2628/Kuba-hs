@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
@@ -20,7 +19,7 @@ class NewPasswordController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request): JsonResponse|RedirectResponse
+    public function store(Request $request): JsonResponse
     {
         $request->validate([
             'token' => 'required',
@@ -43,17 +42,10 @@ class NewPasswordController extends Controller
             }
         );
 
-        // If the password was successfully reset, we will redirect the user back to
-        // the application's home authenticated view. If there is an error we can
-        // redirect them back to where they came from with their error message.
+        // If the password was successfully reset the client moves on to login;
+        // anything else surfaces as a validation error on the email.
         if ($status == Password::PASSWORD_RESET) {
-            $message = __($status);
-
-            if ($request->wantsJson() || $request->expectsJson()) {
-                return response()->json(['message' => $message, 'status' => $status]);
-            }
-
-            return redirect()->route('login')->with('status', $message);
+            return response()->json(['message' => __($status), 'status' => $status]);
         }
 
         throw ValidationException::withMessages([
