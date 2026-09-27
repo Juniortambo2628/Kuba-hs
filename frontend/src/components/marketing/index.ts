@@ -7,4 +7,5 @@ export { MarketingDetailBody } from "./MarketingDetailBody";
 export { MarketingDetailLayout } from "./MarketingDetailLayout";
 export { MarketingBookingSidebar } from "./MarketingBookingSidebar";
 export { MarketingHeroLogoFallback } from "./MarketingHeroLogoFallback";
+export { VerticalSalesPage } from "./VerticalSalesPage";
 
