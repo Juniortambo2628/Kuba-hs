@@ -674,3 +674,137 @@ Lint was compared by stashing the three files and re-running `eslint`:
 | 13 | D10, D11, D14 | **closed** - `efbc5fd` + `9772559`, `82128d2`, `1b65fa1` |
 | 13 | D12 | **disproven, 2 fields residual** - `service_radius`, `experience_years`, both need a product decision |
 | 15 | D22 | **open** - the last mechanical item: 4 response-envelope shapes, `ApiResponse` used once |
+
+## Phase 2 log - part 8 (D22, D12) - register items 13 and 15 closed
+
+| Commit | Items | What changed |
+| --- | --- | --- |
+| `ef3997c` | D22 | `app/Support/ApiResponse.php` deleted; `PaginationMeta::for()` replaces the two hand-rolled `meta` arrays. |
+| `74517ec` | D12 residual | New migration giving `providers.experience_years` and `providers.service_radius` a database default. |
+
+### D22 - one meta shape, one fewer envelope
+
+The register's count was right; its `High` risk rested on `ApiResponse`
+living in a tree of 75 controllers, which was the wrong axis - the class
+had **one** caller in the entire backend. What the three sites actually
+disagreed on was small and easy to settle:
+
+- `Admin\FeedbackController` hand-rolled all four of `current_page`,
+  `last_page`, `per_page`, `total`.
+- `Api\BlogController` hand-rolled three - no `per_page` - so
+  `app/blog/page.tsx:37`, which stores `data.meta` wholesale, was reading
+  a different contract from every admin list.
+- `Admin\BookingController::store` held the single
+  `ApiResponse::success($resource, $message, 201)` call.
+
+`PaginationMeta::for(Paginator)` is those four keys and nothing else.
+Both list endpoints call it, so the blog gained `per_page` and nothing
+lost a key. The booking envelope was inlined as the same three keys -
+`success`, `message`, `data` - because the object of the change was to
+delete the class, not to restyle its output.
+
+`ApiResponse` now has **0** references under `backend/app`. Six files,
++58/-60: the diff deletes more than it adds, which is what a
+one-consumer helper collapsing into its consumer looks like.
+
+`tests/Feature/PaginationMetaTest.php` calls both endpoints and asserts
+`array_keys($meta)` is exactly `['current_page', 'last_page',
+'per_page', 'total']` - same keys *and* same order, since two arrays
+that differ only in order are still two shapes to anything comparing
+them.
+
+### D12 - the last two column defaults
+
+D12 was **disproven** for most of its fields and left two residuals,
+`providers.experience_years` and `providers.service_radius`. The
+migration had created both nullable with no default; `User::defaults()`
+already declared `0` and `10`, and the Provider accessors coerce to
+exactly those, so the values were already what everything else believed -
+they just were not written anywhere the database could see.
+`service_radius` was the worse pair: no seeder ever sets it, so every
+seeded provider stores `NULL` and only the accessor makes it read `10`.
+
+`2026_09_27_000001_add_providers_column_defaults` adds `DEFAULT 0` and
+`DEFAULT 10` and keeps both columns nullable, so existing `NULL` rows are
+untouched and keep reading exactly as before. Nothing rewrites a row,
+which is also why `down()` has nothing to undo but the default.
+
+`down()` is driver-aware because the engines differ in how stubborn they
+are: MySQL keeps a default the `MODIFY` statement does not mention, so it
+gets an explicit `alter table ... alter column ... drop default`, while
+SQLite rebuilds the table from the definition it is handed and so only
+needs a definition without a default.
+
+`tests/Feature/ProvidersColumnDefaultsTest` checks the defaults are
+present and are `0` and `10`, that both columns are still nullable, and
+runs `down()` then `up()` against the live schema - the only honest way
+to show a migration is reversible rather than nominally so. Getting the
+assertion right needed care: SQLite hands back the SQL literal with its
+quotes intact (`"'10'"`), so the value is trimmed before casting and
+`null` is ruled out separately instead of letting a cast of `null` to
+`0` pass for `0`.
+
+### Gates
+
+`php artisan test`: **435 passed, 1 pre-existing risky** (432 before
+D12's three). `php artisan route:list --json`: **234 routes**, **0**
+duplicate method+URI; duplicate names are the same two as every previous
+checkpoint - 105 unnamed routes and 56 routes literally named
+`api.admin.`, neither touched by this work. `php -l` clean on both new
+files.
+
+The migration has **not** been run against MySQL: `wampmysqld64` is
+stopped and this shell is not elevated, so `php artisan migrate` is
+still owed once WAMP is up. It has been exercised - up, down, up -
+against SQLite by the suite.
+
+### Register status after Phase 2 part 8 - 15 of 15 closed
+
+| # | IDs | Status |
+| --- | --- | --- |
+| 1 | B1-B5 | **closed** - `d90a09a` ran the four pending migrations and deleted the fifth (B1-B4); `2387be9` + `3c467be` fixed SQLite `strftime` (B5); `2d81812` fixed `post.body` vs `content` |
+| 2 | C1-C3 | **closed** - `7c0e0c8` repaired the admin media delete route (C1/C2), `c7a0773` added the missing `financials/charts` route (C3) |
+| 3 | C6/D9 | **closed** - `db76a92` |
+| 4 | C4 | **disproven** - `ChatController::getConversation` already persists `read_at` on every fetch |
+| 5 | D5 | **closed** - `07b936a` |
+| 6 | D1 | **closed** - `8637fe2` |
+| 7 | A2 | **closed** - `616a3d6` |
+| 8 | A3/A5 | **closed** - `301dd35`, `0f1e59f` |
+| 9 | A1 | **closed** - `d931401` |
+| 10 | B7/B8 | **closed** - `1fb1d65` |
+| 11 | D2/D3/D4/D8 | **closed** - `7a1b91c`, `ccf2da6`, `b3f0c38`, `e45bae6` |
+| 12 | C5, C7, C8 | **closed** - `139982e`, `014549d`, `32c6ae2` |
+| 13 | D10-D14 | **closed** - `efbc5fd` + `9772559` (D10), `82128d2` (D11), `1b65fa1` (D14) + `67e3661` (D13), `74517ec` (D12 residual) |
+| 14 | A4-A12 | **closed** - A4/A9 skipped by decision; A5 `0f1e59f`, A7 `8338510`, A8 `ee3ebbf`, A11 `f3e566c`, A12 `baa3972` in Phase 1, A10 `03206df` and A6 `b56940e` in Phase 2 |
+| 15 | D22 | **closed** - `ef3997c` |
+
+D6, D7 and the D8 seeder residual were never separate register rows and
+are closed by `e7ddf78` and `0184000`/`49f2da0`/`e45bae6`.
+
+### What the consolidated register never covered
+
+These are findings, not register rows - written down here so "15 of 15"
+is not misread as "the audit is finished":
+
+- **A13-A17** - `getSSRSettings()` (already downgraded: it is revalidated
+  hourly), eager `framer-motion`/tiptap/Echo, `react-beautiful-dnd` on
+  React 19, `globals.css` `!important`/magic radii, unused-dependency
+  candidates. Still open.
+- **B9-B14** - 3 redundant indexes: their drop (X3) was **approved but
+  never executed** - no migration in the repo drops them, and MySQL is
+  down so their current state could not be re-checked; column naming; missing `slug` columns on
+  `service_categories`/`services`; `blog_posts.view_count`, which
+  `BlogPostResource` always emits as `0`; Spatie permission tables, whose
+  drop (X5) was explicitly **declined**.
+- **C9-C12** - the second finance controller, the two handlers registered
+  twice, `VerificationController` authz, three relation-only models.
+- **D15-D21** - base-URL resolution x7, currency and date formatting,
+  four status-filter tables, three overlapping fetch hooks, deprecated
+  re-exports, five dead backend npm deps, and **D21: an OpenSSH private
+  key still on disk** (`github-actions-kuba-home-service`, gitignored,
+  untracked, last written 15 July). D21 is the one High-severity item
+  outside the register and the one worth acting on next.
+- **X6** - purging the 94 MB MP4 from git history, deliberately deferred
+  because it rewrites shared history.
+
+
