@@ -18,11 +18,21 @@ import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components
 import { Plus, Edit, Trash2, LayoutGrid, List, MessageSquare, Tag, Eye, EyeOff, ChevronUp, ChevronDown, GripVertical } from "lucide-react";
 import { MetricCard } from "@/components/shared/MetricCard";
 import {
-  DragDropContext,
-  Droppable,
-  Draggable,
-  DropResult,
-} from "react-beautiful-dnd";
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { getMediaUrl } from "@/lib/utils";
 import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { DashboardListToolbar } from "@/components/shared/DashboardListToolbar";
@@ -40,6 +50,35 @@ interface FAQ {
   image_url?: string;
   is_active: boolean;
   sort_order: number;
+}
+
+function SortableFaqCard({ faq }: { faq: FAQ }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: faq.id,
+  });
+
+  return (
+    <Card
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={`border border-border ${isDragging ? "relative z-10 shadow-xl" : ""}`}
+    >
+      <CardContent className="p-4 flex items-center gap-4">
+        <div
+          {...attributes}
+          {...listeners}
+          className="cursor-grab text-muted-foreground p-2 touch-none"
+        >
+          <GripVertical className="w-5 h-5" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-bold truncate">{faq.question}</p>
+          <p className="text-xs text-muted-foreground line-clamp-1">{faq.answer}</p>
+        </div>
+        <span className="text-xs font-mono text-muted-foreground">#{faq.sort_order}</span>
+      </CardContent>
+    </Card>
+  );
 }
 
 function FAQManagementContent() {
@@ -71,12 +110,15 @@ function FAQManagementContent() {
     }
   };
 
-  const onDragEnd = async (result: DropResult) => {
-    if (!result.destination) return;
+  const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor));
+
+  const onDragEnd = async ({ active, over }: DragEndEvent) => {
+    if (!over || active.id === over.id) return;
     const sorted = [...faqs].sort((a, b) => a.sort_order - b.sort_order || a.id - b.id);
-    const itemsCopy = Array.from(sorted);
-    const [reordered] = itemsCopy.splice(result.source.index, 1);
-    itemsCopy.splice(result.destination.index, 0, reordered);
+    const from = sorted.findIndex((f) => f.id === active.id);
+    const to = sorted.findIndex((f) => f.id === over.id);
+    if (from < 0 || to < 0) return;
+    const itemsCopy = arrayMove(sorted, from, to);
     const payload = itemsCopy.map((f, i) => ({ id: f.id, sort_order: i }));
     setFaqs(itemsCopy.map((f, i) => ({ ...f, sort_order: i })));
     await reorderFaqs(payload);
@@ -120,6 +162,10 @@ function FAQManagementContent() {
 
   const activeCount = faqs.filter(f => f.is_active).length;
 
+  // The order view sorts the whole list, filters aside, so the indices the
+  // drag reports and the list that is rendered are always the same list.
+  const orderedFaqs = [...faqs].sort((a, b) => a.sort_order - b.sort_order || a.id - b.id);
+
   return (
     <DashboardPageContainer className="space-y-10">
       <DashboardGreetingBar 
@@ -151,42 +197,22 @@ function FAQManagementContent() {
       </div>
 
       {viewMode === "order" ? (
-        <DragDropContext onDragEnd={onDragEnd}>
-          <Droppable droppableId="faqs-order">
-            {(provided) => (
-              <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3">
-                {[...faqs]
-                  .sort((a, b) => a.sort_order - b.sort_order || a.id - b.id)
-                  .map((faq, index) => (
-                    <Draggable key={faq.id} draggableId={String(faq.id)} index={index}>
-                      {(dragProvided) => (
-                        <Card
-                          ref={dragProvided.innerRef}
-                          {...dragProvided.draggableProps}
-                          className="border border-border"
-                        >
-                          <CardContent className="p-4 flex items-center gap-4">
-                            <div
-                              {...dragProvided.dragHandleProps}
-                              className="cursor-grab text-muted-foreground p-2"
-                            >
-                              <GripVertical className="w-5 h-5" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-bold truncate">{faq.question}</p>
-                              <p className="text-xs text-muted-foreground line-clamp-1">{faq.answer}</p>
-                            </div>
-                            <span className="text-xs font-mono text-muted-foreground">#{faq.sort_order}</span>
-                          </CardContent>
-                        </Card>
-                      )}
-                    </Draggable>
-                  ))}
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
-        </DragDropContext>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={onDragEnd}
+        >
+          <SortableContext
+            items={orderedFaqs.map((faq) => faq.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="space-y-3">
+              {orderedFaqs.map((faq) => (
+                <SortableFaqCard key={faq.id} faq={faq} />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
       ) : (
       <>
       {search && (

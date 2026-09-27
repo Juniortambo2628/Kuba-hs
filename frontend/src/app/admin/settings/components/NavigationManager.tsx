@@ -9,30 +9,95 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { GripVertical, Trash2, Plus, Link as LinkIcon, Save } from "lucide-react";
 import {
-  DragDropContext,
-  Droppable,
-  Draggable,
-  DropResult,
-} from "react-beautiful-dnd";
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+
+type NavItem = { id: string; label: string; url: string };
+
+function SortableNavRow({
+  item,
+  onUpdate,
+  onDelete,
+}: {
+  item: NavItem;
+  onUpdate: (id: string, field: string, value: string) => void;
+  onDelete: (id: string) => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: item.id,
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={`flex gap-4 p-4 bg-white dark:bg-zinc-900 border rounded-2xl items-center ${
+        isDragging ? "relative z-10 shadow-xl" : ""
+      }`}
+    >
+      <div {...attributes} {...listeners} className="text-muted-foreground cursor-grab touch-none">
+        <GripVertical className="w-5 h-5" />
+      </div>
+      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+        <div className="space-y-1.5">
+          <FieldLabel>Navigation Label</FieldLabel>
+          <Input
+            value={item.label}
+            onChange={(e) => onUpdate(item.id, "label", e.target.value)}
+            placeholder="e.g. Services"
+            className="font-bold bg-muted/20 border-border/30 focus:bg-white dark:focus:bg-zinc-800 transition-all rounded-xl h-12"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <FieldLabel className="flex items-center gap-1.5">
+            <LinkIcon className="w-3 h-3 text-primary/40" />
+            Destination Route
+          </FieldLabel>
+          <Input
+            value={item.url}
+            onChange={(e) => onUpdate(item.id, "url", e.target.value)}
+            placeholder="/path"
+            className="bg-muted/20 border-border/30 focus:bg-white dark:focus:bg-zinc-800 transition-all font-mono text-sm rounded-xl h-12"
+          />
+        </div>
+      </div>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => onDelete(item.id)}
+        className="text-red-500 hover:text-red-600 hover:bg-red-50"
+      >
+        <Trash2 className="w-4 h-4" />
+      </Button>
+    </div>
+  );
+}
 
 export function NavigationManager() {
   const { refreshSettings } = useCMS();
-  const [items, setItems] = useState<any[]>([]);
+  const [items, setItems] = useState<NavItem[]>([]);
   const [settingId, setSettingId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
     fetchNavigation();
-
-    // Fix for react-beautiful-dnd invariant failure in React 18+
-    const animation = requestAnimationFrame(() => setEnabled(true));
-    return () => {
-      cancelAnimationFrame(animation);
-      setEnabled(false);
-    };
   }, []);
+
+  const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor));
 
   const fetchNavigation = async () => {
     try {
@@ -107,12 +172,12 @@ export function NavigationManager() {
       }
   };
 
-  const onDragEnd = (result: DropResult) => {
-    if (!result.destination) return;
-    const itemsCopy = Array.from(items);
-    const [reorderedItem] = itemsCopy.splice(result.source.index, 1);
-    itemsCopy.splice(result.destination.index, 0, reorderedItem);
-    setItems(itemsCopy);
+  const onDragEnd = ({ active, over }: DragEndEvent) => {
+    if (!over || active.id === over.id) return;
+    const from = items.findIndex((item) => item.id === active.id);
+    const to = items.findIndex((item) => item.id === over.id);
+    if (from < 0 || to < 0) return;
+    setItems(arrayMove(items, from, to));
   };
 
   if (isLoading) return <div>Loading...</div>;
@@ -132,7 +197,7 @@ export function NavigationManager() {
         </div>
       </div>
 
-      {!enabled ? null : items.length === 0 ? (
+      {items.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 border-2 border-dashed border-border/60 rounded-3xl bg-muted/30">
           <p className="text-muted-foreground font-medium mb-4">No navigation links found</p>
           <Button onClick={handleAdd} size="sm" className="rounded-full bg-primary/10 text-primary hover:bg-primary/20 border-none">
@@ -140,56 +205,23 @@ export function NavigationManager() {
           </Button>
         </div>
       ) : (
-        <DragDropContext onDragEnd={onDragEnd}>
-          <Droppable droppableId="navigation" isDropDisabled={false} isCombineEnabled={false} ignoreContainerClipping={false} direction="vertical">
-            {(provided) => (
-              <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
-                {items.map((item, index) => (
-                  <Draggable key={item.id} draggableId={item.id} index={index}>
-                    {(provided) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        className="flex gap-4 p-4 bg-white dark:bg-zinc-900 border rounded-2xl items-center"
-                      >
-                        <div {...provided.dragHandleProps} className="text-muted-foreground cursor-grab">
-                          <GripVertical className="w-5 h-5" />
-                        </div>
-                        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
-                            <div className="space-y-1.5">
-                              <FieldLabel>Navigation Label</FieldLabel>
-                              <Input 
-                                  value={item.label}
-                                  onChange={(e) => handleUpdate(item.id, 'label', e.target.value)}
-                                  placeholder="e.g. Services"
-                                  className="font-bold bg-muted/20 border-border/30 focus:bg-white dark:focus:bg-zinc-800 transition-all rounded-xl h-12"
-                              />
-                            </div>
-                            <div className="space-y-1.5">
-                              <FieldLabel className="flex items-center gap-1.5">
-                                <LinkIcon className="w-3 h-3 text-primary/40" />
-                                Destination Route
-                              </FieldLabel>
-                              <Input 
-                                  value={item.url}
-                                  onChange={(e) => handleUpdate(item.id, 'url', e.target.value)}
-                                  placeholder="/path"
-                                  className="bg-muted/20 border-border/30 focus:bg-white dark:focus:bg-zinc-800 transition-all font-mono text-sm rounded-xl h-12"
-                              />
-                            </div>
-                        </div>
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)} className="text-red-500 hover:text-red-600 hover:bg-red-50">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    )}
-                  </Draggable>
-                ))}
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
-        </DragDropContext>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+          <SortableContext
+            items={items.map((item) => item.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="space-y-4">
+              {items.map((item) => (
+                <SortableNavRow
+                  key={item.id}
+                  item={item}
+                  onUpdate={handleUpdate}
+                  onDelete={handleDelete}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
       )}
     </div>
   );
