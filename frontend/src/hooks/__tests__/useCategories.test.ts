@@ -49,4 +49,29 @@ describe("useCategories", () => {
     expect(result.current.categories).toEqual([]);
     expect(mockedGet).not.toHaveBeenCalled();
   });
+
+  it("hands out one array per render while loading, not a new one each time", () => {
+    mockedGet.mockReturnValue(new Promise(() => {})); // never resolves
+
+    const { result, rerender } = renderHook(() => useCategories(), { wrapper });
+    const whileLoading = result.current.categories;
+
+    rerender();
+    rerender();
+
+    // GlobalSearch's debounced effect depends on this array: a fresh []
+    // per render re-runs it after every render until React throws
+    // "Maximum update depth exceeded".
+    expect(result.current.categories).toBe(whileLoading);
+  });
+
+  it("keeps the loaded array stable across renders", async () => {
+    const { result, rerender } = renderHook(() => useCategories(), { wrapper });
+    await waitFor(() => expect(result.current.categories).toHaveLength(2));
+
+    const loaded = result.current.categories;
+    rerender();
+
+    expect(result.current.categories).toBe(loaded);
+  });
 });

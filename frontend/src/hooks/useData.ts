@@ -1,3 +1,4 @@
+import { useState } from "react";
 import useSWR, { SWRConfiguration } from "swr";
 import axiosInstance from "@/lib/axios";
 import { normalizeApiResponse } from "@/lib/api-response";
@@ -111,8 +112,14 @@ export function useSwrList<T>(
     ...swrOptions,
   });
 
+  // One array for every render that has no data yet. `data ?? []` would
+  // hand out a fresh array each time, so any effect that depends on the
+  // list (GlobalSearch's debounced search) would re-run after every
+  // render and eventually throw "Maximum update depth exceeded".
+  const [empty] = useState<T[]>([]);
+
   return {
-    list: data ?? [],
+    list: data ?? empty,
     isLoading,
     isError: error,
     error: error instanceof Error ? error.message : error ? String(error) : null,
