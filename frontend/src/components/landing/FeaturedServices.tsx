@@ -22,12 +22,12 @@ import {
   LandingGradientTitle,
 } from "@/lib/landing-section-header-copy";
 import { sortCategoriesByOrder } from "@/lib/category-constants";
-import { useLandingFetch } from "@/hooks/useLandingFetch";
+import { useCategories } from "@/hooks/useCategories";
 import { LandingSectionFooter } from "@/components/shared/LandingSectionFooter";
 
 export function FeaturedServices() {
   const { getS } = useCMS();
-  const { data: rawCategories, isLoading } = useLandingFetch("/api/categories");
+  const { categories: rawCategories, isLoading } = useCategories();
   const categories = sortCategoriesByOrder(rawCategories);
 
   const servicesTitle = getS("landing_sections", "services_title", "Just Added");

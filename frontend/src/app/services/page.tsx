@@ -1,15 +1,16 @@
 "use client";
 
-import { useEffect, useState, Suspense, useMemo } from "react";
+import { useState, Suspense, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Loader2, SlidersHorizontal, Wrench as WrenchIcon, ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import axiosInstance from "@/lib/axios";
+
 import { MarketingPage } from "@/components/layout/MarketingPage";
 import { MarketingSection } from "@/components/shared/MarketingSection";
 import { useMarketingHero } from "@/hooks/useMarketingHero";
 import { useSearchParams } from "next/navigation";
 import { usePageFeatures } from "@/hooks/usePageFeatures";
+import { useCategories } from "@/hooks/useCategories";
 import { ServiceCard, ServiceCategoryCard } from "@/components/marketplace";
 import { FeatureCardGrid } from "@/components/shared/FeatureCardGrid";
 import {
@@ -66,31 +67,17 @@ function ServicesContent() {
   const baseHero = useMarketingHero("services");
   const searchParams = useSearchParams();
 
-  const categoryParam =
-    searchParams.get("category_id") || searchParams.get("category") || "";
+  const categoryParam = String(
+    searchParams.get("category_id") || searchParams.get("category") || ""
+  );
   const searchQuery = searchParams.get("search");
   const browsingCategory = Boolean(categoryParam || searchQuery);
 
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { categories, isLoading } = useCategories<Category>();
   const [view, setView] = useState<"grid" | "list">("grid");
   const [filterOpen, setFilterOpen] = useState(false);
 
   const { features: cmsFeatures } = usePageFeatures("services");
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await axiosInstance.get("/api/categories");
-        setCategories(response.data.data || []);
-      } catch (error) {
-        console.error("Failed to fetch categories:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchCategories();
-  }, []);
 
   const allServices = categories.flatMap((cat) =>
     (cat.services || []).map((svc) => ({

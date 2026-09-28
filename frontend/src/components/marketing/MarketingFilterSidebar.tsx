@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { SlidersHorizontal, Shield, Star, Paintbrush, Hammer, Droplets, Lightbulb, Check } from "lucide-react";
-import axiosInstance from "@/lib/axios";
 import { cn } from "@/lib/utils";
 import { MarketingFilterCard } from "./MarketingFilterCard";
 import { formatCurrency } from "@/lib/format";
+import { useCategories } from "@/hooks/useCategories";
 
 interface Service {
   id: number;
@@ -38,7 +38,7 @@ export function MarketingFilterSidebar() {
   const initialSortOrder = searchParams.get("sort_by_price") || "";
 
   // States
-  const [categories, setCategories] = useState<Category[]>([]);
+  const { categories } = useCategories<Category>();
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
   const [selectedServices, setSelectedServices] = useState<number[]>(initialServices);
   const [minRating, setMinRating] = useState<number | null>(initialMinRating);
@@ -48,19 +48,6 @@ export function MarketingFilterSidebar() {
   const [instantBook, setInstantBook] = useState(initialInstantBook);
   const [eqIncluded, setEqIncluded] = useState(initialEqIncluded);
   const [sortOrder, setSortOrder] = useState<string>(initialSortOrder);
-
-  // Fetch categories
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await axiosInstance.get("/api/categories");
-        setCategories(res.data.data || []);
-      } catch (err) {
-        console.error("Filter categories fetch failed", err);
-      }
-    };
-    fetchCategories();
-  }, []);
 
   // Sync state with URL search params changes
   useEffect(() => {

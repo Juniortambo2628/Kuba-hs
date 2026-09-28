@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { serviceDetailHref } from "@/lib/service-urls";
 import { motion, AnimatePresence } from "framer-motion";
-import axiosInstance from "@/lib/axios";
 import {
   ArrowRight,
   Sparkles,
@@ -19,6 +18,7 @@ import {
 } from "lucide-react";
 import { navUi } from "@/lib/nav-ui";
 import { cn } from "@/lib/utils";
+import { useCategories } from "@/hooks/useCategories";
 
 interface MegamenuService {
   id: string;
@@ -101,26 +101,8 @@ function CategoryRow({
 }
 
 export function ServiceMegamenu({ isOpen, onClose }: ServiceMegamenuProps) {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { categories, isLoading } = useCategories<Category>({ enabled: isOpen });
   const [hoveredId, setHoveredId] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await axiosInstance.get("/api/categories");
-        setCategories(response.data.data ?? []);
-      } catch (error) {
-        console.error("Failed to fetch categories for megamenu:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (isOpen && categories.length === 0) {
-      fetchCategories();
-    }
-  }, [isOpen, categories.length]);
 
   const { residential, commercial, featured } = useMemo(() => {
     const res: Category[] = [];

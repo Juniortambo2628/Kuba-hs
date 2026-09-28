@@ -79,3 +79,43 @@ export function useData<T>(
     refetch: () => mutate(),
   };
 }
+
+export interface UseSwrListResult<T> {
+  list: T[];
+  isLoading: boolean;
+  isError: unknown;
+  error: string | null;
+  refetch: () => void;
+}
+
+/**
+ * List-shaped sibling of `useData`: one SWR key, the shared `fetcher`, and
+ * always an array. Everything that used to fetch a list in its own
+ * useEffect (useLandingFetch, usePageFeatures, the category call sites)
+ * sits on top of this so two components asking for the same URL share
+ * one request instead of racing.
+ *
+ * Pass `enabled: false` to keep the hook mounted but unfetching - that
+ * is how the modals/megamenu preserve "only fetch when opened".
+ */
+export function useSwrList<T>(
+  url: string | null,
+  options: { enabled?: boolean } & SWRConfiguration<T[]> = {}
+): UseSwrListResult<T> {
+  const { enabled = true, ...swrOptions } = options;
+  const key = enabled && url ? url : null;
+
+  const { data, error, isLoading, mutate } = useSWR<T[]>(key, fetcher, {
+    revalidateOnFocus: false,
+    revalidateIfStale: false,
+    ...swrOptions,
+  });
+
+  return {
+    list: data ?? [],
+    isLoading,
+    isError: error,
+    error: error instanceof Error ? error.message : error ? String(error) : null,
+    refetch: () => mutate(),
+  };
+}

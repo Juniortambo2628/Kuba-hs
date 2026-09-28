@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
-import axiosInstance from "@/lib/axios";
+import { useSwrList } from "@/hooks/useData";
 
-interface PageFeature {
+export interface PageFeature {
   id: number;
   title: string;
   subtitle?: string;
@@ -13,24 +12,13 @@ interface PageFeature {
 
 /**
  * Fetches page-specific features from the CMS API.
- * Replaces the identical useEffect + useState pattern duplicated
- * across About, Commercial, Cooperatives, and Investors pages.
+ * Thin wrapper over the shared SWR list hook, so two pages asking for the
+ * same pageName (or a remount) reuse one request instead of refetching.
  */
 export function usePageFeatures(pageName: string) {
-  const [features, setFeatures] = useState<PageFeature[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { list, isLoading } = useSwrList<PageFeature>(
+    `/api/page-features?page=${pageName}`
+  );
 
-  useEffect(() => {
-    setIsLoading(true);
-    axiosInstance
-      .get(`/api/page-features?page=${pageName}`)
-      .then((res) => {
-        const data = res.data?.data ?? res.data;
-        setFeatures(Array.isArray(data) ? data : []);
-      })
-      .catch((err) => console.error(`Failed to load ${pageName} features`, err))
-      .finally(() => setIsLoading(false));
-  }, [pageName]);
-
-  return { features, isLoading };
+  return { features: list, isLoading };
 }

@@ -23,6 +23,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import axiosInstance from "@/lib/axios";
+import { useCategories } from "@/hooks/useCategories";
 import Link from "next/link";
 import { providerHref } from "@/lib/provider-urls";
 import {
@@ -80,7 +81,7 @@ export function HeroSearchModal({ isOpen, onClose, initialTab, initialView = "li
   const { getS } = useCMS();
   const [searchTerm, setSearchTerm] = useState("");
   const [locationTerm, setLocationTerm] = useState("");
-  const [categories, setCategories] = useState<Category[]>([]);
+  const { categories } = useCategories<Category>({ enabled: isOpen });
   const [results, setResults] = useState<SearchProvider[]>([]);
   const [resultView, setResultView] = useState<"list" | "map">("list");
   const [totalResults, setTotalResults] = useState(0);
@@ -151,15 +152,6 @@ export function HeroSearchModal({ isOpen, onClose, initialTab, initialView = "li
 
   useEffect(() => {
     if (!isOpen) return;
-    const fetchCategories = async () => {
-      try {
-        const { data } = await axiosInstance.get("/api/categories");
-        setCategories(data.data ?? []);
-      } catch (error) {
-        console.error("Failed to fetch categories:", error);
-      }
-    };
-    fetchCategories();
     setSearchTerm("");
     setLocationTerm("");
     setCoords(null);

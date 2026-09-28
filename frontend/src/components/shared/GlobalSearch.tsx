@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -25,6 +25,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import axiosInstance from "@/lib/axios";
+import { useCategories } from "@/hooks/useCategories";
 import { ScrollRegion } from "@/components/shared/ScrollRegion";
 import { ProviderSearchRow, SearchResultRow, type ProviderSearchRowData } from "@/components/marketplace";
 import { providerHref } from "@/lib/provider-urls";
@@ -133,27 +134,20 @@ export function GlobalSearch() {
     return entries.map(staticEntryToItem);
   };
 
-  const [categories, setCategories] = useState<any[]>([]);
+  const { categories: rawCategories } = useCategories<any>();
+  const categories = useMemo(
+    () =>
+      rawCategories.map((cat: any): SearchItem => ({
+        id: `cat-${cat.id}`,
+        title: cat.name,
+        description: `View all ${cat.name} services`,
+        url: `/services?category=${cat.slug || cat.id}`,
+        icon: <Layers className="w-4 h-4" />,
+        category: "Services",
+      })),
+    [rawCategories]
+  );
   const [isSearching, setIsSearching] = useState(false);
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await axiosInstance.get("/api/categories");
-        setCategories(res.data.data.map((cat: any) => ({
-          id: `cat-${cat.id}`,
-          title: cat.name,
-          description: `View all ${cat.name} services`,
-          url: `/services?category=${cat.slug || cat.id}`,
-          icon: <Layers className="w-4 h-4" />,
-          category: "Services"
-        })));
-      } catch (err) {
-        console.error("Failed to fetch categories for search", err);
-      }
-    };
-    fetchCategories();
-  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
