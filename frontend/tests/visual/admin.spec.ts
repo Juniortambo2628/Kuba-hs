@@ -97,6 +97,13 @@ test.describe('Admin visual regression - admin-content-area', () => {
 
   test.beforeEach(async ({ page }) => {
     test.skip(!backendUp, BACKEND_SKIP_REASON)
+
+    // The cookie sheet slides in 2s after mount unless consent is already
+    // stored, so pre-seed it to keep that banner out of the admin shots.
+    await page.addInitScript(() => {
+      window.localStorage.setItem('cookie-consent', 'all')
+    })
+
     await loginAsAdmin(page)
   })
 
@@ -117,8 +124,37 @@ test.describe('Admin visual regression - admin-content-area', () => {
   test('admin settings form controls', async ({ page }) => {
     await page.goto('/admin/settings')
     await page.waitForLoadState('networkidle')
-    const panel = page.locator('[data-slot="card"], form').first()
-    await expect(panel).toHaveScreenshot('admin-settings-form.png', {
+
+    const cards = page.locator('.admin-content-area [data-slot="card"]')
+    await expect(cards.first().locator('input').first()).toBeVisible()
+    await page.evaluate(() => window.scrollTo(0, 0))
+
+    const boxes = (
+      await Promise.all(
+        [0, 1, 2].map((index) => cards.nth(index).boundingBox())
+      )
+    ).filter((box): box is NonNullable<typeof box> => box !== null)
+    if (boxes.length === 0) {
+      throw new Error('expected the settings cards to render')
+    }
+
+    // Clip only the cards that share the first card's row. On mobile the
+    // stack runs long enough to reach the floating environment badge, and
+    // fixed chrome inside a clip is a flake generator.
+    const firstTop = boxes[0].y
+    const row = boxes.filter((box) => Math.abs(box.y - firstTop) < 4)
+    const left = Math.min(...row.map((box) => box.x))
+    const top = Math.min(...row.map((box) => box.y))
+    const right = Math.max(...row.map((box) => box.x + box.width))
+    const bottom = Math.max(...row.map((box) => box.y + box.height))
+
+    await expect(page).toHaveScreenshot('admin-settings-controls.png', {
+      clip: {
+        x: left,
+        y: top,
+        width: right - left,
+        height: bottom - top,
+      },
       maxDiffPixelRatio: 0.01,
       animations: 'disabled',
       timeout: 30000,
