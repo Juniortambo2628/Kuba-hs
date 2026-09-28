@@ -915,7 +915,7 @@ needed - disproved, informational, or a file git never tracked.
 | A15 | `react-beautiful-dnd` replaced by `@dnd-kit` (decision) | `37139e7` |
 | A17 | 11 dependencies nothing imports removed; `@uppy/core` added because Uppy *is* used and was only ever present through the meta-package | `e630fb9` |
 | A14 | Echo/Pusher and tiptap now load on demand; `framer-motion` deliberately left eager - it renders above the fold on most pages | `90ce278` |
-| A16 | **slice 1 of 3 only** - 18 `rounded-[2.5rem]` -> `rounded-surface` + `--radius-surface: 2.5rem`, emitted CSS byte-identical. Slices 2 and 3 deferred, see below | `f2d8112` |
+| A16 | all 3 slices: 18 `rounded-[2.5rem]` -> `rounded-surface` + `--radius-surface: 2.5rem` (emitted CSS byte-identical); 38 redundant `!important` dropped from the unlayered `.admin-content-area` block (50 -> 12); 19 `::-webkit-scrollbar` twins dropped (472 -> 389 lines). Visual gate added as `tests/visual/admin.spec.ts` | `f2d8112`, `4bbf966`, `63857a8`, `0ff0f1c` |
 | D16 | one `formatCurrency`/`formatDate` for 54 currency sites (41 files) and all 36 `toLocaleDateString` sites; 3 ad-hoc wrappers deleted | `fa69cff` |
 | D17 | one status-filter table per entity; `admin/bookings` gains the missing `in_progress`; `admin/contact` label resolution moved into `lib/status-styles.ts` | `87db3cc` |
 | D15 | 7 base-URL call sites -> `lib/api-base-url` (+ `getBackendOrigin()`); fixed `/api/api` and a trailing-slash bug in two of them | `0fa8274` |
@@ -935,20 +935,40 @@ Run after every change, backend changes first:
   files stashed in `src/__baseline__/`, then the stash dir deleted, so a
   new problem can never hide inside an old one.
 - `npm test` - 226 -> **244 passed / 31 suites**.
+- `npm run lint:styles` (stylelint) - clean.
 - `npm run build` - and `frontend/public/sw.js` committed whenever the
   build regenerates it.
+- **Visual gate** (added for A16 slices 2-3): Chromium installed with
+  `npx playwright install chromium`, then
+  `npx playwright test tests/visual/...` - 58 screenshots (48 public +
+  10 admin) x 2 projects. A16 slices 2-3 moved **0 pixels**: the same
+  58 pass before and after against one locally generated baseline set.
+  The 10 admin shots need the Laravel backend on :8000 and skip with a
+  reason when it is not there, because CI's visual job only starts the
+  Next dev server.
 
 #### Carried forward / deliberate
 
-- **A16 slices 2 and 3 are not done.** There is no visual gate in this
-  repo: Playwright is installed but no browsers are downloaded, so the
-  snapshots would be platform-specific. `.admin-content-area`
-  (`globals.css:241-317`) is unlayered and therefore beats
-  `@layer utilities`, which is what makes ~40 of the 50 `!important`
-  declarations redundant, but the 3 on `body[data-scroll-locked]` earn
-  theirs (they override inline style) and `::-webkit-scrollbar` has a
-  standard `scrollbar-width`/`scrollbar-color` replacement that renders
-  differently. Both slices need a browser in front of them first.
+- **A16 slices 2 and 3 are done** (`4bbf966`, `63857a8`). What stays by
+  design: 12 `!important` - 3 on `body[data-scroll-locked]` (they beat
+  the inline styles Radix writes), `select` and `.font-black` in
+  `@layer base` (they must beat the later utilities layer), and 7
+  Leaflet/FilePond rules in `@layer utilities` (they must beat those
+  libraries' unlayered CSS). The 19 `::-webkit-scrollbar` rules were
+  provably inert in Playwright's Chromium 149 - byte-identical
+  screenshots with and without them - so the pixel gate cannot see slice
+  3. Browsers that only speak `::-webkit-scrollbar` (older Safari) lose
+  the custom 6px/3px thumb and fall back to the OS scrollbar; that is
+  the trade-off the plan accepts.
+- **Visual baselines belong to CI, not to this machine.**
+  `frontend-consistency.yml` regenerates Linux baselines and commits
+  them (`chore: update VRT baselines for Linux [skip ci]`), and its
+  runner has no API behind it, so committed pages render shorter. A
+  local run against them reports **23 failed / 35 passed** - the
+  homepage full-page shot is 412x1923 committed vs 412x9904 with a live
+  backend. Not a regression: A16 was measured against one local
+  baseline set, 58/58 before and after. `npm run test:visual:update`
+  rewrites the baselines for the current machine.
 - **B11 side finding, unfixed:** `StoreFAQRequest` has no validation rule
   for the FAQ image field, so an uploaded FAQ image is silently dropped.
   Found while renaming the image columns in B11d, outside this plan.
@@ -986,7 +1006,6 @@ Run after every change, backend changes first:
 | A4, A9 | skipped by decision in Phase 1 |
 | C4 | disproven |
 | C10, C12 | disproven - see the plan execution log |
-| A16 slices 2-3 | deferred: `!important` and `::-webkit-scrollbar` need a browser in front of them, and this repo has no visual gate |
 
 ### History note - the X6 purge rewrote every commit hash
 
