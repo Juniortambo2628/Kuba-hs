@@ -915,7 +915,7 @@ needed - disproved, informational, or a file git never tracked.
 | A15 | `react-beautiful-dnd` replaced by `@dnd-kit` (decision) | `37139e7` |
 | A17 | 11 dependencies nothing imports removed; `@uppy/core` added because Uppy *is* used and was only ever present through the meta-package | `e630fb9` |
 | A14 | Echo/Pusher and tiptap now load on demand; `framer-motion` deliberately left eager - it renders above the fold on most pages | `90ce278` |
-| A16 | all 3 slices: 18 `rounded-[2.5rem]` -> `rounded-surface` + `--radius-surface: 2.5rem` (emitted CSS byte-identical); 38 redundant `!important` dropped from the unlayered `.admin-content-area` block (50 -> 12); 19 `::-webkit-scrollbar` twins dropped (472 -> 389 lines). Visual gate added as `tests/visual/admin.spec.ts` | `f2d8112`, `4bbf966`, `63857a8`, `0ff0f1c` |
+| A16 | all 3 slices: 18 `rounded-[2.5rem]` -> `rounded-surface` + `--radius-surface: 2.5rem` (emitted CSS byte-identical); 38 redundant `!important` dropped from the unlayered `.admin-content-area` block (50 -> 12); 19 `::-webkit-scrollbar` twins dropped (472 -> 389 lines). Visual gate added as `tests/visual/admin.spec.ts` | `f2d8112`, `4bbf966`, `63857a8`, `0ff0f1c`, `234f21e` |
 | D16 | one `formatCurrency`/`formatDate` for 54 currency sites (41 files) and all 36 `toLocaleDateString` sites; 3 ad-hoc wrappers deleted | `fa69cff` |
 | D17 | one status-filter table per entity; `admin/bookings` gains the missing `in_progress`; `admin/contact` label resolution moved into `lib/status-styles.ts` | `87db3cc` |
 | D15 | 7 base-URL call sites -> `lib/api-base-url` (+ `getBackendOrigin()`); fixed `/api/api` and a trailing-slash bug in two of them | `0fa8274` |
@@ -945,7 +945,11 @@ Run after every change, backend changes first:
   58 pass before and after against one locally generated baseline set.
   The 10 admin shots need the Laravel backend on :8000 and skip with a
   reason when it is not there, because CI's visual job only starts the
-  Next dev server.
+  Next dev server. They pre-seed `cookie-consent` so the consent sheet
+  stays out of frame, and they were regenerated with
+  `--update-snapshots=all` (the bare flag means `changed`, which leaves
+  snapshots alone while their diff fits inside the test's own
+  tolerance).
 
 #### Carried forward / deliberate
 
