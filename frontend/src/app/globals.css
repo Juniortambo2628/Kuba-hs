@@ -240,18 +240,18 @@
 
 /* ─── Global Admin UI Tightening ─── */
 .admin-content-area [data-slot="card"] {
-  border-radius: 0.75rem !important;
-  border-color: var(--border) !important;
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05) !important;
+  border-radius: 0.75rem;
+  border-color: var(--border);
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
 }
 
 .admin-content-area [data-slot="card-header"] {
-  padding: 1rem 1.25rem !important;
-  border-bottom: 1px solid var(--border) !important;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
 }
 
 .admin-content-area [data-slot="card-content"] {
-  padding: 1.25rem !important;
+  padding: 1.25rem;
 }
 
 .admin-content-area input:not([type="checkbox"], [type="radio"], [data-slot="switch"]),
@@ -259,62 +259,62 @@
 .admin-content-area select,
 .admin-content-area [data-slot="select-trigger"],
 .admin-content-area [data-slot="textarea"] {
-  height: 2.25rem !important;
-  border-radius: 0.5rem !important;
+  height: 2.25rem;
+  border-radius: 0.5rem;
   padding-left: 0.75rem;
   padding-right: 0.75rem;
-  font-size: 0.875rem !important;
-  font-weight: 500 !important;
-  background-color: var(--background) !important;
-  border: 1px solid var(--border) !important;
-  letter-spacing: -0.01em !important;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background-color: var(--background);
+  border: 1px solid var(--border);
+  letter-spacing: -0.01em;
 }
 
 .admin-content-area button:not(.size-icon, .h-auto) {
-  height: 2.25rem !important;
-  border-radius: 0.5rem !important;
-  padding-left: 1rem !important;
-  padding-right: 1rem !important;
-  font-size: 0.8125rem !important;
-  letter-spacing: -0.01em !important;
-  font-weight: 600 !important;
-  text-transform: none !important;
+  height: 2.25rem;
+  border-radius: 0.5rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  font-size: 0.8125rem;
+  letter-spacing: -0.01em;
+  font-weight: 600;
+  text-transform: none;
 }
 
 .admin-content-area label,
 .admin-content-area [data-slot="label"] {
-  font-size: 0.8125rem !important;
-  font-weight: 510 !important;
-  color: var(--muted-foreground) !important;
-  letter-spacing: -0.01em !important;
-  text-transform: none !important;
-  margin-bottom: 0.375rem !important;
-  display: block !important;
+  font-size: 0.8125rem;
+  font-weight: 510;
+  color: var(--muted-foreground);
+  letter-spacing: -0.01em;
+  text-transform: none;
+  margin-bottom: 0.375rem;
+  display: block;
 }
 
 .admin-content-area h1, 
 .admin-content-area .text-heading {
-  font-size: 1.5rem !important;
-  font-weight: 700 !important;
-  letter-spacing: -0.025em !important;
-  color: var(--foreground) !important;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--foreground);
 }
 
 .admin-content-area h2,
 .admin-content-area .card-title {
-  font-size: 1.125rem !important;
-  font-weight: 600 !important;
-  letter-spacing: -0.015em !important;
-  color: var(--foreground) !important;
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--foreground);
 }
 
 .admin-content-area .grid {
-  gap: 1rem !important;
+  gap: 1rem;
 }
 
 .admin-content-area .space-y-8,
 .admin-content-area .space-y-12 {
-  gap: 1.25rem !important;
+  gap: 1.25rem;
 }
 
 
