@@ -123,7 +123,7 @@ export function Navbar() {
 
   if (!mounted) {
     return (
-      <nav className={cn(navUi.bar, "sticky top-0 z-[100] h-16")}>
+      <nav className={cn(navUi.bar, "sticky top-0 z-50 h-16")}>
         <div className={cn(uiPrimitives.layout.nav, "h-full flex items-center")}>
           <Link href="/" className="inline-flex shrink-0">
             <BrandLogo />
@@ -135,7 +135,7 @@ export function Navbar() {
 
   return (
     <nav
-      className={cn(navUi.bar, "sticky top-0 z-[100]", scrolled && navUi.barScrolled)}
+      className={cn(navUi.bar, "sticky top-0 z-50", scrolled && navUi.barScrolled)}
       onMouseLeave={() => setIsMegamenuOpen(false)}
     >
       <div className={uiPrimitives.layout.nav}>
