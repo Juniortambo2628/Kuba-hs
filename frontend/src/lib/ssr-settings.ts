@@ -1,13 +1,9 @@
 import { cache } from "react";
 import { getMediaUrl } from "@/lib/utils";
+import { getBackendOrigin } from "@/lib/api-base-url";
 
 const DEV_TIMEOUT_MS = 20_000;
 const PROD_TIMEOUT_MS = 8_000;
-
-function apiBaseUrl(): string {
-  const raw = process.env.NEXT_PUBLIC_API_URL?.trim();
-  return (raw || "http://127.0.0.1:8000").replace(/\/$/, "");
-}
 
 function settingsTimeoutMs(): number {
   return process.env.NODE_ENV === "development" ? DEV_TIMEOUT_MS : PROD_TIMEOUT_MS;
@@ -26,7 +22,7 @@ function logSettingsFetchIssue(error: unknown, base: string, timeoutMs: number) 
 
 /** Cached per-request — shared by layout, home page, and metadata. */
 export const getSSRSettings = cache(async (): Promise<Record<string, unknown>> => {
-  const base = apiBaseUrl();
+  const base = getBackendOrigin();
   const timeoutMs = settingsTimeoutMs();
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);

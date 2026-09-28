@@ -1,6 +1,7 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { FALLBACK_IMAGES } from "@/lib/fallback-images"
+import { getBackendOrigin } from "@/lib/api-base-url"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -45,7 +46,7 @@ export function getMediaUrl(path: string | null | undefined, fallbackType: 'avat
     return path;
   }
   
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, '') || 'http://localhost:8000';
+  const baseUrl = getBackendOrigin();
   const cleanPath = path.replace(/^\//, '').replace(/^storage\//, '');
   const finalUrl = path.startsWith('/storage/')
     ? `${baseUrl}${path}`

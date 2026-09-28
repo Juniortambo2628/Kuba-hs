@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import withPWAInit from "next-pwa";
+import { getBackendOrigin } from "./src/lib/api-base-url";
 
 const withPWA = withPWAInit({
   dest: "public",
@@ -66,7 +67,7 @@ const nextConfig: NextConfig = {
     ];
   },
   async rewrites() {
-    const apiOrigin = (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000').replace(/\/api\/?$/, '');
+    const apiOrigin = getBackendOrigin();
     return [
       {
         source: '/auth/:path*',

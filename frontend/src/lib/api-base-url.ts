@@ -29,6 +29,18 @@ export function getApiBaseUrl(): string {
   }
 }
 
+/**
+ * Backend origin (no `/api` suffix) - the single answer for anything that has to
+ * talk to Laravel directly: Next rewrites, SSR fetches and storage/media URLs.
+ * Env only, so server and browser always resolve the same origin.
+ */
+export function getBackendOrigin(): string {
+  const configured = process.env.NEXT_PUBLIC_API_URL?.trim();
+  return (configured || "http://127.0.0.1:8000")
+    .replace(/\/api\/?$/, "")
+    .replace(/\/$/, "");
+}
+
 /** Laravel web routes (OAuth, Sanctum) — always the backend origin, not Next `/api` proxy. */
 export function getBackendWebUrl(): string {
   const configured = process.env.NEXT_PUBLIC_API_URL?.trim();

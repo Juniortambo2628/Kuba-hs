@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { getMediaUrl } from "@/lib/utils";
 import { toast } from "sonner";
 import { useData } from "@/hooks/useData";
 import { Input } from "@/components/ui/input";
@@ -75,11 +76,6 @@ function AdminVerificationContent() {
     p.provider?.business_name?.toLowerCase().includes(search.toLowerCase()) ||
     p.document_type?.toLowerCase().includes(search.toLowerCase())
   );
-
-  const getPublicUrl = (path: string) => {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, '') || 'http://localhost:8000';
-    return `${baseUrl}/storage/${path}`;
-  };
 
   if (isLoading) {
     return <div className="flex items-center justify-center h-64"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
@@ -158,7 +154,7 @@ function AdminVerificationContent() {
                   <TableCell className="pr-8 text-right">
                     <div className="flex items-center justify-end gap-2">
                         <a 
-                          href={getPublicUrl(p.file_path)} 
+                          href={getMediaUrl(p.file_path)} 
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-all border border-transparent hover:border-primary/20"

@@ -11,6 +11,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Image as ImageIcon, X } from "lucide-react";
 import axiosInstance, { handleApiError } from "@/lib/axios";
+import { getBackendWebUrl } from "@/lib/api-base-url";
 import {
   compressImageFile,
   compressionPresetForAdminType,
@@ -44,13 +45,7 @@ export function DashboardImageUpload({
   const getFullUrl = (url: string) => {
     if (!url) return "";
     if (url.startsWith("http") || url.startsWith("blob:")) return url;
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
-    const origin =
-      baseUrl && typeof window !== "undefined"
-        ? baseUrl.replace(/\/api\/?$/, "")
-        : typeof window !== "undefined"
-          ? window.location.origin
-          : "http://127.0.0.1:8000";
+    const origin = getBackendWebUrl();
     return `${origin}${url.startsWith("/") ? "" : "/"}${url}`;
   };
 

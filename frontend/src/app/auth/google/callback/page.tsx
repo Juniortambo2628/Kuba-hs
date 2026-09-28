@@ -21,7 +21,6 @@ function GoogleCallbackContent() {
             }
 
             try {
-                const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
                 await axiosInstance.get(`/auth/google/callback?code=${code}`);
                 
                 await checkAuth();

@@ -1,4 +1,5 @@
-import { getApiBaseUrl, getBackendWebUrl } from '@/lib/api-base-url'
+import { getApiBaseUrl, getBackendOrigin, getBackendWebUrl } from '@/lib/api-base-url'
+import { getMediaUrl } from '@/lib/utils'
 
 describe('getApiBaseUrl', () => {
   const originalEnv = process.env
@@ -60,5 +61,46 @@ describe('getBackendWebUrl', () => {
     delete process.env.NEXT_PUBLIC_API_URL
     delete process.env.NEXT_PUBLIC_BACKEND_URL
     expect(getBackendWebUrl()).toBe(window.location.origin)
+  })
+})
+
+describe('getBackendOrigin', () => {
+  const originalEnv = process.env
+
+  beforeEach(() => {
+    process.env = { ...originalEnv }
+  })
+
+  afterAll(() => {
+    process.env = originalEnv
+  })
+
+  it('defaults to the local Laravel origin', () => {
+    delete process.env.NEXT_PUBLIC_API_URL
+    expect(getBackendOrigin()).toBe('http://127.0.0.1:8000')
+  })
+
+  it('strips /api and any trailing slash', () => {
+    process.env.NEXT_PUBLIC_API_URL = 'https://api.example.com/api'
+    expect(getBackendOrigin()).toBe('https://api.example.com')
+
+    process.env.NEXT_PUBLIC_API_URL = 'https://api.example.com/api/'
+    expect(getBackendOrigin()).toBe('https://api.example.com')
+
+    process.env.NEXT_PUBLIC_API_URL = 'https://api.example.com/'
+    expect(getBackendOrigin()).toBe('https://api.example.com')
+  })
+
+  it('ignores window.location.origin, so SSR and browser agree', () => {
+    process.env.NEXT_PUBLIC_API_URL = 'https://api.example.com/api'
+    expect(getBackendOrigin()).toBe('https://api.example.com')
+    // jsdom's origin is http://localhost, so the helper is clearly not reading it
+    expect(window.location.origin).not.toBe('https://api.example.com')
+  })
+
+  it('is the origin getMediaUrl builds storage URLs from', () => {
+    process.env.NEXT_PUBLIC_API_URL = 'https://api.example.com/api'
+    const media = getMediaUrl('/storage/abc.jpg')
+    expect(media.startsWith(getBackendOrigin())).toBe(true)
   })
 })
