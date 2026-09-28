@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { getContactStatusLabel } from "@/lib/status-styles";
 import { EmptyState } from "@/components/shared/ui/EmptyState";
 import { useData } from "@/hooks/useData";
 import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
@@ -159,7 +160,7 @@ function AdminContactContent() {
                   </TableCell>
                   <TableCell>
                     <StatusBadge 
-                        status={m.status === 'new' ? 'Pending' : m.status === 'read' ? 'Reviewed' : 'Completed'} 
+                        status={getContactStatusLabel(m.status)} 
                         type="dashboard"
                     />
                   </TableCell>

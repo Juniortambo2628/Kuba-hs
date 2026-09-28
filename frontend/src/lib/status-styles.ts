@@ -116,6 +116,16 @@ export function getContactStatusClasses(status: string): string {
   return CONTACT_STATUS_CLASSES[status.toLowerCase()] ?? CONTACT_STATUS_CLASSES.read;
 }
 
+const CONTACT_STATUS_LABELS: Record<string, string> = {
+  new: 'Pending',
+  read: 'Reviewed',
+  replied: 'Completed',
+};
+
+export function getContactStatusLabel(status: string): string {
+  return CONTACT_STATUS_LABELS[status.toLowerCase()] ?? 'Completed';
+}
+
 const VERIFICATION_DOC_STATUS_CLASSES: Record<string, string> = {
   approved: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400',
   rejected: 'bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400',

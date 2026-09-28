@@ -19,6 +19,11 @@ import { useExport } from "@/hooks/useExport";
 import { toast } from "sonner";
 import { useData } from "@/hooks/useData";
 import { DashboardListToolbar } from "@/components/shared/DashboardListToolbar";
+import {
+  statusFilterOptions,
+  PAYOUT_STATUS_FILTER_OPTIONS,
+  TRANSACTION_STATUS_FILTER_OPTIONS,
+} from "@/lib/status-filters";
 import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
 import {
@@ -183,12 +188,7 @@ function TransactionsView({ exportToCSV }: { exportToCSV: any }) {
             label: 'Status',
             value: status || '',
             onChange: (val) => setStatus(val || null),
-            options: [
-              { label: 'All Status', value: '' },
-              { label: 'Completed', value: 'completed' },
-              { label: 'Pending', value: 'pending' },
-              { label: 'Failed', value: 'failed' }
-            ]
+            options: statusFilterOptions(TRANSACTION_STATUS_FILTER_OPTIONS, "")
           }
         ]}
       />
@@ -348,13 +348,7 @@ function PayoutsView({ exportToCSV }: { exportToCSV: any }) {
             label: 'Status',
             value: status || 'all',
             onChange: (val) => setStatus(val || 'all'),
-            options: [
-              { label: 'All Status', value: 'all' },
-              { label: 'Pending', value: 'pending' },
-              { label: 'Processing', value: 'processing' },
-              { label: 'Paid', value: 'paid' },
-              { label: 'Rejected', value: 'rejected' }
-            ]
+            options: statusFilterOptions(PAYOUT_STATUS_FILTER_OPTIONS)
           }
         ]}
       />

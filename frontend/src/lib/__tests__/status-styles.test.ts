@@ -9,6 +9,7 @@ import {
   getReviewStatusClasses,
   getPayoutStatusClasses,
   getContactStatusClasses,
+  getContactStatusLabel,
 } from '@/lib/status-styles'
 
 describe('getBookingStatusClasses', () => {
@@ -185,5 +186,18 @@ describe('getContactStatusClasses', () => {
 
   it('returns classes for replied', () => {
     expect(getContactStatusClasses('replied')).toContain('emerald')
+  })
+})
+
+describe('getContactStatusLabel', () => {
+  it('maps the three stored statuses', () => {
+    expect(getContactStatusLabel('new')).toBe('Pending')
+    expect(getContactStatusLabel('read')).toBe('Reviewed')
+    expect(getContactStatusLabel('replied')).toBe('Completed')
+  })
+
+  it('is case insensitive and falls back to Completed', () => {
+    expect(getContactStatusLabel('NEW')).toBe('Pending')
+    expect(getContactStatusLabel('archived')).toBe('Completed')
   })
 })

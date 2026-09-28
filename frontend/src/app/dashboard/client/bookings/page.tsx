@@ -1,6 +1,7 @@
 "use client";
 
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
+import { statusFilterOptions, BOOKING_STATUS_FILTER_OPTIONS } from "@/lib/status-filters";
 import { Suspense, useCallback, useState } from "react";
 import useSWR from "swr";
 import { useAuth } from "@/contexts/AuthContext";
@@ -182,14 +183,7 @@ function ClientBookingsContent() {
             label: "Status",
             value: filterStatus || "all",
             onChange: (val) => setStatus(val === "all" ? "" : val),
-            options: [
-              { label: "All Status", value: "all" },
-              { label: "Pending", value: "pending" },
-              { label: "Confirmed", value: "confirmed" },
-              { label: "In progress", value: "in_progress" },
-              { label: "Completed", value: "completed" },
-              { label: "Cancelled", value: "cancelled" },
-            ],
+            options: statusFilterOptions(BOOKING_STATUS_FILTER_OPTIONS),
           },
         ]}
       />

@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { DashboardListToolbar } from "@/components/shared/DashboardListToolbar";
+import { statusFilterOptions, BOOKING_STATUS_FILTER_OPTIONS } from "@/lib/status-filters";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { BookingCard } from "@/components/shared/BookingCard";
 import { EmptyState } from "@/components/shared/ui/EmptyState";
@@ -155,14 +156,7 @@ function BookingsHistoryContent() {
             label: "Status",
             value: status || "all",
             onChange: (val) => setStatus(val === "all" ? "" : val),
-            options: [
-              { label: "All Status", value: "all" },
-              { label: "Pending", value: "pending" },
-              { label: "Confirmed", value: "confirmed" },
-              { label: "In progress", value: "in_progress" },
-              { label: "Completed", value: "completed" },
-              { label: "Cancelled", value: "cancelled" },
-            ],
+            options: statusFilterOptions(BOOKING_STATUS_FILTER_OPTIONS),
           },
         ]}
       />

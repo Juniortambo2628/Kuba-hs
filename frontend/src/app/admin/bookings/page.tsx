@@ -21,6 +21,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DashboardListToolbar } from "@/components/shared/DashboardListToolbar";
+import { statusFilterOptions, BOOKING_STATUS_FILTER_OPTIONS } from "@/lib/status-filters";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -149,13 +150,7 @@ function AdminBookingsContent() {
             label: 'Status',
             value: status || 'all',
             onChange: (val) => setStatus(val === 'all' ? '' : val),
-            options: [
-              { label: 'All Status', value: 'all' },
-              { label: 'Pending', value: 'pending' },
-              { label: 'Confirmed', value: 'confirmed' },
-              { label: 'Completed', value: 'completed' },
-              { label: 'Cancelled', value: 'cancelled' }
-            ]
+            options: statusFilterOptions(BOOKING_STATUS_FILTER_OPTIONS)
           }
         ]}
         bulkActions={[
