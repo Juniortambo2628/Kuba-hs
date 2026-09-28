@@ -919,7 +919,7 @@ needed - disproved, informational, or a file git never tracked.
 | D16 | one `formatCurrency`/`formatDate` for 54 currency sites (41 files) and all 36 `toLocaleDateString` sites; 3 ad-hoc wrappers deleted | `fa69cff` |
 | D17 | one status-filter table per entity; `admin/bookings` gains the missing `in_progress`; `admin/contact` label resolution moved into `lib/status-styles.ts` | `87db3cc` |
 | D15 | 7 base-URL call sites -> `lib/api-base-url` (+ `getBackendOrigin()`); fixed `/api/api` and a trailing-slash bug in two of them | `0fa8274` |
-| D18 | one SWR layer (`useSwrList`), one reader per endpoint (`useCategories`), all 7 former imperative `/api/categories` fetchers converted | `6bb48c3` |
+| D18 | one SWR layer (`useSwrList`), one reader per endpoint (`useCategories`), all 7 former imperative `/api/categories` fetchers converted. Follow-up `4bba84f`: the hook's pre-load array is now one stable array, because `data ?? []` gave GlobalSearch's effect a new dependency every render and it looped until React threw "Maximum update depth exceeded" | `6bb48c3`, `4bba84f` |
 
 #### Gates
 
