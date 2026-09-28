@@ -77,8 +77,26 @@ const ADMIN_PAGES: Array<[string, string]> = [
   ['settings', '/admin/settings'],
 ]
 
+const BACKEND_SKIP_REASON =
+  'Laravel backend not reachable - the CI visual job only starts the Next dev server'
+
+let backendUp = false
+
 test.describe('Admin visual regression - admin-content-area', () => {
+  test.beforeAll(async () => {
+    try {
+      const response = await fetch(`${BACKEND_ORIGIN}/`, {
+        redirect: 'manual',
+        signal: AbortSignal.timeout(5000),
+      })
+      backendUp = response.status < 500
+    } catch {
+      backendUp = false
+    }
+  })
+
   test.beforeEach(async ({ page }) => {
+    test.skip(!backendUp, BACKEND_SKIP_REASON)
     await loginAsAdmin(page)
   })
 
