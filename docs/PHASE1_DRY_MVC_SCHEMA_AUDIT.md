@@ -293,7 +293,8 @@ The `PATCH .../conversations/{id}/read` route stays orphaned (see C-register).
 `npx eslint src` on touched files, `npm test` (30 suites / 235 tests),
 `npm run build` (exit 0), backend `php artisan test` (418 passed, 1 pre-existing risky),
 `php artisan route:list --json` (262 routes, 0 duplicate method+URI).
-`npm run lint` is unusable - Next 16 removed `next lint`.
+`npm run lint` was unusable - Next 16 removed `next lint` (fixed later
+by `806e58d`, see "Gates after the lint/test cleanup round").
 
 ---
 
@@ -968,11 +969,18 @@ Run after every change, backend changes first:
   `frontend-consistency.yml` regenerates Linux baselines and commits
   them (`chore: update VRT baselines for Linux [skip ci]`), and its
   runner has no API behind it, so committed pages render shorter. A
-  local run against them reports **23 failed / 35 passed** - the
-  homepage full-page shot is 412x1923 committed vs 412x9904 with a live
-  backend. Not a regression: A16 was measured against one local
-  baseline set, 58/58 before and after. `npm run test:visual:update`
-  rewrites the baselines for the current machine.
+  full local run (122 shots including a11y and e2e, with the 90s
+  timeout from `3d9b2de`) reports **23 failed / 99 passed** - 20 of the
+  failures are that height mismatch (the homepage full-page shot is
+  412x1923 committed vs 412x9904 with a live backend) and 3 are
+  pre-existing pixel drift in the static-HTML component shots
+  (36/632/1442 px, byte-identical at HEAD and with the lint changes).
+  Not a regression: A16 was measured against one local baseline set,
+  58/58 before and after, and `npm run test:visual:update` rewrites the
+  baselines for the current machine. Before trusting any local visual
+  result, confirm :3000/:8000 serve **this** repo - during the lint
+  round the Kuba servers died and a different project holding the same
+  ports made a whole A/B round compare the wrong app against itself.
 - **B11 side finding, unfixed:** `StoreFAQRequest` has no validation rule
   for the FAQ image field, so an uploaded FAQ image is silently dropped.
   Found while renaming the image columns in B11d, outside this plan.
@@ -981,15 +989,40 @@ Run after every change, backend changes first:
   2 Recharts tick formatters) now read `KES 12,000`. Three call sites
   were feeding a pre-grouped string into the formatter and would have
   rendered `KES NaN`; they now pass numbers.
-- **`npm run lint` has been broken since Next 16** (`"lint": "next lint"`,
-  `next lint` no longer exists). Pre-existing and untouched; everything
-  above used `npx eslint` with the repo's `eslint.config.mjs`.
+- **`npm run lint` was broken since Next 16** (`"lint": "next lint"`,
+  `next lint` no longer exists) - fixed by `806e58d`, which points the
+  script at `eslint .`, adds `lint:fix`, and ignores the generated
+  `public/**` and Playwright report trees. Everything above used
+  `npx eslint` with the repo's `eslint.config.mjs`.
 - The `react-beautiful-dnd` mentions left in this document - the
   register row, the prose summary under "what the consolidated register
   never covered", the Tier 4 plan row and the decision row - all
   describe the state at audit time. The dependency is gone since
   `37139e7`; the only mention describing the fix is in the execution
   log above.
+
+#### Gates after the lint/test cleanup round
+
+- `npx eslint .` - **0 problems**. The round started at 571: 89 in the
+  generated `public/**` trees (ignored in `806e58d`) and 479 across
+  source, cleared file-group by file-group in `1734908` (src/app),
+  `63b6025` (src/components) and `9b2625a` (hooks/lib/contexts/config/
+  tests/types/scripts) without adding a single eslint-disable.
+- `npx tsc --noEmit` - **0 errors** (`dc14ce8` removed the last
+  TS2345, in `useCrudForm.test.ts`).
+- `npm test` - **246 passed / 31 suites**; `npm run lint:styles` clean;
+  `npm run build` - exit 0, sw.js regenerated (`2388191`).
+- Backend `php artisan test` - **441 passed / 0 risky**
+  (`87e07f0` replaced the one risky test's no-op assertion with the
+  profile-completion validation contract it claimed to check).
+- Visual gate - admin **10/10**, e2e **36/36**, accessibility all pass;
+  full suite **23 failed / 99 passed**, entirely the two documented
+  environmental classes (see the baselines bullet above).
+- Navbar hooks reworked in `1eceece` (useSyncExternalStore mount flag,
+  memoised CMS nav, hoisted BrandLogo); sticky-header z-index in
+  `42749c8` (sign-in dropdown no longer clipped by the header, mobile
+  sheet covers it); CTA LCP image eager since `8bf3d77`; missing mobile
+  baselines added in `41d2deb`.
 
 ### Decisions taken
 
