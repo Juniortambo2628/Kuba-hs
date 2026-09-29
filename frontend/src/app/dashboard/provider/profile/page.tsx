@@ -2,13 +2,12 @@
 
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import axiosInstance from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { 
   ShieldCheck, 
-  Loader2,
   Map,
   Briefcase,
   Star,
@@ -33,6 +32,22 @@ import Link from "next/link";
 import Image from "next/image";
 import { getMediaUrl, cn } from "@/lib/utils";
 
+type ProviderProfileData = {
+  id?: number | string;
+  business_name: string;
+  bio: string;
+  location_name: string;
+  phone: string;
+  latitude: number | null;
+  longitude: number | null;
+  experience_years: number;
+  service_radius: number;
+  specialized_skills: string[];
+  banner?: string | null;
+  logo?: string | null;
+  is_verified?: boolean;
+};
+
 function toBusinessForm(profile: Record<string, unknown>, userPhone?: string): ProviderBusinessForm {
   const skills = profile.specialized_skills;
   return {
@@ -54,27 +69,28 @@ function toBusinessForm(profile: Record<string, unknown>, userPhone?: string): P
 
 export default function ProviderProfile() {
   const { user, checkAuth } = useAuth();
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<ProviderProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [businessDialogOpen, setBusinessDialogOpen] = useState(false);
+  const userPhoneRef = useRef<string | undefined>(user?.phone);
 
   useEffect(() => {
-    fetchProfile();
-  }, []);
+    userPhoneRef.current = user?.phone;
+  }, [user?.phone]);
 
-  const emptyProfile = () => ({
-    business_name: "",
-    bio: "",
-    location_name: "",
-    phone: user?.phone || "+254",
-    latitude: null,
-    longitude: null,
-    experience_years: 0,
-    service_radius: 10,
-    specialized_skills: [] as string[],
-  });
+  const fetchProfile = useCallback(async () => {
+    const emptyProfile = () => ({
+      business_name: "",
+      bio: "",
+      location_name: "",
+      phone: userPhoneRef.current || "+254",
+      latitude: null,
+      longitude: null,
+      experience_years: 0,
+      service_radius: 10,
+      specialized_skills: [] as string[],
+    });
 
-  const fetchProfile = async () => {
     try {
       const res = await axiosInstance.get("/api/provider/dashboard");
       const body = res.data?.data ?? res.data;
@@ -91,7 +107,11 @@ export default function ProviderProfile() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
 
   const handleBusinessSaved = async () => {
     await fetchProfile();

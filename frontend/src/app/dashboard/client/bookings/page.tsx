@@ -59,7 +59,7 @@ function ClientBookingsContent() {
     { dedupingInterval: 500 }
   );
 
-  const bookings = extractApiList(bookingsData);
+  const bookings = extractApiList<Booking>(bookingsData);
   const isLoading = authLoading || isBookingsLoading;
 
   const openBooking = useCallback((booking: Booking) => {

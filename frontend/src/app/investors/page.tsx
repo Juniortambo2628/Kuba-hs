@@ -19,7 +19,7 @@ import { useCMS } from "@/contexts/CMSContext";
 import { usePageFeatures } from "@/hooks/usePageFeatures";
 import { resolveIcon } from "@/lib/icon-map";
 export default function InvestorsPage() {
-  const { getS, getImg, isLoading: cmsLoading } = useCMS();
+  const { getS } = useCMS();
   const { features: metrics } = usePageFeatures('investors');
   
   const [formData, setFormData] = useState({
@@ -41,14 +41,14 @@ export default function InvestorsPage() {
     try {
       await axiosInstance.post("/api/investors/inquire", formData);
       setSubmitted(true);
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to submit inquiry. Please try again.");
+    } catch (err) {
+      const message = (err as { response?: { data?: { message?: string } } })?.response?.data
+        ?.message;
+      setError(message || "Failed to submit inquiry. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  const bgImage = getImg('hero_backgrounds', 'investors_hero_image', '');
 
   const hero = useMarketingHero("investors");
 

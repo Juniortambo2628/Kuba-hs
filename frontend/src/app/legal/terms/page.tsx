@@ -83,7 +83,7 @@ export default function TermsPage() {
 
           <section>
             <h2 className="text-xl font-bold mb-4 uppercase tracking-tight text-gray-900 dark:text-white">11. DISCLAIMER</h2>
-            <p className="text-gray-600 dark:text-muted-foreground leading-relaxed font-medium">The Platform is provided 'as is' without warranties of any kind. Kuba does not guarantee uninterrupted or error-free access.</p>
+            <p className="text-gray-600 dark:text-muted-foreground leading-relaxed font-medium">The Platform is provided &apos;as is&apos; without warranties of any kind. Kuba does not guarantee uninterrupted or error-free access.</p>
           </section>
 
           <section>

@@ -7,40 +7,18 @@ import { useSearchParams } from "next/navigation";
 import { MarketingPage } from "@/components/layout/MarketingPage";
 import { useMarketingHero } from "@/hooks/useMarketingHero";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
-import {
-  MapPin, SlidersHorizontal, Search, Filter,
-  Hammer, Paintbrush, Droplets, Lightbulb, Check, ShieldCheck, Star
-} from "lucide-react";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuCheckboxItem,
-  DropdownMenuTrigger,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuGroup
-} from "@/components/ui/dropdown-menu";
+import { MapPin, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useCMS } from "@/contexts/CMSContext";
 import { ProviderCard, type ProviderCardData } from "@/components/marketplace";
 import { FavoritesProvider } from "@/contexts/FavoritesContext";
 import {
   MarketingListingBody,
-  MarketingFilterCard,
   MarketingViewToggle,
   MarketingListingToolbar,
 } from "@/components/marketing";
 import { EmptyState } from "@/components/shared/ui/EmptyState";
-import {
-  FilterField,
-  FilterSelect,
-  FilterCheckbox,
-  FilterRatingGroup,
-} from "@/components/shared/ui";
-import { AppButton } from "@/components/shared/ui/AppButton";
 import { marketingUi } from "@/lib/marketing-ui";
 import { cn } from "@/lib/utils";
 import { providerHref } from "@/lib/provider-urls";
@@ -68,75 +46,12 @@ interface Provider {
     name: string;
     profile_photo_path: string | null;
   };
-  services?: any[];
+  services?: Array<{
+    name?: string;
+    service?: { name?: string } | null;
+    service_thumbnail_url?: string;
+  }>;
   starting_price?: number;
-}
-
-function CircleSelector<T>({
-  value,
-  onChange,
-  options
-}: {
-  value: T | null;
-  onChange: (val: T | null) => void;
-  options: { label: string; value: T | null }[]
-}) {
-  return (
-    <div className="flex flex-wrap gap-2">
-      {options.map((opt) => {
-        const active = value === opt.value;
-        const isAny = opt.value === null;
-        return (
-          <button
-            key={opt.label}
-            type="button"
-            onClick={() => onChange(opt.value)}
-            className={cn(
-              "flex items-center justify-center font-bold text-xs transition-all cursor-pointer",
-              isAny ? "px-4 h-9 rounded-full" : "w-9 h-9 rounded-full",
-              active
-                ? "bg-foreground text-background font-black border border-foreground"
-                : "bg-card text-foreground border border-border hover:border-muted-foreground/60"
-            )}
-          >
-            {opt.label}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-function Switch({
-  checked,
-  onChange,
-  label
-}: {
-  checked: boolean;
-  onChange: (val: boolean) => void;
-  label: string;
-}) {
-  return (
-    <div className="flex items-center justify-between py-2">
-      <span className="text-sm font-semibold text-foreground">{label}</span>
-      <button
-        type="button"
-        onClick={() => onChange(!checked)}
-        aria-label={`Toggle ${label}`}
-        className={cn(
-          "w-10 h-6 rounded-full p-0.5 transition-colors duration-200 cursor-pointer focus:outline-none relative flex items-center",
-          checked ? "bg-indigo-600" : "bg-muted dark:bg-zinc-800"
-        )}
-      >
-        <div
-          className={cn(
-            "w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200",
-            checked ? "translate-x-4" : "translate-x-0"
-          )}
-        />
-      </button>
-    </div>
-  );
 }
 
 import { MarketingFilterSidebar } from "@/components/marketing/MarketingFilterSidebar";
@@ -157,6 +72,7 @@ function ProvidersContent() {
   const eqIncluded = searchParams.get('equipment_included') === '1';
   const sortOrder = searchParams.get('sort_by_price') || null;
   const selectedServiceIds = searchParams.getAll('service_ids[]').map(Number);
+  const selectedServiceIdsKey = JSON.stringify(selectedServiceIds);
   
   const [providers, setProviders] = useState<Provider[]>([]);
   const [isPageLoading, setIsPageLoading] = useState(true);
@@ -200,8 +116,9 @@ function ProvidersContent() {
         }
         url += `&radius=${radius}`;
         if (sortOrder) url += `&sort_by_price=${sortOrder}`;
-        if (selectedServiceIds.length > 0) {
-          selectedServiceIds.forEach(id => {
+        const serviceIds: number[] = JSON.parse(selectedServiceIdsKey);
+        if (serviceIds.length > 0) {
+          serviceIds.forEach(id => {
             url += `&service_ids[]=${id}`;
           });
         }
@@ -217,7 +134,7 @@ function ProvidersContent() {
       }
     };
     fetchProviders();
-  }, [categoryId, serviceId, searchQuery, minRating, maxPrice, onlyVerified, radius, location, sortOrder, JSON.stringify(selectedServiceIds), instantBook, eqIncluded]);
+  }, [categoryId, serviceId, searchQuery, minRating, maxPrice, onlyVerified, radius, location, sortOrder, selectedServiceIdsKey, instantBook, eqIncluded]);
 
   return (
       <MarketingListingBody>
@@ -286,7 +203,7 @@ function ProvidersContent() {
                       }
                     }))}
                     showRadius={true}
-                    onMarkerClick={(p) => {}}
+                    onMarkerClick={() => {}}
                   />
                 </div>
               ) : (

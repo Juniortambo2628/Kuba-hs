@@ -9,16 +9,13 @@ import {
 import { dashboardUi } from "@/lib/dashboard-ui";
 import { DashboardPageSkeleton } from "@/components/shared/DashboardPageSkeleton";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import axiosInstance from "@/lib/axios";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableRow, TableCell } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Star, Search, Filter, MessageSquare, AlertCircle, ShieldCheck, MoreHorizontal, User as UserIcon, Briefcase, Zap, Trash2 } from "lucide-react";
+import { Star, MessageSquare, AlertCircle, User as UserIcon, Briefcase, Zap, Trash2 } from "lucide-react";
 import { MetricCard } from "@/components/shared/MetricCard";
-import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardListToolbar } from "@/components/shared/DashboardListToolbar";
 import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -40,7 +37,7 @@ interface Review {
 }
 
 export default function AdminFeedback() {
-    const [search, setSearch] = useState("");
+    const [search] = useState("");
     const [ratingFilter, setRatingFilter] = useState("");
     const [viewMode, setViewMode] = useState<'grid'|'list'>('grid');
 
@@ -68,7 +65,7 @@ export default function AdminFeedback() {
             await axiosInstance.put(`/api/admin/feedback/${id}`, { status: newStatus });
             toast.success("Sentiment status updated");
             fetchFeedback();
-        } catch (err) {
+        } catch {
             toast.error("Cloud synchronization failed");
         }
     };
@@ -169,7 +166,7 @@ export default function AdminFeedback() {
                                             </div>
                                         </TableCell>
                                         <TableCell className="py-6">
-                                            <p className="text-xs font-bold text-muted-foreground max-w-sm line-clamp-2">"{review.comment}"</p>
+                                            <p className="text-xs font-bold text-muted-foreground max-w-sm line-clamp-2">&quot;{review.comment}&quot;</p>
                                         </TableCell>
                                         <TableCell className="py-6 text-center">
                                             <StatusBadge status={review.status || 'published'} type="review" />
@@ -243,7 +240,7 @@ export default function AdminFeedback() {
                                 </div>
 
                                 <p className="text-sm text-foreground line-clamp-4 flex-1 mb-4 flex flex-col">
-                                    "{review.comment}"
+                                    &quot;{review.comment}&quot;
                                 </p>
 
                                 <div className="flex items-center justify-between border-t border-border/50 pt-4">

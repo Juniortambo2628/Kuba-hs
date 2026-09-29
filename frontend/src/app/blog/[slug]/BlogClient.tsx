@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useEffect } from "react";
+import { use } from "react";
 import { useScroll, useSpring } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -19,6 +19,12 @@ export default function BlogClient({ params }: { params: Promise<{ slug: string 
   const { slug } = use(params);
   const router = useRouter();
   const { data: post, isLoading, isError } = useData<Post>(slug ? `/api/blog/${slug}` : null);
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
 
   if (isLoading) {
     return (
@@ -38,13 +44,6 @@ export default function BlogClient({ params }: { params: Promise<{ slug: string 
   };
 
   const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
-
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001
-  });
 
   return (
     <MarketingShell>
@@ -120,7 +119,7 @@ export default function BlogClient({ params }: { params: Promise<{ slug: string 
       <div className="max-w-[900px] mx-auto px-6 mt-24 pt-16 border-t border-border">
           <div className="bg-muted rounded-surface p-12 text-center space-y-6 border border-border">
               <h3 className="text-2xl font-bold text-foreground tracking-tight">Need expert services?</h3>
-              <p className="text-muted-foreground max-w-md mx-auto">Skip the hassle and let Kuba's verified professionals handle your next project with precision.</p>
+              <p className="text-muted-foreground max-w-md mx-auto">Skip the hassle and let Kuba&apos;s verified professionals handle your next project with precision.</p>
               <Link href="/services">
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                   <Button className="bg-foreground text-background hover:bg-muted hover:text-foreground h-12 px-8 font-bold text-[10px] uppercase tracking-widest rounded-xl transition-all shadow-xl mt-4">

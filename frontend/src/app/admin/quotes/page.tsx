@@ -9,18 +9,16 @@ import {
 import { dashboardUi } from "@/lib/dashboard-ui";
 import { cn } from "@/lib/utils";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import axiosInstance from "@/lib/axios";
 import { 
   Building2, 
-  Search, 
   MoreVertical, 
   CheckCircle, 
   XCircle,
   Clock,
   Mail,
   Phone,
-  ArrowUpRight,
   FileText,
   Users,
   Briefcase
@@ -33,7 +31,6 @@ import {
 } from "@/components/dashboard/workspace";
 import { workspaceUi } from "@/lib/dashboard-ui";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { 
   DropdownMenu, 
@@ -43,7 +40,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
+import { Table, TableHeader, TableBody, TableRow, TableCell } from "@/components/ui/table";
 import { DashboardListToolbar } from "@/components/shared/DashboardListToolbar";
 import { useSearchState } from "@/hooks/useSearchState";
 import { CustomQuote } from "@/types";
@@ -52,12 +49,14 @@ import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/format";
 
+type QuotesResponse = CustomQuote[] | { data?: CustomQuote[] };
+
 export default function AdminQuotesPage() {
   const { search: searchTerm } = useSearchState();
   const [viewMode, setViewMode] = useState<'grid'|'list'>('grid');
   const [deleteTarget, setDeleteTarget] = useState<CustomQuote | null>(null);
-  const { data: quotesData, isLoading, refetch: fetchQuotes } = useData<any>("/api/admin/quotes", { initialData: null });
-  const quotes = (quotesData?.data || quotesData || []) as CustomQuote[];
+  const { data: quotesData, isLoading, refetch: fetchQuotes } = useData<QuotesResponse>("/api/admin/quotes", { initialData: null });
+  const quotes = (Array.isArray(quotesData) ? quotesData : quotesData?.data) || [];
 
   const updateStatus = async (id: string, status: string) => {
     try { 
@@ -76,7 +75,7 @@ export default function AdminQuotesPage() {
       await axiosInstance.delete(`/api/admin/quotes/${id}`);
       toast.success("Request deleted successfully");
       fetchQuotes();
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete request.");
     }
   };
@@ -284,7 +283,7 @@ export default function AdminQuotesPage() {
                 <div className="mb-4">
                   <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">Inquiry Description</p>
                   <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3 bg-slate-50 dark:bg-zinc-900/50 p-2 rounded-lg italic">
-                    "{quote.description}"
+                    &quot;{quote.description}&quot;
                   </p>
                 </div>
 

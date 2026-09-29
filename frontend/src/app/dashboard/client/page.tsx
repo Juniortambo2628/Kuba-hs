@@ -22,16 +22,8 @@ import {
 } from "@/components/dashboard/workspace";
 import { workspaceUi } from "@/lib/dashboard-ui";
 
-import { Booking, User, LoyaltyTier } from "@/types";
+import { Booking } from "@/types";
 import { extractApiList } from "@/lib/api-response";
-
-interface ClientStats {
-  total_bookings: number;
-  active_bookings: number;
-  loyalty_points: number;
-  membership_tier: LoyaltyTier | null;
-  pending_reviews: number;
-}
 
 export default function ClientOverview() {
   const { user, isLoading: authLoading } = useAuth();
@@ -46,7 +38,7 @@ export default function ClientOverview() {
   );
 
   const stats = data?.stats || null;
-  const upcoming = extractApiList(data?.upcoming_bookings);
+  const upcoming = extractApiList<Booking>(data?.upcoming_bookings);
   const isLoading = authLoading || isDashboardLoading;
 
   const fetchDashboardData = async () => {
@@ -55,7 +47,7 @@ export default function ClientOverview() {
 
   const handleUpdateStatus = async (id: string, status: string) => {
     try {
-      const payload: any = { status };
+      const payload: Record<string, unknown> = { status };
       if (status === 'cancelled') {
         payload.cancellation_reason = "Cancelled by user";
       }
@@ -63,8 +55,10 @@ export default function ClientOverview() {
       toast.success(`Booking ${status}`);
       setIsDetailOpen(false);
       fetchDashboardData();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to update status");
+    } catch (err) {
+      const message = (err as { response?: { data?: { message?: string } } })?.response?.data
+        ?.message;
+      toast.error(message || "Failed to update status");
     }
   };
 
@@ -88,8 +82,10 @@ export default function ClientOverview() {
         description: "Copy this code to use at checkout."
       });
       await fetchDashboardData();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to redeem reward");
+    } catch (err) {
+      const message = (err as { response?: { data?: { message?: string } } })?.response?.data
+        ?.message;
+      toast.error(message || "Failed to redeem reward");
     } finally {
       setIsRedeeming(false);
     }

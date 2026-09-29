@@ -14,7 +14,6 @@ import {
   XCircle,
   Clock,
   Search,
-  Filter,
   Eye,
   RefreshCw,
   X,
@@ -29,21 +28,68 @@ import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { MetricCard } from "@/components/shared/MetricCard";
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
 
+type ComplianceTab = "all" | "pending" | "expiring_soon" | "non_compliant";
+
+interface ComplianceStats {
+  pending_document_reviews: number;
+  providers_expiring_soon: number;
+  providers_non_compliant: number;
+  providers_compliant: number;
+  providers_pending: number;
+}
+
+interface ComplianceOverviewResponse {
+  data?: ComplianceStats;
+}
+
+interface ComplianceProvider {
+  id: string;
+  business_name?: string;
+  compliance_status: string;
+  quality_score: number;
+  total_docs: number;
+  pending_docs: number;
+  user?: { email?: string; image_url?: string };
+}
+
+interface ComplianceProvidersResponse {
+  data?: { data?: ComplianceProvider[] };
+}
+
+interface ComplianceDocument {
+  id: string;
+  document_type: string;
+  status: string;
+  is_expired: boolean;
+  created_at: string;
+  expires_at?: string | null;
+  url?: string | null;
+  file_path?: string | null;
+}
+
+interface ComplianceDocumentsResponse {
+  data?: ComplianceDocument[];
+}
+
+interface ApiErrorResponse {
+  response?: { data?: { message?: string } };
+}
+
 export default function ComplianceDashboard() {
-  const [activeTab, setActiveTab] = useState<"all" | "pending" | "expiring_soon" | "non_compliant">("all");
+  const [activeTab, setActiveTab] = useState<ComplianceTab>("all");
   
-  const { data: overview, isLoading: loadingOverview, refetch: refetchOverview } = useData<any>('/api/admin/compliance/overview');
+  const { data: overview, isLoading: loadingOverview, refetch: refetchOverview } = useData<ComplianceOverviewResponse>('/api/admin/compliance/overview');
   
-  const { data: providersResponse, isLoading: loadingProviders, refetch: refetchProviders } = useData<any>(
+  const { data: providersResponse, isLoading: loadingProviders, refetch: refetchProviders } = useData<ComplianceProvidersResponse>(
     `/api/admin/compliance/providers${activeTab !== 'all' ? `?status=${activeTab}` : ''}`
   );
 
-  const [selectedProvider, setSelectedProvider] = useState<any | null>(null);
-  const { data: documentsResponse, isLoading: loadingDocs, refetch: refetchDocs } = useData<any>(
+  const [selectedProvider, setSelectedProvider] = useState<ComplianceProvider | null>(null);
+  const { data: documentsResponse, isLoading: loadingDocs, refetch: refetchDocs } = useData<ComplianceDocumentsResponse>(
     selectedProvider ? `/api/admin/compliance/providers/${selectedProvider.id}/documents` : ''
   );
 
-  const [reviewingDoc, setReviewingDoc] = useState<any | null>(null);
+  const [reviewingDoc, setReviewingDoc] = useState<ComplianceDocument | null>(null);
   const [reviewAction, setReviewAction] = useState<"approved" | "rejected" | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
   const [expiresAt, setExpiresAt] = useState("");
@@ -80,8 +126,8 @@ export default function ComplianceDashboard() {
       refetchDocs();
       refetchProviders();
       refetchOverview();
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to submit review");
+    } catch (error) {
+      toast.error((error as ApiErrorResponse).response?.data?.message || "Failed to submit review");
     } finally {
       setIsSubmitting(false);
     }
@@ -119,7 +165,7 @@ export default function ComplianceDashboard() {
             ].map(tab => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => setActiveTab(tab.id as ComplianceTab)}
                 className={cn(
                   "px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap",
                   activeTab === tab.id 
@@ -163,7 +209,7 @@ export default function ComplianceDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-white/5">
-                {providers.map((provider: any) => (
+                {providers.map((provider) => (
                   <tr key={provider.id} className="hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors group">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
@@ -291,7 +337,7 @@ export default function ComplianceDashboard() {
                     <p className="text-sm text-gray-500 italic">No documents uploaded by this provider yet.</p>
                   ) : (
                     <div className="space-y-4">
-                      {documentsResponse?.data?.map((doc: any) => (
+                      {documentsResponse?.data?.map((doc) => (
                         <div key={doc.id} className="p-4 rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-background hover:border-primary/50 transition-colors shadow-sm">
                           <div className="flex items-start justify-between">
                             <div className="flex gap-4">

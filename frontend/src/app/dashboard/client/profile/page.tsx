@@ -8,9 +8,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import {
   User,
-  Mail,
-  Phone,
-  Save,
   Lock,
   Loader2,
   Shield,
@@ -37,7 +34,6 @@ import {
 } from "@/components/dashboard/workspace";
 import { workspaceUi } from "@/lib/dashboard-ui";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
 import { ProfileEditDialog } from "@/components/dashboard/ProfileEditDialog";
 
 export default function ClientProfilePage() {

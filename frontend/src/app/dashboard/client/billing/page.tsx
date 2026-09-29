@@ -51,7 +51,7 @@ function ClientBillingContent() {
     (url) => axiosInstance.get(url).then((res) => res.data)
   );
 
-  const payments = paymentsData?.data || [];
+  const payments = useMemo(() => paymentsData?.data || [], [paymentsData]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();

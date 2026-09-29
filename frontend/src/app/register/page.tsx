@@ -3,9 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { User, Briefcase, ChevronRight, ShieldCheck, Zap, ChevronLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { designSystem } from "@/lib/design-system";
+import { User, Briefcase, ChevronRight, ChevronLeft } from "lucide-react";
 
 export default function RegisterChoicePage() {
   return (
@@ -26,9 +24,9 @@ export default function RegisterChoicePage() {
               <div className="w-14 h-14 bg-indigo-100 dark:bg-indigo-500/20 rounded-2xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 mb-6 group-hover:scale-110 transition-transform">
                 <User className="w-7 h-7" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3 capitalize tracking-tight">I'm a Customer</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3 capitalize tracking-tight">I&apos;m a Customer</h2>
               <p className="text-gray-500 dark:text-gray-400 mb-8 leading-relaxed">
-                I'm looking for trusted pros for my home or business.
+                I&apos;m looking for trusted pros for my home or business.
               </p>
               <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold capitalize text-xs tracking-widest">
                 Join as a Customer <ChevronRight className="w-4 h-4" />
@@ -48,7 +46,7 @@ export default function RegisterChoicePage() {
               <div className="w-14 h-14 bg-emerald-100 dark:bg-emerald-500/20 rounded-2xl flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-6 group-hover:scale-110 transition-transform">
                 <Briefcase className="w-7 h-7" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3 capitalize tracking-tight">I'm a Pro</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3 capitalize tracking-tight">I&apos;m a Pro</h2>
               <p className="text-gray-500 dark:text-gray-400 mb-8 leading-relaxed">
                 I want to offer my services and grow my business with Kuba.
               </p>

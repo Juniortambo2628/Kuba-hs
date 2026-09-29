@@ -21,6 +21,11 @@ import { DashboardPageContainer } from "@/components/shared/DashboardPageContain
 import { KubaFilePond } from "@/components/ui/filepond";
 import { formatCurrency } from "@/lib/format";
 
+interface ApiErrorResponse {
+  response?: { data?: { message?: string } };
+}
+
+
 export default function AdminProviderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
@@ -95,8 +100,8 @@ export default function AdminProviderDetailPage({ params }: { params: Promise<{ 
       });
       toast.success("Profile saved");
       loadProvider();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to save");
+    } catch (err) {
+      toast.error((err as ApiErrorResponse).response?.data?.message || "Failed to save");
     } finally {
       setIsSaving(false);
     }

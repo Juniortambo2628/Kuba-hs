@@ -9,10 +9,8 @@ import {
 import { DashboardSuspenseFallback } from "@/components/shared/DashboardSuspenseFallback";
 import { DashboardPageSkeleton } from "@/components/shared/DashboardPageSkeleton";
 
-import { useEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
-import { useRouter } from "next/navigation";
 import axiosInstance from "@/lib/axios";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
@@ -22,8 +20,6 @@ import {
   TableRow, 
   TableCell 
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
@@ -41,11 +37,10 @@ import {
 import { MetricCard } from "@/components/shared/MetricCard";
 import { VisualAnalytics } from "@/components/dashboard/VisualAnalytics";
 import { useSearchState } from "@/hooks/useSearchState";
-import { useExport } from "@/hooks/useExport";
 import { useData } from "@/hooks/useData";
 import Link from "next/link";
 
-import { Booking, User, Provider } from "@/types";
+import { Booking } from "@/types";
 import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Suspense } from "react";
@@ -63,24 +58,46 @@ interface AdminStats {
   };
 }
 
-function AdminDashboardContent() {
-  const { user, isLoading: authLoading } = useAuth();
-  const { search, setSearch, status, setStatus } = useSearchState();
-  const router = useRouter();
-  const [trends, setTrends] = useState<any>({ users: [], bookings: [], revenue: [] });
-  const { data: analyticsData, isLoading: analyticsLoading } = useData<any>("/api/admin/analytics");
-  const { data: bookingsData, isLoading: bookingsLoading, refetch: fetchBookings } = useData<any>(`/api/admin/bookings?search=${search}&status=${status}`, { initialData: null });
-  
-  const stats = analyticsData ? { ...analyticsData.summary, growth: analyticsData.growth } as AdminStats : null;
-  const bookings = (bookingsData?.data || []) as Booking[];
-  const isLoading = analyticsLoading || bookingsLoading;
-  const { exportToCSV } = useExport();
+interface AnalyticsTrendPoint {
+  date: string;
+  count: number;
+}
 
-  useEffect(() => {
-    if (analyticsData?.trends) {
-      setTrends(analyticsData.trends);
-    }
-  }, [analyticsData]);
+interface AnalyticsTrends {
+  users: AnalyticsTrendPoint[];
+  bookings: AnalyticsTrendPoint[];
+  revenue: AnalyticsTrendPoint[];
+}
+
+interface AnalyticsSummary {
+  total_users: number;
+  total_bookings: number;
+  avg_rating: number;
+  platform_revenue: number;
+}
+
+interface AnalyticsData {
+  summary: AnalyticsSummary;
+  growth: AdminStats["growth"];
+  trends: AnalyticsTrends;
+}
+
+interface BookingsResponse {
+  data?: Booking[];
+}
+
+const DEFAULT_TRENDS: AnalyticsTrends = { users: [], bookings: [], revenue: [] };
+
+function AdminDashboardContent() {
+  useAuth();
+  const { search, setSearch, status, setStatus } = useSearchState();
+  const { data: analyticsData, isLoading: analyticsLoading } = useData<AnalyticsData>("/api/admin/analytics");
+  const { data: bookingsData, isLoading: bookingsLoading } = useData<BookingsResponse>(`/api/admin/bookings?search=${search}&status=${status}`, { initialData: null });
+  const trends = analyticsData?.trends ?? DEFAULT_TRENDS;
+
+  const stats = analyticsData ? { ...analyticsData.summary, growth: analyticsData.growth } as AdminStats : null;
+  const bookings = bookingsData?.data || [];
+  const isLoading = analyticsLoading || bookingsLoading;
 
   if (isLoading) {
     return <DashboardPageSkeleton width="default" metrics={4} />;
@@ -163,14 +180,14 @@ function AdminDashboardContent() {
         className="grid gap-6 md:grid-cols-2"
       >
         <VisualAnalytics 
-          data={trends.revenue.map((d: any) => ({ name: d.date, value: d.count }))} 
+          data={trends.revenue.map((d) => ({ name: d.date, value: d.count }))} 
           title="Revenue" 
           dataKey="value" 
           categoryKey="name"
           color="#71717a"
         />
         <VisualAnalytics 
-          data={trends.users.map((d: any) => ({ name: d.date, value: d.count }))} 
+          data={trends.users.map((d) => ({ name: d.date, value: d.count }))} 
           title="New Users" 
           type="bar"
           dataKey="value" 

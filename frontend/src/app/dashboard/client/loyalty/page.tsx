@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import axiosInstance, { handleApiError } from "@/lib/axios";
-import { User, LoyaltyTransaction, LoyaltyTier } from "@/types";
+import { LoyaltyTransaction, LoyaltyTier } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Gift, Star, History, CheckCircle, Award, Loader2 } from "lucide-react";

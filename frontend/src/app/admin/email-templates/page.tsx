@@ -15,6 +15,7 @@ import {
   Trash2,
   Check,
 } from "lucide-react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
@@ -177,7 +178,7 @@ export default function AdminEmailTemplatesPage() {
             <DialogHeader>
               <DialogTitle>Create email template</DialogTitle>
               <DialogDescription>
-                Select a system template key or choose "Custom" to create your own.
+                Select a system template key or choose &quot;Custom&quot; to create your own.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-2">
@@ -413,14 +414,18 @@ export default function AdminEmailTemplatesPage() {
                         <div className="flex-1 overflow-y-auto p-8 bg-card">
                           <div className="max-w-md mx-auto space-y-8">
                             <div className="flex justify-center border-b border-border pb-8">
-                              <img
+                              <Image
                                 src="/assets/Kuba-Header-footter-Logo-for-Light-Mode.png"
                                 alt="Kuba"
+                                width={2000}
+                                height={1125}
                                 className="h-10 w-auto object-contain dark:hidden"
                               />
-                              <img
+                              <Image
                                 src="/assets/Kuba-Header-Footer-Logo-for-Dark-Mode.png"
                                 alt="Kuba"
+                                width={2000}
+                                height={1125}
                                 className="h-10 w-auto object-contain hidden dark:block"
                               />
                             </div>

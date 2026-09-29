@@ -27,6 +27,8 @@ import { CSS } from "@dnd-kit/utilities";
 
 type NavItem = { id: string; label: string; url: string };
 
+type SettingEntry = { id: string; key?: string; value?: unknown };
+
 function SortableNavRow({
   item,
   onUpdate,
@@ -103,7 +105,7 @@ export function NavigationManager() {
     try {
       const res = await axiosInstance.get("/api/admin/settings");
       // Find the navigation setting
-      const allSettings = Object.values(res.data.settings).flat() as any[];
+      const allSettings = Object.values(res.data.settings).flat() as SettingEntry[];
       const navSetting = allSettings.find(s => s.key === 'navigation_menu');
       if (navSetting) {
         setSettingId(navSetting.id);
@@ -118,7 +120,7 @@ export function NavigationManager() {
                             // If it's double encoded, this might fix it
                             const unescaped = JSON.parse(`"${valueToParse}"`);
                             if (typeof unescaped === 'string') valueToParse = unescaped;
-                        } catch(e) {}
+                        } catch {}
                     }
                 }
                 
@@ -130,7 +132,7 @@ export function NavigationManager() {
             }
         }
       }
-    } catch (err) {
+    } catch {
       toast.error("Failed to load navigation");
     } finally {
       setIsLoading(false);
@@ -165,7 +167,7 @@ export function NavigationManager() {
           await axiosInstance.post('/api/admin/settings', formData);
           await refreshSettings();
           toast.success("Navigation saved successfully");
-      } catch (err) {
+      } catch {
           toast.error("Failed to save navigation");
       } finally {
           setIsSaving(false);

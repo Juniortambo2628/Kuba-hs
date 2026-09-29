@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ShieldCheck, CheckCircle2, Briefcase, Star, Users, ChevronRight } from "lucide-react";
+import { ShieldCheck, CheckCircle2, Star, Users, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import axiosInstance, { handleApiError } from "@/lib/axios";
 import { designSystem } from "@/lib/design-system";

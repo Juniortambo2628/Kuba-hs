@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Calendar, User, Search, Loader2, BookOpen, CheckCircle2, Leaf } from "lucide-react";
+import { ArrowRight, Calendar, User, Search, BookOpen, Leaf } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MarketingPage } from "@/components/layout/MarketingPage";
@@ -24,7 +24,7 @@ export default function BlogList() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [meta, setMeta] = useState<any>(null);
+  const [, setMeta] = useState<unknown>(null);
 
   useEffect(() => {
     fetchPosts();
@@ -106,7 +106,7 @@ export default function BlogList() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-10">
                 <div className="text-white space-y-2">
                   <span className="text-[10px] font-bold tracking-widest uppercase text-indigo-400">Featured Article</span>
-                  <h3 className="text-2xl font-bold tracking-tight">The Evolution of the "Gig" Economy in Nairobi</h3>
+                  <h3 className="text-2xl font-bold tracking-tight">The Evolution of the &quot;Gig&quot; Economy in Nairobi</h3>
                 </div>
               </div>
             </div>

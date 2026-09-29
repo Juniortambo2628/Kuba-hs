@@ -3,10 +3,10 @@
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
 import { DashboardPageSkeleton } from "@/components/shared/DashboardPageSkeleton";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import axiosInstance from "@/lib/axios";
 import { Card, CardContent } from "@/components/ui/card";
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
+import { Table, TableBody, TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Trophy, Plus, Zap, TrendingUp, ChevronRight, Gift, Loader2, Trash2, Sparkles } from "lucide-react";
@@ -18,7 +18,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,10 +48,15 @@ interface Transaction {
  created_at: string;
 }
 
+interface TransactionsResponse {
+ data?: Transaction[];
+ meta?: { last_page?: number };
+}
+
 export default function AdminLoyalty() {
   const [ledgerPage, setLedgerPage] = useState(1);
   const { data: tiers, isLoading: tiersLoading, refetch: fetchTiers } = useData<Tier[]>("/api/admin/loyalty/tiers", { initialData: [] });
-  const { data: transData, isLoading: transLoading, refetch: refetchTransactions } = useData<any>(
+  const { data: transData, isLoading: transLoading, refetch: refetchTransactions } = useData<TransactionsResponse>(
     `/api/admin/loyalty/transactions?page=${ledgerPage}`,
     { initialData: null, preserveEnvelope: true }
   );
@@ -61,7 +65,7 @@ export default function AdminLoyalty() {
     { initialData: [] }
   );
   
-  const transactions = (transData?.data || []) as Transaction[];
+  const transactions = transData?.data || [];
   const totalPages = transData?.meta?.last_page || 1;
   const isLoading = tiersLoading || transLoading;
 
@@ -103,7 +107,7 @@ export default function AdminLoyalty() {
    }
    setIsSheetOpen(false);
    fetchData();
-  } catch (error) {
+  } catch {
    toast.error("Failed to save tier");
   } finally {
    setIsSaving(false);

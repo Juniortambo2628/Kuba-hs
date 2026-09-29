@@ -36,11 +36,14 @@ export default function ProviderProfileClient({ params }: { params: Promise<{ id
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
   const { requireAuthToBook } = useBookNowAuth();
 
-  const heroBreadcrumbs = [
-    { label: "Home", href: "/" },
-    { label: "Providers", href: "/providers" },
-    { label: provider?.business_name || "Provider" },
-  ];
+  const heroBreadcrumbs = useMemo(
+    () => [
+      { label: "Home", href: "/" },
+      { label: "Providers", href: "/providers" },
+      { label: provider?.business_name || "Provider" },
+    ],
+    [provider?.business_name]
+  );
 
   const baseHero = useMemo(
     () => buildMarketingHeroProps("providerProfile", getS, getImg),

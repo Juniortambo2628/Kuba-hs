@@ -8,6 +8,7 @@ import axiosInstance, { handleApiError } from "@/lib/axios";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, Edit, ShieldCheck, Globe } from "lucide-react";
+import Image from "next/image";
 import { toast } from "sonner";
 import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { useData } from "@/hooks/useData";
@@ -32,7 +33,7 @@ export default function TrustPartnersPage() {
             await axiosInstance.delete(`/api/admin/trust-partners/${id}`); 
             toast.success("Partner removed"); 
             fetchPartners(); 
-        } catch (err: any) { toast.error(handleApiError(err)); }
+        } catch (err) { toast.error(handleApiError(err)); }
     };
 
     const openEdit = (partner: TrustPartner) => { 
@@ -88,9 +89,11 @@ export default function TrustPartnersPage() {
                         <CardContent className="p-6 pt-0 flex flex-col items-center gap-4">
                             <div className="w-full h-24 bg-white/5 rounded-2xl flex items-center justify-center p-4 border border-white/5 relative group-hover:bg-white/10 transition-colors">
                                 {partner.image_url ? (
-                                    <img 
+                                    <Image 
                                         src={partner.image_url.startsWith('http') ? partner.image_url : partner.image_url} 
                                         alt={partner.name} 
+                                        fill
+                                        sizes="100vw"
                                         className="max-h-full max-w-full object-contain filter grayscale group-hover:grayscale-0 transition-all duration-500" 
                                     />
                                 ) : (

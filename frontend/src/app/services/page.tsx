@@ -122,15 +122,14 @@ function ServicesContent() {
         dynamic_icon_url: activeCategory.dynamic_icon_url,
         icon: activeCategory.icon,
       });
-      const { bgImage: _cmsHero, ...baseWithoutBg } = baseHero;
       return {
-        ...baseWithoutBg,
+        ...baseHero,
+        bgImage: thumb ?? undefined,
         title: activeCategory.name,
         subtitle:
           activeCategory.description ||
           baseHero.subtitle ||
           "Browse services in this category.",
-        ...(thumb ? { bgImage: thumb } : {}),
       };
     }
     return baseHero;

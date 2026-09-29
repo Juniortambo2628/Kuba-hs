@@ -7,28 +7,21 @@ import {
   Ticket, 
   Plus, 
   Search, 
-  Filter, 
-  Calendar, 
   Percent, 
   DollarSign, 
   Zap, 
   Clock, 
-  CheckCircle2, 
-  XCircle, 
-  MoreHorizontal,
   Edit,
   Trash2,
   Loader2,
-  TrendingUp,
-  Users
+  TrendingUp
 } from "lucide-react";
 import { useData } from "@/hooks/useData";
 import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
@@ -99,7 +92,7 @@ export default function PromotionsPage() {
             }
             setIsSheetOpen(false);
             refetch();
-        } catch (err) {
+        } catch {
             toast.error("Campaign registration failed");
         } finally {
             setIsSaving(false);
@@ -112,7 +105,7 @@ export default function PromotionsPage() {
             await axiosInstance.delete(`/api/admin/promo-codes/${deleteId}`);
             toast.success("Campaign archived");
             refetch();
-        } catch (err) {
+        } catch {
             toast.error("Deletion failed");
         } finally {
             setDeleteId(null);
@@ -124,7 +117,7 @@ export default function PromotionsPage() {
             await axiosInstance.patch(`/api/admin/promo-codes/${id}/toggle-status`);
             toast.success("Signal updated");
             refetch();
-        } catch (err) {
+        } catch {
             toast.error("Status toggle failed");
         }
     };
@@ -278,7 +271,7 @@ export default function PromotionsPage() {
                                 <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Logic Model</Label>
                                 <Select 
                                     value={currentCode.discount_type} 
-                                    onValueChange={(v: any) => setCurrentCode(prev => ({...prev, discount_type: v}))}
+                                    onValueChange={(v) => setCurrentCode(prev => ({...prev, discount_type: v as PromoCode['discount_type']}))}
                                 >
                                     <SelectTrigger className="h-16 rounded-2xl bg-muted border-none font-bold">
                                         <SelectValue placeholder="Select type" />

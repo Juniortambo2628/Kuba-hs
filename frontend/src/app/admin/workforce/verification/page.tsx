@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useState, Suspense } from "react";
 import axiosInstance from "@/lib/axios";
 import { Table, TableHeader, TableBody, TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -8,14 +8,12 @@ import {
   CheckCircle2, 
   XCircle, 
   ExternalLink, 
-  Clock, 
   FileText,
   Filter,
   Search,
   Loader2,
   ShieldCheck,
   Building2,
-  User,
   MoreHorizontal
 } from "lucide-react";
 import { 
@@ -27,7 +25,6 @@ import {
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 import { DashboardGreetingBar } from "@/components/dashboard/workspace";
-import { StatusBadge } from "@/components/shared/StatusBadge";
 import { getMediaUrl } from "@/lib/utils";
 import { toast } from "sonner";
 import { useData } from "@/hooks/useData";
@@ -67,7 +64,7 @@ function AdminVerificationContent() {
       });
       toast.success(`Document ${status} successfully`);
       fetchProposals();
-    } catch (err) {
+    } catch {
       toast.error("Failed to update status");
     }
   };
@@ -197,7 +194,7 @@ function AdminVerificationContent() {
           <div>
               <h3 className="font-black text-foreground tracking-tight text-lg italic">Platform Governance</h3>
               <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                  Approval of documents automates provider activation. If <strong>ID</strong> and <strong>License</strong> are both verified, the provider profile is automatically promoted to "Verified" status on the storefront.
+                  Approval of documents automates provider activation. If <strong>ID</strong> and <strong>License</strong> are both verified, the provider profile is automatically promoted to &quot;Verified&quot; status on the storefront.
               </p>
            </div>
       </div>

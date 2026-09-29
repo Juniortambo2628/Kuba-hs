@@ -49,8 +49,10 @@ export default function TwoFactorSetupPage() {
       setSecret(res.data.secret);
       setRecoveryCodes(res.data.recovery_codes || []);
       setStep("verify");
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to initialize 2FA setup.");
+    } catch (err) {
+      const message = (err as { response?: { data?: { message?: string } } })?.response?.data
+        ?.message;
+      setError(message || "Failed to initialize 2FA setup.");
     } finally {
       setIsLoading(false);
     }
@@ -63,8 +65,10 @@ export default function TwoFactorSetupPage() {
     try {
       await axiosInstance.post("/api/auth/two-factor/confirm", { code });
       setStep("done");
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Invalid code. Please try again.");
+    } catch (err) {
+      const message = (err as { response?: { data?: { message?: string } } })?.response?.data
+        ?.message;
+      setError(message || "Invalid code. Please try again.");
     } finally {
       setIsVerifying(false);
     }

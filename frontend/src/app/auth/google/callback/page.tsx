@@ -25,9 +25,11 @@ function GoogleCallbackContent() {
                 
                 await checkAuth();
                 router.push("/dashboard");
-            } catch (err: any) {
+            } catch (err) {
                 console.error("Google Auth Error:", err);
-                setError(err.response?.data?.message || "Google authentication failed.");
+                const message = (err as { response?: { data?: { message?: string } } })?.response
+                    ?.data?.message;
+                setError(message || "Google authentication failed.");
             }
         };
 

@@ -3,7 +3,7 @@
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
 import { DashboardSuspenseFallback } from "@/components/shared/DashboardSuspenseFallback";
 
-import { useEffect, useState, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { ContactMessage } from "@/types";
 import axiosInstance from "@/lib/axios";
 import { Table, TableHeader, TableBody, TableRow, TableCell } from "@/components/ui/table";
@@ -53,23 +53,27 @@ import {
 } from "@/components/ui/alert-dialog";
 import { formatDate } from "@/lib/format";
 
+interface MessagesResponse {
+  data?: ContactMessage[];
+}
+
+interface ApiErrorResponse {
+  response?: { data?: { message?: string } };
+}
+
 function AdminContactContent() {
-  const { search, setSearch } = useSearchState();
-  const { data: messagesData, isLoading, refetch: fetchMessages } = useData<any>(`/api/admin/contact?search=${search}`, { initialData: null });
-  const messages = (messagesData?.data || []) as ContactMessage[];
+  const { search } = useSearchState();
+  const { data: messagesData, isLoading, refetch: fetchMessages } = useData<MessagesResponse>(`/api/admin/contact?search=${search}`, { initialData: null });
+  const messages = messagesData?.data || [];
   const [statusUpdate, setStatusUpdate] = useState<{ id: string | number, status: string } | null>(null);
   const [deleteId, setDeleteId] = useState<string | number | null>(null);
-  
-  // Define default values
-  const viewMode = 'list';
-
 
   const updateStatus = async (id: string | number, status: string) => {
     try {
         await axiosInstance.patch(`/api/admin/contact/${id}/status`, { status });
         toast.success(`Message marked as ${status}`);
         fetchMessages();
-    } catch (err) {
+    } catch {
         toast.error("Failed to update status");
     }
   };
@@ -79,8 +83,8 @@ function AdminContactContent() {
         await axiosInstance.delete(`/api/admin/contact/${id}`);
         toast.success("Message deleted successfully");
         fetchMessages();
-    } catch (err: any) {
-        toast.error(err.response?.data?.message || "Failed to delete message");
+    } catch (err) {
+        toast.error((err as ApiErrorResponse).response?.data?.message || "Failed to delete message");
     }
   };
 

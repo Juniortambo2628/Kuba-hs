@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import axiosInstance from "@/lib/axios";
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
 import { DashboardGreetingBar } from "@/components/dashboard/workspace";
@@ -61,17 +61,19 @@ export default function AdminEmailTestPage() {
   const templateVariables: string[] = selectedTemplateData?.variables || [];
 
   // Reset variables when template changes
-  useEffect(() => {
-    if (selectedTemplate && templateVariables.length > 0) {
+  const handleTemplateChange = (key: string) => {
+    setSelectedTemplate(key);
+    const vars = templates.find((t) => t.key === key)?.variables ?? [];
+    if (key && vars.length > 0) {
       const initialVars: Record<string, string> = {};
-      templateVariables.forEach((v) => {
+      vars.forEach((v) => {
         initialVars[v] = "";
       });
       setVariables(initialVars);
     } else {
       setVariables({});
     }
-  }, [selectedTemplate, templateVariables.length]);
+  };
 
   const handleSendTest = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -159,7 +161,7 @@ export default function AdminEmailTestPage() {
                 <Label>Email Template (Optional)</Label>
                 <Select
                   value={selectedTemplate}
-                  onValueChange={setSelectedTemplate}
+                  onValueChange={handleTemplateChange}
                   disabled={templatesLoading}
                 >
                   <SelectTrigger className="h-11 rounded-xl">

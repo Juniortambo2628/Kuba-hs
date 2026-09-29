@@ -8,12 +8,12 @@ import {
 } from "@/components/shared/DashboardTable";
 import { DashboardSuspenseFallback } from "@/components/shared/DashboardSuspenseFallback";
 
-import { useEffect, useState, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { User } from "@/types";
 import axiosInstance from "@/lib/axios";
 import { Card, CardContent } from "@/components/ui/card";
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
+import { Table, TableHeader, TableBody, TableRow, TableCell } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
   MoreHorizontal, 
@@ -53,9 +53,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { formatDate } from "@/lib/format";
+import Image from "next/image";
+
+interface ApiErrorResponse {
+  response?: { data?: { message?: string } };
+}
 
 function AdminUsersContent() {
-  const { search, setSearch } = useSearchState();
+  const { search } = useSearchState();
   const searchParams = useSearchParams();
   const userId = searchParams.get('id');
 
@@ -76,12 +81,12 @@ function AdminUsersContent() {
         await axiosInstance.patch(`/api/admin/users/${id}/toggle-status`);
         toast.success("User status updated");
         fetchUsers();
-    } catch (err) {
+    } catch {
         toast.error("Failed to update status");
     }
   };
 
-  const handleSaveUser = async (data: any) => {
+  const handleSaveUser = async (data: unknown) => {
     try {
       if (selectedUser) {
         await axiosInstance.put(`/api/admin/users/${selectedUser.id}`, data);
@@ -91,8 +96,8 @@ function AdminUsersContent() {
         toast.success("User created successfully");
       }
       fetchUsers();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to save user");
+    } catch (err) {
+      toast.error((err as ApiErrorResponse).response?.data?.message || "Failed to save user");
       throw err;
     }
   };
@@ -102,14 +107,9 @@ function AdminUsersContent() {
         await axiosInstance.delete(`/api/admin/users/${id}`);
         toast.success("User deleted successfully");
         fetchUsers();
-    } catch (err: any) {
-        toast.error(err.response?.data?.message || "Failed to delete user");
+    } catch (err) {
+        toast.error((err as ApiErrorResponse).response?.data?.message || "Failed to delete user");
     }
-  };
-
-  const openCreateDialog = () => {
-    setSelectedUser(null);
-    setIsDialogOpen(true);
   };
 
   const openEditDialog = (user: User) => {
@@ -178,7 +178,7 @@ function AdminUsersContent() {
                     <TableCell className="pl-6">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-primary font-bold text-xs overflow-hidden border border-border shadow-sm">
-                          {u.image_url ? <img src={u.image_url} alt={u.name} className="w-full h-full object-cover" /> : u.name[0]}
+                          {u.image_url ? <Image src={u.image_url} alt={u.name} width={40} height={40} className="w-full h-full object-cover" /> : u.name[0]}
                         </div>
                         <div>
                           <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{u.name}</p>
@@ -236,7 +236,7 @@ function AdminUsersContent() {
               <CardContent className="p-5">
                 <div className="flex justify-between items-start mb-4">
                   <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center text-primary font-bold text-xl overflow-hidden border border-border/60 shadow-inner group-hover:border-primary/20 transition-all">
-                    {u.image_url ? <img src={u.image_url} alt={u.name} className="w-full h-full object-cover" /> : u.name[0]}
+                    {u.image_url ? <Image src={u.image_url} alt={u.name} width={56} height={56} className="w-full h-full object-cover" /> : u.name[0]}
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -284,7 +284,7 @@ function AdminUsersContent() {
           <AlertDialogHeader>
             <AlertDialogTitle className="text-xl font-black italic tracking-tight">Modify Access Rights?</AlertDialogTitle>
             <AlertDialogDescription className="text-sm font-medium text-muted-foreground leading-relaxed">
-              Are you sure you want to {statusId?.active ? "suspend" : "activate"} this personnel's marketplace access?
+              Are you sure you want to {statusId?.active ? "suspend" : "activate"} this personnel&apos;s marketplace access?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-2 sm:gap-0 pt-4">

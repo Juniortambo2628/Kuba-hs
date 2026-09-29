@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,16 +18,7 @@ function VerifyContent() {
   const [status, setStatus] = useState<'verifying' | 'success' | 'failed'>('verifying');
   const [message, setMessage] = useState('Verifying your payment...');
 
-  useEffect(() => {
-    if (reference) {
-      verifyPayment(reference);
-    } else {
-      setStatus('failed');
-      setMessage('No payment reference found.');
-    }
-  }, [reference]);
-
-  const verifyPayment = async (ref: string) => {
+  const verifyPayment = useCallback(async (ref: string) => {
     try {
       await axiosInstance.post("/api/payments/paystack/verify", { reference: ref });
       setStatus('success');
@@ -38,12 +29,26 @@ function VerifyContent() {
         router.push('/dashboard/client/bookings');
       }, 3000);
       
-    } catch (error: any) {
+    } catch (error) {
       console.error('Payment verification failed:', error);
+      const errorMessage = (error as { response?: { data?: { message?: string } } })?.response
+        ?.data?.message;
       setStatus('failed');
-      setMessage(error.response?.data?.message || 'Payment verification failed. Please contact support if you were charged.');
+      setMessage(errorMessage || 'Payment verification failed. Please contact support if you were charged.');
     }
-  };
+  }, [router]);
+
+  useEffect(() => {
+    const verify = async () => {
+      if (reference) {
+        await verifyPayment(reference);
+      } else {
+        setStatus('failed');
+        setMessage('No payment reference found.');
+      }
+    };
+    verify();
+  }, [reference, verifyPayment]);
 
   return (
         <Card className="max-w-md w-full rounded-surface border-border shadow-2xl relative overflow-hidden bg-white dark:bg-background">

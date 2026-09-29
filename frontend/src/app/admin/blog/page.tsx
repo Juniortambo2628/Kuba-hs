@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Plus, FileText, Zap, PenTool, Calendar, User as UserIcon, Trash2, Edit3, ImageIcon } from "lucide-react";
+import Image from "next/image";
 import { toast } from "sonner";
 import { useSearchState } from "@/hooks/useSearchState";
 import { DashboardGreetingBar } from "@/components/dashboard/workspace";
@@ -41,7 +42,7 @@ const columns: ColumnDef<Post>[] = [
       <div className="flex items-center gap-4">
         <div className="w-12 h-12 bg-muted/50 rounded-2xl flex items-center justify-center text-foreground group-hover:bg-red-50 group-hover:text-primary transition-all overflow-hidden border border-border">
           {post.image_url ? (
-            <img src={post.image_url} alt={post.title} className="w-full h-full object-cover" />
+            <Image src={post.image_url} alt={post.title} width={48} height={48} className="w-full h-full object-cover" />
           ) : (
             <PenTool className="w-5 h-5 opacity-40 group-hover:opacity-100" />
           )}
@@ -106,7 +107,7 @@ export default function AdminBlog() {
       await axiosInstance.delete(`/api/admin/blog/${id}`);
       toast.success("Article deleted");
       fetchPosts();
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.error(handleApiError(err));
     }
   };
@@ -146,7 +147,7 @@ export default function AdminBlog() {
           <Card className="border border-border bg-card hover:shadow-md transition-all group overflow-hidden flex flex-col">
             <div className="relative h-48 w-full bg-muted/50 border-b border-border overflow-hidden">
               {post.image_url ? (
-                <img src={post.image_url} alt={post.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                <Image src={post.image_url} alt={post.title} fill sizes="100vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground/30 group-hover:text-primary/10 transition-colors">
                   <ImageIcon className="w-12 h-12 mb-2" />
@@ -216,7 +217,7 @@ export default function AdminBlog() {
         onOpenChange={() => setDeleteTarget(null)}
         onConfirm={async () => { if (deleteTarget) { await handleDelete(deleteTarget.id); setDeleteTarget(null); } }}
         title="Purge Literary Asset?"
-        description={<>Are you sure you want to delete <span className="font-bold text-foreground">"{deleteTarget?.title}"</span>? This article will be permanently removed from the editorial manuscript registry and platform archives.</>}
+        description={<>Are you sure you want to delete <span className="font-bold text-foreground">&quot;{deleteTarget?.title}&quot;</span>? This article will be permanently removed from the editorial manuscript registry and platform archives.</>}
       />
     </DashboardPageContainer>
   );

@@ -26,6 +26,8 @@ const BookingModal = dynamic(() => import("@/components/booking/BookingModal"), 
   ssr: false,
 });
 
+type ServiceCategorySource = Parameters<typeof resolveServiceCategoryName>[0];
+
 export default function ServiceDetailClient({
   params,
 }: {
@@ -44,7 +46,7 @@ export default function ServiceDetailClient({
   }>(slug ? `/api/services/${slug}` : null);
 
   const service = resData?.service;
-  const providerServices = resData?.provider_services || [];
+  const providerServices = useMemo(() => resData?.provider_services || [], [resData]);
 
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
@@ -61,8 +63,8 @@ export default function ServiceDetailClient({
     const row = providerServices[0] || service;
     if (!row) return null;
     const categoryName =
-      resolveServiceCategoryName(row as any) ||
-      resolveServiceCategoryName(service as any) ||
+      resolveServiceCategoryName(row as ServiceCategorySource) ||
+      resolveServiceCategoryName(service as ServiceCategorySource) ||
       (service?.category as { name?: string })?.name;
     return {
       ...row,

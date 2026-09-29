@@ -7,7 +7,7 @@ import axiosInstance from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, User, Building2, ShieldCheck, Mail, Phone, CheckCircle2 } from "lucide-react";
+import { Loader2, User, Building2, ShieldCheck, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
@@ -44,9 +44,11 @@ function CompleteProfileForm() {
             toast.success("Profile completed successfully");
             await checkAuth();
             router.push(response.data.redirect || "/dashboard");
-        } catch (err: any) {
+        } catch (err) {
             console.error(err);
-            toast.error(err.response?.data?.message || "Failed to complete profile");
+            const message = (err as { response?: { data?: { message?: string } } })?.response
+                ?.data?.message;
+            toast.error(message || "Failed to complete profile");
         } finally {
             setIsLoading(false);
         }

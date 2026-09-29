@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { AuthPageShell, AuthPrimaryButton } from "@/components/auth/AuthPageShell";
 import { AuthIconInput } from "@/components/auth/AuthIconInput";
 import { useAuthPageContent } from "@/hooks/useAuthPageContent";
-import { Shield, KeyRound, Fingerprint, Loader2 } from "lucide-react";
+import { Shield, KeyRound, Fingerprint } from "lucide-react";
 import { usePasskeys } from "@/hooks/usePasskeys";
 
 export default function TwoFactorChallengePage() {

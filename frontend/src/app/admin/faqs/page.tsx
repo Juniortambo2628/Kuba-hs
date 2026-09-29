@@ -15,7 +15,7 @@ import axiosInstance from "@/lib/axios";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Edit, Trash2, LayoutGrid, List, MessageSquare, Tag, Eye, EyeOff, ChevronUp, ChevronDown, GripVertical } from "lucide-react";
+import { Plus, Edit, Trash2, MessageSquare, Tag, Eye, EyeOff, ChevronUp, ChevronDown, GripVertical } from "lucide-react";
 import { MetricCard } from "@/components/shared/MetricCard";
 import {
   DndContext,
@@ -95,7 +95,7 @@ function FAQManagementContent() {
       await axiosInstance.delete(`/api/admin/faqs/${id}`);
       toast.success("FAQ Registry Updated");
       fetchFaqs();
-    } catch (err) {
+    } catch {
       toast.error("Deletion failed");
     }
   };

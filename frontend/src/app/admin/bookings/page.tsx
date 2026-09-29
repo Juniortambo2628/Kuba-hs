@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useState, Suspense } from "react";
 import axiosInstance from "@/lib/axios";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -57,8 +57,13 @@ import { Input } from "@/components/ui/input";
 import { useData } from "@/hooks/useData";
 import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
 import { formatDate } from "@/lib/format";
+
+interface ApiErrorResponse {
+  response?: { data?: { message?: string } };
+}
+
 function AdminBookingsContent() {
-  const { search, setSearch, status, setStatus } = useSearchState();
+  const { search, status, setStatus } = useSearchState();
   const { data: bookings, isLoading, refetch: fetchBookings } = useData<Booking[]>(
     `/api/admin/bookings?search=${search}&status=${status || ''}`,
     { initialData: [] }
@@ -80,8 +85,8 @@ function AdminBookingsContent() {
       });
       toast.success(`Booking ${newStatus} successfully`);
       fetchBookings();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to update status");
+    } catch (err) {
+      toast.error((err as ApiErrorResponse).response?.data?.message || "Failed to update status");
     }
   };
 
@@ -94,8 +99,8 @@ function AdminBookingsContent() {
       toast.success("Booking rescheduled successfully");
       setRescheduleData(null);
       fetchBookings();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to reschedule");
+    } catch (err) {
+      toast.error((err as ApiErrorResponse).response?.data?.message || "Failed to reschedule");
     }
   };
 
@@ -104,7 +109,7 @@ function AdminBookingsContent() {
       await axiosInstance.delete(`/api/admin/bookings/${id}`);
       toast.success("Booking deleted");
       fetchBookings();
-    } catch (err: any) {
+    } catch {
       toast.error("Failed to delete booking");
     }
   };
@@ -327,7 +332,7 @@ function AdminBookingsContent() {
               />
             </div>
             <p className="text-[10px] text-muted-foreground font-semibold px-1 leading-relaxed">
-              Moving the schedule will notify both the client and the provider. Service status will revert to "Pending" awaiting final confirmation.
+              Moving the schedule will notify both the client and the provider. Service status will revert to &quot;Pending&quot; awaiting final confirmation.
             </p>
           </div>
           <DialogFooter className="gap-2 sm:gap-0">

@@ -71,6 +71,35 @@ interface Payout {
 const VALID_TABS = ["overview", "transactions", "payouts"] as const;
 type FinanceTab = (typeof VALID_TABS)[number];
 
+type ExportToCSV = (data: Payment[], filename: string) => void;
+
+interface PaymentStats {
+  total_volume: number;
+  total_fees: number;
+  pending_volume: number;
+  completed_count: number;
+}
+
+interface PaymentsResponse {
+  payments?: { data?: Payment[] };
+  stats?: PaymentStats;
+}
+
+interface FinancialOverview {
+  total_revenue: number;
+  global_provider_balance: number;
+  pending_payouts_amount: number;
+  pending_payouts_count: number;
+}
+
+interface PayoutsResponse {
+  data?: Payout[];
+}
+
+interface ApiErrorResponse {
+  response?: { data?: { message?: string } };
+}
+
 function AdminPaymentsContent() {
   const { exportToCSV } = useExport();
   const searchParams = useSearchParams();
@@ -121,7 +150,7 @@ function AdminPaymentsContent() {
         </TabsContent>
 
         <TabsContent value="payouts" className="space-y-6 mt-0">
-          <PayoutsView exportToCSV={exportToCSV} />
+          <PayoutsView />
         </TabsContent>
       </Tabs>
     </DashboardPageContainer>
@@ -140,17 +169,17 @@ export default function AdminPayments() {
 
 
 // --- TRANSACTIONS VIEW (Existing Logic) ---
-function TransactionsView({ exportToCSV }: { exportToCSV: any }) {
-  const { search, setSearch, status, setStatus } = useSearchState();
+function TransactionsView({ exportToCSV }: { exportToCSV: ExportToCSV }) {
+  const { search, status, setStatus } = useSearchState();
   const [viewMode, setViewMode] = useState<'grid'|'list'>('grid');
   const [detailPaymentId, setDetailPaymentId] = useState<string | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
-  const { data: paymentData, isLoading } = useData<any>(
+  const { data: paymentData, isLoading } = useData<PaymentsResponse>(
     `/api/admin/payments?search=${search}&status=${status || ''}`,
     { initialData: null }
   );
 
-  const payments = (paymentData?.payments?.data || []) as Payment[];
+  const payments = paymentData?.payments?.data || [];
   const stats = paymentData?.stats;
 
   const kpiStats = [
@@ -271,16 +300,16 @@ function TransactionsView({ exportToCSV }: { exportToCSV: any }) {
 }
 
 // --- PAYOUTS VIEW (New Phase 25 Logic) ---
-function PayoutsView({ exportToCSV }: { exportToCSV: any }) {
-  const { search, setSearch, status, setStatus } = useSearchState();
+function PayoutsView() {
+  const { search, status, setStatus } = useSearchState();
 
-  const { data: overview, isLoading: loadingOverview } = useData<any>('/api/admin/financials/overview');
-  const { data: payoutsData, isLoading, refetch } = useData<any>(
+  const { data: overview, isLoading: loadingOverview } = useData<FinancialOverview>('/api/admin/financials/overview');
+  const { data: payoutsData, isLoading, refetch } = useData<PayoutsResponse>(
     `/api/admin/financials/payouts?search=${search}&status=${status || 'all'}`,
     { initialData: null }
   );
 
-  const payouts = (payoutsData?.data || []) as Payout[];
+  const payouts = payoutsData?.data || [];
 
   const [selectedPayout, setSelectedPayout] = useState<Payout | null>(null);
   const [resolveDrawerOpen, setResolveDrawerOpen] = useState(false);
@@ -313,8 +342,8 @@ function PayoutsView({ exportToCSV }: { exportToCSV: any }) {
       setReference('');
       setNotes('');
       refetch();
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to process payout");
+    } catch (error) {
+      toast.error((error as ApiErrorResponse).response?.data?.message || "Failed to process payout");
     } finally {
       setIsProcessing(false);
     }

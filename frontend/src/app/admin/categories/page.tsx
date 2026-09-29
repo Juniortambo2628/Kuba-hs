@@ -8,6 +8,7 @@ import axiosInstance, { handleApiError } from "@/lib/axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, Edit, Sparkles, ImageIcon } from "lucide-react";
+import Image from "next/image";
 import { toast } from "sonner";
 import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
@@ -148,9 +149,11 @@ export default function AdminCategories() {
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-lg bg-muted border border-border overflow-hidden flex items-center justify-center shrink-0">
                                         {cat.image_url ? (
-                                            <img
+                                            <Image
                                                 src={getMediaUrl(cat.image_url, "service")}
                                                 alt={cat.name}
+                                                width={40}
+                                                height={40}
                                                 className="w-full h-full object-cover"
                                             />
                                         ) : (
@@ -191,7 +194,7 @@ export default function AdminCategories() {
                                             <div className="flex items-center gap-4">
                                                 <div className="w-14 h-14 rounded-2xl bg-white border border-border overflow-hidden shrink-0 shadow-sm">
                                                     {svc.thumbnail_url ? (
-                                                        <img src={getMediaUrl(svc.thumbnail_url, "service")} alt={svc.name} className="w-full h-full object-cover" />
+                                                        <Image src={getMediaUrl(svc.thumbnail_url, "service")} alt={svc.name} width={56} height={56} className="w-full h-full object-cover" />
                                                     ) : (
                                                         <div className="w-full h-full flex items-center justify-center">
                                                             <Sparkles className="w-6 h-6 text-muted-foreground/30" />

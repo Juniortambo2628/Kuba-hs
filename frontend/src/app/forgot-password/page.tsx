@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Mail, Loader2 } from "lucide-react";
+import { Mail } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthPageShell, AuthPrimaryButton } from "@/components/auth/AuthPageShell";
 import { AuthIconInput } from "@/components/auth/AuthIconInput";

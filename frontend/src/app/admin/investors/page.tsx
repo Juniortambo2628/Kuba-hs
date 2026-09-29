@@ -55,9 +55,15 @@ export default function AdminInvestorsPage() {
   const { data: inquiriesRaw, isLoading, refetch } = useData<unknown>("/api/admin/investors", {
     initialData: [],
   });
-  const inquiries = (
-    Array.isArray(inquiriesRaw) ? inquiriesRaw : (inquiriesRaw as { data?: InvestorInquiry[] })?.data || []
-  ) as InvestorInquiry[];
+  const inquiries = useMemo(
+    () =>
+      (
+        Array.isArray(inquiriesRaw)
+          ? inquiriesRaw
+          : (inquiriesRaw as { data?: InvestorInquiry[] })?.data || []
+      ) as InvestorInquiry[],
+    [inquiriesRaw]
+  );
 
   const updateStatus = async (id: string, status: string) => {
     try {

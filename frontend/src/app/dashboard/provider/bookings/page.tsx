@@ -8,7 +8,7 @@ import {
   DashboardTableHead,
   DashboardTableHeaderRow,
 } from "@/components/shared/DashboardTable";
-import { Calendar, Loader2, Plus } from "lucide-react";
+import { Calendar, Plus } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -55,7 +55,7 @@ function BookingsHistoryContent() {
     (url) => axiosInstance.get(url).then((res) => res.data)
   );
 
-  const bookings = extractApiList(bookingsData);
+  const bookings = extractApiList<Booking>(bookingsData);
   const activeCount = bookings.filter((b) =>
     ["pending", "confirmed", "in_progress"].includes(b.status)
   ).length;
@@ -91,7 +91,7 @@ function BookingsHistoryContent() {
               : `Booking ${nextStatus}`
       );
       const fresh = await mutate();
-      const list = extractApiList(fresh);
+      const list = extractApiList<Booking>(fresh);
       const updated = list.find((b) => b.id === bookingId);
       if (updated) setSelectedBooking(updated);
       else if (selectedBooking?.id === bookingId) {

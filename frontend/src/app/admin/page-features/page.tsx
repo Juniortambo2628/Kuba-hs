@@ -3,16 +3,15 @@
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
 import { DashboardPageSkeleton } from "@/components/shared/DashboardPageSkeleton";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import axiosInstance, { handleApiError } from "@/lib/axios";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Loader2, Plus, Trash2, Edit, Monitor, Star, Sparkles } from "lucide-react";
+import { Loader2, Plus, Trash2, Edit, Monitor, Sparkles } from "lucide-react";
 import { toast } from "sonner";
-import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardGreetingBar } from "@/components/dashboard/workspace";
 import { useData } from "@/hooks/useData";
 import { AppConfirmDialog } from "@/components/shared/dialog/AppConfirmDialog";
@@ -28,9 +27,7 @@ import {
 } from "@/components/ui/select";
 import { iconMap, resolveIcon } from "@/lib/icon-map";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import Image from "next/image";
 import { DashboardImageUpload } from "@/components/shared/DashboardImageUpload";
-import { getMediaUrl } from "@/lib/utils";
 
 const PAGE_OPTIONS = [
     { label: 'Landing (Home)', value: 'landing' },
@@ -62,8 +59,8 @@ interface PageFeature {
 }
 
 export default function PageFeaturesPage() {
-    const { data: featuresData, isLoading, refetch: fetchFeatures } = useData<any>("/api/admin/page-features", { initialData: [] });
-    const features = (featuresData || []) as PageFeature[];
+    const { data: featuresData, isLoading, refetch: fetchFeatures } = useData<PageFeature[]>("/api/admin/page-features", { initialData: [] });
+    const features = featuresData || [];
     const [isOpen, setIsOpen] = useState(false);
     const [selectedFeature, setSelectedFeature] = useState<PageFeature | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -94,7 +91,7 @@ export default function PageFeaturesPage() {
             fetchFeatures();
             setIsOpen(false);
             resetForm();
-        } catch (err: any) { toast.error(handleApiError(err)); }
+        } catch (err) { toast.error(handleApiError(err)); }
         finally { setIsSubmitting(false); }
     };
 
@@ -103,7 +100,7 @@ export default function PageFeaturesPage() {
             await axiosInstance.delete(`/api/admin/page-features/${id}`); 
             toast.success("Feature removed"); 
             fetchFeatures(); 
-        } catch (err: any) { toast.error(handleApiError(err)); }
+        } catch (err) { toast.error(handleApiError(err)); }
     };
 
     const resetForm = () => {
