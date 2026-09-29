@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -43,6 +43,28 @@ const HIDDEN_NAV_LABELS = new Set([
 
 type NavItem = { id: string; label: string; url: string };
 
+const DEFAULT_NAV_ITEMS: NavItem[] = [
+  { id: "nav_1", label: "Services", url: "/services" },
+  { id: "nav_3", label: "About", url: "/about" },
+  { id: "nav_4", label: "Journal", url: "/blog" },
+  { id: "nav_5", label: "Contact", url: "/contact" },
+];
+
+const emptySubscribe = () => () => {};
+
+function BrandLogo({ light, dark }: { light: string; dark: string }) {
+  return (
+    <>
+      <div className={cn(navUi.brand, "dark:hidden")}>
+        <Image src={light} alt="Kuba" fill sizes="240px" className="object-contain object-left" priority />
+      </div>
+      <div className={cn(navUi.brand, "hidden dark:block")}>
+        <Image src={dark} alt="Kuba" fill sizes="240px" className="object-contain object-left" priority />
+      </div>
+    </>
+  );
+}
+
 function NavLink({
   href,
   label,
@@ -69,28 +91,21 @@ export function Navbar() {
   const { getS, getImg } = useCMS();
   const { user } = useAuth();
   const pathname = usePathname();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
   const [isMegamenuOpen, setIsMegamenuOpen] = useState(false);
-  const [navItems, setNavItems] = useState<NavItem[]>([
-    { id: "nav_1", label: "Services", url: "/services" },
-    { id: "nav_3", label: "About", url: "/about" },
-    { id: "nav_4", label: "Journal", url: "/blog" },
-    { id: "nav_5", label: "Contact", url: "/contact" },
-  ]);
   const [scrolled, setScrolled] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
+  const cmsNavItems = useMemo(() => {
+    if (!mounted) return null;
     const navString = getS("identity", "navigation_menu", "");
-    if (navString) {
-      try {
-        const parsed = JSON.parse(navString) as NavItem[];
-        setNavItems(parsed);
-      } catch {
-        /* keep defaults */
-      }
+    if (!navString) return null;
+    try {
+      return JSON.parse(navString) as NavItem[];
+    } catch {
+      return null;
     }
-  }, [getS]);
+  }, [mounted, getS]);
+  const navItems = cmsNavItems ?? DEFAULT_NAV_ITEMS;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -110,23 +125,12 @@ export function Navbar() {
     "/assets/Kuba-Header-Footer-Logo-for-Dark-Mode.png"
   );
 
-  const BrandLogo = () => (
-    <>
-      <div className={cn(navUi.brand, "dark:hidden")}>
-        <Image src={logoLight} alt="Kuba" fill sizes="240px" className="object-contain object-left" priority />
-      </div>
-      <div className={cn(navUi.brand, "hidden dark:block")}>
-        <Image src={logoDark} alt="Kuba" fill sizes="240px" className="object-contain object-left" priority />
-      </div>
-    </>
-  );
-
   if (!mounted) {
     return (
       <nav className={cn(navUi.bar, "sticky top-0 z-50 h-16")}>
         <div className={cn(uiPrimitives.layout.nav, "h-full flex items-center")}>
           <Link href="/" className="inline-flex shrink-0">
-            <BrandLogo />
+            <BrandLogo light={logoLight} dark={logoDark} />
           </Link>
         </div>
       </nav>
@@ -141,7 +145,7 @@ export function Navbar() {
       <div className={uiPrimitives.layout.nav}>
         <div className={navUi.inner}>
           <Link href="/" className="inline-flex shrink-0 items-center">
-            <BrandLogo />
+            <BrandLogo light={logoLight} dark={logoDark} />
             <span className="sr-only">Kuba</span>
           </Link>
 
