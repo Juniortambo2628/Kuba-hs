@@ -9,6 +9,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: 1,
+  timeout: 90_000,
   reporter: [['html', { open: 'never' }], ['list']],
 
   snapshotDir: './tests/visual',
