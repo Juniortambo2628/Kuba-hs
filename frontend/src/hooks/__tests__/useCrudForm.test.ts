@@ -18,13 +18,14 @@ type TestForm = { name: string; email: string };
 
 const empty = (): TestForm => ({ name: '', email: '' });
 
+const defaultProps = {
+  editingId: null as string | number | null,
+  initial: undefined as Partial<TestForm> | undefined,
+  preparePayload: undefined as ((form: TestForm) => Record<string, unknown>) | undefined,
+  extraCreatePayload: undefined as Record<string, unknown> | undefined,
+};
+
 function renderUseCrudForm(overrides: Partial<Parameters<typeof useCrudForm<TestForm>>[0]> = {}) {
-  const defaults = {
-    editingId: null as string | number | null,
-    initial: undefined as Partial<TestForm> | undefined,
-    preparePayload: undefined as ((form: TestForm) => Record<string, unknown>) | undefined,
-    extraCreatePayload: undefined as Record<string, unknown> | undefined,
-  };
   return renderHook(
     ({ editingId, initial, preparePayload, extraCreatePayload }) =>
       useCrudForm<TestForm>({
@@ -36,7 +37,7 @@ function renderUseCrudForm(overrides: Partial<Parameters<typeof useCrudForm<Test
         extraCreatePayload,
       }),
     {
-      initialProps: { ...defaults, ...overrides },
+      initialProps: { ...defaultProps, ...overrides },
     }
   );
 }
@@ -61,7 +62,7 @@ describe('useCrudForm', () => {
     });
     expect(result.current.form).toEqual({ name: 'dirty', email: 'dirty@test.com' });
 
-    rerender({ editingId: 42, initial: { name: 'Alice', email: 'alice@test.com' } });
+    rerender({ ...defaultProps, editingId: 42, initial: { name: 'Alice', email: 'alice@test.com' } });
 
     expect(result.current.form).toEqual({ name: 'Alice', email: 'alice@test.com' });
   });
