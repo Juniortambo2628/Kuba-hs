@@ -80,6 +80,7 @@ export function CTA() {
                     src={FALLBACK_IMAGES.cleaning}
                     alt="Professionals"
                     fill
+                    loading="eager"
                     sizes="(max-width: 1024px) 100vw, 50vw"
                     className="object-cover object-left rounded-r-[3rem]"
                 />
