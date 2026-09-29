@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Generated service-worker assets (written by next-pwa/workbox on every build):
+    "public/**",
+    // Playwright artifacts:
+    "playwright-report/**",
+    "test-results/**",
   ]),
 ]);
 
