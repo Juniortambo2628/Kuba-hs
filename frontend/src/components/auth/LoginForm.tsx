@@ -96,10 +96,10 @@ export function LoginForm({ role }: LoginFormProps) {
     setError("");
     setIsPasskeyLoading(true);
     try {
-      const result = await authenticateWithPasskey();
-      if (result.user_id) {
-        await login({ passkey_user_id: result.user_id });
-      }
+      // The passkey verify endpoint logs the user in server-side.
+      // Just refresh the auth context so the redirect effect fires.
+      await authenticateWithPasskey();
+      await checkAuth();
     } catch (err: unknown) {
       const message =
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||

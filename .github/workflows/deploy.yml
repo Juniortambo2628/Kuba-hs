@@ -74,11 +74,26 @@ jobs:
             echo "Running Artisan commands..."
             touch database/database.sqlite
             php artisan down || true
-            php artisan optimize:clear
+            # Clear framework caches individually so the application cache
+            # (Cache::remember* for /api/settings, /api/categories, etc.) is
+            # preserved across deploys. optimize:clear would also run
+            # cache:clear, which caused a cold-cache stampede on the first
+            # burst of /api/* calls after every deploy → EP-limit 508s.
+            php artisan config:clear
+            php artisan route:clear
+            php artisan view:clear
+            php artisan event:clear
             php artisan migrate --force
             php artisan config:cache
             php artisan event:cache
             php artisan route:cache
             php artisan view:cache
             php artisan up || true
+            # Warm the marketing endpoints so the very first landing-page
+            # visitor never triggers a cold-cache DB round-trip. Best-effort;
+            # deploy stays green even if these fail (|| true). Must run
+            # AFTER 'artisan up' or every request returns 503.
+            for path in api/settings api/categories api/faqs api/testimonials api/trust-partners; do
+              curl -sSf -o /dev/null --max-time 15 "https://api.kuba.co.ke/\$path" || true
+            done
           EOF

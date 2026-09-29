@@ -16,6 +16,7 @@ export interface User {
   total_points?: number;
   two_factor_setup_required?: boolean;
   two_factor_confirmed_at?: string | null;
+  two_factor_enabled?: boolean;
 }
 
 export interface Passkey {

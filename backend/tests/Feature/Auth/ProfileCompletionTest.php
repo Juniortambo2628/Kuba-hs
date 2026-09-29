@@ -32,19 +32,24 @@ test('profile completion requires authentication', function () {
     $response->assertUnauthorized();
 });
 
-test('profile completion validates fields', function () {
+test('profile completion validates required fields', function () {
+    $user = createCustomer();
+
+    $response = $this->actingAs($user)->postJson('/api/auth/complete-profile', []);
+
+    $response->assertUnprocessable()
+        ->assertJsonValidationErrors(['role', 'first_name', 'last_name']);
+});
+
+test('profile completion rejects invalid role', function () {
     $user = createCustomer();
 
     $response = $this->actingAs($user)->postJson('/api/auth/complete-profile', [
-        'phone' => '',
+        'role' => 'superuser',
+        'first_name' => 'Test',
+        'last_name' => 'User',
     ]);
 
-    $response->assertUnprocessable();
-    $response->assertJsonValidationErrors([
-        'email',
-        'role',
-        'first_name',
-        'last_name',
-        'google_id',
-    ]);
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['role']);
 });

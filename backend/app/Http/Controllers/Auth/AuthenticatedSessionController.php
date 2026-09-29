@@ -16,7 +16,7 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): \Illuminate\Http\JsonResponse
+    public function store(LoginRequest $request): \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
     {
         $request->authenticate();
 
@@ -39,16 +39,26 @@ class AuthenticatedSessionController extends Controller
             ]);
         }
 
+        if ($request->hasSession()) {
+            $request->session()->regenerate();
+        }
+
         $user->notify(new SignInLog(
             ip: $request->ip(),
             user_agent: $request->userAgent(),
             timestamp: now()
         ));
 
-        return response()->json([
-            'message' => 'Logged in successfully',
-            'user' => new UserResource($user),
-        ]);
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => 'Logged in successfully',
+                'user' => new UserResource($user),
+            ]);
+        }
+
+        $frontendUrl = config('app.frontend_url', env('FRONTEND_URL', '/'));
+
+        return redirect()->intended($frontendUrl.'/dashboard');
     }
 
     /**

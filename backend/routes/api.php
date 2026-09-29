@@ -85,16 +85,25 @@ Route::post('/auth/register-provider', [\App\Http\Controllers\Api\ProviderApplic
 Route::post('/quotes', [\App\Http\Controllers\Api\QuoteController::class, 'store']);
 Route::get('/unsubscribe', [\App\Http\Controllers\Api\UnsubscribeController::class, 'unsubscribe'])->name('api.unsubscribe');
 
-// M-Pesa Callback (public, no auth - called by Safaricom)
-Route::post('/payments/mpesa/callback', [\App\Http\Controllers\Api\MpesaController::class, 'callback']);
 Route::post('/auth/complete-profile', [\App\Http\Controllers\Auth\ProfileCompletionController::class, 'store'])
     ->middleware('auth:sanctum');
 
 // Public Blog Routes
 Route::get('/blog', [\App\Http\Controllers\Api\BlogController::class, 'index']);
 Route::get('/blog/{slug}', [\App\Http\Controllers\Api\BlogController::class, 'show']);
-// Authenticated dashboard routes
-Route::middleware(['auth:sanctum', 'two-factor-setup'])->group(function () {
+// Authenticated dashboard routes.
+// Note: 2FA is opt-in from account settings, not enforced here.
+// Sensitive admin-only routes still get scoped by the 'admin' middleware below.
+Route::middleware(['auth:sanctum'])->group(function () {
+    // Client/Provider Dashboard — delegates to role-specific controllers
+    Route::get('/dashboard', function (\Illuminate\Http\Request $request) {
+        $user = $request->user();
+        if ($user->role === \App\Enums\UserRole::Provider && $user->provider) {
+            return app(\App\Http\Controllers\Provider\DashboardController::class)->index($request);
+        }
+        return app(\App\Http\Controllers\Client\DashboardController::class)->index($request);
+    });
+
     // Booking management
     Route::get('/bookings/{booking}', [\App\Http\Controllers\Api\BookingController::class, 'show']);
     Route::get('/bookings/{booking}/activity', [\App\Http\Controllers\Api\BookingActivityController::class, 'index']);
@@ -148,8 +157,6 @@ Route::middleware(['auth:sanctum', 'two-factor-setup'])->group(function () {
         Route::post('/payments/paystack/initialize', [\App\Http\Controllers\Api\PaystackController::class, 'initialize']);
         Route::post('/payments/paystack/verify', [\App\Http\Controllers\Api\PaystackController::class, 'verify']);
         Route::get('/payments/client/transactions', [\App\Http\Controllers\Api\PaystackController::class, 'userTransactions']);
-        Route::post('/payments/mpesa/stk-push', [\App\Http\Controllers\Api\MpesaController::class, 'stkPush']);
-        Route::post('/payments/mpesa/check-status', [\App\Http\Controllers\Api\MpesaController::class, 'checkStatus']);
         Route::post('/reviews', [\App\Http\Controllers\Api\ReviewController::class, 'store']);
     });
 

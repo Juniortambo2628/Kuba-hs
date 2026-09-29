@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
@@ -37,13 +38,23 @@ class RegisteredUserController extends Controller
             'role' => $request->role,
             'phone' => $request->phone,
             'google_id' => $request->google_id,
-            'two_factor_setup_required' => true,
         ]);
 
         event(new Registered($user));
 
         Auth::login($user);
 
-        return response()->json(['message' => 'User registered successfully', 'user' => $user], 201);
+        if ($request->hasSession()) {
+            $request->session()->regenerate();
+        }
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => 'User registered successfully',
+                'user' => new UserResource($user),
+            ], 201);
+        }
+
+        return redirect(config('app.frontend_url', env('FRONTEND_URL', '/')).'/dashboard');
     }
 }
