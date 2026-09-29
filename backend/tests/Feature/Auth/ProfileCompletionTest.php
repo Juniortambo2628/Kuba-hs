@@ -36,10 +36,15 @@ test('profile completion validates fields', function () {
     $user = createCustomer();
 
     $response = $this->actingAs($user)->postJson('/api/auth/complete-profile', [
-        'phone' => '', // Assuming phone is required if trying to complete
+        'phone' => '',
     ]);
 
-    // Validation rules might vary based on controller, but it should return 422 if empty payload or invalid
-    // If it's optional, it would be 200. Adjust based on controller rules. 
-    // Let's assume some validation exists.
+    $response->assertUnprocessable();
+    $response->assertJsonValidationErrors([
+        'email',
+        'role',
+        'first_name',
+        'last_name',
+        'google_id',
+    ]);
 });
