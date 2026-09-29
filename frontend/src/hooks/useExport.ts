@@ -4,7 +4,7 @@ import { toast } from "sonner";
  * Hook to export JSON data to CSV format and trigger browser download
  */
 export function useExport() {
-  const exportToCSV = (data: any[], filename: string) => {
+  const exportToCSV = <T extends object>(data: T[], filename: string) => {
     if (!data || data.length === 0) {
       toast.error("No data available to export");
       return;
@@ -17,18 +17,23 @@ export function useExport() {
       // Create CSV rows
       const csvContent = [
         headers.join(','), // Header row
-        ...data.map(row => 
-          headers.map(header => {
+        ...data.map(entry => {
+          const row = entry as unknown as Record<string, unknown>;
+          return headers.map(header => {
             let val = row[header];
             // Handle nested objects (like user.name)
             if (typeof val === 'object' && val !== null) {
-              val = val.name || val.business_name || JSON.stringify(val);
+              const nested = val as Record<string, unknown>;
+              val =
+                (nested.name as string | undefined) ||
+                (nested.business_name as string | undefined) ||
+                JSON.stringify(val);
             }
             // Escape commas and quotes
             const stringVal = String(val ?? '').replace(/"/g, '""');
             return `"${stringVal}"`;
-          }).join(',')
-        )
+          }).join(',');
+        })
       ].join('\n');
 
       // Create blob and trigger download

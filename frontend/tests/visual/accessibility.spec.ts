@@ -127,7 +127,7 @@ test.describe('Accessibility - Color Contrast Report', () => {
       const grouped: Record<string, number> = {}
       results.violations.forEach(v => {
         v.nodes.forEach(n => {
-          const data = (n as any).data
+          const data = (n as { data?: { fgColor?: string; bgColor?: string; contrastRatio?: string | number } }).data
           if (data) {
             const key = `${data.fgColor} on ${data.bgColor} (ratio: ${data.contrastRatio})`
             grouped[key] = (grouped[key] || 0) + 1

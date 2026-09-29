@@ -15,7 +15,7 @@ if (typeof window !== 'undefined') {
 /**
  * Singleton instance of Laravel Echo configured for Reverb (Pusher protocol)
  */
-let echoInstance: Echo<any> | null = null;
+let echoInstance: Echo<"pusher"> | null = null;
 
 export const getEcho = () => {
     if (typeof window === 'undefined') return null;
@@ -26,7 +26,6 @@ export const getEcho = () => {
 
         const reverbHost = process.env.NEXT_PUBLIC_REVERB_HOST;
         const reverbPort = process.env.NEXT_PUBLIC_REVERB_PORT;
-        const reverbScheme = process.env.NEXT_PUBLIC_REVERB_SCHEME || 'https';
 
         // Prefer Reverb config if available, fall back to Pusher config
         const useReverb = !!reverbHost;
@@ -46,18 +45,21 @@ export const getEcho = () => {
             wssPort: useReverb && reverbPort ? parseInt(reverbPort) : undefined,
             forceTLS: !useReverb,
             enabledTransports: useReverb ? ['ws', 'wss'] : undefined,
-            authorizer: (channel: any, options: any) => {
+            authorizer: (channel: { name: string }) => {
                 return {
-                    authorize: (socketId: string, callback: Function) => {
+                    authorize: (
+                        socketId: string,
+                        callback: (error: Error | null, data: { auth: string } | null) => void
+                    ) => {
                         axiosInstance.post('/api/broadcasting/auth', {
                             socket_id: socketId,
                             channel_name: channel.name
                         })
                         .then(response => {
-                            callback(false, response.data);
+                            callback(null, response.data);
                         })
                         .catch(error => {
-                            callback(true, error);
+                            callback(error, null);
                         });
                     }
                 };

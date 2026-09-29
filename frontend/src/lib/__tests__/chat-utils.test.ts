@@ -1,8 +1,7 @@
-import { normalizeConversation } from '@/lib/chat-utils'
+import { normalizeConversation, normalizeMessage, displayUserName, chatPartner, bookingServiceLabel } from '@/lib/chat-utils'
 
 describe('normalizeMessage', () => {
   it('normalizes a raw message object', () => {
-    const { normalizeMessage } = require('@/lib/chat-utils')
     const raw = {
       id: '1',
       sender_id: 'user1',
@@ -17,7 +16,6 @@ describe('normalizeMessage', () => {
   })
 
   it('handles camelCase fields', () => {
-    const { normalizeMessage } = require('@/lib/chat-utils')
     const raw = {
       id: '2',
       senderId: 'user2',
@@ -30,7 +28,6 @@ describe('normalizeMessage', () => {
   })
 
   it('defaults created_at to now', () => {
-    const { normalizeMessage } = require('@/lib/chat-utils')
     const raw = { id: '3', body: 'Test' }
     const result = normalizeMessage(raw)
     expect(result.created_at).toBeTruthy()
@@ -68,34 +65,28 @@ describe('normalizeConversation', () => {
 
 describe('displayUserName', () => {
   it('returns name from user object', () => {
-    const { displayUserName } = require('@/lib/chat-utils')
     expect(displayUserName({ name: 'John Doe' })).toBe('John Doe')
   })
 
   it('returns first_name + last_name if no name', () => {
-    const { displayUserName } = require('@/lib/chat-utils')
     expect(displayUserName({ first_name: 'John', last_name: 'Doe' })).toBe('John Doe')
   })
 
   it('returns Unknown for null', () => {
-    const { displayUserName } = require('@/lib/chat-utils')
     expect(displayUserName(null)).toBe('Unknown')
   })
 
   it('returns Unknown for undefined', () => {
-    const { displayUserName } = require('@/lib/chat-utils')
     expect(displayUserName(undefined)).toBe('Unknown')
   })
 
   it('returns Unknown for empty object', () => {
-    const { displayUserName } = require('@/lib/chat-utils')
     expect(displayUserName({})).toBe('Unknown')
   })
 })
 
 describe('chatPartner', () => {
   it('returns provider info for client role', () => {
-    const { chatPartner } = require('@/lib/chat-utils')
     const conv = {
       provider: {
         business_name: 'Clean Pro',
@@ -103,18 +94,17 @@ describe('chatPartner', () => {
       },
       customer: { name: 'John' },
     }
-    const result = chatPartner(conv, 'client')
+    const result = chatPartner(normalizeConversation(conv), 'client')
     expect(result.name).toBe('Clean Pro')
     expect(result.subtitle).toBe('Provider')
   })
 
   it('returns customer info for provider role', () => {
-    const { chatPartner } = require('@/lib/chat-utils')
     const conv = {
       provider: { user: { name: 'Jane' } },
       customer: { name: 'John', image_url: null },
     }
-    const result = chatPartner(conv, 'provider')
+    const result = chatPartner(normalizeConversation(conv), 'provider')
     expect(result.name).toBe('John')
     expect(result.subtitle).toBe('Client')
   })
@@ -122,16 +112,14 @@ describe('chatPartner', () => {
 
 describe('bookingServiceLabel', () => {
   it('returns service name', () => {
-    const { bookingServiceLabel } = require('@/lib/chat-utils')
     const conv = {
       booking: { service: { name: 'Deep Cleaning' } },
     }
-    expect(bookingServiceLabel(conv)).toBe('Deep Cleaning')
+    expect(bookingServiceLabel(normalizeConversation(conv))).toBe('Deep Cleaning')
   })
 
   it('returns fallback', () => {
-    const { bookingServiceLabel } = require('@/lib/chat-utils')
     const conv = { booking: {} }
-    expect(bookingServiceLabel(conv)).toBe('Service booking')
+    expect(bookingServiceLabel(normalizeConversation(conv))).toBe('Service booking')
   })
 })

@@ -11,13 +11,24 @@ const axiosInstance = axios.create({
     withXSRFToken: true,
 });
 
-export const handleApiError = (err: any) => {
-    if (err.response?.status === 422 && err.response?.data?.errors) {
-        const errors = err.response.data.errors;
-        const firstErrorKey = Object.keys(errors)[0];
-        return errors[firstErrorKey][0];
+interface ApiErrorLike {
+    response?: {
+        status?: number;
+        data?: {
+            errors?: Record<string, string[]>;
+            message?: string;
+        };
+    };
+    message?: string;
+}
+
+export const handleApiError = (err: unknown): string => {
+    const apiError = (err ?? {}) as ApiErrorLike;
+    if (apiError.response?.status === 422) {
+        const firstError = Object.values(apiError.response.data?.errors ?? {})[0]?.[0];
+        if (firstError) return firstError;
     }
-    return err.response?.data?.message || err.message || "An unexpected error occurred";
+    return apiError.response?.data?.message || apiError.message || "An unexpected error occurred";
 };
 
 export default axiosInstance;

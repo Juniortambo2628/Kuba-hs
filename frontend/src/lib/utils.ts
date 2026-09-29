@@ -35,7 +35,7 @@ export function getMediaUrl(path: string | null | undefined, fallbackType: 'avat
         const url = new URL(path);
         const name = url.searchParams.get('name') || 'User';
         return `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}&backgroundColor=e2e8f0&textColor=475569`;
-      } catch (e) {
+      } catch {
         return path;
       }
     }

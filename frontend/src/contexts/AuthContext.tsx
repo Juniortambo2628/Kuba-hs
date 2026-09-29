@@ -9,8 +9,8 @@ import { User } from "@/types";
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (data: any) => Promise<User | null>;
-  register: (data: any) => Promise<void>;
+  login: (data: Record<string, unknown>) => Promise<User | null>;
+  register: (data: Record<string, unknown>) => Promise<void>;
   forgotPassword: (email: string) => Promise<string>;
   resetPassword: (data: {
     token: string;
@@ -62,7 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const login = async (data: any): Promise<User | null> => {
+  const login = async (data: Record<string, unknown>): Promise<User | null> => {
     await axiosInstance.get("/sanctum/csrf-cookie");
     const response = await axiosInstance.post("/api/auth/login", data);
 
@@ -100,7 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return (response.data?.user ?? response.data?.data) as User;
   };
 
-  const register = async (data: any) => {
+  const register = async (data: Record<string, unknown>) => {
     await axiosInstance.get("/sanctum/csrf-cookie");
     await axiosInstance.post("/api/auth/register", data);
     await checkAuth();

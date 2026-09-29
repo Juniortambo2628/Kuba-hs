@@ -87,7 +87,7 @@ export function AuthDialogProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (user && isOpen && onSuccessRef.current) {
-      completeSuccess();
+      queueMicrotask(completeSuccess);
     }
   }, [user, isOpen, completeSuccess]);
 

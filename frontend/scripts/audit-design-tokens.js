@@ -11,8 +11,8 @@
  * Usage: node scripts/audit-design-tokens.js
  */
 
-const fs = require('fs')
-const path = require('path')
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const fs = require('fs'), path = require('path')
 
 const SRC_DIR = path.join(__dirname, '..', 'src')
 const ALLOWED_PATTERNS = [

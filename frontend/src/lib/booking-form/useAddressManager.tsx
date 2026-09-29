@@ -15,7 +15,7 @@ export interface Address {
 }
 
 export function useAddressManager() {
-  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [addresses] = useState<Address[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchAddresses = useCallback(async () => {

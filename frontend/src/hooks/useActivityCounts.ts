@@ -24,6 +24,15 @@ const defaultCounts: ActivityCounts = {
   quotes: 0,
 };
 
+interface AxiosLikeError {
+  response?: {
+    status?: number;
+    data?: {
+      two_factor_setup_required?: unknown;
+    };
+  };
+}
+
 export function useActivityCounts() {
   const { user } = useAuth();
   const [counts, setCounts] = useState<ActivityCounts>(defaultCounts);
@@ -100,9 +109,10 @@ export function useActivityCounts() {
         verification: pendingVerification,
         quotes: pendingQuotes,
       });
-    } catch (err: any) {
-      const status = err.response?.status;
-      const twoFactorRequired = err.response?.data?.two_factor_setup_required;
+    } catch (err: unknown) {
+      const response = (err as AxiosLikeError).response;
+      const status = response?.status;
+      const twoFactorRequired = response?.data?.two_factor_setup_required;
       if (twoFactorRequired && status === 403) {
         // 2FA setup pending — counts will be zero until setup is complete
         return;
@@ -114,12 +124,15 @@ export function useActivityCounts() {
   }, [user]);
 
   useEffect(() => {
-    fetchCounts();
-    
+    const initial = setTimeout(fetchCounts, 0);
+
     // Refresh every 30 seconds
     const interval = setInterval(fetchCounts, 30000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(initial);
+      clearInterval(interval);
+    };
   }, [fetchCounts]);
 
   // Listen for real-time updates

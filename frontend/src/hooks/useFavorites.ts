@@ -17,16 +17,22 @@ export function useFavorites() {
   const router = useRouter();
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(false);
+  const [prevUser, setPrevUser] = useState(user);
+
+  if (user !== prevUser) {
+    setPrevUser(user);
+    if (!user) {
+      setFavoriteIds(new Set());
+    } else {
+      setIsLoading(true);
+    }
+  }
 
   // Fetch the initial set of favorites when the user is authenticated
   useEffect(() => {
-    if (!user) {
-      setFavoriteIds(new Set());
-      return;
-    }
+    if (!user) return;
 
     let cancelled = false;
-    setIsLoading(true);
 
     axiosInstance
       .get("/api/favorites")
@@ -85,7 +91,7 @@ export function useFavorites() {
         });
       }
     },
-    [user]
+    [user, router]
   );
 
   return useMemo(

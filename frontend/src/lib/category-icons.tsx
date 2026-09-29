@@ -27,7 +27,6 @@ import {
   Truck,
   Plug,
   Droplets,
-  BookOpen,
   Scissors,
 } from "lucide-react";
 
@@ -120,7 +119,7 @@ export function getCategoryIcon(iconKey: string | null | undefined, className: s
   
   // Clone element to apply custom className if provided
   if (React.isValidElement(icon)) {
-    return React.cloneElement(icon as React.ReactElement<any>, { className });
+    return React.cloneElement(icon as React.ReactElement<Record<string, unknown>>, { className });
   }
   
   return icon;

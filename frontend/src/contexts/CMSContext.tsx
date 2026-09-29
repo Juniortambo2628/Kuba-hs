@@ -25,18 +25,18 @@ interface CMSContextType {
 
 const CMSContext = createContext<CMSContextType | undefined>(undefined);
 
-export function CMSProvider({ children, initialRawSettings }: { children: React.ReactNode, initialRawSettings?: Record<string, CMSSetting[]> }) {
-  const formatSettings = (raw: Record<string, CMSSetting[]>) => {
-    const formatted: Record<string, Record<string, CMSSetting>> = {};
-    Object.entries(raw).forEach(([group, items]) => {
-      formatted[group] = {};
-      items.forEach((item) => {
-        formatted[group][item.key] = item;
-      });
+const formatSettings = (raw: Record<string, CMSSetting[]>) => {
+  const formatted: Record<string, Record<string, CMSSetting>> = {};
+  Object.entries(raw).forEach(([group, items]) => {
+    formatted[group] = {};
+    items.forEach((item) => {
+      formatted[group][item.key] = item;
     });
-    return formatted;
-  };
+  });
+  return formatted;
+};
 
+export function CMSProvider({ children, initialRawSettings }: { children: React.ReactNode, initialRawSettings?: Record<string, CMSSetting[]> }) {
   const [settings, setSettings] = useState<Record<string, Record<string, CMSSetting>>>(() => 
     initialRawSettings && Object.keys(initialRawSettings).length > 0 ? formatSettings(initialRawSettings) : {}
   );
@@ -60,7 +60,7 @@ export function CMSProvider({ children, initialRawSettings }: { children: React.
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [settings]);
 
   useEffect(() => {
     if (Object.keys(settings).length === 0) {

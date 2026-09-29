@@ -23,9 +23,10 @@ export const CATEGORY_ORDER = [
  * Categories not in the list are placed at the end, sorted alphabetically.
  */
 export function sortCategoriesByOrder<T extends { name: string }>(data: T[]): T[] {
+  const orderedNames: readonly string[] = CATEGORY_ORDER;
   return [...data].sort((a, b) => {
-    const indexA = CATEGORY_ORDER.indexOf(a.name as any);
-    const indexB = CATEGORY_ORDER.indexOf(b.name as any);
+    const indexA = orderedNames.indexOf(a.name);
+    const indexB = orderedNames.indexOf(b.name);
     if (indexA !== -1 && indexB !== -1) return indexA - indexB;
     if (indexA !== -1) return -1;
     if (indexB !== -1) return 1;

@@ -191,8 +191,6 @@ export function buildMarketingHeroProps(
       "imageKey" in cfg && cfg.imageKey
         ? (cfg.imageKey as string)
         : `${cfg.cmsKey}_hero_image`;
-    const bgDefault =
-      "bgImage" in cfg.defaults ? (cfg.defaults.bgImage as string | undefined) : undefined;
     const resolved = getImg("hero_backgrounds", imageKey, "");
     if (resolved) hero.bgImage = resolved;
   } else if ("bgImage" in cfg.defaults && cfg.defaults.bgImage) {

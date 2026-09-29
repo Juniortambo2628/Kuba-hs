@@ -24,7 +24,7 @@ export function normalizeApiResponse<T = unknown>(payload: unknown): T {
 }
 
 /** Laravel paginator, resource collection, or plain array → item list */
-export function extractApiList<T = any>(payload: unknown): T[] {
+export function extractApiList<T = Record<string, unknown>>(payload: unknown): T[] {
   const normalized = normalizeApiResponse<T[] | Record<string, unknown>>(payload);
 
   if (Array.isArray(normalized)) {
