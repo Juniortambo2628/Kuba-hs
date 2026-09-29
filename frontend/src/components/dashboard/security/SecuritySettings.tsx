@@ -30,9 +30,8 @@ import {
   Mail,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Passkey, TwoFactorStatus, TwoFactorSetupResponse } from "@/types";
+import { TwoFactorStatus, TwoFactorSetupResponse } from "@/types";
 import { FieldLabel } from "@/components/shared/ui";
-import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/format";
 
 interface SecuritySettingsProps {
@@ -61,8 +60,6 @@ export function SecuritySettings({ role }: SecuritySettingsProps) {
   const [isAddingPasskey, setIsAddingPasskey] = useState(false);
   const [newPasskeyName, setNewPasskeyName] = useState("");
   const [showAddPasskeyDialog, setShowAddPasskeyDialog] = useState(false);
-
-  const profilePath = role === "customer" ? "/dashboard/client/profile" : "/dashboard/provider/profile";
 
   // Fetch 2FA status
   const fetch2FAStatus = useCallback(async () => {
@@ -185,7 +182,7 @@ export function SecuritySettings({ role }: SecuritySettingsProps) {
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
-  if (!user) return null;
+  if (!user || !role) return null;
 
   return (
     <div className="space-y-8 max-w-3xl">

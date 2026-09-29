@@ -1,14 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
-import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LandingSectionHeader } from "@/components/shared/LandingSectionHeader";
-import { LandingButton } from "@/components/shared/LandingButton";
 import { LandingSection } from "@/components/landing/LandingSection";
 import { uiPrimitives } from "@/lib/ui-primitives";
-import { ServiceCategoryCard, type ServiceCategoryCardData } from "@/components/marketplace";
+import { ServiceCategoryCard } from "@/components/marketplace";
 import {
   Carousel,
   CarouselContent,
@@ -75,7 +72,7 @@ export function FeaturedServices() {
                     >
                       <ServiceCategoryCard
                         category={category}
-                        href={`/services?category=${encodeURIComponent((category as any).slug || category.id)}`}
+                        href={`/services?category=${encodeURIComponent(category.slug || category.id)}`}
                         layout="grid"
                         className="h-full"
                       />

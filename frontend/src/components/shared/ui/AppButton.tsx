@@ -57,6 +57,7 @@ export function AppButton({
   return (
     <Button
       variant={mappedVariant}
+      size={size}
       className={cn(toneClass[tone], scale !== "default" && scaleClass[scale], className)}
       {...props}
     />

@@ -19,6 +19,10 @@ import type { ProviderSearchRowData } from "@/components/marketplace/ProviderSea
 import { ProviderCardAvatar } from "@/components/marketplace/ProviderCardAvatar";
 import { formatCurrency } from "@/lib/format";
 
+interface ProviderServiceRow {
+  service?: { category?: { name?: string } | null } | null;
+}
+
 interface ProviderHotelSearchCardProps {
   provider: ProviderSearchRowData & {
     review_count?: number;
@@ -45,7 +49,7 @@ export function ProviderHotelSearchCard({
       ? Number(provider.starting_price)
       : null;
   const serviceCount = provider.services?.length ?? 0;
-  const categoryName = (provider.services?.[0] as any)?.service?.category?.name;
+  const categoryName = (provider.services?.[0] as ProviderServiceRow | undefined)?.service?.category?.name;
 
   return (
     <article

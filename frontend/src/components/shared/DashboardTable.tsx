@@ -9,7 +9,7 @@ import { DashboardCard } from "@/components/shared/DashboardCard";
 /** @deprecated Use DashboardCard instead */
 export const DashboardDataCard = DashboardCard;
 
-interface DashboardTableHeaderRowProps extends ComponentProps<typeof TableRow> {}
+type DashboardTableHeaderRowProps = ComponentProps<typeof TableRow>;
 
 export function DashboardTableHeaderRow({ className, ...props }: DashboardTableHeaderRowProps) {
   return <TableRow className={cn(dashboardUi.table.headerRow, className)} {...props} />;

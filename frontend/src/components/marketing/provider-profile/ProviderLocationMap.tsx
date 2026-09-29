@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import dynamic from "next/dynamic";
 import { MapPin, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,6 +11,8 @@ const MapView = dynamic(() => import("./ProviderLocationMapView"), {
   ssr: false,
   loading: () => <Skeleton className="h-full w-full min-h-[220px] rounded-2xl" />,
 });
+
+const emptySubscribe = () => () => {};
 
 interface ProviderLocationMapProps {
   latitude?: number | string | null;
@@ -29,6 +31,12 @@ function parseCoord(value: number | string | null | undefined): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+interface GeocodeOutcome {
+  key: string;
+  position: { lat: number; lng: number } | null;
+  failed: boolean;
+}
+
 export function ProviderLocationMap({
   latitude,
   longitude,
@@ -38,9 +46,8 @@ export function ProviderLocationMap({
   className,
   compact = false,
 }: ProviderLocationMapProps) {
-  const [resolved, setResolved] = useState<{ lat: number; lng: number } | null>(null);
-  const [isGeocoding, setIsGeocoding] = useState(false);
-  const [geocodeFailed, setGeocodeFailed] = useState(false);
+  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
+  const [geocode, setGeocode] = useState<GeocodeOutcome | null>(null);
 
   const directLat = parseCoord(latitude);
   const directLng = parseCoord(longitude);
@@ -52,21 +59,22 @@ export function ProviderLocationMap({
     return null;
   }, [directLat, directLng]);
 
-  useEffect(() => {
-    if (directPosition) {
-      setResolved(directPosition);
-      setGeocodeFailed(false);
-      return;
-    }
+  const outcome = geocode && geocode.key === locationName ? geocode : null;
+  const resolved = outcome?.position ?? null;
+  const geocodeFailed = outcome?.failed ?? false;
+  const position = directPosition ?? resolved;
+  const isGeocoding =
+    mounted &&
+    !directPosition &&
+    Boolean(locationName?.trim()) &&
+    !position &&
+    !geocodeFailed;
 
-    if (!locationName?.trim()) {
-      setResolved(null);
-      return;
-    }
+  useEffect(() => {
+    if (directPosition) return;
+    if (!locationName?.trim()) return;
 
     let cancelled = false;
-    setIsGeocoding(true);
-    setGeocodeFailed(false);
 
     axiosInstance
       .get("/api/geocode/search", { params: { q: locationName, limit: 1 } })
@@ -74,28 +82,25 @@ export function ProviderLocationMap({
         if (cancelled) return;
         const hit = res.data?.results?.[0];
         if (hit?.lat && hit?.lon) {
-          setResolved({ lat: parseFloat(hit.lat), lng: parseFloat(hit.lon) });
+          setGeocode({
+            key: locationName,
+            position: { lat: parseFloat(hit.lat), lng: parseFloat(hit.lon) },
+            failed: false,
+          });
         } else {
-          setResolved(null);
-          setGeocodeFailed(true);
+          setGeocode({ key: locationName, position: null, failed: true });
         }
       })
       .catch(() => {
         if (!cancelled) {
-          setResolved(null);
-          setGeocodeFailed(true);
+          setGeocode({ key: locationName, position: null, failed: true });
         }
-      })
-      .finally(() => {
-        if (!cancelled) setIsGeocoding(false);
       });
 
     return () => {
       cancelled = true;
     };
   }, [directPosition, locationName]);
-
-  const position = directPosition ?? resolved;
 
   if (!locationName && !position) {
     return null;

@@ -6,7 +6,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Search, 
   X, 
-  Command, 
   Sparkles, 
   User, 
   Briefcase, 
@@ -23,7 +22,6 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { cn } from "@/lib/utils";
 import axiosInstance from "@/lib/axios";
 import { useCategories } from "@/hooks/useCategories";
 import { ScrollRegion } from "@/components/shared/ScrollRegion";
@@ -126,18 +124,10 @@ export function GlobalSearch() {
     setMounted(true);
   }, []);
 
-  const getStaticItems = () => {
-    const entries = [...PUBLIC_SEARCH_ENTRIES];
-    if (user?.role === "customer") entries.push(...CLIENT_SEARCH_ENTRIES);
-    else if (user?.role === "provider") entries.push(...PROVIDER_SEARCH_ENTRIES);
-    else if (user?.role === "admin") entries.push(...ADMIN_SEARCH_ENTRIES);
-    return entries.map(staticEntryToItem);
-  };
-
-  const { categories: rawCategories } = useCategories<any>();
+  const { categories: rawCategories } = useCategories();
   const categories = useMemo(
     () =>
-      rawCategories.map((cat: any): SearchItem => ({
+      rawCategories.map((cat): SearchItem => ({
         id: `cat-${cat.id}`,
         title: cat.name,
         description: `View all ${cat.name} services`,
@@ -172,6 +162,14 @@ export function GlobalSearch() {
 
   // Debounced server-side search
   useEffect(() => {
+    const getStaticItems = () => {
+      const entries = [...PUBLIC_SEARCH_ENTRIES];
+      if (user?.role === "customer") entries.push(...CLIENT_SEARCH_ENTRIES);
+      else if (user?.role === "provider") entries.push(...PROVIDER_SEARCH_ENTRIES);
+      else if (user?.role === "admin") entries.push(...ADMIN_SEARCH_ENTRIES);
+      return entries.map(staticEntryToItem);
+    };
+
     const staticItems = getStaticItems();
     if (!query || query.length < 2) {
       setResults(dedupeSearchEntries([...staticItems, ...categories]).slice(0, 8));
@@ -256,7 +254,7 @@ export function GlobalSearch() {
     }, 400);
 
     return () => clearTimeout(timer);
-  }, [query, categories]);
+  }, [query, categories, user]);
 
   const handleSelect = (url: string) => {
     if ((url.startsWith('/dashboard') || url.startsWith('/admin')) && !user) {
@@ -337,7 +335,7 @@ export function GlobalSearch() {
                 <ScrollRegion className="flex-1 min-h-0 p-2">
                   {results.length === 0 ? (
                     <div className="py-12 text-center text-muted-foreground">
-                      <p className="text-sm font-semibold">No results found for "{query}"</p>
+                      <p className="text-sm font-semibold">No results found for &quot;{query}&quot;</p>
                       <p className="text-xs mt-1">Try searching for services or help guides.</p>
                     </div>
                   ) : (

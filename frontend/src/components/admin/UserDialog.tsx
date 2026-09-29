@@ -3,7 +3,8 @@ import { User } from "@/types"
 
 import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
-import axiosInstance, { handleApiError } from "@/lib/axios";
+import type { Resolver } from "react-hook-form"
+import { handleApiError } from "@/lib/axios";
 import { toast } from "sonner";
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -43,7 +44,7 @@ export function UserDialog({ isOpen, onClose, onSave, user }: UserDialogProps) {
     watch,
     formState: { errors },
   } = useForm<UserFormValues>({
-    resolver: zodResolver(userSchema) as any,
+    resolver: zodResolver(userSchema) as Resolver<UserFormValues>,
     defaultValues: {
       name: "",
       email: "",
@@ -128,7 +129,7 @@ export function UserDialog({ isOpen, onClose, onSave, user }: UserDialogProps) {
                 <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400">System Role</Label>
                 <Select
                   value={role}
-                  onValueChange={(val: any) => setValue("role", val)}
+                  onValueChange={(val) => setValue("role", val as UserFormValues["role"])}
                 >
                   <SelectTrigger className="h-12 rounded-xl border-none shadow-sm focus:ring-sky-100 font-bold">
                     <SelectValue placeholder="Select role" />

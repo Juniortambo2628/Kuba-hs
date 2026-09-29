@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import Image from "next/image";
 
 function getRouteGroup(pathname: string): "public" | "auth" {
@@ -18,32 +18,25 @@ function getRouteGroup(pathname: string): "public" | "auth" {
  */
 export function RouteLoader() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const currentGroup = getRouteGroup(pathname);
+  const [prevGroup, setPrevGroup] = useState<"public" | "auth">(currentGroup);
   const [isLoading, setIsLoading] = useState(false);
-  const [prevGroup, setPrevGroup] = useState<"public" | "auth" | null>(null);
+
+  // Crossing the public/auth boundary — show loader
+  if (currentGroup !== prevGroup) {
+    setPrevGroup(currentGroup);
+    setIsLoading(true);
+  }
 
   useEffect(() => {
-    const currentGroup = getRouteGroup(pathname);
-
-    // First mount — just record group, no loader
-    if (prevGroup === null) {
-      setPrevGroup(currentGroup);
-      return;
-    }
-
-    // Same group — no loader (e.g. navigating between dashboard sub-pages)
-    if (currentGroup === prevGroup) return;
-
-    // Crossing the public/auth boundary — show loader
-    setIsLoading(true);
-    setPrevGroup(currentGroup);
+    if (!isLoading) return;
 
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 1200);
 
     return () => clearTimeout(timer);
-  }, [pathname, searchParams]);
+  }, [isLoading, prevGroup]);
 
   if (!isLoading) return null;
 

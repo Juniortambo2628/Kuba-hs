@@ -1,6 +1,5 @@
 "use client";
 
-import { useTheme } from "next-themes";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { 
   DropdownMenu, 
@@ -9,9 +8,9 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { Bell, Settings } from "lucide-react";
+import { Bell } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import axiosInstance from "@/lib/axios";
 import { UserAccountDropdown } from "@/components/shared/UserAccountDropdown";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
@@ -19,28 +18,29 @@ import { GlobalSearch } from "@/components/shared/GlobalSearch";
 import { cn } from "@/lib/utils";
 import { dashboardUi } from "@/lib/dashboard-ui";
 import { AppBadge } from "@/components/shared/ui/AppBadge";
-import { Search, Command } from "lucide-react";
+import { Search } from "lucide-react";
 import { toast } from "sonner";
 
 interface DashboardHeaderProps {
   isAdmin?: boolean;
 }
 
+interface NotificationItem {
+  id: string;
+  read_at?: string | null;
+  created_at: string;
+  data?: { message?: string } | null;
+}
+
+const emptySubscribe = () => () => {};
+
 export function DashboardHeader({ isAdmin = false }: DashboardHeaderProps) {
-  const { user, logout } = useAuth();
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const { user } = useAuth();
+  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  useEffect(() => {
-    setMounted(true);
-    if (user) {
-      fetchNotifications();
-    }
-  }, [user, isAdmin]);
-
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     try {
       const res = await axiosInstance.get("/api/notifications");
       setNotifications(res.data.notifications || []);
@@ -48,7 +48,13 @@ export function DashboardHeader({ isAdmin = false }: DashboardHeaderProps) {
     } catch (err) {
       console.error("Failed to fetch notifications:", err);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      void Promise.resolve().then(() => fetchNotifications());
+    }
+  }, [user, isAdmin, fetchNotifications]);
 
   const markAsRead = async (id: string) => {
     try {
@@ -116,7 +122,7 @@ export function DashboardHeader({ isAdmin = false }: DashboardHeaderProps) {
                   try {
                     await axiosInstance.post("/api/notifications/read-all");
                     fetchNotifications();
-                  } catch (err) {
+                  } catch {
                     toast.error("Failed to mark migrations as read");
                   }
                 }}

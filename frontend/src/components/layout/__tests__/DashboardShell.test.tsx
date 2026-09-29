@@ -17,7 +17,9 @@ jest.mock('@/components/layout/DashboardHeader', () => ({
 }));
 
 jest.mock('lucide-react', () => ({
-  Loader2: (props: any) => <span data-testid="spinner" {...props} />,
+  Loader2: (props: React.HTMLAttributes<HTMLSpanElement>) => (
+    <span data-testid="spinner" {...props} />
+  ),
 }));
 
 jest.mock('@/lib/dashboard-ui', () => ({
@@ -32,7 +34,7 @@ jest.mock('@/lib/dashboard-ui', () => ({
 }));
 
 jest.mock('@/lib/utils', () => ({
-  cn: (...args: any[]) => args.filter(Boolean).join(' '),
+  cn: (...args: unknown[]) => args.filter(Boolean).join(' '),
 }));
 
 describe('DashboardShell', () => {

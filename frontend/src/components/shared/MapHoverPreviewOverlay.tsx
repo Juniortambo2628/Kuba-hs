@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { useMap } from "react-leaflet";
 import { ProviderMapHoverPreview } from "@/components/marketplace";
@@ -8,6 +8,8 @@ import type { MapViewProvider } from "@/components/shared/MapView";
 
 const PREVIEW_WIDTH = 248;
 const TOP_SAFE = 150;
+
+const emptySubscribe = () => () => {};
 
 interface MapHoverPreviewOverlayProps {
   provider: MapViewProvider;
@@ -22,12 +24,8 @@ export function MapHoverPreviewOverlay({
   longitude,
 }: MapHoverPreviewOverlayProps) {
   const map = useMap();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
   const [style, setStyle] = useState<React.CSSProperties | null>(null);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     const update = () => {

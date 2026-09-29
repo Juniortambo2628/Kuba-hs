@@ -44,36 +44,41 @@ interface PaymentDetailSheetProps {
 }
 
 export function PaymentDetailSheet({ paymentId, open, onOpenChange }: PaymentDetailSheetProps) {
-  const [payment, setPayment] = useState<PaymentDetail | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [result, setResult] = useState<{
+    paymentId: string;
+    payment: PaymentDetail | null;
+  } | null>(null);
+
+  if (!open && result !== null) {
+    setResult(null);
+  }
 
   useEffect(() => {
-    if (!open || !paymentId) {
-      setPayment(null);
-      return;
-    }
+    if (!open || !paymentId) return;
 
     let cancelled = false;
-    setIsLoading(true);
 
     axiosInstance
       .get(`/api/admin/payments/${paymentId}`)
       .then((res) => {
         if (cancelled) return;
         const data = normalizeApiResponse<PaymentDetail>(res.data);
-        setPayment(data);
+        setResult({ paymentId, payment: data });
       })
       .catch(() => {
-        if (!cancelled) setPayment(null);
-      })
-      .finally(() => {
-        if (!cancelled) setIsLoading(false);
+        if (!cancelled) setResult({ paymentId, payment: null });
       });
 
     return () => {
       cancelled = true;
     };
   }, [open, paymentId]);
+
+  const isLoading = Boolean(
+    open && paymentId && (!result || result.paymentId !== paymentId)
+  );
+  const payment =
+    result && result.paymentId === paymentId ? result.payment : null;
 
   const bookingId = payment?.booking?.id || payment?.booking_id;
 

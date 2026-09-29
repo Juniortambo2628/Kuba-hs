@@ -1,8 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { SlidersHorizontal, Shield, Star, Paintbrush, Hammer, Droplets, Lightbulb, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MarketingFilterCard } from "./MarketingFilterCard";
 import { formatCurrency } from "@/lib/format";
@@ -21,49 +19,26 @@ interface Category {
   services?: Service[];
 }
 
+type FilterUpdates = Record<string, string | number | boolean | null | undefined | number[]>;
+
 export function MarketingFilterSidebar() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
-  // Load initial state from search params
-  const initialCategory = searchParams.get("category_id") || searchParams.get("category") || "";
-  const initialServices = searchParams.getAll("service_ids[]").map(Number);
-  const initialMinRating = searchParams.get("min_rating") ? Number(searchParams.get("min_rating")) : null;
-  const initialMaxPrice = searchParams.get("max_price") ? Number(searchParams.get("max_price")) : 50000;
-  const initialOnlyVerified = searchParams.get("is_verified") === "1";
-  const initialRadius = searchParams.get("radius") ? Number(searchParams.get("radius")) : 50;
-  const initialInstantBook = searchParams.get("instant_book") === "1";
-  const initialEqIncluded = searchParams.get("equipment_included") === "1";
-  const initialSortOrder = searchParams.get("sort_by_price") || "";
-
-  // States
   const { categories } = useCategories<Category>();
-  const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
-  const [selectedServices, setSelectedServices] = useState<number[]>(initialServices);
-  const [minRating, setMinRating] = useState<number | null>(initialMinRating);
-  const [maxPrice, setMaxPrice] = useState<number>(initialMaxPrice);
-  const [onlyVerified, setOnlyVerified] = useState(initialOnlyVerified);
-  const [radius, setRadius] = useState<number>(initialRadius);
-  const [instantBook, setInstantBook] = useState(initialInstantBook);
-  const [eqIncluded, setEqIncluded] = useState(initialEqIncluded);
-  const [sortOrder, setSortOrder] = useState<string>(initialSortOrder);
-
-  // Sync state with URL search params changes
-  useEffect(() => {
-    setSelectedCategory(searchParams.get("category_id") || searchParams.get("category") || "");
-    setSelectedServices(searchParams.getAll("service_ids[]").map(Number));
-    setMinRating(searchParams.get("min_rating") ? Number(searchParams.get("min_rating")) : null);
-    setMaxPrice(searchParams.get("max_price") ? Number(searchParams.get("max_price")) : 50000);
-    setOnlyVerified(searchParams.get("is_verified") === "1");
-    setRadius(searchParams.get("radius") ? Number(searchParams.get("radius")) : 50);
-    setInstantBook(searchParams.get("instant_book") === "1");
-    setEqIncluded(searchParams.get("equipment_included") === "1");
-    setSortOrder(searchParams.get("sort_by_price") || "");
-  }, [searchParams]);
+  const selectedCategory = searchParams.get("category_id") || searchParams.get("category") || "";
+  const selectedServices = searchParams.getAll("service_ids[]").map(Number);
+  const minRating = searchParams.get("min_rating") ? Number(searchParams.get("min_rating")) : null;
+  const maxPrice = searchParams.get("max_price") ? Number(searchParams.get("max_price")) : 50000;
+  const onlyVerified = searchParams.get("is_verified") === "1";
+  const radius = searchParams.get("radius") ? Number(searchParams.get("radius")) : 50;
+  const instantBook = searchParams.get("instant_book") === "1";
+  const eqIncluded = searchParams.get("equipment_included") === "1";
+  const sortOrder = searchParams.get("sort_by_price") || "";
 
   // Update URL query parameters on change
-  const applyFilters = (updates: Record<string, any>) => {
+  const applyFilters = (updates: FilterUpdates) => {
     const params = new URLSearchParams(searchParams.toString());
     
     // Process updates
@@ -76,9 +51,9 @@ export function MarketingFilterSidebar() {
     });
 
     // Special handling for services array
-    if (updates.service_ids !== undefined) {
+    if (Array.isArray(updates.service_ids)) {
       params.delete("service_ids[]");
-      updates.service_ids.forEach((id: number) => {
+      updates.service_ids.forEach((id) => {
         params.append("service_ids[]", id.toString());
       });
     }
@@ -105,9 +80,7 @@ export function MarketingFilterSidebar() {
 
   // Handler helpers
   const handleCategoryChange = (catId: string) => {
-    setSelectedCategory(catId);
     // Clear services when category changes
-    setSelectedServices([]);
     applyFilters({
       category_id: catId,
       category: catId, // support both
@@ -119,7 +92,6 @@ export function MarketingFilterSidebar() {
     const nextServices = selectedServices.includes(svcId)
       ? selectedServices.filter(id => id !== svcId)
       : [...selectedServices, svcId];
-    setSelectedServices(nextServices);
     applyFilters({ service_ids: nextServices });
   };
 
@@ -127,16 +99,6 @@ export function MarketingFilterSidebar() {
   const currentServices = categories.find(c => c.id.toString() === selectedCategory)?.services || [];
 
   const handleReset = () => {
-    setSelectedCategory("");
-    setSelectedServices([]);
-    setMinRating(null);
-    setMaxPrice(50000);
-    setOnlyVerified(false);
-    setRadius(50);
-    setInstantBook(false);
-    setEqIncluded(false);
-    setSortOrder("");
-
     router.push("/providers");
   };
 
@@ -213,7 +175,6 @@ export function MarketingFilterSidebar() {
           id="filter-sort"
           value={sortOrder}
           onChange={(e) => {
-            setSortOrder(e.target.value);
             applyFilters({ sort_by_price: e.target.value });
           }}
           className="w-full h-9 bg-card border border-border rounded-xl px-3 text-xs font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -230,7 +191,7 @@ export function MarketingFilterSidebar() {
         <div className="flex bg-muted/60 dark:bg-zinc-900 p-1 rounded-xl gap-1">
           <button
             type="button"
-            onClick={() => { setOnlyVerified(false); applyFilters({ is_verified: "" }); }}
+            onClick={() => { applyFilters({ is_verified: "" }); }}
             className={cn(
               "flex-1 text-center py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
               !onlyVerified ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
@@ -240,7 +201,7 @@ export function MarketingFilterSidebar() {
           </button>
           <button
             type="button"
-            onClick={() => { setOnlyVerified(true); applyFilters({ is_verified: "1" }); }}
+            onClick={() => { applyFilters({ is_verified: "1" }); }}
             className={cn(
               "flex-1 text-center py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
               onlyVerified ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
@@ -277,7 +238,6 @@ export function MarketingFilterSidebar() {
           value={maxPrice}
           onChange={(e) => {
             const val = Number(e.target.value);
-            setMaxPrice(val);
             applyFilters({ max_price: val });
           }}
           className="w-full accent-primary h-1 bg-muted dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer mb-2.5"
@@ -316,7 +276,6 @@ export function MarketingFilterSidebar() {
                   key={opt.label}
                   type="button"
                   onClick={() => {
-                    setMinRating(opt.value);
                     applyFilters({ min_rating: opt.value || "" });
                   }}
                   className={cn(
@@ -352,7 +311,6 @@ export function MarketingFilterSidebar() {
                   key={opt.label}
                   type="button"
                   onClick={() => {
-                    setRadius(opt.value);
                     applyFilters({ radius: opt.value === 1000 ? "" : opt.value });
                   }}
                   className={cn(
@@ -381,7 +339,6 @@ export function MarketingFilterSidebar() {
               type="button"
               onClick={() => {
                 const next = !instantBook;
-                setInstantBook(next);
                 applyFilters({ instant_book: next ? "1" : "" });
               }}
               aria-label="Toggle Instant Book"
@@ -402,7 +359,6 @@ export function MarketingFilterSidebar() {
               type="button"
               onClick={() => {
                 const next = !eqIncluded;
-                setEqIncluded(next);
                 applyFilters({ equipment_included: next ? "1" : "" });
               }}
               aria-label="Toggle Equipment Included"

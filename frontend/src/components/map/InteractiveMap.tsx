@@ -6,11 +6,12 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { Users, Star, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { providerHref } from "@/lib/provider-urls";
 
 // Fix for default Leaflet icon not loading in Next.js
-delete (L.Icon.Default.prototype as any)._getIconUrl;
+delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
@@ -78,9 +79,9 @@ export default function InteractiveMap({ providers, center = [-1.2921, 36.8219],
               <Popup className="kuba-popup rounded-2xl">
                 <div className="p-1 min-w-[200px]">
                   <div className="flex items-center gap-3 mb-3">
-                     <div className="w-10 h-10 rounded-xl bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center shrink-0">
+                     <div className="relative w-10 h-10 rounded-xl bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center shrink-0">
                          {provider.logo ? (
-                             <img src={provider.logo} alt={provider.business_name} className="w-full h-full object-cover" />
+                             <Image src={provider.logo} alt={provider.business_name} fill sizes="40px" className="object-cover" />
                          ) : (
                              <Users className="w-5 h-5 text-gray-400" />
                          )}

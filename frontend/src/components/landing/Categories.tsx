@@ -1,17 +1,14 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LandingButton } from "@/components/shared/LandingButton";
 import { LandingSectionHeader } from "@/components/shared/LandingSectionHeader";
 import { LandingSection } from "@/components/landing/LandingSection";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  ServiceCategoryCard,
-  type ServiceCategoryCardData,
-} from "@/components/marketplace";
+import type { ServiceCategoryCardData } from "@/components/marketplace";
 import { serviceDetailHref } from "@/lib/service-urls";
 import { cn } from "@/lib/utils";
 import { useCMS } from "@/contexts/CMSContext";
@@ -67,10 +64,7 @@ function CategoryServicesPanel({ category }: { category: Category }) {
           {services.map((service) => (
             <li key={service.id}>
               <Link
-                href={serviceDetailHref({
-                  ...service,
-                  category_slug: category.slug,
-                } as any)}
+                href={serviceDetailHref(service)}
                 className="group flex items-center gap-3 py-3 md:py-3.5 text-base"
               >
                 <span className="min-w-0 flex-1 font-semibold text-foreground group-hover:text-primary transition-colors leading-snug">
@@ -114,21 +108,9 @@ export function Categories() {
   );
 
   const slideCount = categories.length;
-  const activeCategory = slideCount > 0 ? categories[slideIndex] : null;
-
-  const goPrev = useCallback(() => {
-    setSlideIndex((i) => (i - 1 + slideCount) % slideCount);
-  }, [slideCount]);
-
-  const goNext = useCallback(() => {
-    setSlideIndex((i) => (i + 1) % slideCount);
-  }, [slideCount]);
-
-  useEffect(() => {
-    if (slideIndex >= slideCount && slideCount > 0) {
-      setSlideIndex(0);
-    }
-  }, [slideIndex, slideCount]);
+  const activeIndex =
+    slideCount > 0 && (slideIndex < 0 || slideIndex >= slideCount) ? 0 : slideIndex;
+  const activeCategory = slideCount > 0 ? categories[activeIndex] : null;
 
   return (
     <LandingSection variant="default" className="!py-12 md:!py-16">
@@ -165,7 +147,7 @@ export function Categories() {
                   onClick={() => setSlideIndex(idx)}
                   className={cn(
                     "w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border",
-                    idx === slideIndex
+                    idx === activeIndex
                       ? "bg-primary text-primary-foreground border-primary shadow-md"
                       : "bg-background hover:bg-muted border-border text-foreground hover:border-primary/30"
                   )}

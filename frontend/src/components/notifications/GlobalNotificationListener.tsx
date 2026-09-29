@@ -22,6 +22,14 @@ function sanitizeUrl(url: string | null | undefined): string | null {
   }
 }
 
+interface KubaNotification {
+  type?: string;
+  title?: string;
+  message?: string;
+  url?: string | null;
+  booking_number?: string | number;
+}
+
 export function GlobalNotificationListener() {
   const { user } = useAuth();
   const router = useRouter();
@@ -38,7 +46,7 @@ export function GlobalNotificationListener() {
       // Listen to private user channel for general Laravel Notifications
       const channel = echo.private(`App.Models.User.${user.id}`);
 
-      channel.notification((notification: any) => {
+      channel.notification((notification: KubaNotification) => {
         let icon = <Bell className="w-4 h-4 text-sky-600" />;
 
         if (notification.type?.includes('BookingStatusUpdated')) {

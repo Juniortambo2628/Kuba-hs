@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Star } from "lucide-react";
 import { providerProfileUi } from "@/lib/provider-profile-ui";
-import { getMediaUrl, cn } from "@/lib/utils";
+import { getMediaUrl } from "@/lib/utils";
 import { MarketplaceCardMediaFallback } from "@/components/marketplace/MarketplaceCardMediaFallback";
 import { formatCurrency } from "@/lib/format";
 

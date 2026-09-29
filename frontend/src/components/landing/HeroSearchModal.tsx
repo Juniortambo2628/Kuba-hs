@@ -94,7 +94,7 @@ export function HeroSearchModal({ isOpen, onClose, initialTab, initialView = "li
   const [onlyVerified, setOnlyVerified] = useState(false);
   const [bookingDate, setBookingDate] = useState(formatDateOption(1));
   const [bookingEndDate, setBookingEndDate] = useState(formatDateOption(7));
-  const [bookingTime, setBookingTime] = useState("09:00 AM");
+  const [bookingTime] = useState("09:00 AM");
   const [proCount, setProCount] = useState(1);
   const [mapSelectedId, setMapSelectedId] = useState<string | number | null>(null);
 
@@ -441,7 +441,9 @@ export function HeroSearchModal({ isOpen, onClose, initialTab, initialView = "li
             )}
             <MarketingViewToggle
               view={resultView}
-              onViewChange={setResultView as any}
+              onViewChange={(view) => {
+                if (view === "list" || view === "map") setResultView(view);
+              }}
               modes={["list", "map"]}
             />
           </div>

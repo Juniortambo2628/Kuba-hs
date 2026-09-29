@@ -23,7 +23,6 @@ import { ChatUI } from "@/components/chat/ChatUI";
 import { ServiceProgress } from "@/components/booking/ServiceProgress";
 import { LiveServiceTimer } from "@/components/booking/LiveServiceTimer";
 import { toast } from "sonner";
-import { Booking } from "@/types";
 import { DashboardPageContainer } from "@/components/shared/DashboardPageContainer";
 
 export type BookingDetailRole = "client" | "provider";

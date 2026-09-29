@@ -1,14 +1,13 @@
 "use client";
 
 import { ReactNode } from "react";
-import { Calendar, MapPin, Clock, User as UserIcon, Briefcase, Building2, Factory, Home, ImageIcon, ArrowUpRight, XCircle, AlertCircle } from "lucide-react";
+import { Calendar, MapPin, Clock, User as UserIcon, Briefcase, Building2, Factory, Home, ArrowUpRight, XCircle, AlertCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { getBookingStatusAccentClass } from "@/lib/status-styles";
 import { Booking } from "@/types";
 import { formatDate } from "@/lib/format";
 
@@ -16,6 +15,12 @@ function parseScheduledDate(dateStr?: string | null): Date | null {
   if (!dateStr) return null;
   const d = new Date(dateStr);
   return Number.isNaN(d.getTime()) ? null : d;
+}
+
+function ServiceIcon({ serviceType, isProvider }: { serviceType?: string; isProvider: boolean }) {
+  if (serviceType === 'commercial') return <Building2 className="w-6 h-6" />;
+  if (serviceType === 'large_scale') return <Factory className="w-6 h-6" />;
+  return isProvider ? <Briefcase className="w-6 h-6" /> : <Home className="w-6 h-6" />;
 }
 
 interface BookingCardProps {
@@ -42,12 +47,6 @@ export function BookingCard({
   const isProvider = type === 'provider';
   const isAdmin = type === 'admin';
   const scheduled = parseScheduledDate(booking.scheduled_date);
-
-  const ServiceIcon = () => {
-    if (booking.service_type === 'commercial') return <Building2 className="w-6 h-6" />;
-    if (booking.service_type === 'large_scale') return <Factory className="w-6 h-6" />;
-    return isProvider ? <Briefcase className="w-6 h-6" /> : <Home className="w-6 h-6" />;
-  };
 
   return (
     <Card 
@@ -101,7 +100,7 @@ export function BookingCard({
                     </span>
                   </>
                 ) : (
-                  <ServiceIcon />
+                  <ServiceIcon serviceType={booking.service_type} isProvider={isProvider} />
                 )}
               </div>
               <div className="space-y-1">
@@ -153,13 +152,13 @@ export function BookingCard({
               <XCircle className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
               <div className="space-y-0.5">
                 <span className="text-[10px] font-black text-red-600 uppercase tracking-widest leading-none">Cancellation Reason</span>
-                <p className="text-[11px] text-red-500 font-medium italic">"{booking.cancellation_reason}"</p>
+                <p className="text-[11px] text-red-500 font-medium italic">&quot;{booking.cancellation_reason}&quot;</p>
               </div>
             </div>
           )}
 
           {(isProvider || isAdmin) && booking.description && (
-            <p className="text-xs text-muted-foreground max-w-xl line-clamp-2 italic">"{booking.description}"</p>
+            <p className="text-xs text-muted-foreground max-w-xl line-clamp-2 italic">&quot;{booking.description}&quot;</p>
           )}
 
           {/* Status Indicator for Payment */}

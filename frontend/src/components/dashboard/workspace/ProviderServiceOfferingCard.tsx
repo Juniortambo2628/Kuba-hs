@@ -7,7 +7,6 @@ import { KubaFilePond } from "@/components/ui/filepond";
 import { workspaceUi } from "@/lib/dashboard-ui";
 import { getMediaUrl, cn } from "@/lib/utils";
 import type { ProviderService } from "@/types";
-import { extractApiList } from "@/lib/api-response";
 
 function serviceDisplayName(offering: ProviderService): string {
   return offering.service?.name ?? offering.name ?? "Service";
@@ -37,7 +36,7 @@ export function ProviderServiceOfferingCard({
   const category = categoryDisplayName(offering);
   const thumb =
     offering.image_urls?.[0]?.url ??
-    (offering.service as any)?.thumbnail_url ??
+    (offering.service as { thumbnail_url?: string } | null | undefined)?.thumbnail_url ??
     offering.service_thumbnail_url;
   const thumbSrc = thumb ? getMediaUrl(thumb, "service") : null;
   const isHourly = offering.pricing_type === "hourly";

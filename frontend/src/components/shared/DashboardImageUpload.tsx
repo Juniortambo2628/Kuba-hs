@@ -1,6 +1,11 @@
 "use client";
 
 import { FilePond, registerPlugin } from "react-filepond";
+import type { FilePondProps } from "react-filepond";
+import type {
+  FilePondFile,
+  FilePondErrorDescription,
+} from "filepond";
 import "filepond/dist/filepond.min.css";
 import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css";
 
@@ -34,9 +39,12 @@ export function DashboardImageUpload({
   label = "Upload Image",
   className,
 }: DashboardImageUploadProps) {
-  const [files, setFiles] = useState<any[]>([]);
+  const [files, setFiles] = useState<FilePondFile[]>([]);
 
-  const handleProcessFile = (error: any, file: any) => {
+  const handleProcessFile = (
+    error: FilePondErrorDescription | null,
+    file: FilePondFile
+  ) => {
     if (!error && file.serverId) {
       onChange(file.serverId);
     }
@@ -75,6 +83,7 @@ export function DashboardImageUpload({
             )}
           >
             {value ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={getFullUrl(value)}
                 alt="Upload Preview"
@@ -95,7 +104,7 @@ export function DashboardImageUpload({
 
         <div className="md:col-span-3">
           <FilePond
-            files={files}
+            files={files as unknown as FilePondProps["files"]}
             onupdatefiles={setFiles}
             allowMultiple={false}
             maxFiles={1}

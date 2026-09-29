@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import { FilePond, registerPlugin } from 'react-filepond';
+import type { FilePondProps } from 'react-filepond';
+import type { FilePondFile } from 'filepond';
 import 'filepond/dist/filepond.min.css';
 import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
 import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
@@ -17,11 +19,17 @@ import {
 // Register plugins
 registerPlugin(FilePondPluginImagePreview, FilePondPluginFileValidateType);
 
+interface MediaUploadResponse {
+    id?: number | string;
+    url?: string | null;
+    [key: string]: unknown;
+}
+
 interface KubaFilePondProps {
     modelType: string;
     modelId: string;
     collection: string;
-    onSuccess?: (response: any) => void;
+    onSuccess?: (response: MediaUploadResponse) => void;
     label?: string;
     allowMultiple?: boolean;
     acceptedFileTypes?: string[];
@@ -39,12 +47,12 @@ export function KubaFilePond({
     compressionPreset,
 }: KubaFilePondProps) {
     const preset = compressionPreset ?? compressionPresetForCollection(collection);
-    const [files, setFiles] = useState<any[]>([]);
+    const [files, setFiles] = useState<FilePondFile[]>([]);
 
     return (
         <div className="kuba-filepond-wrapper">
             <FilePond
-                files={files}
+                files={files as unknown as FilePondProps['files']}
                 onupdatefiles={setFiles}
                 allowMultiple={allowMultiple}
                 maxFiles={5}
@@ -74,7 +82,7 @@ export function KubaFilePond({
                             },
                         })
                         .then((res) => {
-                            const { id, url } = res.data;
+                            const { id } = res.data;
                             load(String(id));
                             if (onSuccess) onSuccess(res.data);
                         })

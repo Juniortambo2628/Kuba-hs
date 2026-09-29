@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, ReactNode, ComponentProps } from "react";
+import { useState, ReactNode } from "react";
 import { LucideIcon } from "lucide-react";
 import { Table, TableHeader, TableBody, TableRow, TableCell } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,6 +11,7 @@ import {
 } from "@/components/shared/DashboardTable";
 import { DashboardListToolbar, FilterGroup, BulkAction } from "@/components/shared/DashboardListToolbar";
 import { EmptyState } from "@/components/shared/ui/EmptyState";
+import { DashboardPageSkeleton } from "@/components/shared/DashboardPageSkeleton";
 
 export interface ColumnDef<T> {
   key: string;
@@ -104,7 +105,6 @@ export function DashboardListView<T>({
   const EmptyIcon = emptyIcon;
 
   if (fullPageSkeleton && isLoading) {
-    const { DashboardPageSkeleton } = require("@/components/shared/DashboardPageSkeleton");
     return <DashboardPageSkeleton metrics={fullPageSkeletonMetrics ?? 0} bodyHeight={fullPageSkeletonHeight ?? "h-[500px]"} />;
   }
 

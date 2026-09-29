@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactElement } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type ReactElement } from "react";
 import { ResponsiveContainer } from "recharts";
 import { cn } from "@/lib/utils";
+
+const emptySubscribe = () => () => {};
 
 interface ChartContainerProps {
   height?: number;
@@ -20,13 +22,9 @@ export function ChartContainer({
   className,
   children,
 }: ChartContainerProps) {
-  const [ready, setReady] = useState(false);
+  const ready = useSyncExternalStore(emptySubscribe, () => true, () => false);
   const [hasDimensions, setHasDimensions] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    setReady(true);
-  }, []);
 
   useEffect(() => {
     if (!ready || !containerRef.current) return;
@@ -36,8 +34,6 @@ export function ChartContainer({
       setHasDimensions(width > 0 && h > 0);
     });
     observer.observe(el);
-    const rect = el.getBoundingClientRect();
-    setHasDimensions(rect.width > 0 && rect.height > 0);
     return () => observer.disconnect();
   }, [ready]);
 

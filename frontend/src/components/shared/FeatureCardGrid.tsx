@@ -17,7 +17,7 @@ interface Feature {
     bg?: string;
     color?: string;
     features?: string[];
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
@@ -45,7 +45,6 @@ export function FeatureCardGrid({
   features,
   columns = 3,
   accentColor = "primary",
-  fallbackIcon: _fallbackIcon,
   showChecklist = false,
   variant = "left",
 }: FeatureCardGridProps) {

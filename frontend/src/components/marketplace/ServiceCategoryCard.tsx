@@ -30,6 +30,20 @@ interface ServiceCategoryCardProps {
   className?: string;
 }
 
+interface CategoryThumbProps {
+  imageSrc: string | null;
+  name: string;
+  logoSize?: string;
+}
+
+function CategoryThumb({ imageSrc, name, logoSize }: CategoryThumbProps) {
+  return imageSrc ? (
+    <Image src={imageSrc} alt={name} fill className="object-cover" sizes="96px" />
+  ) : (
+    <MarketplaceCardMediaFallback logoClassName={logoSize} />
+  );
+}
+
 export function ServiceCategoryCard({
   category,
   href,
@@ -48,19 +62,12 @@ export function ServiceCategoryCard({
     icon_url: category.icon_url,
   });
 
-  const CategoryThumb = ({ logoSize }: { logoSize?: string }) =>
-    imageSrc ? (
-      <Image src={imageSrc} alt={category.name} fill className="object-cover" sizes="96px" />
-    ) : (
-      <MarketplaceCardMediaFallback logoClassName={logoSize} />
-    );
-
   if (isList) {
     return (
       <MarketplaceCardLink href={href} onMouseEnter={onPrefetch} className={className}>
         <div className="group flex flex-col sm:flex-row gap-6 p-5 rounded-3xl border border-border/40 bg-card hover:border-primary/30 transition-all shadow-sm hover:shadow-md">
           <div className={L.listMedia}>
-            <CategoryThumb />
+            <CategoryThumb imageSrc={imageSrc} name={category.name} />
             <span className="absolute top-3 left-3 z-10 inline-flex items-center rounded-full bg-white/95 dark:bg-zinc-900/95 px-3 py-1.5 text-[11px] font-semibold text-foreground shadow-sm backdrop-blur-sm">
               {count} services
             </span>
@@ -100,7 +107,7 @@ export function ServiceCategoryCard({
         )}
       >
         <div className={cn(L.media, !isList && marketplaceUi.card.gridOutline)}>
-          <CategoryThumb />
+          <CategoryThumb imageSrc={imageSrc} name={category.name} />
           <div className={L.mediaGradient} />
           <span className={L.badge}>{count} services</span>
         </div>

@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { Plus, Clock, Loader2 } from "lucide-react";
+import { Plus, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { DashboardUserAvatar } from "@/components/dashboard/workspace/DashboardUserAvatar";

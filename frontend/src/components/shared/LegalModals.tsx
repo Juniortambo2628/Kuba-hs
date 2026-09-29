@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { FileText, Shield, Scale } from "lucide-react";
+import { Shield, Scale } from "lucide-react";
 
 export type LegalModalType = "terms" | "privacy" | null;
 
@@ -12,8 +12,8 @@ export function LegalModals() {
 
   // Listen for custom events to open modals from anywhere
   useEffect(() => {
-    const handleOpenModal = (e: any) => {
-      setActiveModal(e.detail);
+    const handleOpenModal = (e: Event) => {
+      setActiveModal((e as CustomEvent<LegalModalType>).detail);
     };
     window.addEventListener("open-legal-modal", handleOpenModal);
     return () => window.removeEventListener("open-legal-modal", handleOpenModal);
@@ -65,7 +65,7 @@ export function LegalModals() {
               <section className="space-y-4">
                 <h3 className="text-white text-lg font-semibold">4. Payments & Refunds</h3>
                 <p>
-                  Payments are processed through our partner, Stripe. By using our payment features, you agree to Stripe's terms. 
+                  Payments are processed through our partner, Stripe. By using our payment features, you agree to Stripe&apos;s terms. 
                   Refunds are subject to our cancellation policy, which varies by service category.
                 </p>
               </section>

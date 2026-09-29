@@ -3,7 +3,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
-import { openLegalModal } from "@/components/shared/LegalModals";
 import { useCMS } from "@/contexts/CMSContext";
 import { footerUi } from "@/lib/footer-ui";
 import { uiPrimitives } from "@/lib/ui-primitives";

@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Clock, Zap, TrendingUp, CheckCircle2 } from "lucide-react";
-import { formatDuration, intervalToDuration } from "date-fns";
+import { intervalToDuration } from "date-fns";
 import { formatCurrency } from "@/lib/format";
 
 interface LiveServiceTimerProps {
@@ -14,6 +14,8 @@ interface LiveServiceTimerProps {
   status: string;
 }
 
+const emptySubscribe = () => () => {};
+
 export function LiveServiceTimer({
   startedAt,
   completedAt,
@@ -21,8 +23,10 @@ export function LiveServiceTimer({
   pricingType,
   status,
 }: LiveServiceTimerProps) {
+  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
   const [elapsed, setElapsed] = useState<number>(0);
-  const [timerActive, setTimerActive] = useState(false);
+  const isActive = status === "in_progress" && !completedAt;
+  const timerActive = mounted && isActive;
 
   useEffect(() => {
     if (!startedAt) return;
@@ -33,18 +37,14 @@ export function LiveServiceTimer({
       return Math.max(0, Math.floor((end - start) / 1000));
     };
 
-    setElapsed(calculateElapsed());
+    const tick = () => setElapsed(calculateElapsed());
+    tick();
 
-    if (status === "in_progress" && !completedAt) {
-      setTimerActive(true);
-      const interval = setInterval(() => {
-        setElapsed(calculateElapsed());
-      }, 1000);
+    if (isActive) {
+      const interval = setInterval(tick, 1000);
       return () => clearInterval(interval);
-    } else {
-      setTimerActive(false);
     }
-  }, [startedAt, completedAt, status]);
+  }, [startedAt, completedAt, isActive]);
 
   const formatTime = (seconds: number) => {
     const duration = intervalToDuration({ start: 0, end: seconds * 1000 });

@@ -6,6 +6,12 @@ import type { ProviderSearchRowData } from "@/components/marketplace/ProviderSea
 import { ProviderSearchMeta } from "@/components/marketplace/ProviderSearchMeta";
 import { providerHref } from "@/lib/provider-urls";
 
+interface PopupServiceRow {
+  service_thumbnail_url?: string;
+  name?: string;
+  service?: { name?: string } | null;
+}
+
 interface ProviderMapPopupProps {
   provider: ProviderSearchRowData & {
     services?: Array<{ name?: string; service?: { name?: string } | null }> | null;
@@ -14,7 +20,7 @@ interface ProviderMapPopupProps {
 
 export function ProviderMapPopup({ provider }: ProviderMapPopupProps) {
   const services = (provider.services ?? [])
-    .map((s: any) => s.name || s.service?.name)
+    .map((s: PopupServiceRow) => s.name || s.service?.name)
     .filter(Boolean)
     .slice(0, 5) as string[];
 

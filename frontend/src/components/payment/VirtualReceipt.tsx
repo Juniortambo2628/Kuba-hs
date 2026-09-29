@@ -3,11 +3,9 @@
 import { useRef } from "react";
 import { 
   CheckCircle2, 
-  Download, 
   Printer, 
   Shield, 
   Calendar, 
-  MapPin, 
   User, 
   Briefcase,
   Hash,

@@ -36,6 +36,9 @@ export interface ServiceDetailData {
   base_price?: number;
   pricing_type?: string;
   provider?: Provider | null;
+  thumbnail_url?: string | null;
+  service_thumbnail_url?: string | null;
+  image_urls?: { url?: string }[];
 }
 
 interface ProviderServiceRow {
@@ -71,7 +74,7 @@ export function ServiceDetailPortfolio({
   const serviceName = service?.name || service?.service?.name || "Service";
   const description =
     service?.description || service?.service?.description || "";
-  const thumbnailSrc = resolveServiceThumbnailSrc(service as any);
+  const thumbnailSrc = resolveServiceThumbnailSrc(service);
 
   const primaryProvider =
     service?.provider ||
@@ -306,7 +309,7 @@ export function ServiceDetailPortfolio({
                 pricingType={
                   featuredRow?.pricing_type || service?.pricing_type || "service"
                 }
-                provider={primaryProvider as any}
+                provider={primaryProvider ?? null}
                 onBook={() => onBook(primaryProvider as Provider | null)}
               />
             </aside>

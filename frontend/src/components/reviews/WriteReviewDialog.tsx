@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { 
     Dialog, 
     DialogContent, 
@@ -16,6 +17,10 @@ import axiosInstance from "@/lib/axios";
 import { compressImageFiles } from "@/lib/image-compression";
 import { toast } from "sonner";
 import { Booking } from "@/types";
+
+interface ApiErrorLike {
+    response?: { data?: { message?: string } };
+}
 
 interface WriteReviewDialogProps {
     isOpen: boolean;
@@ -71,8 +76,9 @@ export function WriteReviewDialog({ isOpen, onClose, booking, onSuccess }: Write
             toast.success("Thank you for your feedback!");
             onSuccess();
             onClose();
-        } catch (err: any) {
-            toast.error(err.response?.data?.message || "Failed to submit review");
+        } catch (err) {
+            const message = (err as ApiErrorLike).response?.data?.message;
+            toast.error(message || "Failed to submit review");
         } finally {
             setIsSubmitting(false);
         }
@@ -144,7 +150,7 @@ export function WriteReviewDialog({ isOpen, onClose, booking, onSuccess }: Write
                             <div className="flex flex-wrap gap-3">
                                 {previews.map((src, i) => (
                                     <div key={i} className="relative w-20 h-20 rounded-2xl overflow-hidden border border-border group">
-                                        <img src={src} className="w-full h-full object-cover" />
+                                        <Image src={src} alt="Review photo preview" fill sizes="80px" className="object-cover" />
                                         <button 
                                             onClick={() => removeImage(i)}
                                             className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"

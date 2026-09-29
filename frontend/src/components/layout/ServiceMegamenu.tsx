@@ -104,7 +104,7 @@ export function ServiceMegamenu({ isOpen, onClose }: ServiceMegamenuProps) {
   const { categories, isLoading } = useCategories<Category>({ enabled: isOpen });
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
-  const { residential, commercial, featured } = useMemo(() => {
+  const { commercial, featured } = useMemo(() => {
     const res: Category[] = [];
     const com: Category[] = [];
     for (const cat of categories) {
@@ -133,7 +133,7 @@ export function ServiceMegamenu({ isOpen, onClose }: ServiceMegamenuProps) {
         .forEach((s) => {
           links.push({
             label: s.name,
-            href: serviceDetailHref({ ...s, category_slug: activeCategory.slug } as any),
+            href: serviceDetailHref(s),
           });
         });
     }

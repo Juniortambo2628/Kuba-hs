@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCMS } from "@/contexts/CMSContext";
-import { authUi } from "@/lib/auth-ui";
 import { cn } from "@/lib/utils";
 
 interface AuthBrandLogoProps {

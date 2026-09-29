@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { AlertCircle, Briefcase, Building2, Calendar, Clock, Factory, Home, Info, MapPin, MoreHorizontal, ShieldCheck, Upload, Users } from "lucide-react";
+import { AlertCircle, Info, Upload } from "lucide-react";
 import DashboardModal from "@uppy/react/dashboard-modal";
+import type { Uppy } from "@uppy/core";
 import type { BookingOffering } from "@/components/booking/BookingModal";
-import type { BookingForm, BookingValues } from "@/components/booking/booking-modal-types";
+import type { BookingForm, BookingFormConfig } from "@/components/booking/booking-modal-types";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/format";
 
@@ -19,8 +19,8 @@ interface BookingServiceStepProps {
   offerings: BookingOffering[];
   selectedOffering: BookingOffering | null;
   onSelectOffering: (offering: BookingOffering | null) => void;
-  config: Record<string, any>;
-  uppy: any;
+  config: BookingFormConfig;
+  uppy: Uppy;
   showUppy: boolean;
   onToggleUppy: (value: boolean) => void;
   onUploadPhotos: () => void;
@@ -88,7 +88,7 @@ export function BookingServiceStep({
             <FormLabel className="text-sm font-bold text-gray-900 dark:text-white">{config.typeLabel}</FormLabel>
             <FormControl>
               <div className="grid grid-cols-3 gap-3">
-                {config.typeOptions.map((type: any) => (
+                {config.typeOptions.map((type) => (
                   <button
                     key={type.id}
                     type="button"

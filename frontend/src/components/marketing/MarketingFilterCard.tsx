@@ -1,7 +1,6 @@
 "use client";
 
 import { ReactNode } from "react";
-import { SlidersHorizontal } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { marketingUi } from "@/lib/marketing-ui";
 import { cn } from "@/lib/utils";

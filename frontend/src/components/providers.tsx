@@ -6,6 +6,7 @@ import { AuthProvider } from "@/contexts/AuthContext"
 import { AuthDialogProvider } from "@/contexts/AuthDialogContext"
 import { AuthDialog } from "@/components/auth/AuthDialog"
 import { CMSProvider } from "@/contexts/CMSContext"
+import type { CMSSetting } from "@/contexts/CMSContext"
 import { Toaster } from "@/components/ui/sonner"
 import { GlobalNotificationListener } from "@/components/notifications/GlobalNotificationListener"
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
@@ -13,7 +14,7 @@ import { SWRConfig } from 'swr'
 import axiosInstance from '@/lib/axios'
 
 interface ProvidersProps extends React.ComponentProps<typeof NextThemesProvider> {
-  initialSettings?: Record<string, any>;
+  initialSettings?: Record<string, unknown>;
 }
 
 export function Providers({ children, initialSettings, ...props }: ProvidersProps) {
@@ -25,7 +26,11 @@ export function Providers({ children, initialSettings, ...props }: ProvidersProp
           revalidateOnFocus: false,
           dedupingInterval: 5000 
         }}>
-          <CMSProvider initialRawSettings={initialSettings}>
+          <CMSProvider
+            initialRawSettings={
+              initialSettings as Record<string, CMSSetting[]> | undefined
+            }
+          >
             <AuthProvider>
               <AuthDialogProvider>
                 {children}

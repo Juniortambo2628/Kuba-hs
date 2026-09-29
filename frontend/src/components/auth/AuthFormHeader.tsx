@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { designSystem } from "@/lib/design-system";
 
 interface AuthFormHeaderProps {
@@ -13,8 +14,20 @@ export function AuthFormHeader({ title, subtitle }: AuthFormHeaderProps) {
     <div className="space-y-8">
       {/* Logo */}
       <Link href="/" className="flex items-center gap-2">
-        <img src="/assets/branding/Kuba-Logo-Login-Light-mode.png" alt="KUBA" className="h-10 w-auto dark:hidden" />
-        <img src="/assets/branding/Kuba-Logo-Login-Dark-mode.png" alt="KUBA" className="h-10 w-auto hidden dark:block" />
+        <Image
+          src="/assets/branding/Kuba-Logo-Login-Light-mode.png"
+          alt="KUBA"
+          width={208}
+          height={208}
+          className="h-10 w-auto dark:hidden"
+        />
+        <Image
+          src="/assets/branding/Kuba-Logo-Login-Dark-mode.png"
+          alt="KUBA"
+          width={208}
+          height={208}
+          className="h-10 w-auto hidden dark:block"
+        />
       </Link>
 
       <div>

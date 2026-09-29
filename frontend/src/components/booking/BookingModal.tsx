@@ -4,47 +4,44 @@ import { useState, useMemo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Uppy } from "@uppy/core";
-import DashboardModal from "@uppy/react/dashboard-modal";
 import ImageEditor from "@uppy/image-editor";
 import "@uppy/core/css/style.css";
 import "@uppy/dashboard/css/style.css";
 import "@uppy/image-editor/css/style.css";
 import { Form } from "@/components/ui/form";
 import { 
-  X, 
   CheckCircle2, 
   Home, 
   Building2, 
   Factory, 
   Info, 
-  AlertCircle, 
   Calendar, 
   Clock,
   ChevronRight, 
-  Upload,
   MapPin,
   ShieldCheck,
-  MessageSquare,
   Briefcase,
   MoreHorizontal,
   Loader2,
   Users
 } from "lucide-react";
 import Link from "next/link";
-import { providerHref } from "@/lib/provider-urls";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import axiosInstance from "@/lib/axios";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthDialog } from "@/contexts/AuthDialogContext";
-import { Skeleton } from "@/components/ui/skeleton";
 import { BookingLocationStep } from "@/components/booking/BookingLocationStep";
 import { BookingScheduleStep } from "@/components/booking/BookingScheduleStep";
 import { BookingServiceStep } from "@/components/booking/BookingServiceStep";
-import type { BookingValues } from "@/components/booking/booking-modal-types";
+import type {
+  BookingValues,
+  BookingAddress,
+  BookingFormConfig,
+  BookingNewAddress,
+} from "@/components/booking/booking-modal-types";
 import {
   resolveBookingCategoryKey,
   resolveServiceCategoryName,
@@ -101,7 +98,7 @@ const FIELDS_BY_TAB: Record<BookingTabId, (keyof BookingValues)[]> = {
   schedule: ["scheduled_date", "scheduled_time"],
 };
 
-const FORM_CONFIGS: Record<string, any> = {
+const FORM_CONFIGS: Record<string, BookingFormConfig> = {
   'Cleaning & Maintenance': {
     typeLabel: "Service Type",
     typeOptions: [
@@ -299,6 +296,17 @@ function normalizeOffering(raw: BookingOffering | null | undefined): BookingOffe
   };
 }
 
+interface ApiErrorLike {
+  response?: {
+    status?: number;
+    data?: { message?: string } | null;
+  };
+}
+
+function apiErrorInfo(err: unknown): ApiErrorLike {
+  return err as ApiErrorLike;
+}
+
 export function BookingModal({
   isOpen,
   onClose,
@@ -306,19 +314,22 @@ export function BookingModal({
   service: serviceProp,
   offerings: offeringsProp,
 }: BookingModalProps) {
-  const offerings = offeringsProp ?? provider.services ?? [];
+  const offerings = useMemo(
+    () => offeringsProp ?? provider.services ?? [],
+    [offeringsProp, provider.services]
+  );
   const [selectedOffering, setSelectedOffering] = useState<BookingOffering | null>(null);
   const service = selectedOffering ?? normalizeOffering(serviceProp);
   const [bookingTab, setBookingTab] = useState<BookingTabId>("service");
   const [isSuccess, setIsSuccess] = useState(false);
   const [showUppy, setShowUppy] = useState(false);
-  const [addresses, setAddresses] = useState<any[]>([]);
+  const [addresses, setAddresses] = useState<BookingAddress[]>([]);
   const [promoDiscount, setPromoDiscount] = useState<{ amount: number; code: string } | null>(null);
   const [promoError, setPromoError] = useState<string | null>(null);
   const [isValidatingPromo, setIsValidatingPromo] = useState(false);
   const [isAddingAddress, setIsAddingAddress] = useState(false);
   const [isSavingAddress, setIsSavingAddress] = useState(false);
-  const [newAddress, setNewAddress] = useState({
+  const [newAddress, setNewAddress] = useState<BookingNewAddress>({
     address_type: "home" as "home" | "work" | "other",
     street_address: "",
     apartment: "",
@@ -354,10 +365,10 @@ export function BookingModal({
     try {
       const res = await axiosInstance.get("/api/client/addresses");
       setAddresses(res.data.data || res.data.addresses || res.data || []);
-    } catch (err: any) {
+    } catch (err) {
       console.error("Failed to fetch addresses:", err);
       // Only toast if it's not a 401 (which we expect if user just logged out/session expired)
-      if (err.response?.status !== 401) {
+      if (apiErrorInfo(err).response?.status !== 401) {
         toast.error("Could not load your addresses");
       }
     }
@@ -389,8 +400,8 @@ export function BookingModal({
       if (createdAddress && createdAddress.id) {
         form.setValue("address_id", createdAddress.id.toString());
       }
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to save address");
+    } catch (err) {
+      toast.error(apiErrorInfo(err).response?.data?.message || "Failed to save address");
     } finally {
       setIsSavingAddress(false);
     }
@@ -587,8 +598,8 @@ export function BookingModal({
         code: code
       });
       toast.success(`Promo code applied! Saved ${formatCurrency(res.data.discount_amount)}`);
-    } catch (err: any) {
-      setPromoError(err.response?.data?.message || "Invalid promo code");
+    } catch (err) {
+      setPromoError(apiErrorInfo(err).response?.data?.message || "Invalid promo code");
       setPromoDiscount(null);
     } finally {
       setIsValidatingPromo(false);
@@ -633,8 +644,8 @@ export function BookingModal({
       await axiosInstance.post('/api/client/bookings', formData);
       setIsSuccess(true);
       toast.success("Booking request sent!");
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Booking failed");
+    } catch (error) {
+      toast.error(apiErrorInfo(error).response?.data?.message || "Booking failed");
     }
   };
 
@@ -705,7 +716,7 @@ export function BookingModal({
               </div>
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Booking Requested!</h3>
               <p className="text-gray-500 dark:text-gray-400 mb-8">
-                Your request has been sent to {provider.business_name}. You'll receive a notification once they confirm.
+                Your request has been sent to {provider.business_name}. You&apos;ll receive a notification once they confirm.
               </p>
               <div className="flex gap-4">
                 <Button asChild variant="outline" className="flex-1 rounded-xl h-12 font-bold border-gray-200 dark:border-white/10 uppercase tracking-tight text-xs">

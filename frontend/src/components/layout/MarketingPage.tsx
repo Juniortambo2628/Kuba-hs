@@ -4,7 +4,6 @@ import { ReactNode } from "react";
 import { MarketingShell } from "@/components/layout/MarketingShell";
 import { HighImpactHero, type HighImpactHeroProps } from "@/components/shared/HighImpactHero";
 import { PageContainer } from "@/components/shared/ui/PageContainer";
-import { cn } from "@/lib/utils";
 
 interface MarketingPageProps {
   children: ReactNode;

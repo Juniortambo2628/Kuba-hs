@@ -15,7 +15,7 @@ import { motion } from "framer-motion";
 import { ChartContainer } from "@/components/shared/ChartContainer";
 
 interface AnalyticsProps {
-  data: any[];
+  data: Array<Record<string, unknown>>;
   title: string;
   type?: 'area' | 'bar';
   dataKey: string;

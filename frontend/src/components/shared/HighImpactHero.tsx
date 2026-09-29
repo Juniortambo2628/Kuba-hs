@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useSyncExternalStore } from "react";
 import { motion } from "framer-motion";
 import { ChevronRight, Home } from "lucide-react";
 import Link from "next/link";
@@ -15,6 +15,8 @@ interface Breadcrumb {
   label: string;
   href?: string;
 }
+
+const emptySubscribe = () => () => {};
 
 export interface HighImpactHeroProps {
   title?: string;
@@ -48,11 +50,7 @@ export function HighImpactHero({
 }: HighImpactHeroProps) {
   const { getS, getImg } = useCMS();
 
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
 
   // Resolution order: Prop > CMS > Radial Gradient Fallback
   // If we are using the default hero_text group, images should come from hero_backgrounds

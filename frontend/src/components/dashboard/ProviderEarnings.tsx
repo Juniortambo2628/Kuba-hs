@@ -21,8 +21,22 @@ import { uiPrimitives } from "@/lib/ui-primitives";
 import { EmptyState } from "@/components/shared/ui/EmptyState";
 import { formatDate, formatCurrency } from "@/lib/format";
 
+interface ProviderTransaction {
+  id: number | string;
+  transaction_id?: string | null;
+  booking?: {
+    service?: {
+      name?: string | null;
+    } | null;
+  } | null;
+  amount?: number | string | null;
+  platform_fee?: number | string | null;
+  provider_amount?: number | string | null;
+  created_at: string;
+}
+
 export function ProviderEarnings() {
-  const [transactions, setTransactions] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<ProviderTransaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {

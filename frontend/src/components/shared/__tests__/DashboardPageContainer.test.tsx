@@ -7,7 +7,7 @@ jest.mock('@/lib/dashboard-ui', () => ({
 }));
 
 jest.mock('@/lib/utils', () => ({
-  cn: (...args: any[]) => args.filter(Boolean).join(' '),
+  cn: (...args: unknown[]) => args.filter(Boolean).join(' '),
 }));
 
 describe('DashboardPageContainer', () => {

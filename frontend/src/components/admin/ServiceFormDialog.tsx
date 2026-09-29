@@ -83,6 +83,7 @@ export function ServiceFormDialog({
             <FieldLabel>Thumbnail</FieldLabel>
             {thumbnailUrl && (
               <div className="w-full aspect-[4/3] max-w-[200px] rounded-xl overflow-hidden border border-border bg-muted">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={thumbnailUrl} alt={form.name} className="w-full h-full object-cover" />
               </div>
             )}

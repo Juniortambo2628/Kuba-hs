@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { FieldLabel } from "@/components/shared/ui";
 import { Briefcase, Home, MoreHorizontal } from "lucide-react";
 import dynamic from "next/dynamic";
-import type { BookingForm, BookingValues } from "@/components/booking/booking-modal-types";
+import type { BookingForm, BookingNewAddress, BookingAddress } from "@/components/booking/booking-modal-types";
 import { cn } from "@/lib/utils";
 import { dialogFormUi } from "@/lib/crud-dialog-ui";
 
@@ -17,23 +17,12 @@ const LocationPicker = dynamic(() => import("@/components/map/LocationPicker"), 
 
 interface BookingLocationStepProps {
   form: BookingForm;
-  addresses: any[];
+  addresses: BookingAddress[];
   isAddingAddress: boolean;
   isSavingAddress: boolean;
-  newAddress: {
-    address_type: "home" | "work" | "other";
-    street_address: string;
-    apartment: string;
-    city: string;
-    state: string;
-    postal_code: string;
-    country: string;
-    latitude: number | null;
-    longitude: number | null;
-    is_default: boolean;
-  };
+  newAddress: BookingNewAddress;
   onToggleAddressForm: (value: boolean) => void;
-  onChangeNewAddress: (value: any) => void;
+  onChangeNewAddress: (value: BookingNewAddress) => void;
   onSaveAddress: () => void;
 }
 
@@ -69,15 +58,15 @@ export function BookingLocationStep({
                 <div className="space-y-2">
                   <FieldLabel>Address Type</FieldLabel>
                   <div className="flex gap-2">
-                    {[
+                    {([
                       { id: "home", label: "Home", icon: Home },
                       { id: "work", label: "Work", icon: Briefcase },
                       { id: "other", label: "Other", icon: MoreHorizontal },
-                    ].map((type) => (
+                    ] as const).map((type) => (
                       <button
                         key={type.id}
                         type="button"
-                        onClick={() => onChangeNewAddress({ ...newAddress, address_type: type.id as any })}
+                        onClick={() => onChangeNewAddress({ ...newAddress, address_type: type.id })}
                         className={`flex-1 flex items-center justify-center gap-2 h-10 rounded-lg text-[10px] font-bold uppercase border transition-all ${
                           newAddress.address_type === type.id
                             ? "bg-primary border-primary text-primary-foreground"

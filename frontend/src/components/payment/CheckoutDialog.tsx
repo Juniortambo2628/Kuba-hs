@@ -17,7 +17,6 @@ import {
   Loader2, 
   CheckCircle2, 
   Smartphone, 
-  Banknote, 
   ArrowLeft, 
   ChevronRight,
   Receipt
@@ -31,6 +30,10 @@ import { formatCurrency } from "@/lib/format";
 
 type PaymentMethod = 'select' | 'paystack' | 'mpesa' | 'cash';
 type PaymentStep = 'select' | 'details' | 'processing' | 'success';
+
+interface ApiErrorLike {
+    response?: { data?: { message?: string } };
+}
 
 interface CheckoutDialogProps {
     isOpen: boolean;
@@ -87,14 +90,14 @@ export function CheckoutDialog({ isOpen, onClose, booking, userEmail, onSuccess 
 
             initializePayment({
                 config: { ...paystackConfig, reference },
-                onSuccess: (ref: any) => verifyPaystack(ref.reference),
+                onSuccess: (ref: { reference: string }) => verifyPaystack(ref.reference),
                 onClose: () => {
                     setIsInitializing(false);
                     toast.info("Payment session closed");
                 }
             });
-        } catch (err: any) {
-            toast.error(err.response?.data?.message || "Failed to start payment");
+        } catch (err) {
+            toast.error((err as ApiErrorLike).response?.data?.message || "Failed to start payment");
             setIsInitializing(false);
         }
     };
@@ -157,8 +160,8 @@ export function CheckoutDialog({ isOpen, onClose, booking, userEmail, onSuccess 
                     toast.info("If you completed the payment, it may take a moment to process.");
                 }
             }, 120000);
-        } catch (err: any) {
-            toast.error(err.response?.data?.message || "Failed to send STK Push");
+        } catch (err) {
+            toast.error((err as ApiErrorLike).response?.data?.message || "Failed to send STK Push");
             setPaymentStep('details');
             setIsInitializing(false);
         }
@@ -395,7 +398,7 @@ export function CheckoutDialog({ isOpen, onClose, booking, userEmail, onSuccess 
                             {/* Legal footer */}
                             {paymentStep !== 'processing' && (
                                 <p className="text-[9px] text-center text-muted-foreground font-medium leading-relaxed px-4 mt-4">
-                                    By proceeding, you agree to Kuba's Terms of Service and secure payment processing.
+                                    By proceeding, you agree to Kuba&apos;s Terms of Service and secure payment processing.
                                 </p>
                             )}
                         </>

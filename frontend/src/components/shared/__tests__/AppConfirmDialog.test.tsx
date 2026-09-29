@@ -12,7 +12,13 @@ jest.mock('@/components/ui/alert-dialog', () => ({
 }));
 
 jest.mock('@/components/ui/button', () => ({
-  Button: ({ children, onClick, disabled, className, ...props }: any) => (
+  Button: ({
+    children,
+    onClick,
+    disabled,
+    className,
+    ...props
+  }: React.ComponentPropsWithoutRef<"button">) => (
     <button onClick={onClick} disabled={disabled} className={className} {...props}>
       {children}
     </button>
@@ -36,7 +42,7 @@ jest.mock('@/lib/crud-dialog-ui', () => ({
 }));
 
 jest.mock('@/lib/utils', () => ({
-  cn: (...args: any[]) => args.filter(Boolean).join(' '),
+  cn: (...args: unknown[]) => args.filter(Boolean).join(' '),
 }));
 
 const defaultProps = {

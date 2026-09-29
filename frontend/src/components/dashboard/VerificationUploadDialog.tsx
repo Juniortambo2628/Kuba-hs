@@ -127,6 +127,7 @@ export function VerificationUploadDialog({
           <div className={cn(workspaceUi.frosted.inset, "overflow-hidden")}>
             <div className="flex h-40 items-center justify-center bg-muted/20">
               {previewUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img src={previewUrl} alt="Preview" className="max-h-full max-w-full object-contain" />
               ) : (
                 <div className="flex flex-col items-center gap-2 px-4 text-center">

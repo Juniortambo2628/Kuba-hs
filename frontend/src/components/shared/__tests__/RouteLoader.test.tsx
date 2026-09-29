@@ -12,7 +12,10 @@ jest.mock('next/navigation', () => ({
 
 jest.mock('next/image', () => ({
   __esModule: true,
-  default: (props: any) => <img {...props} />,
+  default: (props: React.ComponentProps<"img">) => (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img {...props} alt={props.alt ?? ""} />
+  ),
 }));
 
 beforeEach(() => {

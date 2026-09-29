@@ -3,7 +3,7 @@
 import { useTheme } from "next-themes";
 import { Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { cn } from "@/lib/utils";
 
 interface ThemeToggleProps {
@@ -12,13 +12,11 @@ interface ThemeToggleProps {
   showLabel?: boolean;
 }
 
+const emptySubscribe = () => () => {};
+
 export function ThemeToggle({ className, variant = "ghost", showLabel = false }: ThemeToggleProps) {
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
 
   if (!mounted) {
     return (

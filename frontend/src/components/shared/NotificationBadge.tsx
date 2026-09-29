@@ -50,6 +50,16 @@ export function NotificationBadge() {
   useEffect(() => {
     if (!user) return;
 
+    const fetchNotifications = async () => {
+      try {
+        const res = await axiosInstance.get("/api/notifications");
+        setNotifications(res.data.notifications);
+        setUnreadCount(res.data.unread_count);
+      } catch (err) {
+        console.error("Failed to fetch notifications", err);
+      }
+    };
+
     fetchNotifications();
 
     let disposed = false;
@@ -102,16 +112,6 @@ export function NotificationBadge() {
       leave?.();
     };
   }, [user, router]);
-
-  const fetchNotifications = async () => {
-    try {
-      const res = await axiosInstance.get("/api/notifications");
-      setNotifications(res.data.notifications);
-      setUnreadCount(res.data.unread_count);
-    } catch (err) {
-      console.error("Failed to fetch notifications", err);
-    }
-  };
 
   const handleNotificationClick = async (notification: Notification) => {
     if (!notification.read_at) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useState, useSyncExternalStore } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -21,6 +21,8 @@ L.Icon.Default.mergeOptions({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
+
+const emptySubscribe = () => () => {};
 
 export type MapViewProvider = ProviderSearchRowData & {
   latitude?: number | null;
@@ -80,12 +82,8 @@ export default function MapView({
   minHeight = 280,
   selectedProviderId = null,
 }: MapViewProps) {
-  const [isMounted, setIsMounted] = useState(false);
+  const isMounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
   const [hoveredProvider, setHoveredProvider] = useState<MapViewProvider | null>(null);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   if (!isMounted) {
     return (

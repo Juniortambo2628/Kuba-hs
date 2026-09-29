@@ -12,7 +12,14 @@ jest.mock('@/components/ui/dialog', () => ({
 }));
 
 jest.mock('@/components/ui/button', () => ({
-  Button: ({ children, onClick, disabled, type, form, ...props }: any) => (
+  Button: ({
+    children,
+    onClick,
+    disabled,
+    type,
+    form,
+    ...props
+  }: React.ComponentPropsWithoutRef<"button">) => (
     <button onClick={onClick} disabled={disabled} type={type} form={form} {...props}>
       {children}
     </button>
@@ -20,7 +27,9 @@ jest.mock('@/components/ui/button', () => ({
 }));
 
 jest.mock('lucide-react', () => ({
-  Loader2: (props: any) => <span data-testid="spinner" {...props} />,
+  Loader2: (props: React.ComponentPropsWithoutRef<"span">) => (
+    <span data-testid="spinner" {...props} />
+  ),
 }));
 
 jest.mock('@/lib/crud-dialog-ui', () => ({
@@ -40,7 +49,7 @@ jest.mock('@/lib/crud-dialog-ui', () => ({
 }));
 
 jest.mock('@/lib/utils', () => ({
-  cn: (...args: any[]) => args.filter(Boolean).join(' '),
+  cn: (...args: unknown[]) => args.filter(Boolean).join(' '),
 }));
 
 const defaultProps = {

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Info, Settings, ShieldAlert, X, CheckCircle2, BarChart3 } from "lucide-react";
+import { Info, Settings, ShieldAlert, CheckCircle2, BarChart3 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export function CookieConsent() {
