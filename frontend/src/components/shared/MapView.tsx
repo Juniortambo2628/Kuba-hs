@@ -88,7 +88,7 @@ export default function MapView({
   if (!isMounted) {
     return (
       <div
-        className="w-full bg-muted animate-pulse rounded-3xl"
+        className="h-full w-full bg-muted animate-pulse rounded-3xl"
         style={{ minHeight }}
         aria-hidden
       />
@@ -102,7 +102,7 @@ export default function MapView({
 
   return (
     <div
-      className="kuba-map-view relative w-full overflow-visible"
+      className="kuba-map-view relative h-full w-full overflow-visible"
       style={{ minHeight }}
     >
       <div className={mapClipClass}>
