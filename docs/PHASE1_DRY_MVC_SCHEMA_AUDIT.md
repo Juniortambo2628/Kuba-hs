@@ -1064,8 +1064,14 @@ equivalent.**
 - Backup: `Kuba-hs-before-purge.bundle` (160,042,171 bytes) holds the
   complete pre-purge history.
 - `git filter-repo` removes the `origin` remote; it has been re-added.
-  **GitHub still has the old history**, so a plain `git fetch` would put
-  the blob back. Finishing this on GitHub needs a force push, which has
-  not been made.
+  **The force push was made on 2026-09-30**: `main` on GitHub now serves
+  the purged history (`b5f3b2e...3e51bab (forced update)` via
+  `--force-with-lease=main:b5f3b2e`). The old un-purged history remains
+  reachable on GitHub as `origin/claude/stoic-turing-qii3ua`
+  (`b5f3b2e`), so fetching that branch (or the local
+  `Kuba-hs-before-purge.bundle`) would still return the 94 MiB blob;
+  fetching `main` alone is safe. The push is preceded by a pre-push hook
+  that runs the full suites (backend 439 + frontend 246 tests), both
+  green.
 
 
